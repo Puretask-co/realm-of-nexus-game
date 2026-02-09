@@ -1,0 +1,168 @@
+[
+  {
+    "id": "quest_first_steps",
+    "name": "First Steps into Verdance",
+    "description": "Explore the Verdant Grove and speak with Elder Rowan to learn about the Sap Cycle.",
+    "type": "main",
+    "category": "tutorial",
+    "level": 1,
+    "prerequisites": [],
+    "objectives": [
+      {
+        "id": "obj_talk_rowan",
+        "type": "talk",
+        "description": "Speak with Elder Rowan",
+        "target": "dlg_elder_rowan_intro",
+        "required": 1
+      },
+      {
+        "id": "obj_kill_wisps",
+        "type": "kill",
+        "description": "Defeat Sap Wisps",
+        "target": "sap_wisp",
+        "required": 3
+      },
+      {
+        "id": "obj_collect_fragments",
+        "type": "collect",
+        "description": "Collect Sap Fragments",
+        "target": "sap_fragment",
+        "required": 5
+      }
+    ],
+    "rewards": {
+      "experience": 100,
+      "items": [
+        { "id": "health_potion", "quantity": 3 }
+      ]
+    },
+    "chainQuest": "quest_sap_awakening",
+    "tags": ["tutorial", "main_story"]
+  },
+  {
+    "id": "quest_sap_awakening",
+    "name": "The Sap Awakening",
+    "description": "Experience your first Sap Cycle transition and learn to harness temporal energy.",
+    "type": "main",
+    "category": "main_story",
+    "level": 2,
+    "prerequisites": [{ "type": "quest", "questId": "quest_first_steps" }],
+    "objectives": [
+      {
+        "id": "obj_witness_cycle",
+        "type": "custom",
+        "description": "Witness a Sap Cycle transition",
+        "required": 1
+      },
+      {
+        "id": "obj_cast_temporal",
+        "type": "custom",
+        "description": "Cast Temporal Bolt during Blue Phase",
+        "required": 1,
+        "sapPhaseRequired": "blue"
+      },
+      {
+        "id": "obj_visit_crossroads",
+        "type": "visit",
+        "description": "Travel to the Nexus Crossroads",
+        "target": "nexus_crossroads",
+        "required": 1
+      }
+    ],
+    "rewards": {
+      "experience": 200,
+      "spells": ["crimson_flare"],
+      "items": [
+        { "id": "temporal_blade", "quantity": 1 }
+      ]
+    },
+    "tags": ["main_story", "sap_cycle"]
+  },
+  {
+    "id": "quest_thornback_menace",
+    "name": "The Thornback Menace",
+    "description": "Thornback Brutes are threatening travelers on the road. Thin their numbers.",
+    "type": "side",
+    "category": "combat",
+    "level": 3,
+    "prerequisites": [{ "type": "quest", "questId": "quest_first_steps" }],
+    "objectives": [
+      {
+        "id": "obj_kill_brutes",
+        "type": "kill",
+        "description": "Defeat Thornback Brutes",
+        "target": "thornback_brute",
+        "required": 5
+      },
+      {
+        "id": "obj_collect_bark",
+        "type": "collect",
+        "description": "Collect Bark Plates",
+        "target": "bark_plate",
+        "required": 3,
+        "optional": true
+      }
+    ],
+    "rewards": {
+      "experience": 150,
+      "items": [
+        { "id": "health_potion", "quantity": 2 }
+      ],
+      "reputation": {
+        "nexus_guard": 50
+      }
+    },
+    "repeatable": true,
+    "tags": ["side_quest", "combat", "repeatable"]
+  },
+  {
+    "id": "quest_void_threat",
+    "name": "Shadows of the Void",
+    "description": "A Void Harbinger has been sighted in the Crimson Wastes. This threat must be eliminated before it corrupts the Sap Cycle permanently.",
+    "type": "main",
+    "category": "main_story",
+    "level": 10,
+    "prerequisites": [
+      { "type": "quest", "questId": "quest_sap_awakening" },
+      { "type": "level", "level": 8 }
+    ],
+    "objectives": [
+      {
+        "id": "obj_reach_wastes",
+        "type": "visit",
+        "description": "Journey to the Crimson Wastes",
+        "target": "crimson_wastes",
+        "required": 1,
+        "order": 1
+      },
+      {
+        "id": "obj_defeat_harbinger",
+        "type": "kill",
+        "description": "Defeat the Void Harbinger",
+        "target": "void_harbinger",
+        "required": 1,
+        "order": 2
+      },
+      {
+        "id": "obj_collect_crystal",
+        "type": "collect",
+        "description": "Retrieve the Void Crystal",
+        "target": "void_crystal",
+        "required": 1,
+        "order": 3
+      }
+    ],
+    "rewards": {
+      "experience": 500,
+      "items": [
+        { "id": "crimson_staff", "quantity": 1 }
+      ],
+      "unlocks": ["void_realm_access"],
+      "reputation": {
+        "nexus_guard": 200,
+        "sap_keepers": 100
+      }
+    },
+    "tags": ["main_story", "boss", "endgame"]
+  }
+]

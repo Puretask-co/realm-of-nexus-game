@@ -1,0 +1,91 @@
+[
+  {
+    "id": "verdant_grove",
+    "name": "Verdant Grove",
+    "type": "overworld",
+    "description": "A lush forest where the Sap Cycle flows strongest. Ancient trees pulse with visible blue energy.",
+    "width": 80,
+    "height": 60,
+    "tileSize": 32,
+    "tilemap": "map_verdant_grove",
+    "music": "mus_verdant_grove",
+    "ambience": "amb_forest_whisper",
+    "sapPhaseModifiers": { "blue": 1.3, "crimson": 0.8, "silver": 1.0 },
+    "lighting": {
+      "ambientColor": "#3a7d44",
+      "ambientIntensity": 0.6,
+      "preset": "forest_canopy"
+    },
+    "spawns": [
+      { "enemyId": "sap_wisp", "x": 15, "y": 10, "respawnTime": 30, "conditions": [] },
+      { "enemyId": "sap_wisp", "x": 25, "y": 20, "respawnTime": 30, "conditions": [] },
+      { "enemyId": "thornback_brute", "x": 40, "y": 30, "respawnTime": 60, "conditions": ["quest_forest_cleared"] }
+    ],
+    "npcs": [
+      { "id": "elder_rowan", "x": 10, "y": 8, "dialogue": "dlg_elder_rowan_intro" }
+    ],
+    "connections": [
+      { "targetLocationId": "nexus_crossroads", "x": 79, "y": 30, "targetX": 1, "targetY": 15, "type": "path" },
+      { "targetLocationId": "deep_hollow", "x": 40, "y": 0, "targetX": 20, "targetY": 39, "type": "path" }
+    ],
+    "tags": ["starting_area", "forest", "blue_sap"]
+  },
+  {
+    "id": "nexus_crossroads",
+    "name": "Nexus Crossroads",
+    "type": "town",
+    "description": "A bustling hub where travelers from across the Nexus converge. The three Sap streams visibly intertwine here.",
+    "width": 60,
+    "height": 40,
+    "tileSize": 32,
+    "tilemap": "map_nexus_crossroads",
+    "music": "mus_crossroads_theme",
+    "ambience": "amb_town_bustle",
+    "sapPhaseModifiers": { "blue": 1.0, "crimson": 1.0, "silver": 1.0 },
+    "lighting": {
+      "ambientColor": "#f0e68c",
+      "ambientIntensity": 0.8,
+      "preset": "warm_daylight"
+    },
+    "spawns": [],
+    "npcs": [
+      { "id": "merchant_kael", "x": 20, "y": 15, "dialogue": "dlg_merchant_kael" },
+      { "id": "blacksmith_thora", "x": 35, "y": 18, "dialogue": "dlg_blacksmith_thora" },
+      { "id": "sage_lyris", "x": 28, "y": 10, "dialogue": "dlg_sage_lyris" }
+    ],
+    "connections": [
+      { "targetLocationId": "verdant_grove", "x": 0, "y": 15, "targetX": 78, "targetY": 30, "type": "path" },
+      { "targetLocationId": "crimson_wastes", "x": 59, "y": 20, "targetX": 1, "targetY": 15, "type": "path" },
+      { "targetLocationId": "silver_spire", "x": 30, "y": 0, "targetX": 15, "targetY": 29, "type": "stairs" }
+    ],
+    "tags": ["town", "hub", "safe_zone", "shops"]
+  },
+  {
+    "id": "crimson_wastes",
+    "name": "Crimson Wastes",
+    "type": "overworld",
+    "description": "Scorched badlands where the Crimson Sap surges unchecked. Geysers of red energy erupt from cracked earth.",
+    "width": 100,
+    "height": 80,
+    "tileSize": 32,
+    "tilemap": "map_crimson_wastes",
+    "music": "mus_crimson_wastes",
+    "ambience": "amb_volcanic_rumble",
+    "sapPhaseModifiers": { "blue": 0.6, "crimson": 1.8, "silver": 0.7 },
+    "lighting": {
+      "ambientColor": "#8b2500",
+      "ambientIntensity": 0.5,
+      "preset": "volcanic_glow"
+    },
+    "spawns": [
+      { "enemyId": "ember_crawler", "x": 20, "y": 15, "respawnTime": 25, "conditions": [] },
+      { "enemyId": "magma_elemental", "x": 50, "y": 40, "respawnTime": 45, "conditions": [] },
+      { "enemyId": "void_harbinger", "x": 85, "y": 65, "respawnTime": 300, "conditions": ["quest_void_awakening"] }
+    ],
+    "npcs": [],
+    "connections": [
+      { "targetLocationId": "nexus_crossroads", "x": 0, "y": 15, "targetX": 58, "targetY": 20, "type": "path" }
+    ],
+    "tags": ["dangerous", "crimson_sap", "endgame"]
+  }
+]

@@ -1,0 +1,99 @@
+[
+  {
+    "id": "sap_wisp",
+    "name": "Sap Wisp",
+    "type": "ranged",
+    "health": 30,
+    "damage": 8,
+    "defense": 2,
+    "speed": 90,
+    "attackRange": 5,
+    "attackSpeed": 1.2,
+    "experienceReward": 15,
+    "description": "A flickering orb of unstable Sap energy that drifts through the wilds.",
+    "sapPhaseVulnerability": { "blue": 1.0, "crimson": 1.5, "silver": 0.8 },
+    "abilities": [
+      { "spellId": "temporal_bolt", "priority": 0.8, "cooldown": 4, "conditions": ["target_in_range"] }
+    ],
+    "lootTable": [
+      { "itemId": "sap_fragment", "dropChance": 0.5, "minQuantity": 1, "maxQuantity": 3 },
+      { "itemId": "wisp_essence", "dropChance": 0.15, "minQuantity": 1, "maxQuantity": 1 }
+    ],
+    "ai": {
+      "behavior": "defensive",
+      "aggroRange": 6,
+      "leashRange": 12,
+      "fleeHealthPercent": 0.2
+    },
+    "sprite": "enemy_sap_wisp",
+    "animations": { "idle": "sap_wisp_idle", "attack": "sap_wisp_attack", "death": "sap_wisp_death" },
+    "tags": ["wisp", "sap_creature", "common"],
+    "tier": 1
+  },
+  {
+    "id": "thornback_brute",
+    "name": "Thornback Brute",
+    "type": "melee",
+    "health": 120,
+    "damage": 22,
+    "defense": 8,
+    "speed": 50,
+    "attackRange": 1.5,
+    "attackSpeed": 0.8,
+    "experienceReward": 45,
+    "description": "A hulking creature covered in bark-like armor and razor thorns.",
+    "sapPhaseVulnerability": { "blue": 0.8, "crimson": 1.2, "silver": 1.0 },
+    "abilities": [
+      { "spellId": "thorn_slam", "priority": 0.6, "cooldown": 6, "conditions": ["target_in_melee"] }
+    ],
+    "lootTable": [
+      { "itemId": "thorn_shard", "dropChance": 0.4, "minQuantity": 1, "maxQuantity": 2 },
+      { "itemId": "bark_plate", "dropChance": 0.2, "minQuantity": 1, "maxQuantity": 1 },
+      { "itemId": "brute_heart", "dropChance": 0.05, "minQuantity": 1, "maxQuantity": 1 }
+    ],
+    "ai": {
+      "behavior": "aggressive",
+      "aggroRange": 5,
+      "leashRange": 10,
+      "fleeHealthPercent": 0
+    },
+    "sprite": "enemy_thornback_brute",
+    "animations": { "idle": "thornback_idle", "attack": "thornback_attack", "death": "thornback_death", "walk": "thornback_walk" },
+    "tags": ["beast", "melee", "tanky"],
+    "tier": 2
+  },
+  {
+    "id": "void_harbinger",
+    "name": "Void Harbinger",
+    "type": "boss",
+    "health": 500,
+    "damage": 45,
+    "defense": 15,
+    "speed": 60,
+    "attackRange": 6,
+    "attackSpeed": 1.0,
+    "experienceReward": 250,
+    "description": "An ancient entity from beyond the Nexus, its presence warps reality and corrupts the Sap Cycle.",
+    "sapPhaseVulnerability": { "blue": 1.2, "crimson": 0.6, "silver": 1.5 },
+    "abilities": [
+      { "spellId": "void_rift", "priority": 0.4, "cooldown": 12, "conditions": ["target_in_range"] },
+      { "spellId": "void_pulse", "priority": 0.7, "cooldown": 6, "conditions": ["health_below_50"] },
+      { "spellId": "reality_warp", "priority": 0.3, "cooldown": 20, "conditions": ["health_below_25"] }
+    ],
+    "lootTable": [
+      { "itemId": "void_crystal", "dropChance": 1.0, "minQuantity": 1, "maxQuantity": 1 },
+      { "itemId": "harbinger_cloak", "dropChance": 0.3, "minQuantity": 1, "maxQuantity": 1 },
+      { "itemId": "nexus_shard", "dropChance": 0.1, "minQuantity": 1, "maxQuantity": 1 }
+    ],
+    "ai": {
+      "behavior": "aggressive",
+      "aggroRange": 10,
+      "leashRange": 20,
+      "fleeHealthPercent": 0
+    },
+    "sprite": "enemy_void_harbinger",
+    "animations": { "idle": "harbinger_idle", "attack": "harbinger_attack", "death": "harbinger_death", "phase2": "harbinger_phase2" },
+    "tags": ["boss", "void", "elite", "story"],
+    "tier": 4
+  }
+]

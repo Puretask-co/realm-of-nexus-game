@@ -1,0 +1,131 @@
+[
+  {
+    "id": "sap_fragment",
+    "name": "Sap Fragment",
+    "type": "material",
+    "rarity": "common",
+    "description": "A crystallized fragment of raw Sap energy. Used in crafting and enchantment.",
+    "value": 5,
+    "stackable": true,
+    "maxStack": 99,
+    "sapPhaseAffinity": "none",
+    "icon": "icon_sap_fragment",
+    "tags": ["material", "sap", "common_drop"]
+  },
+  {
+    "id": "wisp_essence",
+    "name": "Wisp Essence",
+    "type": "material",
+    "rarity": "uncommon",
+    "description": "The ethereal core of a Sap Wisp, pulsing with faint temporal energy.",
+    "value": 25,
+    "stackable": true,
+    "maxStack": 50,
+    "sapPhaseAffinity": "blue",
+    "icon": "icon_wisp_essence",
+    "tags": ["material", "essence", "temporal"]
+  },
+  {
+    "id": "thorn_shard",
+    "name": "Thorn Shard",
+    "type": "material",
+    "rarity": "common",
+    "description": "A razor-sharp thorn broken from a Thornback Brute's natural armor.",
+    "value": 8,
+    "stackable": true,
+    "maxStack": 99,
+    "sapPhaseAffinity": "none",
+    "icon": "icon_thorn_shard",
+    "tags": ["material", "beast"]
+  },
+  {
+    "id": "bark_plate",
+    "name": "Bark Plate",
+    "type": "material",
+    "rarity": "uncommon",
+    "description": "A section of hardened bark armor, naturally infused with protective sap.",
+    "value": 20,
+    "stackable": true,
+    "maxStack": 50,
+    "sapPhaseAffinity": "none",
+    "icon": "icon_bark_plate",
+    "tags": ["material", "armor", "beast"]
+  },
+  {
+    "id": "void_crystal",
+    "name": "Void Crystal",
+    "type": "material",
+    "rarity": "epic",
+    "description": "A shard of crystallized void energy, cold to the touch and faintly humming with otherworldly power.",
+    "value": 200,
+    "stackable": true,
+    "maxStack": 10,
+    "sapPhaseAffinity": "silver",
+    "icon": "icon_void_crystal",
+    "tags": ["material", "void", "rare_drop", "boss"]
+  },
+  {
+    "id": "temporal_blade",
+    "name": "Temporal Blade",
+    "type": "weapon",
+    "rarity": "rare",
+    "description": "A blade forged from condensed temporal energy. Its strikes echo across moments in time.",
+    "value": 150,
+    "stackable": false,
+    "maxStack": 1,
+    "stats": {
+      "damage": 28,
+      "critChance": 0.12,
+      "critDamage": 1.8,
+      "speed": 5
+    },
+    "effects": [
+      { "type": "temporal_echo", "value": 0.15, "duration": 0 }
+    ],
+    "requirements": { "level": 8 },
+    "sapPhaseAffinity": "blue",
+    "icon": "icon_temporal_blade",
+    "sprite": "weapon_temporal_blade",
+    "tags": ["weapon", "sword", "temporal", "melee"]
+  },
+  {
+    "id": "crimson_staff",
+    "name": "Staff of Crimson Tides",
+    "type": "weapon",
+    "rarity": "epic",
+    "description": "An ancient staff that channels the raw fury of the Crimson Sap phase. Fire dances at its tip.",
+    "value": 350,
+    "stackable": false,
+    "maxStack": 1,
+    "stats": {
+      "damage": 35,
+      "critChance": 0.08,
+      "critDamage": 2.2,
+      "sapRegenRate": 2
+    },
+    "effects": [
+      { "type": "crimson_amplify", "value": 0.25, "duration": 0 }
+    ],
+    "requirements": { "level": 12 },
+    "sapPhaseAffinity": "crimson",
+    "icon": "icon_crimson_staff",
+    "sprite": "weapon_crimson_staff",
+    "tags": ["weapon", "staff", "fire", "caster"]
+  },
+  {
+    "id": "health_potion",
+    "name": "Verdant Elixir",
+    "type": "consumable",
+    "rarity": "common",
+    "description": "A potion brewed from Nexus herbs, restoring a moderate amount of health.",
+    "value": 15,
+    "stackable": true,
+    "maxStack": 20,
+    "effects": [
+      { "type": "heal", "value": 50, "duration": 0 }
+    ],
+    "sapPhaseAffinity": "none",
+    "icon": "icon_health_potion",
+    "tags": ["consumable", "healing", "potion"]
+  }
+]
