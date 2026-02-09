@@ -1,0 +1,115 @@
+{
+  "version": "1.0.0",
+  "lastModified": "2026-02-09T00:00:00Z",
+  "enemies": [
+    {
+      "id": "forest_guardian",
+      "name": "Forest Guardian",
+      "baseStats": {
+        "hp": 120,
+        "defense": 8,
+        "speed": 4,
+        "sapPool": 50
+      },
+      "aiPattern": "defensive",
+      "spells": ["verdant_bloom"],
+      "lootTable": {
+        "goldMin": 15,
+        "goldMax": 30,
+        "items": [
+          { "itemId": "minor_health_potion", "dropChance": 0.3 },
+          { "itemId": "sap_crystal", "dropChance": 0.15 }
+        ]
+      },
+      "phaseSpawnWeights": {
+        "blue": 2.0,
+        "crimson": 0.5,
+        "silver": 1.0
+      },
+      "sprite": {
+        "texture": "forest_guardian_sheet",
+        "idleFrame": 0,
+        "attackFrame": 4,
+        "hurtFrame": 8
+      },
+      "behaviorParams": {
+        "healThreshold": 0.4,
+        "preferredTargetType": "wounded_allies",
+        "fleeThreshold": 0.2
+      }
+    },
+    {
+      "id": "shadow_stalker",
+      "name": "Shadow Stalker",
+      "baseStats": {
+        "hp": 80,
+        "defense": 4,
+        "speed": 8,
+        "sapPool": 60
+      },
+      "aiPattern": "aggressive",
+      "spells": ["shadow_strike"],
+      "lootTable": {
+        "goldMin": 20,
+        "goldMax": 40,
+        "items": [
+          { "itemId": "shadow_essence", "dropChance": 0.25 }
+        ]
+      },
+      "phaseSpawnWeights": {
+        "blue": 0.3,
+        "crimson": 1.2,
+        "silver": 1.8
+      },
+      "sprite": {
+        "texture": "shadow_stalker_sheet",
+        "idleFrame": 0,
+        "attackFrame": 4,
+        "hurtFrame": 8
+      },
+      "behaviorParams": {
+        "healThreshold": 0.0,
+        "preferredTargetType": "lowest_hp",
+        "fleeThreshold": 0.1
+      }
+    },
+    {
+      "id": "ancient_guardian",
+      "name": "Ancient Guardian",
+      "baseStats": {
+        "hp": 300,
+        "defense": 15,
+        "speed": 3,
+        "sapPool": 100
+      },
+      "aiPattern": "balanced",
+      "spells": ["radiant_nova", "verdant_bloom"],
+      "isBoss": true,
+      "lootTable": {
+        "goldMin": 100,
+        "goldMax": 200,
+        "items": [
+          { "itemId": "ancient_relic", "dropChance": 1.0 },
+          { "itemId": "greater_sap_crystal", "dropChance": 0.5 }
+        ]
+      },
+      "phaseSpawnWeights": {
+        "blue": 1.0,
+        "crimson": 1.0,
+        "silver": 1.0
+      },
+      "sprite": {
+        "texture": "ancient_guardian_sheet",
+        "idleFrame": 0,
+        "attackFrame": 4,
+        "hurtFrame": 8
+      },
+      "behaviorParams": {
+        "healThreshold": 0.3,
+        "preferredTargetType": "highest_threat",
+        "fleeThreshold": 0.0,
+        "enrageThreshold": 0.25
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "lastModified": "2026-02-09T00:00:00Z",
+  "items": [
+    {
+      "id": "minor_health_potion",
+      "name": "Minor Health Potion",
+      "type": "consumable",
+      "rarity": "common",
+      "description": "Restores a small amount of health.",
+      "effects": { "healHp": 30 },
+      "value": 10
+    },
+    {
+      "id": "sap_crystal",
+      "name": "Sap Crystal",
+      "type": "consumable",
+      "rarity": "uncommon",
+      "description": "Restores a moderate amount of sap energy.",
+      "effects": { "healSap": 25 },
+      "value": 20
+    },
+    {
+      "id": "greater_sap_crystal",
+      "name": "Greater Sap Crystal",
+      "type": "consumable",
+      "rarity": "rare",
+      "description": "Restores a large amount of sap energy.",
+      "effects": { "healSap": 60 },
+      "value": 75
+    },
+    {
+      "id": "shadow_essence",
+      "name": "Shadow Essence",
+      "type": "material",
+      "rarity": "uncommon",
+      "description": "A dark, shimmering substance harvested from shadow creatures.",
+      "value": 35
+    },
+    {
+      "id": "ancient_relic",
+      "name": "Ancient Relic",
+      "type": "quest",
+      "rarity": "legendary",
+      "description": "A relic of immense power from the ancient guardians.",
+      "value": 500
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "realm-of-nexus-game",
+  "version": "0.1.0",
+  "description": "Realm of Nexus - A 2D tactical RPG built with Phaser.js featuring the Sap Cycle magic system",
+  "main": "src/game.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.70.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "type": "module"
+}

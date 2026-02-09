@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "lastModified": "2026-02-09T00:00:00Z",
+  "locations": [
+    {
+      "id": "verdant_glade",
+      "name": "Verdant Glade",
+      "description": "A lush forest clearing bathed in emerald light.",
+      "type": "exploration",
+      "enemies": ["forest_guardian"],
+      "sceneFile": "verdant_glade.scene.json",
+      "connections": ["crystal_caverns", "shadow_thicket"],
+      "environment": {
+        "weather": "none",
+        "timeOfDay": "day",
+        "ambientTrack": "forest_ambience"
+      }
+    },
+    {
+      "id": "crystal_caverns",
+      "name": "Crystal Caverns",
+      "description": "Underground caverns glittering with crystalline formations.",
+      "type": "dungeon",
+      "enemies": ["shadow_stalker"],
+      "sceneFile": "crystal_caverns.scene.json",
+      "connections": ["verdant_glade", "nexus_spire"],
+      "environment": {
+        "weather": "none",
+        "timeOfDay": "night",
+        "ambientTrack": "cave_drips"
+      }
+    },
+    {
+      "id": "shadow_thicket",
+      "name": "Shadow Thicket",
+      "description": "A dark, twisted part of the forest where shadows move on their own.",
+      "type": "exploration",
+      "enemies": ["shadow_stalker", "forest_guardian"],
+      "sceneFile": "shadow_thicket.scene.json",
+      "connections": ["verdant_glade"],
+      "environment": {
+        "weather": "fog",
+        "weatherIntensity": 0.4,
+        "timeOfDay": "dusk",
+        "ambientTrack": "eerie_forest"
+      }
+    },
+    {
+      "id": "nexus_spire",
+      "name": "Nexus Spire",
+      "description": "The ancient tower at the heart of the realm, pulsing with raw sap energy.",
+      "type": "boss",
+      "enemies": ["ancient_guardian"],
+      "sceneFile": "nexus_spire.scene.json",
+      "connections": ["crystal_caverns"],
+      "environment": {
+        "weather": "none",
+        "timeOfDay": "night",
+        "ambientTrack": "mystical_tower"
+      }
+    }
+  ]
+}

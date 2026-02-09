@@ -1,0 +1,153 @@
+{
+  "version": "1.0.0",
+  "lastModified": "2026-02-09T00:00:00Z",
+  "spells": [
+    {
+      "id": "azure_bolt",
+      "name": "Azure Bolt",
+      "tier": 1,
+      "baseDamage": 15,
+      "sapCost": 10,
+      "cooldown": 2,
+      "element": "arcane",
+      "targetType": "single",
+      "areaOfEffect": 0,
+      "description": "A bolt of pure azure energy that strikes a single target.",
+      "phaseModifiers": {
+        "blue": 1.5,
+        "crimson": 0.8,
+        "silver": 1.0
+      },
+      "canCombo": true,
+      "combosWith": ["crimson_surge", "verdant_bloom"],
+      "vfx": {
+        "projectile": "blue_bolt_sprite",
+        "impact": "blue_explosion_effect",
+        "color": "0x3366ff",
+        "trailEffect": true
+      },
+      "soundEffects": {
+        "cast": "spell_cast_arcane",
+        "impact": "spell_hit_arcane"
+      }
+    },
+    {
+      "id": "crimson_surge",
+      "name": "Crimson Surge",
+      "tier": 1,
+      "baseDamage": 20,
+      "sapCost": 15,
+      "cooldown": 3,
+      "element": "nature",
+      "targetType": "single",
+      "areaOfEffect": 0,
+      "description": "A wave of crimson energy that deals heavy damage.",
+      "phaseModifiers": {
+        "blue": 0.7,
+        "crimson": 1.8,
+        "silver": 1.0
+      },
+      "canCombo": true,
+      "combosWith": ["azure_bolt", "shadow_strike"],
+      "vfx": {
+        "projectile": "red_wave_sprite",
+        "impact": "red_burst_effect",
+        "color": "0xff3344",
+        "trailEffect": true
+      },
+      "soundEffects": {
+        "cast": "spell_cast_nature",
+        "impact": "spell_hit_nature"
+      }
+    },
+    {
+      "id": "verdant_bloom",
+      "name": "Verdant Bloom",
+      "tier": 2,
+      "baseDamage": 0,
+      "sapCost": 20,
+      "cooldown": 4,
+      "element": "nature",
+      "targetType": "ally",
+      "areaOfEffect": 0,
+      "healAmount": 30,
+      "description": "Restore health to an ally with nature's healing energy.",
+      "phaseModifiers": {
+        "blue": 1.2,
+        "crimson": 0.9,
+        "silver": 1.5
+      },
+      "canCombo": false,
+      "combosWith": [],
+      "vfx": {
+        "effect": "green_sparkles",
+        "color": "0x44ff88",
+        "duration": 1500
+      },
+      "soundEffects": {
+        "cast": "spell_cast_heal",
+        "impact": "spell_heal_chime"
+      }
+    },
+    {
+      "id": "shadow_strike",
+      "name": "Shadow Strike",
+      "tier": 2,
+      "baseDamage": 25,
+      "sapCost": 18,
+      "cooldown": 3,
+      "element": "shadow",
+      "targetType": "single",
+      "areaOfEffect": 0,
+      "description": "Strike from the shadows dealing heavy damage with a chance to stun.",
+      "phaseModifiers": {
+        "blue": 0.6,
+        "crimson": 1.2,
+        "silver": 1.8
+      },
+      "canCombo": true,
+      "combosWith": ["crimson_surge"],
+      "stunChance": 0.25,
+      "stunDuration": 1,
+      "vfx": {
+        "projectile": "shadow_slash",
+        "impact": "shadow_burst",
+        "color": "0x8844ff",
+        "trailEffect": true
+      },
+      "soundEffects": {
+        "cast": "spell_cast_shadow",
+        "impact": "spell_hit_shadow"
+      }
+    },
+    {
+      "id": "radiant_nova",
+      "name": "Radiant Nova",
+      "tier": 3,
+      "baseDamage": 35,
+      "sapCost": 30,
+      "cooldown": 5,
+      "element": "radiant",
+      "targetType": "aoe",
+      "areaOfEffect": 3,
+      "description": "Unleash a devastating nova of radiant energy hitting all nearby enemies.",
+      "phaseModifiers": {
+        "blue": 1.3,
+        "crimson": 1.3,
+        "silver": 1.5
+      },
+      "canCombo": false,
+      "combosWith": [],
+      "vfx": {
+        "effect": "radiant_explosion",
+        "color": "0xffffaa",
+        "duration": 800,
+        "screenShake": true
+      },
+      "soundEffects": {
+        "cast": "spell_cast_radiant",
+        "impact": "spell_hit_radiant"
+      }
+    }
+  ]
+}
