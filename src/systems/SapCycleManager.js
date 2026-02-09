@@ -233,14 +233,19 @@ export default class SapCycleManager {
         {
           title: 'Crimson Bloom',
           message: 'A rare crimson flower blooms nearby. DSP +10.',
-          effectType: 'dsp_gain',
-          effectValue: 10,
+          effect: (scene) => {
+            scene.player.stats.dsp = Math.min(
+              scene.player.stats.dsp + 10,
+              scene.player.stats.maxDsp
+            );
+          },
         },
         {
           title: 'Withering Winds',
           message: 'Harsh winds damage unprepared travelers. HP -15.',
-          effectType: 'hp_loss',
-          effectValue: 15,
+          effect: (scene) => {
+            scene.player.stats.hp = Math.max(scene.player.stats.hp - 15, 1);
+          },
         },
       ],
       SILVER: [
@@ -248,28 +253,37 @@ export default class SapCycleManager {
           title: 'Unbinding Surge',
           message:
             'The Great Unbinding empowers you! ATK +3 (temporary).',
-          effectType: 'temp_atk',
-          effectValue: 3,
+          effect: (scene) => {
+            scene.player.stats.attack += 3;
+            scene.player.temporaryBonus = { stat: 'attack', value: 3, duration: 5 };
+          },
         },
         {
           title: 'Silver Blessing',
           message: 'Silver sap rains down. HP and DSP fully restored!',
-          effectType: 'full_restore',
-          effectValue: 0,
+          effect: (scene) => {
+            scene.player.stats.hp = scene.player.stats.maxHp;
+            scene.player.stats.dsp = scene.player.stats.maxDsp;
+          },
         },
       ],
       BLUE: [
         {
           title: 'Reflective Insight',
           message: 'Deep meditation grants wisdom. EXP +50.',
-          effectType: 'exp_gain',
-          effectValue: 50,
+          effect: (scene) => {
+            scene.player.stats.exp = (scene.player.stats.exp || 0) + 50;
+          },
         },
         {
           title: 'Calm Waters',
           message: 'The blue phase soothes your wounds. HP +20.',
-          effectType: 'hp_gain',
-          effectValue: 20,
+          effect: (scene) => {
+            scene.player.stats.hp = Math.min(
+              scene.player.stats.hp + 20,
+              scene.player.stats.maxHp
+            );
+          },
         },
       ],
     };
@@ -277,8 +291,7 @@ export default class SapCycleManager {
     const events = phaseEvents[this.currentPhase];
     if (!events || events.length === 0) return;
 
-    const randomIndex = Math.floor(Math.random() * events.length);
-    const event = events[randomIndex];
+    const event = Phaser.Utils.Array.GetRandom(events);
     this.notifyListeners('random-event', event);
   }
 

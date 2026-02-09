@@ -85,6 +85,9 @@ export default class CombatScene extends Phaser.Scene {
     this.battlefieldType = data.terrain || 'forest';
     this.escapable = data.canEscape || false;
 
+    // Receive allies
+    this.allyData = data.allies || [];
+
     // Sap Cycle phase data
     this.sapPhase = data.sapPhase || 'BLUE';
     this.phaseModifiers = data.phaseModifiers || {
@@ -92,7 +95,7 @@ export default class CombatScene extends Phaser.Scene {
       vulnerabilityMultiplier: 1.0,
     };
 
-    console.log(`Combat starting during ${this.sapPhase} phase`);
+    console.log(`Combat starting during ${this.sapPhase} phase with ${this.allyData.length} allies`);
   }
 
   create() {
@@ -126,6 +129,57 @@ export default class CombatScene extends Phaser.Scene {
     this.spawnCombatants();
     this.calculateInitiative();
     this.createCombatUI();
+
+    // Create ally AI
+    this.allyAI = {
+      executeTurn: (ally) => {
+        const nearestEnemy = this.findNearestEnemy(ally);
+
+        if (!nearestEnemy) {
+          this.endTurn();
+          return;
+        }
+
+        const distance = this.gridManager.getHexDistance(ally.tile, nearestEnemy.tile);
+
+        if (distance <= ally.stats.attackRange) {
+          this.time.delayedCall(500, () => {
+            this.executeBasicAttack(ally, nearestEnemy);
+            this.time.delayedCall(1500, () => {
+              this.endTurn();
+            });
+          });
+        } else {
+          const path = this.gridManager.findPath(ally.tile, nearestEnemy.tile);
+
+          if (path && path.length > 0) {
+            const moveDistance = Math.min(ally.stats.moveRange, path.length);
+            const movePath = path.slice(0, moveDistance);
+
+            this.moveEntityAlongPath(ally, movePath, () => {
+              const newDistance = this.gridManager.getHexDistance(ally.tile, nearestEnemy.tile);
+
+              if (newDistance <= ally.stats.attackRange) {
+                this.time.delayedCall(300, () => {
+                  this.executeBasicAttack(ally, nearestEnemy);
+                  this.time.delayedCall(1500, () => {
+                    this.endTurn();
+                  });
+                });
+              } else {
+                this.time.delayedCall(800, () => {
+                  this.endTurn();
+                });
+              }
+            });
+          } else {
+            this.time.delayedCall(800, () => {
+              this.endTurn();
+            });
+          }
+        }
+      },
+    };
 
     // Log stats
     this.logCombatStats();
@@ -175,6 +229,27 @@ export default class CombatScene extends Phaser.Scene {
     // Spawn player on left side
     const playerTile = this.gridManager.getTileAt(2, 1);
     this.player = this.createPlayer(playerTile);
+
+    // Spawn allies
+    this.allies = [];
+    const allyPositions = [
+      { row: 1, col: 2 },
+      { row: 3, col: 2 },
+      { row: 2, col: 2 },
+      { row: 1, col: 3 },
+      { row: 3, col: 3 },
+    ];
+
+    this.allyData.forEach((allyData, index) => {
+      if (index >= allyPositions.length) return; // Max 5 allies in combat
+
+      const pos = allyPositions[index];
+      const tile = this.gridManager.getTileAt(pos.row, pos.col);
+      if (tile) {
+        const ally = this.createAlly(tile, allyData);
+        this.allies.push(ally);
+      }
+    });
 
     // Spawn enemies on right side
     this.enemies = [];
@@ -237,6 +312,52 @@ export default class CombatScene extends Phaser.Scene {
     player.healthBar = this.createHealthBar(player);
 
     return player;
+  }
+
+  createAlly(tile, allyData) {
+    const ally = this.add.rectangle(tile.x, tile.y, 28, 28, 0x88ff88);
+    ally.setStrokeStyle(3, 0x44cc44);
+    ally.setAlpha(0.85); // Slightly translucent to differentiate from player
+
+    ally.stats = {
+      id: allyData.id,
+      name: allyData.name,
+      hp: allyData.hp,
+      maxHp: allyData.maxHp,
+      attack: allyData.attack,
+      defense: allyData.defense,
+      agility: allyData.agility,
+      moveRange: 3,
+      attackRange: allyData.type === 'archer' ? 3 : 1,
+      aiType: 'friendly',
+      defendBonus: 0,
+    };
+
+    ally.tile = tile;
+    tile.occupant = ally;
+    ally.isAlly = true;
+
+    ally.healthBar = this.createHealthBar(ally);
+
+    // Name label
+    ally.nameLabel = this.add.text(ally.x, ally.y - 55, allyData.name, {
+      fontSize: '10px',
+      color: '#88FF88',
+      backgroundColor: '#00000088',
+      padding: { x: 3, y: 2 },
+    });
+    ally.nameLabel.setOrigin(0.5);
+
+    // Label showing first char
+    const label = this.add.text(tile.x, tile.y - 35, allyData.name.charAt(0), {
+      fontSize: '14px',
+      color: '#88FF88',
+      fontStyle: 'bold',
+    });
+    label.setOrigin(0.5);
+    ally.label = label;
+
+    return ally;
   }
 
   getPlayerAbilities() {
@@ -349,7 +470,7 @@ export default class CombatScene extends Phaser.Scene {
       0x333333
     );
 
-    const color = entity.isPlayer ? 0x88ff88 : 0xff6666;
+    const color = entity.isPlayer || entity.isAlly ? 0x88ff88 : 0xff6666;
     const barFill = this.add.rectangle(
       entity.x - barWidth / 2,
       entity.y - 28,
@@ -380,13 +501,22 @@ export default class CombatScene extends Phaser.Scene {
   // --- Initiative & Turn Management ---
 
   calculateInitiative() {
-    const all = [this.player, ...this.enemies];
+    // Combine all combatants
+    const all = [this.player, ...this.allies, ...this.enemies];
+
     this.turnQueue = all.sort((a, b) => {
       const aInit = a.stats.agility + Phaser.Math.Between(1, 10);
       const bInit = b.stats.agility + Phaser.Math.Between(1, 10);
       return bInit - aInit;
     });
-    console.log('Turn order:', this.turnQueue.map((e) => e.stats.name));
+
+    console.log(
+      'Turn order:',
+      this.turnQueue.map(
+        (e) =>
+          `${e.stats.name} (${e.isPlayer ? 'Player' : e.isAlly ? 'Ally' : 'Enemy'})`
+      )
+    );
     this.currentTurnIndex = 0;
   }
 
@@ -436,6 +566,8 @@ export default class CombatScene extends Phaser.Scene {
 
     if (currentEntity.isPlayer) {
       this.playerTurn();
+    } else if (currentEntity.isAlly) {
+      this.allyTurn(currentEntity);
     } else {
       this.enemyTurn(currentEntity);
     }
@@ -477,6 +609,73 @@ export default class CombatScene extends Phaser.Scene {
     this.time.delayedCall(800, () => {
       this.enemyAI.executeTurn(enemy);
     });
+  }
+
+  allyTurn(ally) {
+    this.combatState = 'ALLY_TURN';
+    this.showMessage(`${ally.stats.name}'s turn`, 0x88ff88);
+
+    this.time.delayedCall(800, () => {
+      this.allyAI.executeTurn(ally);
+    });
+  }
+
+  findNearestEnemy(fromEntity) {
+    let nearest = null;
+    let minDistance = Infinity;
+
+    this.enemies.forEach((enemy) => {
+      if (enemy.stats.hp <= 0) return;
+
+      const distance = this.gridManager.getHexDistance(
+        fromEntity.tile,
+        enemy.tile
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = enemy;
+      }
+    });
+
+    return nearest;
+  }
+
+  moveEntityAlongPath(entity, path, onComplete) {
+    let currentIndex = 0;
+
+    const moveToNext = () => {
+      if (currentIndex >= path.length) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      const nextTile = path[currentIndex];
+
+      entity.tile.occupant = null;
+      nextTile.occupant = entity;
+      entity.tile = nextTile;
+
+      this.tweens.add({
+        targets: entity,
+        x: nextTile.x,
+        y: nextTile.y,
+        duration: 250,
+        ease: 'Linear',
+        onComplete: () => {
+          this.updateHealthBarPosition(entity);
+
+          if (entity.nameLabel) {
+            entity.nameLabel.setPosition(entity.x, entity.y - 55);
+          }
+
+          currentIndex++;
+          moveToNext();
+        },
+      });
+    };
+
+    moveToNext();
   }
 
   endTurn() {
@@ -661,7 +860,7 @@ export default class CombatScene extends Phaser.Scene {
       yoyo: true,
       onYoyo: () => {
         // Flash defender on hit
-        const origColor = defender.isPlayer ? 0x88ff88 : 0xff6666;
+        const origColor = defender.isPlayer || defender.isAlly ? 0x88ff88 : 0xff6666;
         defender.setFillStyle(0xff0000);
         this.time.delayedCall(100, () => {
           defender.setFillStyle(origColor);
@@ -714,7 +913,7 @@ export default class CombatScene extends Phaser.Scene {
           this.showDamageNumber(target.x, target.y - 50, damage);
 
           // Flash
-          const origColor = target.isPlayer ? 0x88ff88 : 0xff6666;
+          const origColor = target.isPlayer || target.isAlly ? 0x88ff88 : 0xff6666;
           target.setFillStyle(0xff6600);
           this.time.delayedCall(100, () => {
             target.setFillStyle(origColor);
@@ -940,9 +1139,12 @@ export default class CombatScene extends Phaser.Scene {
 
   checkCombatEnd() {
     const playerAlive = this.player.stats.hp > 0;
+    const alliesAlive = this.allies.some((a) => a.stats.hp > 0);
     const enemiesAlive = this.enemies.some((e) => e.stats.hp > 0);
 
-    if (!playerAlive) {
+    const teamAlive = playerAlive || alliesAlive;
+
+    if (!teamAlive) {
       this.combatState = 'DEFEAT';
       this.showMessage('Defeated...', 0xff3333);
       this.time.delayedCall(2000, () => {
@@ -1109,9 +1311,18 @@ export default class CombatScene extends Phaser.Scene {
 
   returnToExploration() {
     this.cameras.main.fadeOut(500);
+
+    // Save ally HP back to manager
+    const allyHpData = this.allies.map((ally) => ({
+      id: ally.stats.id,
+      currentHp: ally.stats.hp,
+      isAlive: ally.stats.hp > 0,
+    }));
+
     this.time.delayedCall(500, () => {
       this.scene.start('ExplorationScene', {
         playerData: this.playerData,
+        allyHpData: allyHpData,
       });
     });
   }
@@ -1197,6 +1408,14 @@ export default class CombatScene extends Phaser.Scene {
       ATK: this.player.stats.attack,
       DEF: this.player.stats.defense,
       AGI: this.player.stats.agility,
+    });
+    this.allies.forEach((ally) => {
+      console.log(`ALLY ${ally.stats.name}:`, {
+        HP: `${ally.stats.hp}/${ally.stats.maxHp}`,
+        ATK: ally.stats.attack,
+        DEF: ally.stats.defense,
+        AGI: ally.stats.agility,
+      });
     });
     this.enemies.forEach((enemy) => {
       console.log(`${enemy.stats.name}:`, {
