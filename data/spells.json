@@ -1,0 +1,153 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-02-09T00:00:00Z",
+    "spells": [
+        {
+            "id": "azure_bolt",
+            "name": "Azure Bolt",
+            "tier": 1,
+            "baseDamage": 15,
+            "sapCost": 10,
+            "cooldown": 2,
+            "element": "arcane",
+            "targetType": "single",
+            "areaOfEffect": 0,
+            "description": "A bolt of pure azure energy that strikes a single target.",
+            "phaseModifiers": {
+                "blue": 1.5,
+                "crimson": 0.8,
+                "silver": 1.0
+            },
+            "canCombo": true,
+            "combosWith": ["crimson_surge", "verdant_bloom"],
+            "vfx": {
+                "projectile": "blue_bolt_sprite",
+                "impact": "blue_explosion_effect",
+                "color": "0x3366ff",
+                "trailEffect": true
+            },
+            "soundEffects": {
+                "cast": "spell_cast_arcane",
+                "impact": "spell_hit_arcane"
+            }
+        },
+        {
+            "id": "crimson_surge",
+            "name": "Crimson Surge",
+            "tier": 1,
+            "baseDamage": 20,
+            "sapCost": 15,
+            "cooldown": 3,
+            "element": "nature",
+            "targetType": "single",
+            "areaOfEffect": 0,
+            "description": "A wave of crimson energy that deals heavy damage.",
+            "phaseModifiers": {
+                "blue": 0.7,
+                "crimson": 1.8,
+                "silver": 1.0
+            },
+            "canCombo": true,
+            "combosWith": ["azure_bolt", "shadow_strike"],
+            "vfx": {
+                "projectile": "red_wave_sprite",
+                "impact": "red_burst_effect",
+                "color": "0xff3344",
+                "trailEffect": true
+            },
+            "soundEffects": {
+                "cast": "spell_cast_nature",
+                "impact": "spell_hit_nature"
+            }
+        },
+        {
+            "id": "verdant_bloom",
+            "name": "Verdant Bloom",
+            "tier": 2,
+            "baseDamage": 0,
+            "sapCost": 20,
+            "cooldown": 4,
+            "element": "nature",
+            "targetType": "ally",
+            "areaOfEffect": 0,
+            "description": "Restore health to an ally with nature's healing energy.",
+            "healAmount": 30,
+            "phaseModifiers": {
+                "blue": 1.2,
+                "crimson": 0.9,
+                "silver": 1.5
+            },
+            "canCombo": false,
+            "combosWith": [],
+            "vfx": {
+                "effect": "green_sparkles",
+                "color": "0x44ff88",
+                "duration": 1500
+            },
+            "soundEffects": {
+                "cast": "spell_cast_heal",
+                "impact": "spell_heal_complete"
+            }
+        },
+        {
+            "id": "shadow_strike",
+            "name": "Shadow Strike",
+            "tier": 2,
+            "baseDamage": 25,
+            "sapCost": 18,
+            "cooldown": 3,
+            "element": "shadow",
+            "targetType": "single",
+            "areaOfEffect": 0,
+            "description": "A strike from the shadows that bypasses part of the target's defense.",
+            "defenseBypass": 0.3,
+            "phaseModifiers": {
+                "blue": 0.6,
+                "crimson": 1.0,
+                "silver": 1.6
+            },
+            "canCombo": true,
+            "combosWith": ["crimson_surge"],
+            "vfx": {
+                "projectile": "shadow_bolt_sprite",
+                "impact": "shadow_burst_effect",
+                "color": "0x8844ff",
+                "trailEffect": true
+            },
+            "soundEffects": {
+                "cast": "spell_cast_shadow",
+                "impact": "spell_hit_shadow"
+            }
+        },
+        {
+            "id": "radiant_burst",
+            "name": "Radiant Burst",
+            "tier": 3,
+            "baseDamage": 35,
+            "sapCost": 30,
+            "cooldown": 5,
+            "element": "radiant",
+            "targetType": "aoe",
+            "areaOfEffect": 2,
+            "description": "An explosion of radiant light that damages all enemies in range.",
+            "phaseModifiers": {
+                "blue": 1.3,
+                "crimson": 0.7,
+                "silver": 1.4
+            },
+            "canCombo": false,
+            "combosWith": [],
+            "vfx": {
+                "projectile": "radiant_orb_sprite",
+                "impact": "radiant_explosion_effect",
+                "color": "0xffffaa",
+                "trailEffect": true,
+                "screenFlash": true
+            },
+            "soundEffects": {
+                "cast": "spell_cast_radiant",
+                "impact": "spell_hit_radiant"
+            }
+        }
+    ]
+}

@@ -1,0 +1,90 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-02-09T00:00:00Z",
+    "locations": [
+        {
+            "id": "verdant_grove",
+            "name": "Verdant Grove",
+            "description": "A lush forest clearing where the Sap flows strongly through ancient trees.",
+            "type": "exploration",
+            "level": 1,
+            "connections": ["crystal_caverns", "sunken_ruins"],
+            "enemies": ["forest_guardian"],
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x336633"
+            }
+        },
+        {
+            "id": "crystal_caverns",
+            "name": "Crystal Caverns",
+            "description": "Deep underground tunnels lined with luminescent sap crystals.",
+            "type": "dungeon",
+            "level": 2,
+            "connections": ["verdant_grove", "shadow_vale"],
+            "enemies": ["shadow_stalker"],
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "night",
+                "ambientColor": "0x222244"
+            }
+        },
+        {
+            "id": "sunken_ruins",
+            "name": "Sunken Ruins",
+            "description": "Ancient ruins half-submerged in a sap-infused lake.",
+            "type": "exploration",
+            "level": 2,
+            "connections": ["verdant_grove", "crimson_plateau"],
+            "enemies": ["forest_guardian", "crimson_warden"],
+            "environment": {
+                "weather": "fog",
+                "timeOfDay": "dusk",
+                "ambientColor": "0x4488aa"
+            }
+        },
+        {
+            "id": "shadow_vale",
+            "name": "Shadow Vale",
+            "description": "A dark valley where shadows move on their own.",
+            "type": "dungeon",
+            "level": 3,
+            "connections": ["crystal_caverns", "nexus_spire"],
+            "enemies": ["shadow_stalker"],
+            "environment": {
+                "weather": "fog",
+                "timeOfDay": "night",
+                "ambientColor": "0x112233"
+            }
+        },
+        {
+            "id": "crimson_plateau",
+            "name": "Crimson Plateau",
+            "description": "A windswept plateau saturated with crimson sap energy.",
+            "type": "exploration",
+            "level": 3,
+            "connections": ["sunken_ruins", "nexus_spire"],
+            "enemies": ["crimson_warden"],
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "dusk",
+                "ambientColor": "0xbb3344"
+            }
+        },
+        {
+            "id": "nexus_spire",
+            "name": "Nexus Spire",
+            "description": "The convergence point of all sap streams. The final challenge awaits.",
+            "type": "boss",
+            "level": 5,
+            "connections": ["shadow_vale", "crimson_plateau"],
+            "enemies": ["crimson_warden", "shadow_stalker", "forest_guardian"],
+            "environment": {
+                "weather": "storm",
+                "timeOfDay": "night",
+                "ambientColor": "0x884488"
+            }
+        }
+    ]
+}
