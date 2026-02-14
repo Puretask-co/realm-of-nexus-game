@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   base: './',
@@ -15,6 +16,14 @@ export default defineConfig({
   },
   server: {
     port: 8080,
-    open: true
+    open: true,
+    watch: {
+      // Ensure Vite watches data files for hot reload
+      include: ['src/data/**/*.json']
+    }
+  },
+  // Allow importing JSON files with HMR support
+  json: {
+    stringify: false
   }
 });

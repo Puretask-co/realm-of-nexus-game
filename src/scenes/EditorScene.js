@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
 import { createBlankScene, SCENE_FORMAT_VERSION } from '../configs/sceneFormatSpec.js';
+import { InspectorPanel } from '../ui/InspectorPanel.js';
+import { HotReloadOverlay } from '../ui/HotReloadOverlay.js';
+import { HotReloadSystem } from '../systems/HotReloadSystem.js';
 
 /**
  * EditorScene - Visual Level Editor for Verdance.
@@ -72,6 +75,18 @@ export class EditorScene extends Phaser.Scene {
     this.infoText = this.add.text(GameConfig.WIDTH / 2, 10, 'Verdance Level Editor', {
       fontSize: '14px', fill: '#4a9eff', fontFamily: 'monospace'
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10001);
+
+    // ─── Inspector Panel ─────────────────────────────────────────
+    this.inspectorPanel = new InspectorPanel(this);
+
+    // ─── Hot Reload Overlay ──────────────────────────────────────
+    this.hotReloadOverlay = new HotReloadOverlay(this);
+
+    // Initialize HotReloadSystem for the editor
+    const hotReload = HotReloadSystem.getInstance();
+    if (!hotReload.enabled) {
+      hotReload.initialize();
+    }
 
     this.eventBus.emit('editor:ready');
   }
@@ -459,6 +474,12 @@ export class EditorScene extends Phaser.Scene {
   selectObject(obj) {
     this.selectedObject = obj;
     this.updateSelectionIndicator();
+
+    // Show inspector for the selected object
+    if (this.inspectorPanel) {
+      this.inspectorPanel.show(obj);
+    }
+
     this.eventBus.emit('editor:objectSelected', {
       id: obj.getData('sceneObjectId'),
       type: obj.getData('objectType'),
@@ -472,6 +493,12 @@ export class EditorScene extends Phaser.Scene {
     this.selectedObject = null;
     this.selectedObjects = [];
     this.selectionRect.clear();
+
+    // Hide inspector when nothing is selected
+    if (this.inspectorPanel) {
+      this.inspectorPanel.hide();
+    }
+
     this.eventBus.emit('editor:deselected');
   }
 
@@ -733,6 +760,11 @@ export class EditorScene extends Phaser.Scene {
     // Update selection indicator position
     if (this.selectedObject && this.selectedObject.active) {
       this.updateSelectionIndicator();
+    }
+
+    // Refresh inspector panel with live values (e.g. during drag)
+    if (this.inspectorPanel) {
+      this.inspectorPanel.refresh();
     }
   }
 }

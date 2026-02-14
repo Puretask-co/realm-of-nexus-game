@@ -1,4 +1,5 @@
 import { EventBus } from '../core/EventBus.js';
+import { HotReloadSystem } from './HotReloadSystem.js';
 import { spellSchema } from '../schemas/spellSchema.js';
 import { enemySchema } from '../schemas/enemySchema.js';
 import { itemSchema } from '../schemas/itemSchema.js';
@@ -421,16 +422,41 @@ export class DataManager {
 
   // ─── Hot Reload ───────────────────────────────────────────────────
 
+  /**
+   * Enable hot-reload using HotReloadSystem (Vite HMR preferred, polling fallback).
+   * Registers all data modules so changes are automatically detected and applied.
+   */
   enableHotReload(intervalMs = 2000) {
     if (this.hotReloadEnabled) return;
     this.hotReloadEnabled = true;
 
-    this.hotReloadInterval = setInterval(async () => {
-      await this.checkForChanges();
-    }, intervalMs);
+    const hotReload = HotReloadSystem.getInstance();
+    hotReload.initialize();
 
-    console.log(`DataManager: Hot reload enabled (checking every ${intervalMs}ms)`);
-    this.eventBus.emit('data:hotReloadEnabled');
+    // Register each data path with HotReloadSystem
+    for (const [key, path] of Object.entries(this.dataPaths)) {
+      hotReload.registerModule(key, path, (newData) => {
+        this.applyReloadedData(key, newData);
+      });
+    }
+
+    // If HotReloadSystem fell back to polling, use the caller's interval
+    if (hotReload.mode === 'polling') {
+      hotReload.pollingRate = intervalMs;
+    }
+
+    console.log(`DataManager: Hot reload enabled via HotReloadSystem (mode: ${hotReload.mode})`);
+    this.eventBus.emit('data:hotReloadEnabled', { mode: hotReload.mode });
+  }
+
+  /**
+   * Apply reloaded data for a specific key, re-validate, and rebuild caches.
+   */
+  applyReloadedData(key, newData) {
+    this.data[key] = newData;
+    this.validateAllData();
+    this.buildCaches();
+    this.eventBus.emit('data:hotReloaded', { key, success: true });
   }
 
   disableHotReload() {
@@ -439,6 +465,10 @@ export class DataManager {
       this.hotReloadInterval = null;
     }
     this.hotReloadEnabled = false;
+
+    const hotReload = HotReloadSystem.getInstance();
+    hotReload.shutdown();
+
     this.eventBus.emit('data:hotReloadDisabled');
   }
 

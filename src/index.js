@@ -13,6 +13,9 @@ export { CSVDataLoader } from './systems/CSVDataLoader.js';
 
 // Tool 2: Visual Level Editor
 export { SceneLoader } from './systems/SceneLoader.js';
+export { InspectorPanel } from './ui/InspectorPanel.js';
+export { HotReloadOverlay } from './ui/HotReloadOverlay.js';
+export { HotReloadSystem } from './systems/HotReloadSystem.js';
 
 // Tool 3: Advanced Lighting System
 export { AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
