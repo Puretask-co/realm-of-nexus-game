@@ -34,6 +34,11 @@ export class GameScene extends Phaser.Scene {
       }).setScrollFactor(0).setDepth(9999);
     }
 
+    // F2 - Toggle to Editor Scene
+    this.input.keyboard.on('keydown-F2', () => {
+      this.scene.start('EditorScene');
+    });
+
     this.eventBus.emit('scene:ready', { scene: 'GameScene' });
   }
 

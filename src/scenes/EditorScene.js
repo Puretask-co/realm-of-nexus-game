@@ -28,8 +28,9 @@ export class EditorScene extends Phaser.Scene {
     this.gridSize = 32;
     this.snapToGrid = true;
     this.currentLayer = 'layer_objects';
-    this.currentTool = 'select'; // select, place, erase, pan, rect_select
+    this.currentTool = 'select'; // select, place, erase, pan, rect_select, trigger, light
     this.currentPaletteItem = null;
+    this.paletteVisible = false;
     this.isPanning = false;
     this.panStartX = 0;
     this.panStartY = 0;
@@ -145,7 +146,9 @@ export class EditorScene extends Phaser.Scene {
       { key: 'place', label: 'PLC', x: 130 },
       { key: 'erase', label: 'ERA', x: 180 },
       { key: 'pan', label: 'PAN', x: 230 },
-      { key: 'rect_select', label: 'RCT', x: 280 }
+      { key: 'rect_select', label: 'RCT', x: 280 },
+      { key: 'trigger', label: 'TRG', x: 330 },
+      { key: 'light', label: 'LGT', x: 380 }
     ];
 
     this.toolButtons = [];
@@ -252,6 +255,12 @@ export class EditorScene extends Phaser.Scene {
           this.panStartX = pointer.x;
           this.panStartY = pointer.y;
           break;
+        case 'trigger':
+          this.handleTriggerClick(pointer);
+          break;
+        case 'light':
+          this.handleLightClick(pointer);
+          break;
       }
     });
 
@@ -331,8 +340,20 @@ export class EditorScene extends Phaser.Scene {
     });
     this.input.keyboard.on('keydown-P', () => this.setTool('place'));
     this.input.keyboard.on('keydown-E', () => this.setTool('erase'));
+    this.input.keyboard.on('keydown-T', () => this.setTool('trigger'));
+    this.input.keyboard.on('keydown-L', () => this.setTool('light'));
     this.input.keyboard.on('keydown-G', () => this.toggleGrid());
     this.input.keyboard.on('keydown-N', () => this.toggleSnap());
+    this.input.keyboard.on('keydown-TAB', (event) => {
+      event.preventDefault();
+      this.togglePalette();
+    });
+
+    // F2 - Return to GameScene
+    this.input.keyboard.on('keydown-F2', () => {
+      if (this.inspectorPanel) this.inspectorPanel.destroy();
+      this.scene.start('GameScene');
+    });
 
     // Layer switching (1-5)
     const layers = ['layer_bg', 'layer_terrain', 'layer_objects', 'layer_collision', 'layer_ui'];
@@ -418,6 +439,169 @@ export class EditorScene extends Phaser.Scene {
     }
   }
 
+  handleTriggerClick(pointer) {
+    let x = pointer.worldX;
+    let y = pointer.worldY;
+
+    if (this.snapToGrid) {
+      x = Math.round(x / this.gridSize) * this.gridSize;
+      y = Math.round(y / this.gridSize) * this.gridSize;
+    }
+
+    const triggerDef = {
+      id: `trg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      type: 'trigger',
+      name: 'Trigger Zone',
+      x, y,
+      width: this.gridSize * 2,
+      height: this.gridSize * 2,
+      layer: 'layer_objects',
+      properties: {
+        event: 'custom',
+        triggerType: 'onEnter',
+        enabled: true
+      }
+    };
+
+    this.placeObject(triggerDef);
+  }
+
+  handleLightClick(pointer) {
+    let x = pointer.worldX;
+    let y = pointer.worldY;
+
+    if (this.snapToGrid) {
+      x = Math.round(x / this.gridSize) * this.gridSize;
+      y = Math.round(y / this.gridSize) * this.gridSize;
+    }
+
+    const lightDef = {
+      id: `lgt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      type: 'light',
+      name: 'Point Light',
+      x, y,
+      width: this.gridSize,
+      height: this.gridSize,
+      layer: 'layer_objects',
+      properties: {
+        lightType: 'point',
+        color: '0xffffff',
+        intensity: 1.0,
+        radius: 100,
+        flicker: false
+      }
+    };
+
+    this.placeObject(lightDef);
+  }
+
+  // ─── Object Palette ────────────────────────────────────────────────
+
+  /**
+   * Toggle the object palette panel visibility.
+   */
+  togglePalette() {
+    this.paletteVisible = !this.paletteVisible;
+    if (this.paletteVisible) {
+      this.showPalette();
+    } else {
+      this.hidePalette();
+    }
+  }
+
+  showPalette() {
+    if (this.paletteContainer) {
+      this.paletteContainer.setVisible(true);
+      return;
+    }
+
+    this.paletteContainer = this.add.container(0, 0);
+    this.paletteContainer.setScrollFactor(0);
+    this.paletteContainer.setDepth(10003);
+
+    const panelX = 10;
+    const panelY = 70;
+    const panelWidth = 160;
+    const itemHeight = 24;
+
+    const paletteItems = [
+      { type: 'enemy', name: 'Enemy', color: 0xff4444, width: 32, height: 32 },
+      { type: 'npc', name: 'NPC', color: 0x44ff88, width: 32, height: 32 },
+      { type: 'spawn_point', name: 'Spawn Point', color: 0xffff44, width: 16, height: 16 },
+      { type: 'decor', name: 'Decoration', color: 0x888888, width: 32, height: 32 },
+      { type: 'wall', name: 'Wall', color: 0x666666, width: 32, height: 32 },
+      { type: 'chest', name: 'Chest', color: 0xddaa44, width: 24, height: 24 },
+      { type: 'portal', name: 'Portal', color: 0xaa44ff, width: 32, height: 48 },
+      { type: 'trigger', name: 'Trigger Zone', color: 0x44aaff, width: 64, height: 64 },
+      { type: 'light', name: 'Light Source', color: 0xffffaa, width: 32, height: 32 }
+    ];
+
+    const totalHeight = paletteItems.length * itemHeight + 30;
+
+    // Background
+    const bg = this.add.rectangle(
+      panelX + panelWidth / 2, panelY + totalHeight / 2,
+      panelWidth, totalHeight,
+      0x1a1a2e, 0.95
+    );
+    this.paletteContainer.add(bg);
+
+    // Border
+    const border = this.add.graphics();
+    border.lineStyle(1, 0x4a9eff, 0.6);
+    border.strokeRect(panelX, panelY, panelWidth, totalHeight);
+    this.paletteContainer.add(border);
+
+    // Title
+    const title = this.add.text(panelX + 8, panelY + 6, 'Object Palette', {
+      fontSize: '11px', fill: '#4a9eff', fontFamily: 'monospace', fontStyle: 'bold'
+    });
+    this.paletteContainer.add(title);
+
+    // Palette items
+    let y = panelY + 26;
+    for (const item of paletteItems) {
+      // Color swatch
+      const swatch = this.add.rectangle(panelX + 16, y + itemHeight / 2 - 1, 10, 10, item.color, 0.9);
+      this.paletteContainer.add(swatch);
+
+      // Item button
+      const itemBg = this.add.rectangle(
+        panelX + panelWidth / 2, y + itemHeight / 2 - 1,
+        panelWidth - 8, itemHeight - 2,
+        0x222244, 0.0
+      ).setInteractive({ useHandCursor: true });
+      this.paletteContainer.add(itemBg);
+
+      const label = this.add.text(panelX + 28, y, item.name, {
+        fontSize: '11px', fill: '#cccccc', fontFamily: 'monospace'
+      });
+      this.paletteContainer.add(label);
+
+      // Highlight current selection
+      itemBg.on('pointerover', () => {
+        itemBg.setFillStyle(0x333366, 0.6);
+      });
+      itemBg.on('pointerout', () => {
+        const isSelected = this.currentPaletteItem?.type === item.type;
+        itemBg.setFillStyle(isSelected ? 0x333366 : 0x222244, isSelected ? 0.4 : 0.0);
+      });
+      itemBg.on('pointerdown', () => {
+        this.currentPaletteItem = item;
+        this.setTool('place');
+        this.eventBus.emit('editor:paletteSelected', item);
+      });
+
+      y += itemHeight;
+    }
+  }
+
+  hidePalette() {
+    if (this.paletteContainer) {
+      this.paletteContainer.setVisible(false);
+    }
+  }
+
   // ─── Object Management ────────────────────────────────────────────
 
   placeObject(objectDef) {
@@ -425,21 +609,37 @@ export class EditorScene extends Phaser.Scene {
     if (objectDef.texture && this.textures.exists(objectDef.texture)) {
       gameObject = this.add.sprite(objectDef.x, objectDef.y, objectDef.texture, objectDef.frame);
     } else {
-      // Create a colored rectangle as placeholder
-      const colors = {
+      // Create a colored rectangle placeholder with type-specific colors
+      const typeColors = {
+        'enemy': 0xff4444,
+        'npc': 0x44ff88,
+        'spawn_point': 0xffff44,
+        'trigger': 0x44aaff,
+        'light': 0xffffaa,
+        'wall': 0x666666,
+        'chest': 0xddaa44,
+        'portal': 0xaa44ff
+      };
+      const layerColors = {
         'layer_bg': 0x334455,
         'layer_terrain': 0x556633,
         'layer_objects': 0x666688,
         'layer_collision': 0xff4444,
         'layer_ui': 0x4488ff
       };
-      const color = colors[objectDef.layer] || 0x888888;
+      const color = typeColors[objectDef.type] || layerColors[objectDef.layer] || 0x888888;
+      const alpha = objectDef.type === 'trigger' ? 0.35 : 0.7;
       gameObject = this.add.rectangle(
         objectDef.x, objectDef.y,
         objectDef.width || this.gridSize,
         objectDef.height || this.gridSize,
-        color, 0.7
+        color, alpha
       );
+
+      // Add a border for triggers and lights to make them more visible
+      if (objectDef.type === 'trigger' || objectDef.type === 'light') {
+        gameObject.setStrokeStyle(1, color, 0.8);
+      }
     }
 
     gameObject.setData('sceneObjectId', objectDef.id);
@@ -540,7 +740,7 @@ export class EditorScene extends Phaser.Scene {
   }
 
   serializeObject(gameObject) {
-    return {
+    const result = {
       id: gameObject.getData('sceneObjectId'),
       type: gameObject.getData('objectType') || 'decor',
       name: gameObject.getData('objectName') || 'Object',
@@ -549,8 +749,22 @@ export class EditorScene extends Phaser.Scene {
       width: gameObject.displayWidth || gameObject.width,
       height: gameObject.displayHeight || gameObject.height,
       depth: gameObject.depth,
-      layer: gameObject.getData('layer') || 'layer_objects'
+      layer: gameObject.getData('layer') || 'layer_objects',
+      properties: {}
     };
+
+    // Capture custom data properties (exclude internal editor keys)
+    const internalKeys = new Set(['sceneObjectId', 'objectType', 'objectName', 'layer']);
+    const dataStore = gameObject.data?.list;
+    if (dataStore) {
+      for (const [key, value] of Object.entries(dataStore)) {
+        if (!internalKeys.has(key)) {
+          result.properties[key] = value;
+        }
+      }
+    }
+
+    return result;
   }
 
   // ─── Tool State ───────────────────────────────────────────────────
@@ -671,10 +885,44 @@ export class EditorScene extends Phaser.Scene {
   // ─── Save / Load ──────────────────────────────────────────────────
 
   saveScene() {
-    // Update scene data from placed objects
-    this.sceneData.objects = this.placedObjects
+    // Serialize all placed objects and separate into categories
+    const allSerialized = this.placedObjects
       .filter(o => o.active)
       .map(o => this.serializeObject(o));
+
+    this.sceneData.objects = allSerialized.filter(o => o.type !== 'trigger' && o.type !== 'light');
+
+    // Save triggers to dedicated array
+    this.sceneData.triggers = allSerialized
+      .filter(o => o.type === 'trigger')
+      .map(o => ({
+        id: o.id,
+        name: o.name,
+        x: o.x,
+        y: o.y,
+        width: o.width,
+        height: o.height,
+        event: o.properties?.event || 'custom',
+        conditions: o.properties?.conditions || [],
+        oneShot: o.properties?.oneShot || false,
+        enabled: o.properties?.enabled !== false
+      }));
+
+    // Save lights to dedicated array
+    this.sceneData.lighting.lights = allSerialized
+      .filter(o => o.type === 'light')
+      .map(o => ({
+        id: o.id,
+        type: o.properties?.lightType || 'point',
+        x: o.x,
+        y: o.y,
+        color: o.properties?.color || '0xffffff',
+        intensity: o.properties?.intensity || 1.0,
+        radius: o.properties?.radius || 100,
+        castShadows: o.properties?.castShadows || false,
+        flickerRate: o.properties?.flickerRate || 0,
+        flickerAmount: o.properties?.flickerAmount || 0
+      }));
 
     this.sceneData.metadata.modified = Date.now();
 
@@ -724,6 +972,54 @@ export class EditorScene extends Phaser.Scene {
     if (data.objects) {
       for (const objDef of data.objects) {
         this.placeObjectWithoutUndo(objDef);
+      }
+    }
+
+    // Recreate triggers as editor objects
+    if (data.triggers) {
+      for (const trg of data.triggers) {
+        this.placeObjectWithoutUndo({
+          id: trg.id,
+          type: 'trigger',
+          name: trg.name || 'Trigger Zone',
+          x: trg.x,
+          y: trg.y,
+          width: trg.width || this.gridSize * 2,
+          height: trg.height || this.gridSize * 2,
+          layer: 'layer_objects',
+          properties: {
+            event: trg.event,
+            triggerType: trg.triggerType || 'onEnter',
+            conditions: trg.conditions || [],
+            oneShot: trg.oneShot || false,
+            enabled: trg.enabled !== false
+          }
+        });
+      }
+    }
+
+    // Recreate lights as editor objects
+    if (data.lighting?.lights) {
+      for (const lgt of data.lighting.lights) {
+        this.placeObjectWithoutUndo({
+          id: lgt.id,
+          type: 'light',
+          name: `${lgt.type || 'Point'} Light`,
+          x: lgt.x,
+          y: lgt.y,
+          width: this.gridSize,
+          height: this.gridSize,
+          layer: 'layer_objects',
+          properties: {
+            lightType: lgt.type || 'point',
+            color: lgt.color || '0xffffff',
+            intensity: lgt.intensity || 1.0,
+            radius: lgt.radius || 100,
+            castShadows: lgt.castShadows || false,
+            flickerRate: lgt.flickerRate || 0,
+            flickerAmount: lgt.flickerAmount || 0
+          }
+        });
       }
     }
 
