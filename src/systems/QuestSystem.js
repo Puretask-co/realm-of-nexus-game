@@ -1,5 +1,6 @@
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
+import { DataManager } from './DataManager.js';
 
 /**
  * QuestSystem - Quest and progression tracking for Verdance.
@@ -362,8 +363,14 @@ export class QuestSystem {
 
   getProgressionConfig() {
     try {
-      const DataManager = (await import('./DataManager.js')).default;
-      return DataManager.getInstance().getConfig('progression');
+      const dm = DataManager.getInstance();
+      const config = dm.data?.config;
+      return config?.progression || {
+        maxLevel: 50,
+        experiencePerLevel: new Array(50).fill(100).map((v, i) => v * (i + 1) * (i + 1)),
+        skillPointsPerLevel: 2,
+        statPointsPerLevel: 3
+      };
     } catch {
       return {
         maxLevel: 50,

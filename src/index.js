@@ -51,6 +51,25 @@ export { InventoryPanel } from './ui/InventoryPanel.js';
 export { SkillTreePanel } from './ui/SkillTreePanel.js';
 export { MainMenuPanel } from './ui/MainMenuPanel.js';
 
+// Game Systems
+export { SapCycleManager } from './systems/SapCycleManager.js';
+export { CooldownManager } from './systems/CooldownManager.js';
+export { CombatSystem } from './systems/CombatSystem.js';
+export { SpellSystem } from './systems/SpellSystem.js';
+export { ProgressionSystem } from './systems/ProgressionSystem.js';
+export { AISystem } from './systems/AISystem.js';
+export { SaveManager } from './systems/SaveManager.js';
+export { PerformanceProfiler } from './systems/PerformanceProfiler.js';
+
+// Components
+export { Player } from './components/Player.js';
+export { Enemy } from './components/Enemy.js';
+export { NPC } from './components/NPC.js';
+export { Projectile } from './components/Projectile.js';
+
+// Pipelines
+export { NormalMapPipeline } from './pipelines/NormalMapPipeline.js';
+
 // Schemas
 export { spellSchema } from './schemas/spellSchema.js';
 export { enemySchema } from './schemas/enemySchema.js';

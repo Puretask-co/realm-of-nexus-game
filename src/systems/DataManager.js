@@ -57,7 +57,10 @@ export class DataManager {
       enemies: '/src/data/enemies.json',
       items: '/src/data/items.json',
       locations: '/src/data/locations.json',
-      config: '/src/data/config.json'
+      config: '/src/data/config.json',
+      characters: '/src/data/characters.json',
+      dialogues: '/src/data/dialogues.json',
+      quests: '/src/data/quests.json'
     };
 
     // Validation results

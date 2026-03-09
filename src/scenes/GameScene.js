@@ -8,6 +8,9 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { SpellSystem } from '../systems/SpellSystem.js';
 import { ProgressionSystem } from '../systems/ProgressionSystem.js';
 import { AISystem } from '../systems/AISystem.js';
+import { DialogueSystem } from '../systems/DialogueSystem.js';
+import { QuestSystem } from '../systems/QuestSystem.js';
+import { AudioManager } from '../systems/AudioManager.js';
 import { SaveManager } from '../systems/SaveManager.js';
 import { PerformanceProfiler } from '../systems/PerformanceProfiler.js';
 import { Player } from '../components/Player.js';
@@ -50,6 +53,27 @@ export class GameScene extends Phaser.Scene {
 
     // Start Sap Cycle
     this.sapCycle.start(config);
+
+    // ─── Dialogue System ──────────────────────────────────────────
+    this.dialogueSystem = DialogueSystem.getInstance(this);
+    const characters = this.dataManager.data.characters || [];
+    for (const char of characters) {
+      this.dialogueSystem.registerCharacter(char.id, char);
+    }
+    const dialogues = this.dataManager.data.dialogues || [];
+    for (const dlg of dialogues) {
+      this.dialogueSystem.registerDialogue(dlg.id, dlg);
+    }
+
+    // ─── Quest System ─────────────────────────────────────────────
+    this.questSystem = QuestSystem.getInstance();
+    const quests = this.dataManager.data.quests || [];
+    for (const quest of quests) {
+      this.questSystem.registerQuest(quest);
+    }
+
+    // ─── Audio Manager ────────────────────────────────────────────
+    this.audioManager = AudioManager.getInstance(this);
 
     // ─── World Setup ─────────────────────────────────────────────
     this.cameras.main.setBackgroundColor('#1a2a1a');
@@ -131,6 +155,15 @@ export class GameScene extends Phaser.Scene {
         if (data.y) this.player.sprite.y = data.y;
         if (data.stats) Object.assign(this.player.stats, data.stats);
       }
+    });
+
+    this.saveManager.register('quests', {
+      serialize: () => this.questSystem.saveState(),
+      deserialize: (data) => this.questSystem.loadState(data)
+    });
+    this.saveManager.register('dialogue', {
+      serialize: () => this.dialogueSystem.saveState(),
+      deserialize: (data) => this.dialogueSystem.loadState(data)
     });
 
     // ─── Performance Profiler ──────────────────────────────────
@@ -286,6 +319,24 @@ export class GameScene extends Phaser.Scene {
     this.eventBus.on('ai:action', (data) => {
       this.onAIAction(data);
     });
+
+    // Quest events
+    this.eventBus.on('quest:start', (data) => {
+      this.questSystem.startQuest(data.questId);
+    });
+    this.eventBus.on('quest:completeObjective', (data) => {
+      this.questSystem.completeObjective(data.questId, data.objectiveId);
+    });
+
+    // Dialogue start from NPC interaction
+    this.eventBus.on('dialogue:start', (data) => {
+      this.dialogueSystem.startDialogue(data.dialogueId);
+    });
+
+    // Audio SFX events
+    this.eventBus.on('audio:playSFX', (data) => {
+      this.audioManager.playSFX(data.key, data.config || {});
+    });
   }
 
   onPhaseChanged(data) {
@@ -424,6 +475,8 @@ export class GameScene extends Phaser.Scene {
 
     this.cooldownManager.update(delta);
     this.spellSystem.update(delta);
+    this.audioManager.update(time, delta);
+    this.audioManager.setListenerPosition(this.player.x, this.player.y);
     this.saveManager.update(delta);
     this.profiler.update(delta);
 
