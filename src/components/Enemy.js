@@ -33,14 +33,15 @@ export class Enemy {
     this.sprite.owner = this;
 
     // ─── Stats from definition ─────────────────────────────────
+    // Support both flat format (health/damage/defense/speed) and nested baseStats format
     const base = definition.baseStats || {};
     this.stats = {
-      hp: base.hp || 50,
-      maxHp: base.hp || 50,
-      atk: base.attack || 10,
-      def: base.defense || 5,
-      agi: base.speed || 80,
-      speed: base.speed || 80,
+      hp: base.hp || definition.health || 50,
+      maxHp: base.hp || definition.health || 50,
+      atk: base.attack || definition.damage || 10,
+      def: base.defense || definition.defense || 5,
+      agi: base.speed || definition.speed || 80,
+      speed: base.speed || definition.speed || 80,
       sapPool: base.sapPool || 30
     };
 
