@@ -6,6 +6,7 @@ import { BootScene } from './scenes/BootScene.js';
 import { PreloadScene } from './scenes/PreloadScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { EditorScene } from './scenes/EditorScene.js';
+import { UIScene } from './scenes/UIScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -22,7 +23,7 @@ const config = {
       debug: GameConfig.DEBUG.SHOW_PHYSICS
     }
   },
-  scene: [BootScene, PreloadScene, GameScene, EditorScene],
+  scene: [BootScene, PreloadScene, GameScene, EditorScene, UIScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
