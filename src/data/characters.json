@@ -1,0 +1,65 @@
+[
+  {
+    "id": "elder_rowan",
+    "name": "Elder Rowan",
+    "portraits": {
+      "neutral": "portrait_rowan_neutral",
+      "wise": "portrait_rowan_wise",
+      "teaching": "portrait_rowan_teaching",
+      "impressed": "portrait_rowan_impressed",
+      "stern": "portrait_rowan_stern",
+      "encouraging": "portrait_rowan_encouraging",
+      "amused": "portrait_rowan_amused"
+    },
+    "defaultPortrait": "neutral",
+    "nameColor": "#66cc66",
+    "voiceSound": "sfx_voice_elder",
+    "voicePitch": 0.8,
+    "textSpeed": 0.8
+  },
+  {
+    "id": "merchant_kael",
+    "name": "Kael",
+    "portraits": {
+      "neutral": "portrait_kael_neutral",
+      "cheerful": "portrait_kael_cheerful",
+      "happy": "portrait_kael_happy",
+      "worried": "portrait_kael_worried",
+      "nervous": "portrait_kael_nervous"
+    },
+    "defaultPortrait": "neutral",
+    "nameColor": "#ffcc44",
+    "voiceSound": "sfx_voice_merchant",
+    "voicePitch": 1.1,
+    "textSpeed": 1.2
+  },
+  {
+    "id": "blacksmith_thora",
+    "name": "Thora",
+    "portraits": {
+      "neutral": "portrait_thora_neutral",
+      "determined": "portrait_thora_determined",
+      "proud": "portrait_thora_proud"
+    },
+    "defaultPortrait": "neutral",
+    "nameColor": "#ff8844",
+    "voiceSound": "sfx_voice_blacksmith",
+    "voicePitch": 0.9,
+    "textSpeed": 1.0
+  },
+  {
+    "id": "sage_lyris",
+    "name": "Sage Lyris",
+    "portraits": {
+      "neutral": "portrait_lyris_neutral",
+      "mysterious": "portrait_lyris_mysterious",
+      "concerned": "portrait_lyris_concerned",
+      "knowing": "portrait_lyris_knowing"
+    },
+    "defaultPortrait": "neutral",
+    "nameColor": "#cc88ff",
+    "voiceSound": "sfx_voice_sage",
+    "voicePitch": 1.0,
+    "textSpeed": 0.9
+  }
+]
