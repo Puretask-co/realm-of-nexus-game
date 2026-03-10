@@ -13,6 +13,7 @@ import { QuestSystem } from '../systems/QuestSystem.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import { SaveManager } from '../systems/SaveManager.js';
 import { PerformanceProfiler } from '../systems/PerformanceProfiler.js';
+import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 import { Player } from '../components/Player.js';
 import { Enemy } from '../components/Enemy.js';
 import { NPC } from '../components/NPC.js';
@@ -81,6 +82,12 @@ export class GameScene extends Phaser.Scene {
 
     // Draw ground grid for visual reference
     this.drawWorldGrid();
+
+    // ─── Player Class System ──────────────────────────────────────
+    this.playerClassSystem = PlayerClassSystem.getInstance();
+    if (!this.playerClassSystem.getCurrentClass()) {
+      this.playerClassSystem.selectClass('temporal_mage');
+    }
 
     // ─── Spawn Player ────────────────────────────────────────────
     this.player = new Player(this, 640, 360);
@@ -157,6 +164,10 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
+    this.saveManager.register('playerClass', {
+      serialize: () => this.playerClassSystem.serialize(),
+      deserialize: (data) => this.playerClassSystem.deserialize(data)
+    });
     this.saveManager.register('quests', {
       serialize: () => this.questSystem.saveState(),
       deserialize: (data) => this.questSystem.loadState(data)

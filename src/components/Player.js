@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { DataManager } from '../systems/DataManager.js';
+import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 
 /**
  * Player component — encapsulates player entity logic.
@@ -41,6 +42,7 @@ export class Player {
     const dataManager = DataManager.getInstance();
     const config = dataManager.getConfig('balance.player') || {};
 
+    // Default stats (overridden by class selection)
     this.stats = {
       hp: config.startingHp || 100,
       maxHp: config.startingHp || 100,
@@ -58,6 +60,13 @@ export class Player {
       resistances: {}
     };
 
+    // Apply class stats if a class has been selected
+    this.classSystem = PlayerClassSystem.getInstance();
+    if (this.classSystem.getCurrentClass()) {
+      this.stats = this.classSystem.applyClassStats(this.stats);
+      this.sapRegenRate = this.stats.sapRegenRate || this.sapRegenRate;
+    }
+
     // ─── Spells ───────────────────────────────────────────────────
     this.spells = [];       // Spell definitions assigned to slots 0-4
     this.cooldowns = {};    // spellId → ready timestamp
@@ -71,8 +80,18 @@ export class Player {
     this.dashDuration = 0;
     this.isDashing = false;
 
-    // Sap regen
-    this.sapRegenRate = config.sapRegenRate || 5;
+    // Sap regen (may have been set by class system above)
+    if (!this.sapRegenRate) {
+      this.sapRegenRate = config.sapRegenRate || 5;
+    }
+
+    // Listen for level-up to apply class growth
+    this.eventBus.on('player:levelUp', (data) => {
+      if (this.classSystem.getCurrentClass()) {
+        this.stats = this.classSystem.applyLevelUpGrowth(this.stats, data.level);
+        this.eventBus.emit('player-stats-updated', this.stats);
+      }
+    });
 
     // Input references (set in setupInput)
     this.cursors = null;
@@ -116,7 +135,21 @@ export class Player {
    */
   equipStartingSpells() {
     const dataManager = DataManager.getInstance();
-    const startingIds = ['temporal_bolt', 'crimson_flare', 'silver_shield', 'verdant_heal', 'sap_surge'];
+
+    // Use class-specific starting spells if a class is selected
+    const classDef = this.classSystem.getCurrentClass();
+    let startingIds;
+    if (classDef) {
+      startingIds = [...this.classSystem.getStartingSpells()];
+      // Fill remaining spell slots (up to 5) with next available class spells
+      const available = this.classSystem.getAvailableSpells(1);
+      for (const spellId of available) {
+        if (startingIds.length >= 5) break;
+        if (!startingIds.includes(spellId)) startingIds.push(spellId);
+      }
+    } else {
+      startingIds = ['temporal_bolt', 'crimson_flare', 'silver_shield', 'verdant_heal', 'sap_surge'];
+    }
 
     for (const id of startingIds) {
       const spell = dataManager.getSpell(id);

@@ -51,6 +51,9 @@ export { InventoryPanel } from './ui/InventoryPanel.js';
 export { SkillTreePanel } from './ui/SkillTreePanel.js';
 export { MainMenuPanel } from './ui/MainMenuPanel.js';
 
+// Player Class System
+export { PlayerClassSystem } from './systems/PlayerClassSystem.js';
+
 // Game Systems
 export { SapCycleManager } from './systems/SapCycleManager.js';
 export { CooldownManager } from './systems/CooldownManager.js';
