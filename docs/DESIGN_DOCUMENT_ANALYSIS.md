@@ -338,7 +338,7 @@ Max level: 10
 | Enemies | 3 | 22+ | Major |
 | Spells | 37 | 30+ | Aligned (names differ) |
 | Locations | 6 | 25+ | Major |
-| Max Level | 50 | 10 | Contradiction |
+| Max Level | 50 | 10 (GDD) or 50 (Doc 2) | Docs contradict each other |
 | NPCs | 4 | 50+ | Major |
 | Quests | ~3 | 40+ | Major |
 | Factions | 0 | 5-6 | Missing |
@@ -507,12 +507,34 @@ The technical scaffolding is reusable — it's the content layer and mechanical 
 
 ## DOCUMENT-TO-DOCUMENT CONTRADICTIONS (Additional)
 
-### E. Spell Cost Model Inconsistency
+### E. Max Level Contradiction
+- **Doc 2 (engine comparison):** Max level 50, XP multiplier 1.5x per level, 2 skill points per level
+- **Doc 5 (GDD):** Max level 10, multiclassing at level 5, ultimate at level 10
+- **Code:** Max level 50 (matches Doc 2, contradicts Doc 5)
+- **Resolution Needed:** Max level 10 with deeper per-level choices (Doc 5/GDD) is more aligned with the "tactical depth without complexity" pillar
+
+### F. Autosave Interval
+- **Doc 2:** Autosave every 5 minutes (300,000ms)
+- **Code (SaveManager.js):** Autosave every 60 seconds
+- **Resolution:** Minor, but 60s is better for player safety
+
+### G. Difficulty System: Missing (Code) vs. Specified (Docs)
+- **Doc 2 specifies difficulty multipliers:**
+  - Easy: 0.7x damage, 0.8x enemy HP, 1.2x XP
+  - Normal: 1.0x all
+  - Hard: 1.3x damage, 1.5x enemy HP, 0.8x XP
+- **Code:** No difficulty selection system exists
+
+### H. Prestige System: Missing (Code) vs. Specified (Docs)
+- **Doc 2:** 20 prestige perks across 4 tiers
+- **Code:** No prestige/endgame system
+
+### I. Spell Cost Model Inconsistency
 - **Doc 4 (Week 3 spec):** Tier 1 spells cost 3-5 DSP, no personal mana
 - **Doc 1 (Week 18+ builds):** Combat uses "DSP" terminology but implementation is personal resource
 - **Doc 5 (GDD):** Spells use DSP from shared world pool, magic costs +5 DSP during Crimson phase
 
-### F. Combat System Evolution
+### J. Combat System Evolution
 - **Doc 1 (early):** "Grid-based tactical combat"
 - **Doc 1 (Week 18 build):** Delivered as simple turn-based (attack/skill/defend buttons, no grid)
 - **Doc 5 (GDD):** Full tactical with AP, positioning, terrain, elevation
@@ -520,12 +542,12 @@ The technical scaffolding is reusable — it's the content layer and mechanical 
 
 **Note:** The design evolved from grid tactical → simplified turn-based (for playability) → back to tactical (in final GDD). The codebase ended up as real-time action, which none of the docs specify.
 
-### G. Game Scope
+### K. Game Scope
 - **Doc 1 (early):** 25-30 hours gameplay
 - **Doc 5 (GDD):** 15-20 hours first playthrough, 40-60 hours all endings
 - **Doc 1 (week deliverables):** ~40-50 minutes per weekly build, suggesting much smaller scope
 
-### H. Class Naming Timeline
+### L. Class Naming Timeline
 1. First: Warden, Sporecaller, Veilkeeper, Ranger, Wildkin (5 classes)
 2. Renamed: Veilkeeper → Veilwalker (because Veilkeepers are spirit entities in lore)
 3. Added: Soulborn (6th class), Druid (7th class)
