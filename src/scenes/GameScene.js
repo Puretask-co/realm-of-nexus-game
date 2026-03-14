@@ -1,562 +1,570 @@
-import Phaser from 'phaser';
-import { EventBus } from '../core/EventBus.js';
-import { GameConfig } from '../core/GameConfig.js';
-import { DataManager } from '../systems/DataManager.js';
-import { SapCycleManager } from '../systems/SapCycleManager.js';
-import { CooldownManager } from '../systems/CooldownManager.js';
-import { CombatSystem } from '../systems/CombatSystem.js';
-import { SpellSystem } from '../systems/SpellSystem.js';
-import { ProgressionSystem } from '../systems/ProgressionSystem.js';
-import { AISystem } from '../systems/AISystem.js';
-import { DialogueSystem } from '../systems/DialogueSystem.js';
-import { QuestSystem } from '../systems/QuestSystem.js';
-import { AudioManager } from '../systems/AudioManager.js';
-import { SaveManager } from '../systems/SaveManager.js';
-import { PerformanceProfiler } from '../systems/PerformanceProfiler.js';
-import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
-import { Player } from '../components/Player.js';
-import { Enemy } from '../components/Enemy.js';
-import { NPC } from '../components/NPC.js';
-import { Projectile } from '../components/Projectile.js';
+import EventBus from '../systems/EventBus.js';
+import dataManager from '../systems/DataManager.js';
+import SapCycleManager from '../systems/SapCycleManager.js';
+import AdvancedLightingSystem from '../systems/AdvancedLightingSystem.js';
+import AdvancedParticleSystem from '../systems/AdvancedParticleSystem.js';
+import AdvancedCameraSystem from '../systems/AdvancedCameraSystem.js';
+import PerformanceProfiler from '../systems/PerformanceProfiler.js';
 
 /**
- * GameScene - Main gameplay scene for Verdance.
- * Initializes all game systems, spawns entities, and runs the game loop.
+ * GameScene — Main gameplay scene.
+ *
+ * Responsibilities:
+ *  1. Initialise all engine systems (lighting, particles, camera, sap cycle, profiler).
+ *  2. Build the world from location data (tilemap or procedural grid).
+ *  3. Spawn the player, enemies, and NPCs.
+ *  4. Handle input (movement, spell casting, UI hotkeys).
+ *  5. Drive per-frame updates for every system.
+ *  6. Process combat via EventBus events.
+ *
+ * The scene deliberately keeps high-level orchestration logic here
+ * and delegates heavy work to dedicated systems.
  */
-export class GameScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'GameScene' });
-    this.eventBus = EventBus.getInstance();
-  }
-
-  create() {
-    // ─── Initialize Systems ──────────────────────────────────────
-    this.dataManager = DataManager.getInstance();
-    this.sapCycle = SapCycleManager.getInstance();
-    this.cooldownManager = CooldownManager.getInstance();
-    this.combatSystem = CombatSystem.getInstance();
-    this.spellSystem = SpellSystem.getInstance();
-    this.progressionSystem = ProgressionSystem.getInstance();
-    this.aiSystem = AISystem.getInstance();
-
-    // Apply config to systems
-    const config = this.dataManager.data.config;
-    this.sapCycle.applyConfig(config);
-    this.combatSystem.applyConfig(config);
-    this.progressionSystem.applyConfig(config);
-
-    // Set difficulty
-    const difficulty = config?.difficulty?.normal || {};
-    this.combatSystem.setDifficulty(difficulty);
-
-    // Load spells into SpellSystem
-    this.spellSystem.loadSpells(this.dataManager.data.spells || []);
-
-    // Start Sap Cycle
-    this.sapCycle.start(config);
-
-    // ─── Dialogue System ──────────────────────────────────────────
-    this.dialogueSystem = DialogueSystem.getInstance(this);
-    const characters = this.dataManager.data.characters || [];
-    for (const char of characters) {
-      this.dialogueSystem.registerCharacter(char.id, char);
-    }
-    const dialogues = this.dataManager.data.dialogues || [];
-    for (const dlg of dialogues) {
-      this.dialogueSystem.registerDialogue(dlg.id, dlg);
+export default class GameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameScene' });
     }
 
-    // ─── Quest System ─────────────────────────────────────────────
-    this.questSystem = QuestSystem.getInstance();
-    const quests = this.dataManager.data.quests || [];
-    for (const quest of quests) {
-      this.questSystem.registerQuest(quest);
-    }
-
-    // ─── Audio Manager ────────────────────────────────────────────
-    this.audioManager = AudioManager.getInstance(this);
-
-    // ─── World Setup ─────────────────────────────────────────────
-    this.cameras.main.setBackgroundColor('#1a2a1a');
-    this.physics.world.setBounds(0, 0, 2560, 1440);
-
-    // Draw ground grid for visual reference
-    this.drawWorldGrid();
-
-    // ─── Player Class System ──────────────────────────────────────
-    this.playerClassSystem = PlayerClassSystem.getInstance();
-    if (!this.playerClassSystem.getCurrentClass()) {
-      this.playerClassSystem.selectClass('temporal_mage');
-    }
-
-    // ─── Spawn Player ────────────────────────────────────────────
-    this.player = new Player(this, 640, 360);
-    this.player.setupInput();
-    this.player.equipStartingSpells();
-
-    // Camera follow player
-    this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
-    this.cameras.main.setZoom(1.0);
-    this.cameras.main.setBounds(0, 0, 2560, 1440);
-
-    // ─── Spawn Enemies ───────────────────────────────────────────
-    this.enemies = [];
-    this.spawnEnemiesFromData();
-
-    // ─── Spawn NPCs ──────────────────────────────────────────────
-    this.npcs = [];
-    this.spawnNPCsFromData();
-
-    // ─── Projectiles ─────────────────────────────────────────────
-    this.projectiles = [];
-
-    // ─── Collision Setup ─────────────────────────────────────────
-    this.setupCollisions();
-
-    // ─── Event Listeners ─────────────────────────────────────────
-    this.setupEventListeners();
-
-    // ─── HUD Info ────────────────────────────────────────────────
-    if (GameConfig.DEBUG.SHOW_FPS) {
-      this.fpsText = this.add.text(10, 10, '', {
-        fontSize: '12px', fill: '#00ff00', fontFamily: 'monospace'
-      }).setScrollFactor(0).setDepth(9999);
-    }
-
-    // Phase indicator
-    this.phaseText = this.add.text(GameConfig.WIDTH - 10, 10, '', {
-      fontSize: '12px', fill: '#4a9eff', fontFamily: 'monospace', align: 'right'
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(9999);
-
-    // Player stats display
-    this.statsText = this.add.text(10, GameConfig.HEIGHT - 60, '', {
-      fontSize: '11px', fill: '#ffffff', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(9999);
-
-    // Controls hint
-    this.add.text(GameConfig.WIDTH / 2, GameConfig.HEIGHT - 10,
-      'WASD: Move | 1-5: Spells | SPACE: Dash | E: Interact | F2: Editor', {
-      fontSize: '10px', fill: '#666666', fontFamily: 'monospace'
-    }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(9999);
-
-    // F2 - Toggle to Editor Scene
-    this.input.keyboard.on('keydown-F2', () => {
-      this.scene.stop('UIScene');
-      this.scene.start('EditorScene');
-    });
-
-    // ─── SaveManager ───────────────────────────────────────────
-    this.saveManager = SaveManager.getInstance();
-    this.saveManager.register('progression', {
-      serialize: () => this.progressionSystem.serialize(),
-      deserialize: (data) => this.progressionSystem.deserialize(data)
-    });
-    this.saveManager.register('player', {
-      serialize: () => ({
-        x: this.player.x,
-        y: this.player.y,
-        stats: { ...this.player.stats }
-      }),
-      deserialize: (data) => {
-        if (data.x) this.player.sprite.x = data.x;
-        if (data.y) this.player.sprite.y = data.y;
-        if (data.stats) Object.assign(this.player.stats, data.stats);
-      }
-    });
-
-    this.saveManager.register('playerClass', {
-      serialize: () => this.playerClassSystem.serialize(),
-      deserialize: (data) => this.playerClassSystem.deserialize(data)
-    });
-    this.saveManager.register('quests', {
-      serialize: () => this.questSystem.saveState(),
-      deserialize: (data) => this.questSystem.loadState(data)
-    });
-    this.saveManager.register('dialogue', {
-      serialize: () => this.dialogueSystem.saveState(),
-      deserialize: (data) => this.dialogueSystem.loadState(data)
-    });
-
-    // ─── Performance Profiler ──────────────────────────────────
-    this.profiler = PerformanceProfiler.getInstance();
-    this.profiler.attach(this);
-
-    // ─── Launch UIScene as parallel overlay ─────────────────────
-    this.scene.launch('UIScene');
-
-    // Enable hot reload in dev mode
-    if (import.meta.hot || import.meta.env?.DEV) {
-      this.dataManager.enableHotReload();
-    }
-
-    this.eventBus.emit('scene:ready', { scene: 'GameScene' });
-  }
-
-  // ─── World Grid ──────────────────────────────────────────────────
-
-  drawWorldGrid() {
-    const graphics = this.add.graphics();
-    graphics.setDepth(-1);
-
-    // Ground tiles
-    const tileSize = GameConfig.TILE_SIZE;
-    for (let x = 0; x < 2560; x += tileSize) {
-      for (let y = 0; y < 1440; y += tileSize) {
-        const shade = ((x / tileSize + y / tileSize) % 2 === 0) ? 0x1a2a1a : 0x1e2e1e;
-        graphics.fillStyle(shade, 1);
-        graphics.fillRect(x, y, tileSize, tileSize);
-      }
-    }
-  }
-
-  // ─── Entity Spawning ─────────────────────────────────────────────
-
-  spawnEnemiesFromData() {
-    const enemyDefs = this.dataManager.data.enemies || [];
-    const locations = this.dataManager.data.locations || [];
-
-    // Spawn enemies from location spawn points
-    for (const location of locations) {
-      if (!location.spawns) continue;
-      for (const spawn of location.spawns) {
-        const def = enemyDefs.find(e => e.id === spawn.enemyId);
-        if (!def) continue;
-
-        const count = spawn.count || 1;
-        for (let i = 0; i < count; i++) {
-          const x = (spawn.x || 400) + (i * 80) + Math.random() * 40;
-          const y = (spawn.y || 300) + Math.random() * 40;
-          this.spawnEnemy(def, x, y);
-        }
-      }
-    }
-
-    // If no spawns found, create some test enemies
-    if (this.enemies.length === 0) {
-      for (const def of enemyDefs) {
-        const x = 300 + Math.random() * 600;
-        const y = 200 + Math.random() * 400;
-        this.spawnEnemy(def, x, y);
-      }
-    }
-  }
-
-  spawnEnemy(definition, x, y) {
-    const enemy = new Enemy(this, x, y, definition);
-    this.enemies.push(enemy);
-
-    // Register with AI system
-    this.aiSystem.register({
-      id: enemy.id,
-      name: enemy.name,
-      stats: enemy.stats,
-      ai: enemy.ai,
-      abilities: enemy.abilities,
-      sapPhaseVulnerability: enemy.sapPhaseVulnerability,
-      experienceReward: enemy.experienceReward,
-      lootTable: enemy.lootTable,
-      attackRange: definition.attackRange || 1.5,
-      speed: enemy.stats.speed,
-      x: enemy.sprite.x,
-      y: enemy.sprite.y
-    });
-
-    return enemy;
-  }
-
-  spawnNPCsFromData() {
-    const characters = this.dataManager.data.characters || [];
-
-    // Place NPCs at predefined positions or spread them out
-    const positions = [
-      { x: 640, y: 200 },
-      { x: 900, y: 400 },
-      { x: 400, y: 500 },
-      { x: 800, y: 600 }
-    ];
-
-    for (let i = 0; i < characters.length; i++) {
-      const pos = positions[i] || { x: 500 + i * 100, y: 300 };
-      const npc = new NPC(this, pos.x, pos.y, characters[i]);
-      this.npcs.push(npc);
-    }
-  }
-
-  // ─── Collision Setup ─────────────────────────────────────────────
-
-  setupCollisions() {
-    // Player <-> Enemy collision
-    for (const enemy of this.enemies) {
-      this.physics.add.overlap(
-        this.player.sprite,
-        enemy.sprite,
-        () => this.onPlayerEnemyCollision(enemy),
-        null,
-        this
-      );
-    }
-  }
-
-  onPlayerEnemyCollision(enemy) {
-    if (enemy.stats.hp <= 0) return;
-    // Contact damage
-    this.player.takeDamage(enemy.stats.atk * 0.3);
-  }
-
-  // ─── Event Listeners ─────────────────────────────────────────────
-
-  setupEventListeners() {
-    // Phase change visual updates
-    this.eventBus.on('phase-changed', (data) => {
-      this.onPhaseChanged(data);
-    });
-
-    // Spell cast → create projectile
-    this.eventBus.on('spell-cast', (data) => {
-      this.onSpellCast(data);
-    });
-
-    // Spell impact → apply damage
-    this.eventBus.on('spell-impact', (data) => {
-      this.onSpellImpact(data);
-    });
-
-    // Enemy defeated → clean up
-    this.eventBus.on('enemy-defeated', (data) => {
-      this.onEnemyDefeated(data);
-    });
-
-    // AI action → execute
-    this.eventBus.on('ai:action', (data) => {
-      this.onAIAction(data);
-    });
-
-    // Quest events
-    this.eventBus.on('quest:start', (data) => {
-      this.questSystem.startQuest(data.questId);
-    });
-    this.eventBus.on('quest:completeObjective', (data) => {
-      this.questSystem.completeObjective(data.questId, data.objectiveId);
-    });
-
-    // Dialogue start from NPC interaction
-    this.eventBus.on('dialogue:start', (data) => {
-      this.dialogueSystem.startDialogue(data.dialogueId);
-    });
-
-    // Audio SFX events
-    this.eventBus.on('audio:playSFX', (data) => {
-      this.audioManager.playSFX(data.key, data.config || {});
-    });
-  }
-
-  onPhaseChanged(data) {
-    const phaseColors = {
-      blue: '#4488ff',
-      crimson: '#ff4444',
-      silver: '#ccccff'
-    };
-    const color = phaseColors[data.phase] || '#ffffff';
-
-    // Tint the background slightly
-    const bgColors = {
-      blue: '#1a1a2e',
-      crimson: '#2e1a1a',
-      silver: '#2a2a3e'
-    };
-    this.cameras.main.setBackgroundColor(bgColors[data.phase] || '#1a2a1a');
-
-    if (this.phaseText) {
-      this.phaseText.setColor(color);
-    }
-  }
-
-  onSpellCast(data) {
-    if (!data.spell || data.spell.type !== 'offensive') return;
-    if (!data.targetPos) return;
-
-    // Create projectile
-    const proj = new Projectile(this, data.caster?.x || 640, data.caster?.y || 360, {
-      spell: data.spell,
-      caster: data.caster,
-      targetPos: data.targetPos,
-      speed: 350,
-      color: this.getSpellColor(data.spell)
-    });
-
-    this.projectiles.push(proj);
-
-    // Set up overlap with enemies
-    for (const enemy of this.enemies) {
-      if (enemy.stats.hp <= 0) continue;
-      this.physics.add.overlap(proj.sprite, enemy.sprite, () => {
-        proj.impact(enemy);
-      });
-    }
-  }
-
-  getSpellColor(spell) {
-    const elementColors = {
-      temporal: 0x4488ff,
-      fire: 0xff6622,
-      light: 0xccccff,
-      nature: 0x44ff44,
-      void: 0xaa22ff
-    };
-    return elementColors[spell.element] || 0x4a9eff;
-  }
-
-  onSpellImpact(data) {
-    const target = data.target;
-    if (!target || !target.stats) return;
-
-    // Calculate damage using CombatSystem
-    const damageResult = this.combatSystem.calculateDamage(
-      data.caster || this.player,
-      target,
-      {
-        spell: data.spell,
-        sapPhaseVulnerability: target.sapPhaseVulnerability
-      }
-    );
-
-    // Apply damage
-    if (target.takeDamage) {
-      target.takeDamage(damageResult.damage, data.caster);
-    }
-
-    // Increment combo
-    if (!damageResult.isDodged) {
-      this.combatSystem.incrementCombo();
-    }
-  }
-
-  onEnemyDefeated(data) {
-    const enemy = data.enemy;
-
-    // Remove from enemies array
-    const idx = this.enemies.indexOf(enemy);
-    if (idx >= 0) this.enemies.splice(idx, 1);
-
-    // Unregister from AI
-    this.aiSystem.unregister(enemy.id);
-
-    // Award XP
-    if (data.experienceReward) {
-      this.progressionSystem.awardExperience(data.experienceReward);
-    }
-  }
-
-  onAIAction(data) {
-    // Find the enemy entity
-    const enemy = this.enemies.find(e => e.id === data.entityId);
-    if (!enemy) return;
-
-    switch (data.action) {
-      case 'basic_attack': {
-        // Check if player is the target and in range
-        const dist = Phaser.Math.Distance.Between(
-          enemy.sprite.x, enemy.sprite.y,
-          this.player.sprite.x, this.player.sprite.y
-        );
-        if (dist < 60) {
-          this.player.takeDamage(enemy.stats.atk);
-        }
-        break;
-      }
-      case 'use_ability':
-        // Emit spell cast for the enemy
-        this.eventBus.emit('spell-cast', {
-          spell: this.spellSystem.getSpell(data.spellId),
-          spellId: data.spellId,
-          caster: enemy,
-          targetPos: { x: this.player.x, y: this.player.y }
+    create() {
+        // ---- Systems ----
+        this.sapCycle = new SapCycleManager(this);
+        this.lighting = new AdvancedLightingSystem(this);
+        this.particles = new AdvancedParticleSystem(this);
+        this.cameraSystem = new AdvancedCameraSystem(this);
+        this.profiler = new PerformanceProfiler(this);
+
+        // ---- World ----
+        this._buildWorld();
+
+        // ---- Player ----
+        this._createPlayer();
+
+        // ---- Enemies ----
+        this._spawnEnemies();
+
+        // ---- Camera ----
+        this.cameraSystem.startFollow(this.player, {
+            lerpX: 0.08,
+            lerpY: 0.08,
+            offsetY: -20
         });
-        break;
+        this.cameraSystem.enableLookAhead(120, 0.04);
+
+        // ---- Lighting setup ----
+        this._setupLighting();
+
+        // ---- Input ----
+        this._setupInput();
+
+        // ---- Launch UI overlay ----
+        this.scene.launch('UIScene');
+
+        // ---- Hotkeys ----
+        this.input.keyboard.on('keydown-F2', () => {
+            this.scene.switch('EditorScene');
+        });
+
+        // ---- EventBus listeners ----
+        this._unsubs = [
+            EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
+            EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data))
+        ];
+
+        console.log('[GameScene] Created');
     }
-  }
 
-  // ─── Update Loop ─────────────────────────────────────────────────
+    // ----------------------------------------------------------------
+    // World building
+    // ----------------------------------------------------------------
 
-  update(time, delta) {
-    // Update systems
-    this.profiler.begin('sapCycle');
-    this.sapCycle.update(delta);
-    this.profiler.end('sapCycle');
+    _buildWorld() {
+        const worldWidth = 2400;
+        const worldHeight = 1800;
 
-    this.cooldownManager.update(delta);
-    this.spellSystem.update(delta);
-    this.audioManager.update(time, delta);
-    this.audioManager.setListenerPosition(this.player.x, this.player.y);
-    this.saveManager.update(delta);
-    this.profiler.update(delta);
+        this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
 
-    // Update AI (pass player as the target list)
-    const playerTarget = {
-      id: 'player',
-      name: 'Player',
-      stats: this.player.stats,
-      x: this.player.x,
-      y: this.player.y,
-      active: this.player.state !== 'dead'
-    };
-    this.aiSystem.update(delta, [playerTarget]);
+        // Ground layer (simple grid for now)
+        this._worldGfx = this.add.graphics().setDepth(0);
+        this._worldGfx.fillStyle(0x1a2a1a, 1);
+        this._worldGfx.fillRect(0, 0, worldWidth, worldHeight);
 
-    // Sync AI positions back to enemy sprites
-    for (const enemy of this.enemies) {
-      const aiState = this.aiSystem.entities.get(enemy.id);
-      if (aiState) {
-        // AI updates entity.x/y, sync back to sprite
-        const aiEntity = aiState.entity;
-        if (aiEntity.x !== enemy.sprite.x || aiEntity.y !== enemy.sprite.y) {
-          enemy.sprite.x = aiEntity.x;
-          enemy.sprite.y = aiEntity.y;
+        // Grid overlay for spatial reference
+        this._worldGfx.lineStyle(1, 0x223322, 0.3);
+        const gridSize = 64;
+        for (let x = 0; x <= worldWidth; x += gridSize) {
+            this._worldGfx.lineBetween(x, 0, x, worldHeight);
         }
-        // Also sync sprite position back to AI entity
-        aiEntity.x = enemy.sprite.x;
-        aiEntity.y = enemy.sprite.y;
-      }
+        for (let y = 0; y <= worldHeight; y += gridSize) {
+            this._worldGfx.lineBetween(0, y, worldWidth, y);
+        }
+
+        // Decorative elements (trees, rocks)
+        this.decorations = this.add.group();
+        for (let i = 0; i < 40; i++) {
+            const dx = Phaser.Math.Between(50, worldWidth - 50);
+            const dy = Phaser.Math.Between(50, worldHeight - 50);
+            const gfx = this.add.graphics().setDepth(1);
+            gfx.fillStyle(0x225522, 0.8);
+            gfx.fillCircle(dx, dy, Phaser.Math.Between(8, 20));
+            this.decorations.add(gfx);
+        }
+
+        // Camera zones from location data
+        const locations = dataManager.getAllLocations();
+        locations.forEach((loc, i) => {
+            const zoneX = (i % 3) * 800;
+            const zoneY = Math.floor(i / 3) * 600;
+            this.cameraSystem.addZone(
+                { x: zoneX, y: zoneY, width: 800, height: 600 },
+                {
+                    zoom: loc.environment?.cameraZoom || 1.0,
+                    priority: i,
+                    onEnter: () => console.log(`[Zone] Entered: ${loc.name}`),
+                    onExit: () => console.log(`[Zone] Exited: ${loc.name}`)
+                }
+            );
+        });
     }
 
-    // Update entities
-    this.player.update(delta);
-    for (const enemy of this.enemies) enemy.update(delta);
-    for (const npc of this.npcs) npc.update(delta, this.player.x, this.player.y);
+    // ----------------------------------------------------------------
+    // Player
+    // ----------------------------------------------------------------
 
-    // Update projectiles
-    for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      const proj = this.projectiles[i];
-      proj.update(delta);
-      if (!proj.active) {
-        this.projectiles.splice(i, 1);
-      }
+    _createPlayer() {
+        const config = dataManager.getConfig('balance.player') || {};
+        const startX = 640;
+        const startY = 400;
+
+        this.player = this.physics.add.sprite(startX, startY, 'player');
+        this.player.setDepth(5);
+        this.player.setCollideWorldBounds(true);
+        this.player.setDamping(true);
+        this.player.setDrag(0.85);
+        this.player.setMaxVelocity(250);
+
+        // Player stats
+        this.player.stats = {
+            hp: config.startingHp || 100,
+            maxHp: config.startingHp || 100,
+            sap: config.startingSap || 100,
+            maxSap: config.startingSap || 100,
+            speed: 200,
+            spells: [],
+            cooldowns: {}
+        };
+
+        // Equip starting spells
+        const startSpells = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
+        startSpells.forEach((id) => {
+            const spell = dataManager.getSpell(id);
+            if (spell) this.player.stats.spells.push(spell);
+        });
+
+        // Emit initial stats
+        EventBus.emit('player-stats-updated', this.player.stats);
     }
 
-    // ─── HUD Updates ───────────────────────────────────────────
-    if (this.fpsText) {
-      this.fpsText.setText(`FPS: ${Math.round(this.game.loop.actualFps)}`);
+    // ----------------------------------------------------------------
+    // Enemies
+    // ----------------------------------------------------------------
+
+    _spawnEnemies() {
+        this.enemies = this.physics.add.group();
+
+        const enemyDefs = dataManager.getAllEnemies();
+        const spawnCount = Math.min(enemyDefs.length * 2, 8);
+
+        for (let i = 0; i < spawnCount; i++) {
+            const def = enemyDefs[i % enemyDefs.length];
+            const ex = Phaser.Math.Between(100, 2300);
+            const ey = Phaser.Math.Between(100, 1700);
+
+            const enemy = this.physics.add.sprite(ex, ey, 'enemy');
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+
+            enemy.data = {
+                definition: def,
+                hp: def.baseStats?.hp || 50,
+                maxHp: def.baseStats?.hp || 50,
+                aiState: 'idle',
+                aiTimer: 0,
+                patrolOrigin: { x: ex, y: ey }
+            };
+
+            this.enemies.add(enemy);
+        }
+
+        // Player-enemy collision
+        this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
+            // Contact damage
+            if (!enemy.data._contactCooldown) {
+                const dmg = 5;
+                this.player.stats.hp = Math.max(0, this.player.stats.hp - dmg);
+                EventBus.emit('player-stats-updated', this.player.stats);
+                this.cameraSystem.shake('light');
+                enemy.data._contactCooldown = true;
+                this.time.delayedCall(500, () => { enemy.data._contactCooldown = false; });
+            }
+        });
     }
 
-    if (this.phaseText) {
-      const status = this.sapCycle.getStatus();
-      const remaining = Math.ceil(status.timeRemaining);
-      this.phaseText.setText(
-        `Phase: ${status.phase.toUpperCase()} (${remaining}s)\n` +
-        `Sap: ${Math.round(status.deepSapPool)}/${status.deepSapPoolMax}\n` +
-        `Cycle: ${status.totalCycles}`
-      );
+    // ----------------------------------------------------------------
+    // Lighting
+    // ----------------------------------------------------------------
+
+    _setupLighting() {
+        // Player torch
+        this.playerLight = this.lighting.addLight(this.player.x, this.player.y, {
+            type: 'point',
+            color: 0xffeedd,
+            intensity: 1.2,
+            radius: 180,
+            flicker: { speed: 3, amount: 0.08 }
+        });
+
+        // Ambient lights scattered around
+        for (let i = 0; i < 6; i++) {
+            this.lighting.addLight(
+                Phaser.Math.Between(100, 2300),
+                Phaser.Math.Between(100, 1700),
+                {
+                    type: 'point',
+                    color: [0x4488ff, 0xff4466, 0x44ff88, 0xffcc44][i % 4],
+                    intensity: 0.6,
+                    radius: 120,
+                    pulse: { speed: 0.5, min: 0.4, max: 1.0 }
+                }
+            );
+        }
     }
 
-    if (this.statsText) {
-      const s = this.player.stats;
-      const prog = this.progressionSystem;
-      this.statsText.setText(
-        `HP: ${Math.round(s.hp)}/${s.maxHp}  Sap: ${Math.round(s.sap)}/${s.maxSap}\n` +
-        `Lvl: ${prog.level}  XP: ${prog.experience}/${prog.getXPForNextLevel()}  ` +
-        `Enemies: ${this.enemies.length}`
-      );
+    // ----------------------------------------------------------------
+    // Input
+    // ----------------------------------------------------------------
+
+    _setupInput() {
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.wasd = this.input.keyboard.addKeys({
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            right: Phaser.Input.Keyboard.KeyCodes.D
+        });
+
+        // Spell keys 1-5
+        this.spellKeys = [];
+        for (let i = 1; i <= 5; i++) {
+            this.spellKeys.push(
+                this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes[`ONE`].valueOf() + (i - 1))
+            );
+        }
+
+        // Alternative: number keys
+        this.input.keyboard.on('keydown-ONE', () => this._castSpell(0));
+        this.input.keyboard.on('keydown-TWO', () => this._castSpell(1));
+        this.input.keyboard.on('keydown-THREE', () => this._castSpell(2));
+        this.input.keyboard.on('keydown-FOUR', () => this._castSpell(3));
+        this.input.keyboard.on('keydown-FIVE', () => this._castSpell(4));
     }
-  }
+
+    _castSpell(index) {
+        const spell = this.player.stats.spells[index];
+        if (!spell) return;
+
+        // Cooldown check
+        const now = this.time.now;
+        const cd = this.player.stats.cooldowns[spell.id];
+        if (cd && now < cd) {
+            console.log(`[Spell] ${spell.name} on cooldown`);
+            return;
+        }
+
+        // Sap cost check
+        if (this.player.stats.sap < spell.sapCost) {
+            console.log(`[Spell] Not enough Sap for ${spell.name}`);
+            return;
+        }
+
+        // Apply phase modifier
+        const modifier = this.sapCycle.getBlendedModifier(spell);
+        const damage = Math.round(spell.baseDamage * modifier);
+
+        // Consume sap
+        this.player.stats.sap -= spell.sapCost;
+
+        // Set cooldown
+        this.player.stats.cooldowns[spell.id] = now + spell.cooldown * 1000;
+
+        // Camera shake for the spell
+        this.cameraSystem.shake('spell');
+
+        // VFX
+        const pointer = this.input.activePointer;
+        const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+
+        if (spell.vfx?.castParticle) {
+            this.particles.burst(
+                this.player.x,
+                this.player.y,
+                spell.vfx.castParticle,
+                { count: 15 }
+            );
+        }
+
+        // Find nearest enemy in range
+        let targetEnemy = null;
+        let closestDist = 300; // spell range
+        this.enemies.children.entries.forEach((e) => {
+            if (!e.active) return;
+            const d = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, e.x, e.y);
+            if (d < closestDist) {
+                closestDist = d;
+                targetEnemy = e;
+            }
+        });
+
+        if (targetEnemy) {
+            targetEnemy.data.hp -= damage;
+
+            // Hit particles
+            this.particles.burst(targetEnemy.x, targetEnemy.y, 'hit_sparks', { count: 10 });
+
+            // Dramatic camera for big spells
+            if (spell.tier >= 3) {
+                this.cameraSystem.dramaticSpellZoom(this.player, targetEnemy, 600);
+            }
+
+            console.log(`[Spell] ${spell.name} hit for ${damage} (modifier: ${modifier.toFixed(2)})`);
+
+            if (targetEnemy.data.hp <= 0) {
+                EventBus.emit('enemy-defeated', { enemy: targetEnemy, spell });
+            }
+        }
+
+        // Update UI
+        EventBus.emit('player-stats-updated', this.player.stats);
+        EventBus.emit('spell-cast', { spell, damage, modifier });
+
+        // Broadcast cooldown for UI
+        const totalCd = spell.cooldown * 1000;
+        const tickCd = () => {
+            const remaining = this.player.stats.cooldowns[spell.id] - this.time.now;
+            if (remaining > 0) {
+                EventBus.emit('spell-cooldown-tick', spell.id, remaining, totalCd);
+                this.time.delayedCall(100, tickCd);
+            } else {
+                EventBus.emit('spell-cooldown-tick', spell.id, 0, totalCd);
+            }
+        };
+        tickCd();
+    }
+
+    // ----------------------------------------------------------------
+    // Event handlers
+    // ----------------------------------------------------------------
+
+    _onSpellCast(data) {
+        // Could trigger global effects, achievements, etc.
+    }
+
+    _onEnemyDefeated(data) {
+        const { enemy } = data;
+
+        // Death particles
+        this.particles.burst(enemy.x, enemy.y, 'hit_sparks', { count: 20 });
+
+        // Drop loot
+        const loot = enemy.data.definition?.lootTable;
+        if (loot) {
+            loot.forEach((drop) => {
+                if (Math.random() < drop.chance) {
+                    console.log(`[Loot] Dropped: ${drop.itemId} x${drop.quantity}`);
+                }
+            });
+        }
+
+        // Remove enemy
+        enemy.destroy();
+
+        // Respawn after delay
+        this.time.delayedCall(10000, () => {
+            this._respawnEnemy(enemy.data.definition);
+        });
+    }
+
+    _respawnEnemy(def) {
+        if (!def) return;
+        const ex = Phaser.Math.Between(100, 2300);
+        const ey = Phaser.Math.Between(100, 1700);
+
+        const enemy = this.physics.add.sprite(ex, ey, 'enemy');
+        enemy.setDepth(4);
+        enemy.setCollideWorldBounds(true);
+        enemy.data = {
+            definition: def,
+            hp: def.baseStats?.hp || 50,
+            maxHp: def.baseStats?.hp || 50,
+            aiState: 'idle',
+            aiTimer: 0,
+            patrolOrigin: { x: ex, y: ey }
+        };
+        this.enemies.add(enemy);
+    }
+
+    // ----------------------------------------------------------------
+    // Enemy AI
+    // ----------------------------------------------------------------
+
+    _updateEnemyAI(delta) {
+        const dt = delta / 1000;
+
+        this.enemies.children.entries.forEach((enemy) => {
+            if (!enemy.active || !enemy.data) return;
+
+            const d = enemy.data;
+            d.aiTimer += dt;
+
+            const distToPlayer = Phaser.Math.Distance.Between(
+                enemy.x, enemy.y, this.player.x, this.player.y
+            );
+
+            switch (d.aiState) {
+                case 'idle':
+                    enemy.setVelocity(0, 0);
+                    if (distToPlayer < 250) {
+                        d.aiState = 'chase';
+                    } else if (d.aiTimer > 3) {
+                        d.aiState = 'patrol';
+                        d.aiTimer = 0;
+                    }
+                    break;
+
+                case 'patrol': {
+                    const angle = Phaser.Math.Angle.Between(
+                        enemy.x, enemy.y,
+                        d.patrolOrigin.x + Math.cos(d.aiTimer) * 100,
+                        d.patrolOrigin.y + Math.sin(d.aiTimer) * 100
+                    );
+                    const speed = (d.definition?.baseStats?.speed || 60) * 0.5;
+                    enemy.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+                    if (distToPlayer < 250) {
+                        d.aiState = 'chase';
+                    }
+                    if (d.aiTimer > 6) {
+                        d.aiState = 'idle';
+                        d.aiTimer = 0;
+                    }
+                    break;
+                }
+
+                case 'chase': {
+                    const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
+                    const speed = d.definition?.baseStats?.speed || 80;
+                    enemy.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+                    if (distToPlayer > 400) {
+                        d.aiState = 'idle';
+                        d.aiTimer = 0;
+                    }
+                    break;
+                }
+            }
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Per-frame update
+    // ----------------------------------------------------------------
+
+    update(time, delta) {
+        this.profiler.begin('total');
+
+        // Player movement
+        this.profiler.begin('input');
+        this._handleMovement();
+        this.profiler.end('input');
+
+        // Sap cycle
+        this.profiler.begin('sapCycle');
+        this.sapCycle.update(delta);
+        this.profiler.end('sapCycle');
+
+        // Enemy AI
+        this.profiler.begin('enemyAI');
+        this._updateEnemyAI(delta);
+        this.profiler.end('enemyAI');
+
+        // Lighting
+        this.profiler.begin('lighting');
+        if (this.playerLight) {
+            this.playerLight.x = this.player.x;
+            this.playerLight.y = this.player.y;
+        }
+        this.lighting.update(delta);
+        this.profiler.end('lighting');
+
+        // Particles
+        this.profiler.begin('particles');
+        this.particles.update(delta);
+        this.profiler.end('particles');
+
+        // Camera
+        this.profiler.begin('camera');
+        this.cameraSystem.update(delta);
+        this.profiler.end('camera');
+
+        // Sap regeneration
+        this._regenSap(delta);
+
+        // Profiler (always last)
+        this.profiler.end('total');
+        this.profiler.stats.lightsActive = this.lighting.lights.length;
+        this.profiler.stats.particlesActive = this.particles.getActiveCount?.() || 0;
+        this.profiler.update(delta);
+    }
+
+    _handleMovement() {
+        const speed = this.player.stats.speed;
+        let vx = 0;
+        let vy = 0;
+
+        if (this.cursors.left.isDown || this.wasd.left.isDown) vx = -speed;
+        if (this.cursors.right.isDown || this.wasd.right.isDown) vx = speed;
+        if (this.cursors.up.isDown || this.wasd.up.isDown) vy = -speed;
+        if (this.cursors.down.isDown || this.wasd.down.isDown) vy = speed;
+
+        // Normalize diagonal movement
+        if (vx !== 0 && vy !== 0) {
+            vx *= 0.707;
+            vy *= 0.707;
+        }
+
+        this.player.setVelocity(vx, vy);
+    }
+
+    _regenSap(delta) {
+        const regenRate = 5; // sap per second
+        if (this.player.stats.sap < this.player.stats.maxSap) {
+            this.player.stats.sap = Math.min(
+                this.player.stats.maxSap,
+                this.player.stats.sap + regenRate * (delta / 1000)
+            );
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Cleanup
+    // ----------------------------------------------------------------
+
+    shutdown() {
+        if (this._unsubs) this._unsubs.forEach((fn) => fn());
+        this.lighting.shutdown();
+        this.particles.shutdown();
+        this.cameraSystem.shutdown();
+        this.profiler.shutdown();
+        this.scene.stop('UIScene');
+    }
 }
-
-export default GameScene;

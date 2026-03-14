@@ -1,160 +1,241 @@
-import Phaser from 'phaser';
-import { EventBus } from '../core/EventBus.js';
-import { GameConfig } from '../core/GameConfig.js';
+import EventBus from '../systems/EventBus.js';
 
 /**
- * UIScene - Parallel HUD overlay scene that runs alongside GameScene.
- * Renders health/sap bars, spell cooldown slots, Sap Cycle indicator,
- * minimap placeholder, and combo counter.
+ * UIScene — Always-on overlay scene for HUD elements.
  *
- * Launched by GameScene as a parallel scene so HUD elements are
- * always screen-fixed and don't scroll with the game camera.
+ * Runs in parallel with GameScene (launched as a parallel scene).
+ * Displays:
+ *  - Sap cycle phase indicator and timer
+ *  - Player HP / Sap bars
+ *  - Spell cooldowns
+ *  - Mini-map (stub)
+ *  - Phase transition overlay
+ *
+ * All data comes through EventBus so this scene has zero direct
+ * coupling to GameScene.
  */
-export class UIScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'UIScene' });
-    this.eventBus = EventBus.getInstance();
-  }
-
-  create() {
-    const W = GameConfig.WIDTH;
-    const H = GameConfig.HEIGHT;
-
-    // ─── Health Bar ──────────────────────────────────────────────
-    this.healthBarBg = this.add.rectangle(125, 20, 220, 16, 0x222222, 0.8).setOrigin(0, 0.5);
-    this.healthBarFill = this.add.rectangle(125, 20, 220, 16, 0x44dd44, 1).setOrigin(0, 0.5);
-    this.healthText = this.add.text(15, 20, 'HP:', {
-      fontSize: '12px', fill: '#44dd44', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
-    this.healthValueText = this.add.text(235, 20, '100/100', {
-      fontSize: '10px', fill: '#ffffff', fontFamily: 'monospace'
-    }).setOrigin(0.5, 0.5);
-
-    // ─── Sap Bar ─────────────────────────────────────────────────
-    this.sapBarBg = this.add.rectangle(125, 42, 220, 12, 0x222222, 0.8).setOrigin(0, 0.5);
-    this.sapBarFill = this.add.rectangle(125, 42, 220, 12, 0x4488ff, 1).setOrigin(0, 0.5);
-    this.sapText = this.add.text(15, 42, 'SAP:', {
-      fontSize: '12px', fill: '#4488ff', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
-
-    // ─── XP Bar ──────────────────────────────────────────────────
-    this.xpBarBg = this.add.rectangle(125, 60, 220, 6, 0x222222, 0.6).setOrigin(0, 0.5);
-    this.xpBarFill = this.add.rectangle(125, 60, 0, 6, 0xffaa00, 1).setOrigin(0, 0.5);
-    this.levelText = this.add.text(15, 60, 'Lv.1', {
-      fontSize: '10px', fill: '#ffaa00', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
-
-    // ─── Sap Cycle Phase Indicator ───────────────────────────────
-    this.phaseIndicatorBg = this.add.rectangle(W - 90, 25, 160, 40, 0x111122, 0.8).setOrigin(0.5);
-    this.phaseLabel = this.add.text(W - 90, 15, 'BLUE PHASE', {
-      fontSize: '12px', fill: '#4488ff', fontFamily: 'monospace', fontStyle: 'bold'
-    }).setOrigin(0.5);
-    this.phaseTimer = this.add.text(W - 90, 33, '120s', {
-      fontSize: '10px', fill: '#aaaaaa', fontFamily: 'monospace'
-    }).setOrigin(0.5);
-
-    // ─── Spell Slots (1-5) ──────────────────────────────────────
-    this.spellSlots = [];
-    const slotStartX = W / 2 - 120;
-    const slotY = H - 40;
-
-    for (let i = 0; i < 5; i++) {
-      const x = slotStartX + i * 55;
-      const bg = this.add.rectangle(x, slotY, 44, 44, 0x222244, 0.8).setStrokeStyle(1, 0x4a9eff, 0.5);
-      const keyLabel = this.add.text(x - 18, slotY - 18, `${i + 1}`, {
-        fontSize: '8px', fill: '#666666', fontFamily: 'monospace'
-      });
-      const nameLabel = this.add.text(x, slotY, '', {
-        fontSize: '8px', fill: '#cccccc', fontFamily: 'monospace', align: 'center'
-      }).setOrigin(0.5);
-      const cdOverlay = this.add.rectangle(x, slotY, 44, 0, 0x000000, 0.6).setOrigin(0.5, 1);
-
-      this.spellSlots.push({ bg, keyLabel, nameLabel, cdOverlay });
+export default class UIScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'UIScene' });
     }
 
-    // ─── Combo Counter ───────────────────────────────────────────
-    this.comboText = this.add.text(W / 2, H - 80, '', {
-      fontSize: '18px', fill: '#ffaa00', fontFamily: 'monospace', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 3
-    }).setOrigin(0.5).setAlpha(0);
+    create() {
+        this.uiElements = {};
 
-    // ─── Event Listeners ─────────────────────────────────────────
-    this.eventBus.on('player-stats-updated', (stats) => this.updatePlayerStats(stats));
-    this.eventBus.on('phase-changed', (data) => this.updatePhaseIndicator(data));
-    this.eventBus.on('phase-transition', (data) => this.updatePhaseTransition(data));
-    this.eventBus.on('sap-changed', (data) => this.updateSapDisplay(data));
-    this.eventBus.on('combat:combo', (data) => this.showCombo(data));
-    this.eventBus.on('combat:comboReset', () => this.hideCombo());
-  }
+        this._createPhaseIndicator();
+        this._createPlayerBars();
+        this._createSpellSlots();
+        this._createMinimap();
+        this._createFPSCounter();
 
-  // ─── Update Methods ──────────────────────────────────────────────
-
-  updatePlayerStats(stats) {
-    if (!stats) return;
-
-    // Health bar
-    const hpPercent = Math.max(0, stats.hp / stats.maxHp);
-    this.healthBarFill.setDisplaySize(220 * hpPercent, 16);
-    const hpColor = hpPercent > 0.5 ? 0x44dd44 : hpPercent > 0.25 ? 0xddaa00 : 0xff4444;
-    this.healthBarFill.setFillStyle(hpColor);
-    this.healthValueText.setText(`${Math.round(stats.hp)}/${stats.maxHp}`);
-
-    // Sap bar
-    if (stats.sap !== undefined && stats.maxSap) {
-      const sapPercent = Math.max(0, stats.sap / stats.maxSap);
-      this.sapBarFill.setDisplaySize(220 * sapPercent, 12);
+        // EventBus bindings
+        this._unsubs = [
+            EventBus.on('sap-cycle-tick', (phase, progress) => {
+                this._updatePhaseIndicator(phase, progress);
+            }),
+            EventBus.on('phase-changed', (newPhase) => {
+                this._flashPhaseChange(newPhase);
+            }),
+            EventBus.on('player-stats-updated', (stats) => {
+                this._updatePlayerBars(stats);
+            }),
+            EventBus.on('spell-cooldown-tick', (spellId, remaining, total) => {
+                this._updateSpellCooldown(spellId, remaining, total);
+            })
+        ];
     }
-  }
 
-  updatePhaseIndicator(data) {
-    const phaseColors = {
-      blue: '#4488ff',
-      crimson: '#ff4444',
-      silver: '#ccccff'
-    };
-    const color = phaseColors[data.phase] || '#ffffff';
-    this.phaseLabel.setText(`${data.phase.toUpperCase()} PHASE`);
-    this.phaseLabel.setColor(color);
-  }
+    // ----------------------------------------------------------------
+    // Phase indicator
+    // ----------------------------------------------------------------
 
-  updatePhaseTransition(data) {
-    // Pulse effect during transition
-    const alpha = 0.5 + Math.sin(data.progress * Math.PI) * 0.5;
-    this.phaseIndicatorBg.setAlpha(alpha);
-  }
+    _createPhaseIndicator() {
+        const PHASE_COLORS = { blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd' };
 
-  updateSapDisplay(data) {
-    if (data.current !== undefined && data.max) {
-      const percent = data.current / data.max;
-      this.sapBarFill.setDisplaySize(220 * percent, 12);
+        this.uiElements.phaseLabel = this.add.text(640, 16, 'BLUE PHASE', {
+            fontFamily: 'monospace',
+            fontSize: '16px',
+            color: PHASE_COLORS.blue,
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5, 0).setDepth(10000);
+
+        // Phase timer bar
+        this.uiElements.phaseBarBg = this.add.graphics().setDepth(10000);
+        this.uiElements.phaseBarBg.fillStyle(0x111122, 0.6);
+        this.uiElements.phaseBarBg.fillRect(440, 36, 400, 6);
+
+        this.uiElements.phaseBarFill = this.add.graphics().setDepth(10000);
     }
-  }
 
-  showCombo(data) {
-    this.comboText.setText(`${data.count}x COMBO`);
-    this.comboText.setAlpha(1);
-    this.comboText.setScale(1.3);
-    this.tweens.add({
-      targets: this.comboText,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 200,
-      ease: 'Back.easeOut'
-    });
-  }
+    _updatePhaseIndicator(phase, progress) {
+        const PHASE_COLORS_HEX = { blue: 0x4488ff, crimson: 0xff4444, silver: 0xccccdd };
+        const PHASE_COLORS_STR = { blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd' };
 
-  hideCombo() {
-    this.tweens.add({
-      targets: this.comboText,
-      alpha: 0,
-      duration: 300
-    });
-  }
+        this.uiElements.phaseLabel.setText(`${phase.toUpperCase()} PHASE`);
+        this.uiElements.phaseLabel.setColor(PHASE_COLORS_STR[phase] || '#ffffff');
 
-  update(time, delta) {
-    // Update phase timer display
-    // (SapCycleManager status is read via event, but we can also poll)
-  }
+        this.uiElements.phaseBarFill.clear();
+        this.uiElements.phaseBarFill.fillStyle(PHASE_COLORS_HEX[phase] || 0xffffff, 0.8);
+        this.uiElements.phaseBarFill.fillRect(441, 37, 398 * Math.min(progress, 1), 4);
+    }
+
+    _flashPhaseChange(newPhase) {
+        const FLASH = { blue: 0x4488ff, crimson: 0xff4444, silver: 0xccccdd };
+        this.cameras.main.flash(500, ...this._hexToRGB(FLASH[newPhase] || 0xffffff));
+    }
+
+    // ----------------------------------------------------------------
+    // Player bars
+    // ----------------------------------------------------------------
+
+    _createPlayerBars() {
+        const x = 20;
+        const y = 20;
+
+        // HP bar
+        this.uiElements.hpLabel = this.add.text(x, y, 'HP', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#ff6666'
+        }).setDepth(10000);
+
+        this.uiElements.hpBarBg = this.add.graphics().setDepth(10000);
+        this.uiElements.hpBarBg.fillStyle(0x331111, 0.7);
+        this.uiElements.hpBarBg.fillRect(x + 24, y + 1, 150, 12);
+
+        this.uiElements.hpBarFill = this.add.graphics().setDepth(10000);
+        this.uiElements.hpBarFill.fillStyle(0xff4444, 0.9);
+        this.uiElements.hpBarFill.fillRect(x + 25, y + 2, 148, 10);
+
+        // Sap bar
+        this.uiElements.sapLabel = this.add.text(x, y + 18, 'SAP', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#66aaff'
+        }).setDepth(10000);
+
+        this.uiElements.sapBarBg = this.add.graphics().setDepth(10000);
+        this.uiElements.sapBarBg.fillStyle(0x112233, 0.7);
+        this.uiElements.sapBarBg.fillRect(x + 30, y + 19, 150, 12);
+
+        this.uiElements.sapBarFill = this.add.graphics().setDepth(10000);
+        this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
+        this.uiElements.sapBarFill.fillRect(x + 31, y + 20, 148, 10);
+    }
+
+    _updatePlayerBars(stats) {
+        if (!stats) return;
+        const x = 20;
+
+        // HP
+        if (stats.hp !== undefined && stats.maxHp) {
+            const ratio = Math.max(0, stats.hp / stats.maxHp);
+            this.uiElements.hpBarFill.clear();
+            this.uiElements.hpBarFill.fillStyle(0xff4444, 0.9);
+            this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+        }
+
+        // Sap
+        if (stats.sap !== undefined && stats.maxSap) {
+            const ratio = Math.max(0, stats.sap / stats.maxSap);
+            this.uiElements.sapBarFill.clear();
+            this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
+            this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Spell slots
+    // ----------------------------------------------------------------
+
+    _createSpellSlots() {
+        this.uiElements.spellSlots = {};
+        const slotSize = 48;
+        const startX = 640 - (slotSize * 2.5);
+        const y = 720 - slotSize - 16;
+
+        for (let i = 0; i < 5; i++) {
+            const x = startX + i * (slotSize + 8);
+            const bg = this.add.graphics().setDepth(10000);
+            bg.fillStyle(0x222244, 0.7);
+            bg.fillRect(x, y, slotSize, slotSize);
+            bg.lineStyle(1, 0x4466aa, 0.6);
+            bg.strokeRect(x, y, slotSize, slotSize);
+
+            const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
+                fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
+            }).setDepth(10001);
+
+            const cooldownOverlay = this.add.graphics().setDepth(10001);
+
+            this.uiElements.spellSlots[i] = { bg, keyLabel, cooldownOverlay, x, y, size: slotSize };
+        }
+    }
+
+    _updateSpellCooldown(spellId, remaining, total) {
+        // Map spell IDs to slot indices (placeholder mapping)
+        const slotIndex = this._getSlotForSpell(spellId);
+        if (slotIndex === -1) return;
+
+        const slot = this.uiElements.spellSlots[slotIndex];
+        if (!slot) return;
+
+        slot.cooldownOverlay.clear();
+        if (remaining > 0 && total > 0) {
+            const ratio = remaining / total;
+            slot.cooldownOverlay.fillStyle(0x000000, 0.6);
+            slot.cooldownOverlay.fillRect(slot.x, slot.y, slot.size, slot.size * ratio);
+        }
+    }
+
+    _getSlotForSpell(spellId) {
+        const mapping = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
+        return mapping.indexOf(spellId);
+    }
+
+    // ----------------------------------------------------------------
+    // Minimap stub
+    // ----------------------------------------------------------------
+
+    _createMinimap() {
+        const size = 120;
+        const x = 1280 - size - 16;
+        const y = 16;
+
+        this.uiElements.minimapBg = this.add.graphics().setDepth(10000);
+        this.uiElements.minimapBg.fillStyle(0x111122, 0.6);
+        this.uiElements.minimapBg.fillRect(x, y, size, size);
+        this.uiElements.minimapBg.lineStyle(1, 0x334466, 0.5);
+        this.uiElements.minimapBg.strokeRect(x, y, size, size);
+
+        this.add.text(x + size / 2, y + size / 2, 'MAP', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#334466'
+        }).setOrigin(0.5).setDepth(10001);
+    }
+
+    // ----------------------------------------------------------------
+    // FPS counter (dev)
+    // ----------------------------------------------------------------
+
+    _createFPSCounter() {
+        this.uiElements.fpsText = this.add.text(1260, 708, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#446644'
+        }).setOrigin(1, 1).setDepth(10002);
+    }
+
+    update() {
+        if (this.uiElements.fpsText) {
+            const fps = Math.round(this.game.loop.actualFps);
+            this.uiElements.fpsText.setText(`${fps} FPS`);
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Helpers
+    // ----------------------------------------------------------------
+
+    _hexToRGB(hex) {
+        return [(hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff];
+    }
+
+    shutdown() {
+        if (this._unsubs) this._unsubs.forEach((fn) => fn());
+    }
 }
-
-export default UIScene;

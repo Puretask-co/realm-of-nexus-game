@@ -1,151 +1,185 @@
-import { EventBus } from '../core/EventBus.js';
+import EventBus from '../systems/EventBus.js';
 
 /**
- * Projectile component — spell projectile with homing, AoE, and trails.
+ * Projectile component — a spell projectile that travels from
+ * caster to target position, dealing damage on impact.
  *
- * Created by SpellSystem/GameScene when a ranged spell is cast.
- * Handles movement toward target, collision detection via overlap,
- * and impact event emission for VFX and damage.
+ * Features:
+ *  - Constant-speed travel toward target or direction
+ *  - Homing: optional target-seeking behaviour
+ *  - Trail particles emitted every frame via EventBus
+ *  - Collision with enemies (area-of-effect optional)
+ *  - Auto-destroy on impact or after max lifetime
+ *  - Piercing mode: passes through enemies without stopping
+ *
+ * Created by the SpellVFXIntegration or CombatSystem when
+ * a ranged spell is cast.
  */
-export class Projectile {
-  constructor(scene, x, y, config) {
-    this.scene = scene;
-    this.eventBus = EventBus.getInstance();
-    this.config = config;
+export default class Projectile {
+    constructor(scene, config) {
+        this.scene = scene;
+        this.spell = config.spell;
+        this.caster = config.caster;
 
-    // Projectile properties
-    this.spell = config.spell;
-    this.caster = config.caster;
-    this.targetPos = config.targetPos || { x: x + 100, y };
-    this.speed = config.speed || 300;
-    this.maxLifetime = config.maxLifetime || 3;  // seconds
-    this.lifetime = 0;
-    this.homing = config.homing || false;
-    this.homingTarget = config.homingTarget || null;
-    this.aoeRadius = (config.spell?.areaOfEffect || 0) * 32;
-    this.hasImpacted = false;
+        const startX = config.startX || config.caster?.x || 0;
+        const startY = config.startY || config.caster?.y || 0;
 
-    // Visual (placeholder if no texture)
-    const color = config.color || 0x4a9eff;
-    if (scene.textures.exists(config.texture || 'projectile')) {
-      this.sprite = scene.physics.add.sprite(x, y, config.texture || 'projectile');
-    } else {
-      this.sprite = scene.add.circle(x, y, 6, color, 1);
-      scene.physics.add.existing(this.sprite);
+        // Physics body
+        this.sprite = scene.physics.add.sprite(startX, startY, 'particle');
+        this.sprite.setDepth(6);
+        this.sprite.setScale(config.scale || 1.5);
+        this.sprite.owner = this;
+
+        // Tint based on element
+        this.sprite.setTint(this._elementColor(config.spell?.element));
+
+        // Movement
+        this.speed = config.speed || 400;
+        this.maxLifetime = config.lifetime || 2.0; // seconds
+        this.lifetime = 0;
+        this.piercing = config.piercing || false;
+        this.aoeRadius = config.aoeRadius || 0;
+        this.homing = config.homing || false;
+        this.homingTarget = config.target || null;
+        this.hasHit = false;
+
+        // Direction
+        if (config.targetX !== undefined && config.targetY !== undefined) {
+            const angle = Phaser.Math.Angle.Between(startX, startY, config.targetX, config.targetY);
+            this.sprite.setVelocity(
+                Math.cos(angle) * this.speed,
+                Math.sin(angle) * this.speed
+            );
+            this.sprite.setRotation(angle);
+        } else if (config.angle !== undefined) {
+            this.sprite.setVelocity(
+                Math.cos(config.angle) * this.speed,
+                Math.sin(config.angle) * this.speed
+            );
+            this.sprite.setRotation(config.angle);
+        }
+
+        // Trail particle frequency
+        this._trailTimer = 0;
+        this._trailInterval = 0.03; // 30ms between trail particles
+
+        this.alive = true;
     }
 
-    this.sprite.setDepth(6);
-    this.sprite.owner = this;
+    // ----------------------------------------------------------------
+    // Update
+    // ----------------------------------------------------------------
 
-    // Calculate velocity toward target
-    const dx = this.targetPos.x - x;
-    const dy = this.targetPos.y - y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    this.sprite.body.setVelocity(
-      (dx / dist) * this.speed,
-      (dy / dist) * this.speed
-    );
+    update(delta) {
+        if (!this.alive) return;
+        const dt = delta / 1000;
 
-    // Rotate to face direction
-    this.sprite.setRotation(Math.atan2(dy, dx));
+        this.lifetime += dt;
+        if (this.lifetime >= this.maxLifetime) {
+            this.destroy();
+            return;
+        }
 
-    // Trail particles (emitted via EventBus for AdvancedParticleSystem)
-    if (config.spell?.particleEffect) {
-      this.eventBus.emit('particle:trail', {
-        followTarget: this.sprite,
-        preset: config.spell.particleEffect,
-        x, y
-      });
+        // Homing behaviour
+        if (this.homing && this.homingTarget && this.homingTarget.active) {
+            const angle = Phaser.Math.Angle.Between(
+                this.sprite.x, this.sprite.y,
+                this.homingTarget.x, this.homingTarget.y
+            );
+
+            // Smooth turning
+            const currentAngle = this.sprite.rotation;
+            const turnSpeed = 3.0; // radians per second
+            const diff = Phaser.Math.Angle.Wrap(angle - currentAngle);
+            const newAngle = currentAngle + Phaser.Math.Clamp(diff, -turnSpeed * dt, turnSpeed * dt);
+
+            this.sprite.setVelocity(
+                Math.cos(newAngle) * this.speed,
+                Math.sin(newAngle) * this.speed
+            );
+            this.sprite.setRotation(newAngle);
+        }
+
+        // Emit trail particles
+        this._trailTimer += dt;
+        if (this._trailTimer >= this._trailInterval) {
+            this._trailTimer = 0;
+            EventBus.emit('spell-projectile-move', {
+                spell: this.spell,
+                x: this.sprite.x,
+                y: this.sprite.y
+            });
+        }
     }
-  }
 
-  // ─── Update ──────────────────────────────────────────────────────
+    // ----------------------------------------------------------------
+    // Collision
+    // ----------------------------------------------------------------
 
-  update(delta) {
-    if (this.hasImpacted || !this.sprite.active) return;
+    onHitEnemy(enemy) {
+        if (!this.alive) return;
+        if (this.hasHit && !this.piercing) return;
 
-    const dt = delta / 1000;
-    this.lifetime += dt;
+        this.hasHit = true;
 
-    // Lifetime expiry
-    if (this.lifetime >= this.maxLifetime) {
-      this.expire();
-      return;
+        // Calculate damage
+        const baseDamage = this.spell?.baseDamage || 10;
+
+        // Area of effect
+        if (this.aoeRadius > 0) {
+            EventBus.emit('aoe-damage', {
+                x: this.sprite.x,
+                y: this.sprite.y,
+                radius: this.aoeRadius,
+                spell: this.spell,
+                caster: this.caster,
+                baseDamage: baseDamage
+            });
+        } else {
+            EventBus.emit('combat-action', {
+                attacker: this.caster,
+                target: enemy,
+                spell: this.spell
+            });
+        }
+
+        // Impact effects
+        EventBus.emit('spell-impact', {
+            spell: this.spell,
+            target: enemy,
+            x: this.sprite.x,
+            y: this.sprite.y,
+            damage: baseDamage
+        });
+
+        if (!this.piercing) {
+            this.destroy();
+        }
     }
 
-    // Homing behavior
-    if (this.homing && this.homingTarget) {
-      const target = this.homingTarget;
-      if (target.active !== false && target.stats?.hp > 0) {
-        const tx = (target.x || target.sprite?.x || 0);
-        const ty = (target.y || target.sprite?.y || 0);
-        const dx = tx - this.sprite.x;
-        const dy = ty - this.sprite.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    // ----------------------------------------------------------------
+    // Helpers
+    // ----------------------------------------------------------------
 
-        // Steer toward target
-        const turnRate = 5; // radians per second
-        const targetAngle = Math.atan2(dy, dx);
-        const currentAngle = Math.atan2(this.sprite.body.velocity.y, this.sprite.body.velocity.x);
-        let angleDiff = targetAngle - currentAngle;
-
-        // Normalize angle
-        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-        const steer = Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), turnRate * dt);
-        const newAngle = currentAngle + steer;
-
-        this.sprite.body.setVelocity(
-          Math.cos(newAngle) * this.speed,
-          Math.sin(newAngle) * this.speed
-        );
-        this.sprite.setRotation(newAngle);
-      }
+    _elementColor(element) {
+        const map = {
+            arcane: 0x4488ff,
+            fire: 0xff6622,
+            nature: 0x44ff66,
+            shadow: 0x8844cc,
+            light: 0xffdd44,
+            ice: 0x88ddff
+        };
+        return map[element] || 0xffffff;
     }
-  }
 
-  // ─── Impact ──────────────────────────────────────────────────────
-
-  /**
-   * Called when projectile overlaps with a target.
-   */
-  impact(target) {
-    if (this.hasImpacted) return;
-    this.hasImpacted = true;
-
-    this.eventBus.emit('spell-impact', {
-      spell: this.spell,
-      spellId: this.spell?.id,
-      caster: this.caster,
-      target,
-      x: this.sprite.x,
-      y: this.sprite.y,
-      aoeRadius: this.aoeRadius
-    });
-
-    this.destroy();
-  }
-
-  /**
-   * Expire without hitting anything.
-   */
-  expire() {
-    this.hasImpacted = true;
-    this.destroy();
-  }
-
-  // ─── Cleanup ─────────────────────────────────────────────────────
-
-  get x() { return this.sprite.x; }
-  get y() { return this.sprite.y; }
-  get active() { return this.sprite.active && !this.hasImpacted; }
-
-  destroy() {
-    if (this.sprite.active) {
-      this.sprite.destroy();
+    destroy() {
+        if (!this.alive) return;
+        this.alive = false;
+        this.sprite.destroy();
     }
-  }
+
+    get x() { return this.sprite.x; }
+    get y() { return this.sprite.y; }
+    get active() { return this.alive && this.sprite.active; }
 }
-
-export default Projectile;

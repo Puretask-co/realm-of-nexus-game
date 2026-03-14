@@ -1,4 +1,4 @@
-import { EventBus } from '../core/EventBus.js';
+import EventBus from '../systems/EventBus.js';
 
 /**
  * Enemy component — encapsulates a single enemy entity.
@@ -6,174 +6,185 @@ import { EventBus } from '../core/EventBus.js';
  * Wraps a Phaser.Physics.Arcade.Sprite with:
  *  - Stats derived from enemy definition data
  *  - Health bar rendered above the sprite
+ *  - State tracking for AI (idle, patrol, chase, attack, hurt, dead)
  *  - Hit flash effect on damage
- *  - Death sequence with event emission
+ *  - Death sequence with particles and loot drop
  *
  * AI behaviour is driven externally by AISystem;
  * this component only handles per-entity state and rendering.
  */
-export class Enemy {
-  constructor(scene, x, y, definition) {
-    this.scene = scene;
-    this.eventBus = EventBus.getInstance();
-    this.definition = definition;
-    this.id = definition.id + '_' + Math.random().toString(36).slice(2, 6);
+export default class Enemy {
+    constructor(scene, x, y, definition) {
+        this.scene = scene;
+        this.definition = definition;
 
-    // Physics sprite (placeholder if no texture)
-    if (scene.textures.exists('enemy')) {
-      this.sprite = scene.physics.add.sprite(x, y, 'enemy');
-    } else {
-      const tierColors = { 1: 0xff6644, 2: 0xff4444, 3: 0xcc22cc, 4: 0xff2222 };
-      this.sprite = scene.add.rectangle(x, y, 28, 28, tierColors[definition.tier] || 0xff4444);
-      scene.physics.add.existing(this.sprite);
+        // Physics sprite
+        this.sprite = scene.physics.add.sprite(x, y, 'enemy');
+        this.sprite.setDepth(4);
+        this.sprite.setCollideWorldBounds(true);
+        this.sprite.owner = this;
+
+        // Stats from definition
+        const base = definition.baseStats || {};
+        this.stats = {
+            hp: base.hp || 50,
+            maxHp: base.hp || 50,
+            defense: base.defense || 5,
+            speed: base.speed || 80,
+            sapPool: base.sapPool || 30,
+            attack: base.attack || 10
+        };
+
+        // AI state
+        this.aiState = 'idle';
+        this.aiTimer = 0;
+        this.attackCooldown = 0;
+        this.patrolOrigin = { x, y };
+        this.patrolAngle = 0;
+
+        // Health bar
+        this._healthBarBg = scene.add.graphics().setDepth(10);
+        this._healthBarFill = scene.add.graphics().setDepth(10);
+
+        // Name tag
+        this._nameTag = scene.add.text(x, y - 26, definition.name || 'Enemy', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#cc6666',
+            stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(10);
+
+        // Hit flash
+        this._flashTimer = 0;
+
+        // Active flag
+        this.alive = true;
     }
 
-    this.sprite.setDepth(4);
-    this.sprite.body.setCollideWorldBounds(true);
-    this.sprite.owner = this;
+    // ----------------------------------------------------------------
+    // Update — called each frame
+    // ----------------------------------------------------------------
 
-    // ─── Stats from definition ─────────────────────────────────
-    // Support both flat format (health/damage/defense/speed) and nested baseStats format
-    const base = definition.baseStats || {};
-    this.stats = {
-      hp: base.hp || definition.health || 50,
-      maxHp: base.hp || definition.health || 50,
-      atk: base.attack || definition.damage || 10,
-      def: base.defense || definition.defense || 5,
-      agi: base.speed || definition.speed || 80,
-      speed: base.speed || definition.speed || 80,
-      sapPool: base.sapPool || 30
-    };
+    update(delta) {
+        if (!this.alive) return;
+        const dt = delta / 1000;
 
-    // AI config
-    this.ai = definition.ai || { behavior: 'aggressive' };
-    this.abilities = definition.abilities || [];
-    this.sapPhaseVulnerability = definition.sapPhaseVulnerability || null;
-    this.experienceReward = definition.experienceReward || 0;
-    this.lootTable = definition.lootTable || [];
+        // Update health bar position
+        this._updateHealthBar();
 
-    // Name
-    this.name = definition.name || 'Enemy';
+        // Update name tag position
+        this._nameTag.setPosition(this.sprite.x, this.sprite.y - 26);
 
-    // Active effects
-    this.activeEffects = [];
+        // Hit flash
+        if (this._flashTimer > 0) {
+            this._flashTimer -= dt;
+            this.sprite.setTintFill(0xffffff);
+            if (this._flashTimer <= 0) {
+                this.sprite.clearTint();
+            }
+        }
 
-    // Spawn origin (for leash/patrol)
-    this.spawnX = x;
-    this.spawnY = y;
-
-    // ─── Health Bar ────────────────────────────────────────────
-    this.healthBarBg = scene.add.graphics().setDepth(10);
-    this.healthBarFill = scene.add.graphics().setDepth(10);
-
-    // Name tag
-    this.nameTag = scene.add.text(x, y - 26, this.name, {
-      fontSize: '10px',
-      fill: '#ffffff',
-      fontFamily: 'monospace',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5).setDepth(10);
-
-    this.drawHealthBar();
-  }
-
-  // ─── Health Bar ──────────────────────────────────────────────────
-
-  drawHealthBar() {
-    const barWidth = 36;
-    const barHeight = 4;
-    const x = this.sprite.x - barWidth / 2;
-    const y = this.sprite.y - 20;
-
-    this.healthBarBg.clear();
-    this.healthBarBg.fillStyle(0x222222, 0.8);
-    this.healthBarBg.fillRect(x, y, barWidth, barHeight);
-
-    this.healthBarFill.clear();
-    const hpPercent = Math.max(0, this.stats.hp / this.stats.maxHp);
-    const barColor = hpPercent > 0.5 ? 0x44dd44 : hpPercent > 0.25 ? 0xddaa00 : 0xff4444;
-    this.healthBarFill.fillStyle(barColor, 1);
-    this.healthBarFill.fillRect(x, y, barWidth * hpPercent, barHeight);
-  }
-
-  // ─── Damage ──────────────────────────────────────────────────────
-
-  takeDamage(amount, source = null) {
-    this.stats.hp = Math.max(0, this.stats.hp - amount);
-    this.drawHealthBar();
-
-    // Hit flash
-    if (this.sprite.setFillStyle) {
-      const origColor = this.sprite.fillColor;
-      this.sprite.setFillStyle(0xffffff);
-      this.scene.time.delayedCall(80, () => {
-        if (this.sprite.active) this.sprite.setFillStyle(origColor);
-      });
-    } else {
-      this.sprite.setTintFill(0xffffff);
-      this.scene.time.delayedCall(80, () => {
-        if (this.sprite.active) this.sprite.clearTint();
-      });
+        // Cooldowns
+        if (this.attackCooldown > 0) {
+            this.attackCooldown -= dt;
+        }
+        this.aiTimer += dt;
     }
 
-    this.eventBus.emit('combat:damage', {
-      target: { id: this.id, name: this.name, hp: this.stats.hp, maxHp: this.stats.maxHp },
-      source,
-      damage: amount
-    });
+    // ----------------------------------------------------------------
+    // Health bar
+    // ----------------------------------------------------------------
 
-    if (this.stats.hp <= 0) {
-      this.die(source);
+    _updateHealthBar() {
+        const x = this.sprite.x - 16;
+        const y = this.sprite.y - 22;
+        const w = 32;
+        const h = 3;
+        const ratio = Math.max(0, this.stats.hp / this.stats.maxHp);
+
+        this._healthBarBg.clear();
+        this._healthBarBg.fillStyle(0x330000, 0.7);
+        this._healthBarBg.fillRect(x, y, w, h);
+
+        this._healthBarFill.clear();
+        const barColor = ratio > 0.5 ? 0xff4444 : ratio > 0.25 ? 0xff8844 : 0xff2222;
+        this._healthBarFill.fillStyle(barColor, 0.9);
+        this._healthBarFill.fillRect(x, y, w * ratio, h);
     }
-  }
 
-  // ─── Death ───────────────────────────────────────────────────────
+    // ----------------------------------------------------------------
+    // Damage
+    // ----------------------------------------------------------------
 
-  die(source = null) {
-    this.eventBus.emit('enemy-defeated', {
-      enemy: this,
-      definition: this.definition,
-      source,
-      experienceReward: this.experienceReward,
-      lootTable: this.lootTable,
-      x: this.sprite.x,
-      y: this.sprite.y
-    });
+    takeDamage(amount, element) {
+        if (!this.alive) return;
 
-    // Clean up visuals
-    this.healthBarBg.destroy();
-    this.healthBarFill.destroy();
-    this.nameTag.destroy();
-    this.sprite.destroy();
-  }
+        // Apply defense
+        const defReduction = this.stats.defense / (this.stats.defense + 100);
+        const finalDamage = Math.max(1, Math.round(amount * (1 - defReduction)));
 
-  // ─── Update ──────────────────────────────────────────────────────
+        this.stats.hp -= finalDamage;
 
-  update(delta) {
-    if (this.stats.hp <= 0) return;
+        // Flash white
+        this._flashTimer = 0.1;
 
-    // Sync health bar and name tag position
-    this.drawHealthBar();
-    this.nameTag.setPosition(this.sprite.x, this.sprite.y - 26);
-  }
+        // Knockback
+        const player = this.scene.player || this.scene.playerComponent?.sprite;
+        if (player) {
+            const angle = Phaser.Math.Angle.Between(player.x, player.y, this.sprite.x, this.sprite.y);
+            this.sprite.setVelocity(
+                Math.cos(angle) * 150,
+                Math.sin(angle) * 150
+            );
+        }
 
-  // ─── Position Helpers ────────────────────────────────────────────
+        if (this.stats.hp <= 0) {
+            this._die();
+        }
 
-  get x() { return this.sprite.x; }
-  set x(val) { this.sprite.x = val; }
-  get y() { return this.sprite.y; }
-  set y(val) { this.sprite.y = val; }
-  get position() { return { x: this.sprite.x, y: this.sprite.y }; }
+        return finalDamage;
+    }
 
-  get active() { return this.sprite.active && this.stats.hp > 0; }
+    // ----------------------------------------------------------------
+    // Death
+    // ----------------------------------------------------------------
 
-  destroy() {
-    this.healthBarBg.destroy();
-    this.healthBarFill.destroy();
-    this.nameTag.destroy();
-    this.sprite.destroy();
-  }
+    _die() {
+        this.alive = false;
+        this.aiState = 'dead';
+
+        // Emit event for loot, XP, etc.
+        EventBus.emit('enemy-defeated', {
+            enemy: this.sprite,
+            definition: this.definition,
+            position: { x: this.sprite.x, y: this.sprite.y }
+        });
+
+        // Fade out and destroy
+        this.scene.tweens.add({
+            targets: this.sprite,
+            alpha: 0,
+            scale: 0.5,
+            duration: 300,
+            onComplete: () => this.destroy()
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Cleanup
+    // ----------------------------------------------------------------
+
+    destroy() {
+        this._healthBarBg.destroy();
+        this._healthBarFill.destroy();
+        this._nameTag.destroy();
+        this.sprite.destroy();
+        this.alive = false;
+    }
+
+    // ----------------------------------------------------------------
+    // Position helpers
+    // ----------------------------------------------------------------
+
+    get x() { return this.sprite.x; }
+    get y() { return this.sprite.y; }
+    get active() { return this.alive && this.sprite.active; }
 }
-
-export default Enemy;

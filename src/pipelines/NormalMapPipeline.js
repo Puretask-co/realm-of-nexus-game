@@ -1,354 +1,135 @@
 /**
- * NormalMapPipeline - Custom WebGL pipeline for per-pixel normal-mapped lighting.
+ * NormalMapPipeline — Custom WebGL pipeline for normal-mapped 2D sprites.
  *
- * Extends Phaser's SinglePipeline to inject a fragment shader that reads from
- * a normal map texture and calculates diffuse + specular lighting against an
- * array of dynamic light sources passed in as uniforms.
+ * Normal maps add the illusion of depth to flat 2D sprites by
+ * encoding surface normals in an RGB texture. This pipeline
+ * reads the normal map and computes per-pixel lighting against
+ * active light sources.
  *
- * Supports up to MAX_LIGHTS simultaneous lights per draw call.  Each light is
- * described by position (screen-space), colour, intensity, and radius.
+ * Usage:
+ *   // In BootScene after textures are loaded:
+ *   game.renderer.pipelines.addPostPipeline('NormalMap', NormalMapPipeline);
  *
- * For non-WebGL renderers (Canvas fallback) this class provides no-op stubs
- * so the rest of the codebase can reference it safely.
+ *   // On a sprite:
+ *   sprite.setPostPipeline('NormalMap');
+ *   sprite.pipelineData.normalMap = 'sprite_normals';
  *
- * Part of the Realm of Nexus / Verdance project.
+ * The pipeline receives light positions from the AdvancedLightingSystem
+ * via a uniform buffer updated each frame.
+ *
+ * Note: Falls back gracefully to standard rendering in Canvas mode.
  */
+export default class NormalMapPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
+    constructor(game) {
+        super({
+            game,
+            name: 'NormalMapPipeline',
+            fragShader: NormalMapPipeline.FRAG_SHADER
+        });
 
-// ── Constants ──────────────────────────────────────────────────────────────────
-
-const MAX_LIGHTS = 16;
-
-// ── GLSL source ────────────────────────────────────────────────────────────────
-
-const VERT_SHADER = `
-precision mediump float;
-
-attribute vec2 inPosition;
-attribute vec2 inTexCoord;
-attribute float inTintEffect;
-attribute vec4 inTint;
-
-uniform mat4 uProjectionMatrix;
-
-varying vec2 vTexCoord;
-varying vec4 vTint;
-varying float vTintEffect;
-
-void main () {
-    gl_Position = uProjectionMatrix * vec4(inPosition, 1.0, 1.0);
-    vTexCoord   = inTexCoord;
-    vTint       = inTint;
-    vTintEffect = inTintEffect;
-}
-`;
-
-const FRAG_SHADER = `
-precision mediump float;
-
-uniform sampler2D uMainSampler;   // diffuse / colour texture
-uniform sampler2D uNormalSampler;  // normal map
-
-// Light data arrays (screen-space)
-uniform int   uLightCount;
-uniform vec3  uLightPos[${MAX_LIGHTS}];       // x, y, z (z = height above surface)
-uniform vec3  uLightColor[${MAX_LIGHTS}];     // r, g, b  (0..1)
-uniform float uLightIntensity[${MAX_LIGHTS}]; // 0..N
-uniform float uLightRadius[${MAX_LIGHTS}];    // in pixels
-
-// Ambient
-uniform vec3  uAmbientColor;
-uniform float uAmbientIntensity;
-
-// Texture resolution (for coordinate scaling)
-uniform vec2 uResolution;
-
-varying vec2 vTexCoord;
-varying vec4 vTint;
-varying float vTintEffect;
-
-void main () {
-    vec4 diffuse = texture2D(uMainSampler, vTexCoord);
-    if (diffuse.a < 0.01) {
-        discard;
+        // Light uniforms (max 8 lights)
+        this.maxLights = 8;
+        this.lightPositions = new Float32Array(this.maxLights * 3);  // x, y, z
+        this.lightColors = new Float32Array(this.maxLights * 4);     // r, g, b, intensity
+        this.lightRadii = new Float32Array(this.maxLights);
+        this.activeLightCount = 0;
+        this.ambientColor = [0.15, 0.12, 0.2, 1.0];
     }
 
-    // Sample normal map and unpack from [0,1] to [-1,1]
-    vec3 normal = texture2D(uNormalSampler, vTexCoord).rgb;
+    onPreRender() {
+        this.set1i('uNormalMap', 1);
+        this.set1i('uLightCount', this.activeLightCount);
+        this.set4fv('uAmbientColor', this.ambientColor);
+
+        for (let i = 0; i < this.activeLightCount && i < this.maxLights; i++) {
+            this.set3f(`uLightPos[${i}]`,
+                this.lightPositions[i * 3],
+                this.lightPositions[i * 3 + 1],
+                this.lightPositions[i * 3 + 2]
+            );
+            this.set4f(`uLightColor[${i}]`,
+                this.lightColors[i * 4],
+                this.lightColors[i * 4 + 1],
+                this.lightColors[i * 4 + 2],
+                this.lightColors[i * 4 + 3]
+            );
+            this.set1f(`uLightRadius[${i}]`, this.lightRadii[i]);
+        }
+    }
+
+    /**
+     * Feed light data from AdvancedLightingSystem.
+     */
+    setLights(lights, cameraScrollX, cameraScrollY) {
+        this.activeLightCount = Math.min(lights.length, this.maxLights);
+
+        for (let i = 0; i < this.activeLightCount; i++) {
+            const light = lights[i];
+            // Convert world coords to screen coords
+            this.lightPositions[i * 3] = light.x - cameraScrollX;
+            this.lightPositions[i * 3 + 1] = light.y - cameraScrollY;
+            this.lightPositions[i * 3 + 2] = light.z || 60; // height above surface
+
+            const color = Phaser.Display.Color.IntegerToColor(light.color || 0xffffff);
+            this.lightColors[i * 4] = color.redGL;
+            this.lightColors[i * 4 + 1] = color.greenGL;
+            this.lightColors[i * 4 + 2] = color.blueGL;
+            this.lightColors[i * 4 + 3] = light.intensity || 1.0;
+
+            this.lightRadii[i] = light.radius || 100;
+        }
+    }
+
+    setAmbient(r, g, b, a) {
+        this.ambientColor = [r, g, b, a || 1.0];
+    }
+}
+
+// ----------------------------------------------------------------
+// Fragment shader for normal-mapped lighting
+// ----------------------------------------------------------------
+
+NormalMapPipeline.FRAG_SHADER = `
+precision mediump float;
+
+uniform sampler2D uMainSampler;   // diffuse texture
+uniform sampler2D uNormalMap;     // normal map texture
+uniform int       uLightCount;
+uniform vec4      uAmbientColor;
+uniform vec3      uLightPos[8];
+uniform vec4      uLightColor[8]; // rgb + intensity
+uniform float     uLightRadius[8];
+
+varying vec2 outTexCoord;
+
+void main() {
+    vec4 diffuse = texture2D(uMainSampler, outTexCoord);
+    vec3 normal  = texture2D(uNormalMap, outTexCoord).rgb;
+
+    // Decode normal from [0,1] to [-1,1]
     normal = normalize(normal * 2.0 - 1.0);
 
-    // Accumulate lighting
-    vec3 totalLight = uAmbientColor * uAmbientIntensity;
+    // Start with ambient
+    vec3 finalColor = diffuse.rgb * uAmbientColor.rgb * uAmbientColor.a;
 
-    for (int i = 0; i < ${MAX_LIGHTS}; i++) {
+    // Accumulate light contributions
+    for (int i = 0; i < 8; i++) {
         if (i >= uLightCount) break;
 
-        // Fragment position in screen pixels
-        vec2 fragPos = vTexCoord * uResolution;
-
-        // Direction from fragment to light (2D with z for height)
-        vec3 lightDir = vec3(uLightPos[i].xy - fragPos, uLightPos[i].z);
-        float distance = length(lightDir);
+        vec3 lightDir = uLightPos[i] - vec3(gl_FragCoord.xy, 0.0);
+        float dist = length(lightDir);
         lightDir = normalize(lightDir);
 
-        // Attenuation: smooth falloff based on radius
-        float attenuation = 1.0 - smoothstep(0.0, uLightRadius[i], distance);
-        attenuation *= uLightIntensity[i];
+        // Attenuation
+        float atten = 1.0 - smoothstep(0.0, uLightRadius[i], dist);
+        atten *= uLightColor[i].a; // intensity
 
-        // Diffuse (Lambert)
-        float diff = max(dot(normal, lightDir), 0.0);
+        // Lambertian diffuse
+        float ndotl = max(dot(normal, lightDir), 0.0);
 
-        // Specular (Blinn-Phong)
-        vec3 viewDir  = vec3(0.0, 0.0, 1.0); // top-down view
-        vec3 halfDir  = normalize(lightDir + viewDir);
-        float spec    = pow(max(dot(normal, halfDir), 0.0), 32.0) * 0.3;
-
-        totalLight += uLightColor[i] * (diff + spec) * attenuation;
+        finalColor += diffuse.rgb * uLightColor[i].rgb * ndotl * atten;
     }
 
-    // Apply accumulated lighting to the diffuse colour
-    vec3 lit = diffuse.rgb * totalLight;
-
-    // Apply Phaser tint
-    vec4 color = vec4(lit, diffuse.a);
-
-    if (vTintEffect < 0.5) {
-        color.rgb *= vTint.rgb;
-    } else {
-        color.rgb = mix(color.rgb, vTint.rgb, vTint.a);
-    }
-
-    gl_FragColor = color;
+    gl_FragColor = vec4(finalColor, diffuse.a);
 }
 `;
-
-// ── Pipeline class ─────────────────────────────────────────────────────────────
-
-/**
- * Checks whether we are running under a WebGL renderer (and whether the
- * necessary Phaser pipeline base class exists).  This allows the module to
- * be safely imported in Canvas-mode games without throwing.
- */
-function isWebGLAvailable() {
-  return (
-    typeof Phaser !== 'undefined' &&
-    Phaser.Renderer &&
-    Phaser.Renderer.WebGL &&
-    Phaser.Renderer.WebGL.Pipelines &&
-    Phaser.Renderer.WebGL.Pipelines.SinglePipeline
-  );
-}
-
-/**
- * Build the actual pipeline class only if WebGL pipelines are available.
- * Otherwise export a lightweight fallback that silently no-ops.
- */
-let NormalMapPipelineClass;
-
-if (isWebGLAvailable()) {
-  NormalMapPipelineClass = class NormalMapPipeline extends Phaser.Renderer.WebGL.Pipelines.SinglePipeline {
-    /**
-     * @param {Phaser.Game} game - The Phaser Game instance.
-     */
-    constructor(game) {
-      super({
-        game,
-        name: 'NormalMapPipeline',
-        fragShader: FRAG_SHADER,
-        vertShader: VERT_SHADER,
-        uniforms: [
-          'uProjectionMatrix',
-          'uMainSampler',
-          'uNormalSampler',
-          'uLightCount',
-          'uLightPos',
-          'uLightColor',
-          'uLightIntensity',
-          'uLightRadius',
-          'uAmbientColor',
-          'uAmbientIntensity',
-          'uResolution',
-        ],
-      });
-
-      /**
-       * Currently-bound normal map WebGL texture reference.
-       * Set by calling setNormalMap() before drawing a sprite.
-       * @type {WebGLTexture|null}
-       */
-      this._normalMapTexture = null;
-
-      /** Cached light uniform arrays (avoid per-frame allocations). */
-      this._lightPos = new Float32Array(MAX_LIGHTS * 3);
-      this._lightColor = new Float32Array(MAX_LIGHTS * 3);
-      this._lightIntensity = new Float32Array(MAX_LIGHTS);
-      this._lightRadius = new Float32Array(MAX_LIGHTS);
-      this._lightCount = 0;
-
-      /** Ambient defaults. */
-      this._ambientColor = new Float32Array([0.1, 0.1, 0.15]);
-      this._ambientIntensity = 0.2;
-    }
-
-    /**
-     * Called by Phaser whenever a game object using this pipeline is about
-     * to be rendered.  We upload the normal map texture unit and all light
-     * uniforms here.
-     *
-     * @param {Phaser.GameObjects.GameObject} gameObject
-     * @returns {this}
-     */
-    onBind(gameObject) {
-      super.onBind(gameObject);
-
-      // Upload normal map to texture unit 1
-      if (this._normalMapTexture) {
-        this.set1i('uNormalSampler', 1);
-        this.renderer.gl.activeTexture(this.renderer.gl.TEXTURE1);
-        this.renderer.gl.bindTexture(
-          this.renderer.gl.TEXTURE_2D,
-          this._normalMapTexture,
-        );
-        this.renderer.gl.activeTexture(this.renderer.gl.TEXTURE0);
-      }
-
-      // Resolution
-      const width = this.renderer.width;
-      const height = this.renderer.height;
-      this.set2f('uResolution', width, height);
-
-      // Ambient
-      this.set3fv('uAmbientColor', this._ambientColor);
-      this.set1f('uAmbientIntensity', this._ambientIntensity);
-
-      // Lights
-      this.set1i('uLightCount', this._lightCount);
-
-      if (this._lightCount > 0) {
-        this.set3fv('uLightPos', this._lightPos);
-        this.set3fv('uLightColor', this._lightColor);
-        this.set1fv('uLightIntensity', this._lightIntensity);
-        this.set1fv('uLightRadius', this._lightRadius);
-      }
-
-      return this;
-    }
-
-    /**
-     * Provide the raw WebGL texture to use as the normal map.
-     *
-     * @param {WebGLTexture} texture
-     * @returns {this}
-     */
-    setNormalMap(texture) {
-      this._normalMapTexture = texture;
-      return this;
-    }
-
-    /**
-     * Bulk-set light data from the AdvancedLightingSystem's light collection.
-     *
-     * Each entry in the array should look like:
-     * ```
-     * { x, y, z?, color: 0xRRGGBB, intensity, radius }
-     * ```
-     *
-     * @param {Array<Object>} lights - Array of light descriptors.
-     * @returns {this}
-     */
-    setLightData(lights) {
-      const count = Math.min(lights.length, MAX_LIGHTS);
-      this._lightCount = count;
-
-      for (let i = 0; i < count; i++) {
-        const l = lights[i];
-        const base = i * 3;
-
-        this._lightPos[base] = l.x;
-        this._lightPos[base + 1] = l.y;
-        this._lightPos[base + 2] = l.z ?? 60; // default height
-
-        this._lightColor[base] = ((l.color >> 16) & 0xff) / 255;
-        this._lightColor[base + 1] = ((l.color >> 8) & 0xff) / 255;
-        this._lightColor[base + 2] = (l.color & 0xff) / 255;
-
-        this._lightIntensity[i] = l.intensity ?? 1;
-        this._lightRadius[i] = l.radius ?? 200;
-      }
-
-      // Zero out remaining slots
-      for (let i = count; i < MAX_LIGHTS; i++) {
-        const base = i * 3;
-        this._lightPos[base] = 0;
-        this._lightPos[base + 1] = 0;
-        this._lightPos[base + 2] = 0;
-        this._lightColor[base] = 0;
-        this._lightColor[base + 1] = 0;
-        this._lightColor[base + 2] = 0;
-        this._lightIntensity[i] = 0;
-        this._lightRadius[i] = 0;
-      }
-
-      return this;
-    }
-
-    /**
-     * Set the ambient light colour and intensity used by the shader.
-     *
-     * @param {number} color     - 0xRRGGBB
-     * @param {number} intensity - 0..1
-     * @returns {this}
-     */
-    setAmbient(color, intensity) {
-      this._ambientColor[0] = ((color >> 16) & 0xff) / 255;
-      this._ambientColor[1] = ((color >> 8) & 0xff) / 255;
-      this._ambientColor[2] = (color & 0xff) / 255;
-      this._ambientIntensity = intensity;
-      return this;
-    }
-
-    /**
-     * Convenience: register this pipeline on a Phaser game instance.
-     * Call during the Boot scene or before any sprite uses the pipeline.
-     *
-     * @param {Phaser.Game} game
-     */
-    static register(game) {
-      if (game.renderer && game.renderer.pipelines) {
-        game.renderer.pipelines.addPostPipeline('NormalMapPipeline', NormalMapPipelineClass);
-      }
-    }
-  };
-} else {
-  // ── Canvas / fallback stub ─────────────────────────────────────────────────
-  NormalMapPipelineClass = class NormalMapPipeline {
-    constructor() {
-      console.warn(
-        '[NormalMapPipeline] WebGL not available. Normal-map lighting disabled.',
-      );
-      this._lightCount = 0;
-    }
-
-    onBind() {
-      return this;
-    }
-
-    setNormalMap() {
-      return this;
-    }
-
-    setLightData() {
-      return this;
-    }
-
-    setAmbient() {
-      return this;
-    }
-
-    static register() {
-      /* no-op */
-    }
-  };
-}
-
-export const NormalMapPipeline = NormalMapPipelineClass;
-export default NormalMapPipeline;

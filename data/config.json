@@ -1,0 +1,52 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-02-09T00:00:00Z",
+    "balance": {
+        "sapCycle": {
+            "phaseDurationSeconds": 180,
+            "transitionDurationSeconds": 5,
+            "phases": ["blue", "crimson", "silver"]
+        },
+        "player": {
+            "startingSap": 100,
+            "startingHp": 100,
+            "levelUpSapBonus": 15,
+            "levelUpHpBonus": 20,
+            "baseCritChance": 0.15,
+            "baseCritMultiplier": 1.5
+        },
+        "combat": {
+            "turnTimeLimitSeconds": 30,
+            "maxCombatantsPerSide": 4,
+            "escapeChance": 0.5,
+            "fleeSpeedRequirement": 2
+        },
+        "progression": {
+            "levelUpXpMultiplier": 1.5,
+            "skillPointsPerLevel": 2,
+            "maxLevel": 50
+        },
+        "difficulty": {
+            "easy": {
+                "damageMultiplier": 0.7,
+                "enemyHpMultiplier": 0.8,
+                "xpMultiplier": 1.2
+            },
+            "normal": {
+                "damageMultiplier": 1.0,
+                "enemyHpMultiplier": 1.0,
+                "xpMultiplier": 1.0
+            },
+            "hard": {
+                "damageMultiplier": 1.3,
+                "enemyHpMultiplier": 1.5,
+                "xpMultiplier": 0.8
+            }
+        }
+    },
+    "ui": {
+        "damageNumberDuration": 1500,
+        "combatLogMaxEntries": 50,
+        "tooltipDelayMs": 500
+    }
+}

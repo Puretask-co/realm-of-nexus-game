@@ -1,22 +1,30 @@
 {
-  "name": "realm-of-nexus-verdance",
+  "name": "realm-of-nexus-game",
   "version": "0.1.0",
-  "description": "Verdance - A 2D tactical RPG set in the Realm of Nexus universe, featuring the Sap Cycle temporal magic system",
+  "description": "Realm of Nexus - A 2D tactical RPG built with Phaser.js featuring the Sap Cycle temporal magic system",
   "main": "src/main.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "editor": "EDITOR_MODE=true vite --host",
+    "validate-data": "node scripts/validate-data.js",
+    "export-csv": "node scripts/export-csv.js"
   },
-  "keywords": ["phaser", "game", "rpg", "tactical", "2d"],
-  "author": "Nathan Chiaratti - PureTask",
-  "license": "UNLICENSED",
-  "private": true,
   "dependencies": {
     "phaser": "^3.80.1"
   },
   "devDependencies": {
     "vite": "^5.4.0"
-  }
+  },
+  "keywords": [
+    "phaser",
+    "game",
+    "rpg",
+    "tactical",
+    "2d"
+  ],
+  "author": "Nathan Chiaratti",
+  "license": "UNLICENSED"
 }

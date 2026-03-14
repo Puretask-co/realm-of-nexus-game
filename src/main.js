@@ -1,50 +1,54 @@
 import Phaser from 'phaser';
-import { GameConfig } from './core/GameConfig.js';
-import { EventBus } from './core/EventBus.js';
-import { HotReloadSystem } from './systems/HotReloadSystem.js';
-import { BootScene } from './scenes/BootScene.js';
-import { PreloadScene } from './scenes/PreloadScene.js';
-import { GameScene } from './scenes/GameScene.js';
-import { EditorScene } from './scenes/EditorScene.js';
-import { UIScene } from './scenes/UIScene.js';
+import BootScene from './scenes/BootScene.js';
+import GameScene from './scenes/GameScene.js';
+import EditorScene from './scenes/EditorScene.js';
+import UIScene from './scenes/UIScene.js';
+
+/**
+ * Realm of Nexus — Main entry point.
+ *
+ * Initialises the Phaser game instance with all scenes registered.
+ * The BootScene loads assets and data, then transitions to GameScene.
+ * EditorScene provides a visual level editor accessible via a hotkey.
+ */
 
 const config = {
-  type: Phaser.AUTO,
-  parent: 'game-container',
-  width: GameConfig.WIDTH,
-  height: GameConfig.HEIGHT,
-  backgroundColor: '#1a1a2e',
-  pixelArt: true,
-  roundPixels: true,
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-      debug: GameConfig.DEBUG.SHOW_PHYSICS
-    }
-  },
-  scene: [BootScene, PreloadScene, GameScene, EditorScene, UIScene],
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-  render: {
-    antialias: false,
-    pixelArt: true
-  }
+    type: Phaser.AUTO,
+    width: 1280,
+    height: 720,
+    parent: 'game-container',
+    backgroundColor: '#0a0a1a',
+
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        min: { width: 800, height: 450 },
+        max: { width: 1920, height: 1080 }
+    },
+
+    render: {
+        pixelArt: true,
+        antialias: false,
+        roundPixels: true
+    },
+
+    scene: [BootScene, GameScene, EditorScene, UIScene]
 };
 
 const game = new Phaser.Game(config);
 
-// Store global references
-game.eventBus = EventBus.getInstance();
-window.__VERDANCE_GAME = game;
-
-// Initialize HotReloadSystem in development mode
-if (import.meta.hot || import.meta.env?.DEV) {
-  const hotReload = HotReloadSystem.getInstance();
-  hotReload.initialize();
-  window.__VERDANCE_HOT_RELOAD = hotReload;
+// Expose for debugging in dev mode
+if (import.meta.env.DEV) {
+    window.__GAME = game;
+    console.log('[Verdance] Development mode — window.__GAME is available');
 }
 
 export default game;

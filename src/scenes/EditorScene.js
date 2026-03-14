@@ -1,1068 +1,711 @@
-import Phaser from 'phaser';
-import { EventBus } from '../core/EventBus.js';
-import { GameConfig } from '../core/GameConfig.js';
-import { createBlankScene, SCENE_FORMAT_VERSION } from '../configs/sceneFormatSpec.js';
-import { InspectorPanel } from '../ui/InspectorPanel.js';
-import { HotReloadOverlay } from '../ui/HotReloadOverlay.js';
-import { HotReloadSystem } from '../systems/HotReloadSystem.js';
+import EventBus from '../systems/EventBus.js';
+import dataManager from '../systems/DataManager.js';
 
 /**
- * EditorScene - Visual Level Editor for Verdance.
- * Provides a full scene editing environment with drag-and-drop placement,
- * property inspector, hierarchy panel, undo/redo, save/load, and grid snapping.
+ * EditorScene — Visual Level Editor.
+ *
+ * A full in-game level editor accessible via F2 during gameplay.
+ *
+ * Features:
+ *  - Object palette: place enemies, lights, spawn points, triggers
+ *  - Drag-and-drop placement with grid snapping
+ *  - Property inspector panel for selected objects
+ *  - Save/Load scene layouts as JSON
+ *  - Undo/Redo stack
+ *  - Layer visibility toggles
+ *  - Camera controls: pan (middle-click drag), zoom (scroll wheel)
+ *  - Test mode: instantly play the level being edited
+ *
+ * Scene data format:
+ *   {
+ *     objects: [{ type, x, y, properties }],
+ *     triggers: [{ x, y, width, height, event, data }],
+ *     spawnPoints: [{ x, y, enemyId, respawnDelay }],
+ *     lights: [{ x, y, color, radius, intensity }],
+ *     metadata: { name, author, version }
+ *   }
  */
-export class EditorScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'EditorScene' });
-    this.eventBus = EventBus.getInstance();
-  }
-
-  create() {
-    // ─── State ────────────────────────────────────────────────────
-    this.sceneData = createBlankScene('Untitled Level');
-    this.selectedObject = null;
-    this.selectedObjects = [];
-    this.hoveredObject = null;
-    this.placedObjects = [];
-    this.gridVisible = true;
-    this.gridSize = 32;
-    this.snapToGrid = true;
-    this.currentLayer = 'layer_objects';
-    this.currentTool = 'select'; // select, place, erase, pan, rect_select, trigger, light
-    this.currentPaletteItem = null;
-    this.paletteVisible = false;
-    this.isPanning = false;
-    this.panStartX = 0;
-    this.panStartY = 0;
-    this.isDragging = false;
-    this.dragOffsetX = 0;
-    this.dragOffsetY = 0;
-    this.copyBuffer = null;
-
-    // Undo/Redo
-    this.undoStack = [];
-    this.redoStack = [];
-    this.maxUndoSteps = 50;
-
-    // Camera setup
-    this.editorCamera = this.cameras.main;
-    this.editorCamera.setBackgroundColor('#2a2a3e');
-
-    // ─── Grid ─────────────────────────────────────────────────────
-    this.gridGraphics = this.add.graphics();
-    this.gridGraphics.setDepth(-1000);
-    this.drawGrid();
-
-    // ─── Selection Indicator ──────────────────────────────────────
-    this.selectionRect = this.add.graphics();
-    this.selectionRect.setDepth(10000);
-
-    // ─── Toolbar UI (rendered as simple shapes/text) ──────────────
-    this.createEditorUI();
-
-    // ─── Input Handling ───────────────────────────────────────────
-    this.setupInputHandlers();
-    this.setupKeyboardShortcuts();
-
-    // ─── Coordinate display ───────────────────────────────────────
-    this.coordsText = this.add.text(10, GameConfig.HEIGHT - 30, 'X: 0  Y: 0', {
-      fontSize: '12px', fill: '#aaaaaa', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(10001);
-
-    this.toolText = this.add.text(10, 10, 'Tool: Select', {
-      fontSize: '14px', fill: '#ffffff', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(10001);
-
-    this.infoText = this.add.text(GameConfig.WIDTH / 2, 10, 'Verdance Level Editor', {
-      fontSize: '14px', fill: '#4a9eff', fontFamily: 'monospace'
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10001);
-
-    // ─── Inspector Panel ─────────────────────────────────────────
-    this.inspectorPanel = new InspectorPanel(this);
-
-    // ─── Hot Reload Overlay ──────────────────────────────────────
-    this.hotReloadOverlay = new HotReloadOverlay(this);
-
-    // Initialize HotReloadSystem for the editor
-    const hotReload = HotReloadSystem.getInstance();
-    if (!hotReload.enabled) {
-      hotReload.initialize();
+export default class EditorScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'EditorScene' });
     }
 
-    this.eventBus.emit('editor:ready');
-  }
+    create() {
+        // Editor state
+        this.editorObjects = [];
+        this.selectedObject = null;
+        this.gridSize = 32;
+        this.snapToGrid = true;
+        this.currentTool = 'select';       // select | place | erase | trigger | light
+        this.currentPalette = 'enemy';     // enemy | npc | spawn | decoration
+        this.undoStack = [];
+        this.redoStack = [];
+        this.layers = {
+            objects: { visible: true, items: [] },
+            triggers: { visible: true, items: [] },
+            lights: { visible: true, items: [] },
+            spawns: { visible: true, items: [] }
+        };
 
-  // ─── Grid Drawing ─────────────────────────────────────────────────
+        // Camera setup
+        this.cameras.main.setBackgroundColor('#111118');
 
-  drawGrid() {
-    this.gridGraphics.clear();
-    if (!this.gridVisible) return;
+        // Draw grid
+        this._drawGrid();
 
-    const cam = this.editorCamera;
-    const startX = Math.floor(cam.scrollX / this.gridSize) * this.gridSize;
-    const startY = Math.floor(cam.scrollY / this.gridSize) * this.gridSize;
-    const endX = startX + cam.width / cam.zoom + this.gridSize * 2;
-    const endY = startY + cam.height / cam.zoom + this.gridSize * 2;
+        // UI panels
+        this._createToolbar();
+        this._createPalette();
+        this._createInspector();
+        this._createStatusBar();
 
-    // Minor grid lines
-    this.gridGraphics.lineStyle(1, 0x333355, 0.3);
-    for (let x = startX; x <= endX; x += this.gridSize) {
-      this.gridGraphics.lineBetween(x, startY, x, endY);
-    }
-    for (let y = startY; y <= endY; y += this.gridSize) {
-      this.gridGraphics.lineBetween(startX, y, endX, y);
-    }
+        // Input
+        this._setupInput();
 
-    // Major grid lines (every 4 tiles)
-    const majorSize = this.gridSize * 4;
-    const majorStartX = Math.floor(cam.scrollX / majorSize) * majorSize;
-    const majorStartY = Math.floor(cam.scrollY / majorSize) * majorSize;
-
-    this.gridGraphics.lineStyle(1, 0x555588, 0.5);
-    for (let x = majorStartX; x <= endX; x += majorSize) {
-      this.gridGraphics.lineBetween(x, startY, x, endY);
-    }
-    for (let y = majorStartY; y <= endY; y += majorSize) {
-      this.gridGraphics.lineBetween(startX, y, endX, y);
-    }
-
-    // Origin axes
-    this.gridGraphics.lineStyle(2, 0xff4444, 0.6);
-    this.gridGraphics.lineBetween(0, startY, 0, endY); // Y axis
-    this.gridGraphics.lineStyle(2, 0x44ff44, 0.6);
-    this.gridGraphics.lineBetween(startX, 0, endX, 0); // X axis
-  }
-
-  // ─── Editor UI ────────────────────────────────────────────────────
-
-  createEditorUI() {
-    // Toolbar background
-    this.toolbarBg = this.add.rectangle(GameConfig.WIDTH / 2, 40, GameConfig.WIDTH, 60, 0x1a1a2e, 0.9)
-      .setScrollFactor(0).setDepth(9999).setOrigin(0.5, 0.5);
-
-    // Tool buttons
-    const tools = [
-      { key: 'select', label: 'SEL', x: 80 },
-      { key: 'place', label: 'PLC', x: 130 },
-      { key: 'erase', label: 'ERA', x: 180 },
-      { key: 'pan', label: 'PAN', x: 230 },
-      { key: 'rect_select', label: 'RCT', x: 280 },
-      { key: 'trigger', label: 'TRG', x: 330 },
-      { key: 'light', label: 'LGT', x: 380 }
-    ];
-
-    this.toolButtons = [];
-    for (const tool of tools) {
-      const btn = this.add.text(tool.x, 40, tool.label, {
-        fontSize: '12px',
-        fill: '#aaaaaa',
-        fontFamily: 'monospace',
-        backgroundColor: '#333355',
-        padding: { x: 6, y: 4 }
-      }).setScrollFactor(0).setDepth(10000).setOrigin(0.5).setInteractive();
-
-      btn.setData('toolKey', tool.key);
-      btn.on('pointerdown', () => this.setTool(tool.key));
-      this.toolButtons.push(btn);
-    }
-
-    // Action buttons
-    const actions = [
-      { label: 'SAVE', x: GameConfig.WIDTH - 200, action: () => this.saveScene() },
-      { label: 'LOAD', x: GameConfig.WIDTH - 150, action: () => this.loadScenePrompt() },
-      { label: 'GRID', x: GameConfig.WIDTH - 100, action: () => this.toggleGrid() },
-      { label: 'SNAP', x: GameConfig.WIDTH - 50, action: () => this.toggleSnap() }
-    ];
-
-    for (const action of actions) {
-      const btn = this.add.text(action.x, 40, action.label, {
-        fontSize: '12px',
-        fill: '#aaaaaa',
-        fontFamily: 'monospace',
-        backgroundColor: '#333355',
-        padding: { x: 6, y: 4 }
-      }).setScrollFactor(0).setDepth(10000).setOrigin(0.5).setInteractive();
-
-      btn.on('pointerdown', action.action);
-    }
-
-    // Layer indicator
-    this.layerText = this.add.text(350, 40, `Layer: ${this.currentLayer}`, {
-      fontSize: '12px', fill: '#88aaff', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(10000).setOrigin(0, 0.5);
-
-    // Object count
-    this.objectCountText = this.add.text(550, 40, 'Objects: 0', {
-      fontSize: '12px', fill: '#88ff88', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(10000).setOrigin(0, 0.5);
-  }
-
-  // ─── Input Handling ───────────────────────────────────────────────
-
-  setupInputHandlers() {
-    // Mouse move
-    this.input.on('pointermove', (pointer) => {
-      const worldX = pointer.worldX;
-      const worldY = pointer.worldY;
-      this.coordsText.setText(`X: ${Math.round(worldX)}  Y: ${Math.round(worldY)}`);
-
-      if (this.isPanning) {
-        const dx = pointer.x - this.panStartX;
-        const dy = pointer.y - this.panStartY;
-        this.editorCamera.scrollX -= dx / this.editorCamera.zoom;
-        this.editorCamera.scrollY -= dy / this.editorCamera.zoom;
-        this.panStartX = pointer.x;
-        this.panStartY = pointer.y;
-        this.drawGrid();
-      }
-
-      if (this.isDragging && this.selectedObject) {
-        let newX = worldX - this.dragOffsetX;
-        let newY = worldY - this.dragOffsetY;
-        if (this.snapToGrid) {
-          newX = Math.round(newX / this.gridSize) * this.gridSize;
-          newY = Math.round(newY / this.gridSize) * this.gridSize;
-        }
-        this.selectedObject.setPosition(newX, newY);
-        this.updateSelectionIndicator();
-      }
-    });
-
-    // Mouse down
-    this.input.on('pointerdown', (pointer) => {
-      // Ignore if clicking on UI area
-      if (pointer.y < 70 && !pointer.rightButtonDown()) return;
-
-      if (pointer.rightButtonDown()) {
-        this.isPanning = true;
-        this.panStartX = pointer.x;
-        this.panStartY = pointer.y;
-        return;
-      }
-
-      switch (this.currentTool) {
-        case 'select':
-          this.handleSelectClick(pointer);
-          break;
-        case 'place':
-          this.handlePlaceClick(pointer);
-          break;
-        case 'erase':
-          this.handleEraseClick(pointer);
-          break;
-        case 'pan':
-          this.isPanning = true;
-          this.panStartX = pointer.x;
-          this.panStartY = pointer.y;
-          break;
-        case 'trigger':
-          this.handleTriggerClick(pointer);
-          break;
-        case 'light':
-          this.handleLightClick(pointer);
-          break;
-      }
-    });
-
-    // Mouse up
-    this.input.on('pointerup', (pointer) => {
-      if (this.isPanning) {
-        this.isPanning = false;
-      }
-      if (this.isDragging) {
-        this.isDragging = false;
-        if (this.selectedObject) {
-          this.pushUndo({
-            type: 'move',
-            objectId: this.selectedObject.getData('sceneObjectId'),
-            x: this.selectedObject.x,
-            y: this.selectedObject.y
-          });
-        }
-      }
-    });
-
-    // Mouse wheel zoom
-    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
-      const zoomDelta = deltaY > 0 ? -0.1 : 0.1;
-      const newZoom = Phaser.Math.Clamp(this.editorCamera.zoom + zoomDelta, 0.25, 4.0);
-      this.editorCamera.setZoom(newZoom);
-      this.drawGrid();
-    });
-  }
-
-  setupKeyboardShortcuts() {
-    // Ctrl+Z - Undo
-    this.input.keyboard.on('keydown-Z', (event) => {
-      if (event.ctrlKey || event.metaKey) {
-        if (event.shiftKey) this.redo();
-        else this.undo();
-      }
-    });
-
-    // Ctrl+C - Copy
-    this.input.keyboard.on('keydown-C', (event) => {
-      if ((event.ctrlKey || event.metaKey) && this.selectedObject) {
-        this.copyBuffer = this.serializeObject(this.selectedObject);
-      }
-    });
-
-    // Ctrl+V - Paste
-    this.input.keyboard.on('keydown-V', (event) => {
-      if ((event.ctrlKey || event.metaKey) && this.copyBuffer) {
-        const pasted = { ...this.copyBuffer };
-        pasted.x += this.gridSize;
-        pasted.y += this.gridSize;
-        pasted.id = `obj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        this.placeObject(pasted);
-      }
-    });
-
-    // Ctrl+S - Save
-    this.input.keyboard.on('keydown-S', (event) => {
-      if (event.ctrlKey || event.metaKey) {
-        event.preventDefault();
-        this.saveScene();
-      }
-    });
-
-    // Delete - Remove selected
-    this.input.keyboard.on('keydown-DELETE', () => {
-      if (this.selectedObject) this.deleteSelected();
-    });
-    this.input.keyboard.on('keydown-BACKSPACE', () => {
-      if (this.selectedObject) this.deleteSelected();
-    });
-
-    // Tool shortcuts
-    this.input.keyboard.on('keydown-S', (event) => {
-      if (!event.ctrlKey && !event.metaKey) this.setTool('select');
-    });
-    this.input.keyboard.on('keydown-P', () => this.setTool('place'));
-    this.input.keyboard.on('keydown-E', () => this.setTool('erase'));
-    this.input.keyboard.on('keydown-T', () => this.setTool('trigger'));
-    this.input.keyboard.on('keydown-L', () => this.setTool('light'));
-    this.input.keyboard.on('keydown-G', () => this.toggleGrid());
-    this.input.keyboard.on('keydown-N', () => this.toggleSnap());
-    this.input.keyboard.on('keydown-TAB', (event) => {
-      event.preventDefault();
-      this.togglePalette();
-    });
-
-    // F2 - Return to GameScene
-    this.input.keyboard.on('keydown-F2', () => {
-      if (this.inspectorPanel) this.inspectorPanel.destroy();
-      this.scene.start('GameScene');
-    });
-
-    // Layer switching (1-5)
-    const layers = ['layer_bg', 'layer_terrain', 'layer_objects', 'layer_collision', 'layer_ui'];
-    for (let i = 0; i < layers.length; i++) {
-      this.input.keyboard.on(`keydown-${i + 1}`, () => {
-        this.currentLayer = layers[i];
-        this.layerText.setText(`Layer: ${this.currentLayer}`);
-      });
-    }
-  }
-
-  // ─── Tool Actions ─────────────────────────────────────────────────
-
-  handleSelectClick(pointer) {
-    const worldX = pointer.worldX;
-    const worldY = pointer.worldY;
-
-    // Find object under cursor
-    let found = null;
-    for (let i = this.placedObjects.length - 1; i >= 0; i--) {
-      const obj = this.placedObjects[i];
-      if (!obj.active) continue;
-      const bounds = obj.getBounds();
-      if (bounds.contains(worldX, worldY)) {
-        found = obj;
-        break;
-      }
-    }
-
-    if (found) {
-      this.selectObject(found);
-      this.isDragging = true;
-      this.dragOffsetX = worldX - found.x;
-      this.dragOffsetY = worldY - found.y;
-    } else {
-      this.deselectAll();
-    }
-  }
-
-  handlePlaceClick(pointer) {
-    let x = pointer.worldX;
-    let y = pointer.worldY;
-
-    if (this.snapToGrid) {
-      x = Math.round(x / this.gridSize) * this.gridSize;
-      y = Math.round(y / this.gridSize) * this.gridSize;
-    }
-
-    const objectDef = {
-      id: `obj_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: this.currentPaletteItem?.type || 'decor',
-      name: this.currentPaletteItem?.name || 'New Object',
-      x, y,
-      width: this.currentPaletteItem?.width || this.gridSize,
-      height: this.currentPaletteItem?.height || this.gridSize,
-      texture: this.currentPaletteItem?.texture || null,
-      layer: this.currentLayer,
-      properties: {}
-    };
-
-    this.placeObject(objectDef);
-  }
-
-  handleEraseClick(pointer) {
-    const worldX = pointer.worldX;
-    const worldY = pointer.worldY;
-
-    for (let i = this.placedObjects.length - 1; i >= 0; i--) {
-      const obj = this.placedObjects[i];
-      if (!obj.active) continue;
-      const bounds = obj.getBounds();
-      if (bounds.contains(worldX, worldY)) {
-        this.pushUndo({
-          type: 'delete',
-          objectData: this.serializeObject(obj)
+        // Keyboard shortcuts
+        this.input.keyboard.on('keydown-F2', () => {
+            this.scene.switch('GameScene');
         });
+        this.input.keyboard.on('keydown-ESC', () => {
+            this.selectedObject = null;
+            this._updateInspector();
+        });
+
+        console.log('[EditorScene] Visual level editor ready. Press F2 to return to game.');
+    }
+
+    // ----------------------------------------------------------------
+    // Grid
+    // ----------------------------------------------------------------
+
+    _drawGrid() {
+        this.gridGraphics = this.add.graphics().setDepth(0).setScrollFactor(1);
+        const w = 2400;
+        const h = 1800;
+
+        this.gridGraphics.lineStyle(1, 0x222233, 0.3);
+        for (let x = 0; x <= w; x += this.gridSize) {
+            this.gridGraphics.lineBetween(x, 0, x, h);
+        }
+        for (let y = 0; y <= h; y += this.gridSize) {
+            this.gridGraphics.lineBetween(0, y, w, y);
+        }
+
+        // Origin marker
+        this.gridGraphics.lineStyle(2, 0xff4444, 0.5);
+        this.gridGraphics.lineBetween(0, -10, 0, 10);
+        this.gridGraphics.lineBetween(-10, 0, 10, 0);
+    }
+
+    // ----------------------------------------------------------------
+    // Toolbar
+    // ----------------------------------------------------------------
+
+    _createToolbar() {
+        const tools = [
+            { key: 'select', label: 'SEL', tip: 'Select/Move (V)' },
+            { key: 'place', label: 'PLC', tip: 'Place Object (P)' },
+            { key: 'erase', label: 'DEL', tip: 'Erase (X)' },
+            { key: 'trigger', label: 'TRG', tip: 'Place Trigger (T)' },
+            { key: 'light', label: 'LIT', tip: 'Place Light (L)' }
+        ];
+
+        this.toolButtons = [];
+        tools.forEach((tool, i) => {
+            const x = 8 + i * 52;
+            const y = 8;
+
+            const bg = this.add.graphics().setDepth(10000).setScrollFactor(0);
+            bg.fillStyle(this.currentTool === tool.key ? 0x446688 : 0x222244, 0.9);
+            bg.fillRect(x, y, 48, 28);
+            bg.lineStyle(1, 0x4466aa, 0.6);
+            bg.strokeRect(x, y, 48, 28);
+
+            const label = this.add.text(x + 24, y + 14, tool.label, {
+                fontFamily: 'monospace', fontSize: '12px', color: '#88aadd'
+            }).setOrigin(0.5).setDepth(10001).setScrollFactor(0);
+
+            bg.setInteractive(new Phaser.Geom.Rectangle(x, y, 48, 28), Phaser.Geom.Rectangle.Contains);
+            bg.on('pointerdown', () => {
+                this.currentTool = tool.key;
+                this._refreshToolbar();
+            });
+
+            this.toolButtons.push({ bg, label, tool: tool.key, x, y });
+        });
+
+        // Keyboard shortcuts for tools
+        this.input.keyboard.on('keydown-V', () => { this.currentTool = 'select'; this._refreshToolbar(); });
+        this.input.keyboard.on('keydown-P', () => { this.currentTool = 'place'; this._refreshToolbar(); });
+        this.input.keyboard.on('keydown-X', () => { this.currentTool = 'erase'; this._refreshToolbar(); });
+        this.input.keyboard.on('keydown-T', () => { this.currentTool = 'trigger'; this._refreshToolbar(); });
+        this.input.keyboard.on('keydown-L', () => { this.currentTool = 'light'; this._refreshToolbar(); });
+
+        // Undo/Redo
+        this.input.keyboard.on('keydown-Z', (e) => {
+            if (e.ctrlKey) this.undo();
+        });
+        this.input.keyboard.on('keydown-Y', (e) => {
+            if (e.ctrlKey) this.redo();
+        });
+
+        // Grid snap toggle
+        this.input.keyboard.on('keydown-G', () => {
+            this.snapToGrid = !this.snapToGrid;
+            this._updateStatusBar();
+        });
+    }
+
+    _refreshToolbar() {
+        this.toolButtons.forEach((btn) => {
+            btn.bg.clear();
+            btn.bg.fillStyle(this.currentTool === btn.tool ? 0x446688 : 0x222244, 0.9);
+            btn.bg.fillRect(btn.x, btn.y, 48, 28);
+            btn.bg.lineStyle(1, 0x4466aa, 0.6);
+            btn.bg.strokeRect(btn.x, btn.y, 48, 28);
+        });
+        this._updateStatusBar();
+    }
+
+    // ----------------------------------------------------------------
+    // Palette
+    // ----------------------------------------------------------------
+
+    _createPalette() {
+        const panelX = 8;
+        const panelY = 48;
+        const panelW = 140;
+
+        this.paletteBg = this.add.graphics().setDepth(10000).setScrollFactor(0);
+        this.paletteBg.fillStyle(0x111122, 0.85);
+        this.paletteBg.fillRect(panelX, panelY, panelW, 300);
+        this.paletteBg.lineStyle(1, 0x334466, 0.5);
+        this.paletteBg.strokeRect(panelX, panelY, panelW, 300);
+
+        this.add.text(panelX + 8, panelY + 6, 'PALETTE', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
+        }).setDepth(10001).setScrollFactor(0);
+
+        const paletteItems = [
+            { key: 'enemy', label: 'Enemy', color: '#ff4444' },
+            { key: 'npc', label: 'NPC', color: '#44ff44' },
+            { key: 'spawn', label: 'Spawn Point', color: '#ffaa44' },
+            { key: 'decoration', label: 'Decoration', color: '#888888' },
+            { key: 'wall', label: 'Wall', color: '#666666' },
+            { key: 'chest', label: 'Chest', color: '#ffdd44' },
+            { key: 'portal', label: 'Portal', color: '#aa44ff' }
+        ];
+
+        this.paletteButtons = [];
+        paletteItems.forEach((item, i) => {
+            const ix = panelX + 8;
+            const iy = panelY + 24 + i * 24;
+
+            const text = this.add.text(ix + 16, iy + 4, item.label, {
+                fontFamily: 'monospace', fontSize: '11px', color: item.color
+            }).setDepth(10001).setScrollFactor(0).setInteractive();
+
+            // Color swatch
+            const swatch = this.add.graphics().setDepth(10001).setScrollFactor(0);
+            swatch.fillStyle(parseInt(item.color.replace('#', '0x')), 1);
+            swatch.fillRect(ix, iy + 4, 12, 12);
+
+            text.on('pointerdown', () => {
+                this.currentPalette = item.key;
+                this._updateStatusBar();
+            });
+
+            this.paletteButtons.push({ text, swatch, key: item.key });
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Inspector
+    // ----------------------------------------------------------------
+
+    _createInspector() {
+        const panelX = 1280 - 200;
+        const panelY = 48;
+        const panelW = 192;
+
+        this.inspectorBg = this.add.graphics().setDepth(10000).setScrollFactor(0);
+        this.inspectorBg.fillStyle(0x111122, 0.85);
+        this.inspectorBg.fillRect(panelX, panelY, panelW, 300);
+        this.inspectorBg.lineStyle(1, 0x334466, 0.5);
+        this.inspectorBg.strokeRect(panelX, panelY, panelW, 300);
+
+        this.add.text(panelX + 8, panelY + 6, 'INSPECTOR', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
+        }).setDepth(10001).setScrollFactor(0);
+
+        this.inspectorTexts = [];
+        this.inspectorText = this.add.text(panelX + 8, panelY + 24, 'No selection', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#667788', wordWrap: { width: panelW - 16 }
+        }).setDepth(10001).setScrollFactor(0);
+    }
+
+    _updateInspector() {
+        if (!this.selectedObject) {
+            this.inspectorText.setText('No selection');
+            return;
+        }
+
+        const obj = this.selectedObject;
+        const lines = [
+            `Type: ${obj.editorData.type}`,
+            `X: ${Math.round(obj.x)}`,
+            `Y: ${Math.round(obj.y)}`,
+            `Layer: ${obj.editorData.layer || 'objects'}`
+        ];
+
+        if (obj.editorData.properties) {
+            lines.push('', '--- Properties ---');
+            Object.entries(obj.editorData.properties).forEach(([k, v]) => {
+                lines.push(`${k}: ${v}`);
+            });
+        }
+
+        this.inspectorText.setText(lines.join('\n'));
+    }
+
+    // ----------------------------------------------------------------
+    // Status bar
+    // ----------------------------------------------------------------
+
+    _createStatusBar() {
+        this.statusText = this.add.text(8, 700, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#667788'
+        }).setDepth(10001).setScrollFactor(0);
+        this._updateStatusBar();
+    }
+
+    _updateStatusBar() {
+        const parts = [
+            `Tool: ${this.currentTool.toUpperCase()}`,
+            `Palette: ${this.currentPalette}`,
+            `Grid: ${this.snapToGrid ? 'ON' : 'OFF'} (${this.gridSize}px)`,
+            `Objects: ${this.editorObjects.length}`,
+            `[F2] Game  [Ctrl+S] Save  [Ctrl+L] Load  [G] Grid  [Ctrl+Z] Undo`
+        ];
+        this.statusText.setText(parts.join('  |  '));
+    }
+
+    // ----------------------------------------------------------------
+    // Input handling
+    // ----------------------------------------------------------------
+
+    _setupInput() {
+        // Camera pan with middle mouse or right click drag
+        this.input.on('pointermove', (pointer) => {
+            if (pointer.middleButtonDown() || (pointer.rightButtonDown() && !pointer.isDown)) {
+                this.cameras.main.scrollX -= pointer.velocity.x / this.cameras.main.zoom;
+                this.cameras.main.scrollY -= pointer.velocity.y / this.cameras.main.zoom;
+            }
+        });
+
+        // Zoom with scroll wheel
+        this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+            const newZoom = Phaser.Math.Clamp(
+                this.cameras.main.zoom - deltaY * 0.001,
+                0.25,
+                4.0
+            );
+            this.cameras.main.setZoom(newZoom);
+        });
+
+        // Click actions
+        this.input.on('pointerdown', (pointer) => {
+            if (pointer.rightButtonDown() || pointer.middleButtonDown()) return;
+
+            // Ignore clicks on UI panels
+            if (pointer.x < 160 && pointer.y > 40) return; // palette
+            if (pointer.x > 1080 && pointer.y > 40 && pointer.y < 360) return; // inspector
+
+            const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+            let wx = worldPoint.x;
+            let wy = worldPoint.y;
+
+            if (this.snapToGrid) {
+                wx = Math.round(wx / this.gridSize) * this.gridSize;
+                wy = Math.round(wy / this.gridSize) * this.gridSize;
+            }
+
+            switch (this.currentTool) {
+                case 'select':
+                    this._selectAt(wx, wy);
+                    break;
+                case 'place':
+                    this._placeObject(wx, wy, this.currentPalette);
+                    break;
+                case 'erase':
+                    this._eraseAt(wx, wy);
+                    break;
+                case 'trigger':
+                    this._placeTrigger(wx, wy);
+                    break;
+                case 'light':
+                    this._placeLight(wx, wy);
+                    break;
+            }
+        });
+
+        // Save/Load
+        this.input.keyboard.on('keydown-S', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                this.saveScene();
+            }
+        });
+        this.input.keyboard.on('keydown-O', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                this.loadScene();
+            }
+        });
+
+        // Delete selected
+        this.input.keyboard.on('keydown-DELETE', () => {
+            if (this.selectedObject) {
+                this._pushUndo('delete', this.selectedObject);
+                this._removeObject(this.selectedObject);
+                this.selectedObject = null;
+                this._updateInspector();
+                this._updateStatusBar();
+            }
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Object management
+    // ----------------------------------------------------------------
+
+    _placeObject(x, y, type) {
+        const COLORS = {
+            enemy: 0xff4444, npc: 0x44ff44, spawn: 0xffaa44,
+            decoration: 0x888888, wall: 0x666666, chest: 0xffdd44, portal: 0xaa44ff
+        };
+
+        const gfx = this.add.graphics().setDepth(5);
+        gfx.fillStyle(COLORS[type] || 0xffffff, 0.8);
+
+        if (type === 'wall') {
+            gfx.fillRect(x - 16, y - 16, 32, 32);
+        } else if (type === 'trigger') {
+            gfx.lineStyle(2, 0xffaa00, 0.6);
+            gfx.strokeRect(x - 32, y - 32, 64, 64);
+        } else {
+            gfx.fillCircle(x, y, 12);
+        }
+
+        // Label
+        const label = this.add.text(x, y - 18, type.toUpperCase(), {
+            fontFamily: 'monospace', fontSize: '8px', color: '#aaaacc'
+        }).setOrigin(0.5).setDepth(6);
+
+        const obj = this.add.container(x, y, []).setDepth(5);
+        obj.editorData = {
+            type,
+            layer: 'objects',
+            properties: this._defaultProperties(type),
+            gfx,
+            label
+        };
+
+        this.editorObjects.push(obj);
+        this.layers.objects.items.push(obj);
+
+        this._pushUndo('place', obj);
+        this._updateStatusBar();
+    }
+
+    _placeLight(x, y) {
+        const gfx = this.add.graphics().setDepth(5);
+        gfx.fillStyle(0xffff88, 0.3);
+        gfx.fillCircle(x, y, 40);
+        gfx.lineStyle(1, 0xffff88, 0.6);
+        gfx.strokeCircle(x, y, 40);
+        gfx.fillStyle(0xffff88, 0.8);
+        gfx.fillCircle(x, y, 4);
+
+        const label = this.add.text(x, y - 48, 'LIGHT', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#ffff88'
+        }).setOrigin(0.5).setDepth(6);
+
+        const obj = this.add.container(x, y, []).setDepth(5);
+        obj.editorData = {
+            type: 'light',
+            layer: 'lights',
+            properties: { color: '0xffffff', radius: 100, intensity: 1.0 },
+            gfx,
+            label
+        };
+
+        this.editorObjects.push(obj);
+        this.layers.lights.items.push(obj);
+
+        this._pushUndo('place', obj);
+        this._updateStatusBar();
+    }
+
+    _placeTrigger(x, y) {
+        const gfx = this.add.graphics().setDepth(4);
+        gfx.lineStyle(2, 0xffaa00, 0.5);
+        gfx.strokeRect(x - 32, y - 32, 64, 64);
+        gfx.fillStyle(0xffaa00, 0.1);
+        gfx.fillRect(x - 32, y - 32, 64, 64);
+
+        const label = this.add.text(x, y, 'TRIGGER', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#ffaa44'
+        }).setOrigin(0.5).setDepth(6);
+
+        const obj = this.add.container(x, y, []).setDepth(4);
+        obj.editorData = {
+            type: 'trigger',
+            layer: 'triggers',
+            properties: { event: 'custom', width: 64, height: 64, data: '{}' },
+            gfx,
+            label
+        };
+
+        this.editorObjects.push(obj);
+        this.layers.triggers.items.push(obj);
+
+        this._pushUndo('place', obj);
+        this._updateStatusBar();
+    }
+
+    _selectAt(x, y) {
+        const threshold = 24;
+        let closest = null;
+        let closestDist = threshold;
+
+        this.editorObjects.forEach((obj) => {
+            const d = Phaser.Math.Distance.Between(x, y, obj.x, obj.y);
+            if (d < closestDist) {
+                closestDist = d;
+                closest = obj;
+            }
+        });
+
+        // Deselect previous
+        if (this.selectedObject && this.selectedObject.editorData?.gfx) {
+            // Reset highlight
+        }
+
+        this.selectedObject = closest;
+
+        // Highlight selected
+        if (closest && closest.editorData?.gfx) {
+            // Visual feedback would be added here
+        }
+
+        this._updateInspector();
+    }
+
+    _eraseAt(x, y) {
+        const threshold = 24;
+        let closest = null;
+        let closestDist = threshold;
+
+        this.editorObjects.forEach((obj) => {
+            const d = Phaser.Math.Distance.Between(x, y, obj.x, obj.y);
+            if (d < closestDist) {
+                closestDist = d;
+                closest = obj;
+            }
+        });
+
+        if (closest) {
+            this._pushUndo('delete', closest);
+            this._removeObject(closest);
+            this._updateStatusBar();
+        }
+    }
+
+    _removeObject(obj) {
+        const idx = this.editorObjects.indexOf(obj);
+        if (idx !== -1) this.editorObjects.splice(idx, 1);
+
+        // Remove from layer
+        Object.values(this.layers).forEach((layer) => {
+            const li = layer.items.indexOf(obj);
+            if (li !== -1) layer.items.splice(li, 1);
+        });
+
+        if (obj.editorData?.gfx) obj.editorData.gfx.destroy();
+        if (obj.editorData?.label) obj.editorData.label.destroy();
         obj.destroy();
-        this.placedObjects.splice(i, 1);
-        if (this.selectedObject === obj) this.deselectAll();
-        this.updateObjectCount();
-        break;
-      }
-    }
-  }
-
-  handleTriggerClick(pointer) {
-    let x = pointer.worldX;
-    let y = pointer.worldY;
-
-    if (this.snapToGrid) {
-      x = Math.round(x / this.gridSize) * this.gridSize;
-      y = Math.round(y / this.gridSize) * this.gridSize;
     }
 
-    const triggerDef = {
-      id: `trg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: 'trigger',
-      name: 'Trigger Zone',
-      x, y,
-      width: this.gridSize * 2,
-      height: this.gridSize * 2,
-      layer: 'layer_objects',
-      properties: {
-        event: 'custom',
-        triggerType: 'onEnter',
-        enabled: true
-      }
-    };
-
-    this.placeObject(triggerDef);
-  }
-
-  handleLightClick(pointer) {
-    let x = pointer.worldX;
-    let y = pointer.worldY;
-
-    if (this.snapToGrid) {
-      x = Math.round(x / this.gridSize) * this.gridSize;
-      y = Math.round(y / this.gridSize) * this.gridSize;
-    }
-
-    const lightDef = {
-      id: `lgt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      type: 'light',
-      name: 'Point Light',
-      x, y,
-      width: this.gridSize,
-      height: this.gridSize,
-      layer: 'layer_objects',
-      properties: {
-        lightType: 'point',
-        color: '0xffffff',
-        intensity: 1.0,
-        radius: 100,
-        flicker: false
-      }
-    };
-
-    this.placeObject(lightDef);
-  }
-
-  // ─── Object Palette ────────────────────────────────────────────────
-
-  /**
-   * Toggle the object palette panel visibility.
-   */
-  togglePalette() {
-    this.paletteVisible = !this.paletteVisible;
-    if (this.paletteVisible) {
-      this.showPalette();
-    } else {
-      this.hidePalette();
-    }
-  }
-
-  showPalette() {
-    if (this.paletteContainer) {
-      this.paletteContainer.setVisible(true);
-      return;
-    }
-
-    this.paletteContainer = this.add.container(0, 0);
-    this.paletteContainer.setScrollFactor(0);
-    this.paletteContainer.setDepth(10003);
-
-    const panelX = 10;
-    const panelY = 70;
-    const panelWidth = 160;
-    const itemHeight = 24;
-
-    const paletteItems = [
-      { type: 'enemy', name: 'Enemy', color: 0xff4444, width: 32, height: 32 },
-      { type: 'npc', name: 'NPC', color: 0x44ff88, width: 32, height: 32 },
-      { type: 'spawn_point', name: 'Spawn Point', color: 0xffff44, width: 16, height: 16 },
-      { type: 'decor', name: 'Decoration', color: 0x888888, width: 32, height: 32 },
-      { type: 'wall', name: 'Wall', color: 0x666666, width: 32, height: 32 },
-      { type: 'chest', name: 'Chest', color: 0xddaa44, width: 24, height: 24 },
-      { type: 'portal', name: 'Portal', color: 0xaa44ff, width: 32, height: 48 },
-      { type: 'trigger', name: 'Trigger Zone', color: 0x44aaff, width: 64, height: 64 },
-      { type: 'light', name: 'Light Source', color: 0xffffaa, width: 32, height: 32 }
-    ];
-
-    const totalHeight = paletteItems.length * itemHeight + 30;
-
-    // Background
-    const bg = this.add.rectangle(
-      panelX + panelWidth / 2, panelY + totalHeight / 2,
-      panelWidth, totalHeight,
-      0x1a1a2e, 0.95
-    );
-    this.paletteContainer.add(bg);
-
-    // Border
-    const border = this.add.graphics();
-    border.lineStyle(1, 0x4a9eff, 0.6);
-    border.strokeRect(panelX, panelY, panelWidth, totalHeight);
-    this.paletteContainer.add(border);
-
-    // Title
-    const title = this.add.text(panelX + 8, panelY + 6, 'Object Palette', {
-      fontSize: '11px', fill: '#4a9eff', fontFamily: 'monospace', fontStyle: 'bold'
-    });
-    this.paletteContainer.add(title);
-
-    // Palette items
-    let y = panelY + 26;
-    for (const item of paletteItems) {
-      // Color swatch
-      const swatch = this.add.rectangle(panelX + 16, y + itemHeight / 2 - 1, 10, 10, item.color, 0.9);
-      this.paletteContainer.add(swatch);
-
-      // Item button
-      const itemBg = this.add.rectangle(
-        panelX + panelWidth / 2, y + itemHeight / 2 - 1,
-        panelWidth - 8, itemHeight - 2,
-        0x222244, 0.0
-      ).setInteractive({ useHandCursor: true });
-      this.paletteContainer.add(itemBg);
-
-      const label = this.add.text(panelX + 28, y, item.name, {
-        fontSize: '11px', fill: '#cccccc', fontFamily: 'monospace'
-      });
-      this.paletteContainer.add(label);
-
-      // Highlight current selection
-      itemBg.on('pointerover', () => {
-        itemBg.setFillStyle(0x333366, 0.6);
-      });
-      itemBg.on('pointerout', () => {
-        const isSelected = this.currentPaletteItem?.type === item.type;
-        itemBg.setFillStyle(isSelected ? 0x333366 : 0x222244, isSelected ? 0.4 : 0.0);
-      });
-      itemBg.on('pointerdown', () => {
-        this.currentPaletteItem = item;
-        this.setTool('place');
-        this.eventBus.emit('editor:paletteSelected', item);
-      });
-
-      y += itemHeight;
-    }
-  }
-
-  hidePalette() {
-    if (this.paletteContainer) {
-      this.paletteContainer.setVisible(false);
-    }
-  }
-
-  // ─── Object Management ────────────────────────────────────────────
-
-  placeObject(objectDef) {
-    let gameObject;
-    if (objectDef.texture && this.textures.exists(objectDef.texture)) {
-      gameObject = this.add.sprite(objectDef.x, objectDef.y, objectDef.texture, objectDef.frame);
-    } else {
-      // Create a colored rectangle placeholder with type-specific colors
-      const typeColors = {
-        'enemy': 0xff4444,
-        'npc': 0x44ff88,
-        'spawn_point': 0xffff44,
-        'trigger': 0x44aaff,
-        'light': 0xffffaa,
-        'wall': 0x666666,
-        'chest': 0xddaa44,
-        'portal': 0xaa44ff
-      };
-      const layerColors = {
-        'layer_bg': 0x334455,
-        'layer_terrain': 0x556633,
-        'layer_objects': 0x666688,
-        'layer_collision': 0xff4444,
-        'layer_ui': 0x4488ff
-      };
-      const color = typeColors[objectDef.type] || layerColors[objectDef.layer] || 0x888888;
-      const alpha = objectDef.type === 'trigger' ? 0.35 : 0.7;
-      gameObject = this.add.rectangle(
-        objectDef.x, objectDef.y,
-        objectDef.width || this.gridSize,
-        objectDef.height || this.gridSize,
-        color, alpha
-      );
-
-      // Add a border for triggers and lights to make them more visible
-      if (objectDef.type === 'trigger' || objectDef.type === 'light') {
-        gameObject.setStrokeStyle(1, color, 0.8);
-      }
-    }
-
-    gameObject.setData('sceneObjectId', objectDef.id);
-    gameObject.setData('objectType', objectDef.type);
-    gameObject.setData('objectName', objectDef.name || 'Object');
-    gameObject.setData('layer', objectDef.layer);
-
-    if (objectDef.properties) {
-      for (const [key, value] of Object.entries(objectDef.properties)) {
-        gameObject.setData(key, value);
-      }
-    }
-
-    // Set depth based on layer
-    const layerDef = this.sceneData.layers.find(l => l.id === objectDef.layer);
-    gameObject.setDepth((layerDef?.depth || 0) + (objectDef.depth || 0));
-
-    this.placedObjects.push(gameObject);
-    this.sceneData.objects.push(objectDef);
-    this.updateObjectCount();
-
-    this.pushUndo({
-      type: 'place',
-      objectId: objectDef.id,
-      objectData: objectDef
-    });
-
-    this.eventBus.emit('editor:objectPlaced', objectDef);
-    return gameObject;
-  }
-
-  selectObject(obj) {
-    this.selectedObject = obj;
-    this.updateSelectionIndicator();
-
-    // Show inspector for the selected object
-    if (this.inspectorPanel) {
-      this.inspectorPanel.show(obj);
-    }
-
-    this.eventBus.emit('editor:objectSelected', {
-      id: obj.getData('sceneObjectId'),
-      type: obj.getData('objectType'),
-      name: obj.getData('objectName'),
-      x: obj.x,
-      y: obj.y
-    });
-  }
-
-  deselectAll() {
-    this.selectedObject = null;
-    this.selectedObjects = [];
-    this.selectionRect.clear();
-
-    // Hide inspector when nothing is selected
-    if (this.inspectorPanel) {
-      this.inspectorPanel.hide();
-    }
-
-    this.eventBus.emit('editor:deselected');
-  }
-
-  deleteSelected() {
-    if (!this.selectedObject) return;
-
-    const id = this.selectedObject.getData('sceneObjectId');
-    this.pushUndo({
-      type: 'delete',
-      objectData: this.serializeObject(this.selectedObject)
-    });
-
-    const idx = this.placedObjects.indexOf(this.selectedObject);
-    if (idx >= 0) this.placedObjects.splice(idx, 1);
-
-    const dataIdx = this.sceneData.objects.findIndex(o => o.id === id);
-    if (dataIdx >= 0) this.sceneData.objects.splice(dataIdx, 1);
-
-    this.selectedObject.destroy();
-    this.deselectAll();
-    this.updateObjectCount();
-  }
-
-  updateSelectionIndicator() {
-    this.selectionRect.clear();
-    if (!this.selectedObject || !this.selectedObject.active) return;
-
-    const bounds = this.selectedObject.getBounds();
-    this.selectionRect.lineStyle(2, 0x00ffff, 1);
-    this.selectionRect.strokeRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
-
-    // Corner handles
-    const handleSize = 6;
-    this.selectionRect.fillStyle(0x00ffff, 1);
-    this.selectionRect.fillRect(bounds.x - handleSize / 2, bounds.y - handleSize / 2, handleSize, handleSize);
-    this.selectionRect.fillRect(bounds.right - handleSize / 2, bounds.y - handleSize / 2, handleSize, handleSize);
-    this.selectionRect.fillRect(bounds.x - handleSize / 2, bounds.bottom - handleSize / 2, handleSize, handleSize);
-    this.selectionRect.fillRect(bounds.right - handleSize / 2, bounds.bottom - handleSize / 2, handleSize, handleSize);
-  }
-
-  serializeObject(gameObject) {
-    const result = {
-      id: gameObject.getData('sceneObjectId'),
-      type: gameObject.getData('objectType') || 'decor',
-      name: gameObject.getData('objectName') || 'Object',
-      x: gameObject.x,
-      y: gameObject.y,
-      width: gameObject.displayWidth || gameObject.width,
-      height: gameObject.displayHeight || gameObject.height,
-      depth: gameObject.depth,
-      layer: gameObject.getData('layer') || 'layer_objects',
-      properties: {}
-    };
-
-    // Capture custom data properties (exclude internal editor keys)
-    const internalKeys = new Set(['sceneObjectId', 'objectType', 'objectName', 'layer']);
-    const dataStore = gameObject.data?.list;
-    if (dataStore) {
-      for (const [key, value] of Object.entries(dataStore)) {
-        if (!internalKeys.has(key)) {
-          result.properties[key] = value;
+    _defaultProperties(type) {
+        switch (type) {
+            case 'enemy': return { enemyId: 'forest_guardian', level: 1, respawnDelay: 10 };
+            case 'npc': return { name: 'NPC', dialogue: 'Hello!' };
+            case 'spawn': return { enemyId: '', respawnDelay: 30, maxCount: 1 };
+            case 'decoration': return { sprite: 'tree', scale: 1.0 };
+            case 'wall': return { width: 32, height: 32, solid: true };
+            case 'chest': return { lootTable: 'common', locked: false };
+            case 'portal': return { targetLocation: '', targetX: 0, targetY: 0 };
+            default: return {};
         }
-      }
     }
 
-    return result;
-  }
+    // ----------------------------------------------------------------
+    // Undo / Redo
+    // ----------------------------------------------------------------
 
-  // ─── Tool State ───────────────────────────────────────────────────
-
-  setTool(toolKey) {
-    this.currentTool = toolKey;
-    this.toolText.setText(`Tool: ${toolKey.charAt(0).toUpperCase() + toolKey.slice(1)}`);
-
-    // Update button highlighting
-    for (const btn of this.toolButtons) {
-      btn.setColor(btn.getData('toolKey') === toolKey ? '#00ffff' : '#aaaaaa');
-    }
-
-    if (toolKey !== 'select') {
-      this.deselectAll();
-    }
-  }
-
-  toggleGrid() {
-    this.gridVisible = !this.gridVisible;
-    this.drawGrid();
-  }
-
-  toggleSnap() {
-    this.snapToGrid = !this.snapToGrid;
-  }
-
-  // ─── Undo / Redo ──────────────────────────────────────────────────
-
-  pushUndo(action) {
-    this.undoStack.push(action);
-    if (this.undoStack.length > this.maxUndoSteps) {
-      this.undoStack.shift();
-    }
-    this.redoStack = [];
-  }
-
-  undo() {
-    if (this.undoStack.length === 0) return;
-    const action = this.undoStack.pop();
-    this.redoStack.push(action);
-
-    switch (action.type) {
-      case 'place': {
-        const idx = this.placedObjects.findIndex(o => o.getData('sceneObjectId') === action.objectId);
-        if (idx >= 0) {
-          this.placedObjects[idx].destroy();
-          this.placedObjects.splice(idx, 1);
-        }
-        const dataIdx = this.sceneData.objects.findIndex(o => o.id === action.objectId);
-        if (dataIdx >= 0) this.sceneData.objects.splice(dataIdx, 1);
-        break;
-      }
-      case 'delete': {
-        this.placeObjectWithoutUndo(action.objectData);
-        break;
-      }
-      case 'move': {
-        const obj = this.placedObjects.find(o => o.getData('sceneObjectId') === action.objectId);
-        if (obj) {
-          // Store current position for redo
-          action.prevX = obj.x;
-          action.prevY = obj.y;
-          obj.setPosition(action.x, action.y);
-        }
-        break;
-      }
-    }
-
-    this.updateObjectCount();
-    this.deselectAll();
-  }
-
-  redo() {
-    if (this.redoStack.length === 0) return;
-    const action = this.redoStack.pop();
-    this.undoStack.push(action);
-
-    switch (action.type) {
-      case 'place':
-        this.placeObjectWithoutUndo(action.objectData);
-        break;
-      case 'delete': {
-        const idx = this.placedObjects.findIndex(o => o.getData('sceneObjectId') === action.objectData.id);
-        if (idx >= 0) {
-          this.placedObjects[idx].destroy();
-          this.placedObjects.splice(idx, 1);
-        }
-        break;
-      }
-    }
-
-    this.updateObjectCount();
-  }
-
-  placeObjectWithoutUndo(objectDef) {
-    // Same as placeObject but without pushing to undo stack
-    const color = 0x888888;
-    const gameObject = this.add.rectangle(
-      objectDef.x, objectDef.y,
-      objectDef.width || this.gridSize,
-      objectDef.height || this.gridSize,
-      color, 0.7
-    );
-
-    gameObject.setData('sceneObjectId', objectDef.id);
-    gameObject.setData('objectType', objectDef.type);
-    gameObject.setData('objectName', objectDef.name || 'Object');
-    gameObject.setData('layer', objectDef.layer);
-    gameObject.setDepth(objectDef.depth || 0);
-
-    this.placedObjects.push(gameObject);
-    if (!this.sceneData.objects.find(o => o.id === objectDef.id)) {
-      this.sceneData.objects.push(objectDef);
-    }
-  }
-
-  // ─── Save / Load ──────────────────────────────────────────────────
-
-  saveScene() {
-    // Serialize all placed objects and separate into categories
-    const allSerialized = this.placedObjects
-      .filter(o => o.active)
-      .map(o => this.serializeObject(o));
-
-    this.sceneData.objects = allSerialized.filter(o => o.type !== 'trigger' && o.type !== 'light');
-
-    // Save triggers to dedicated array
-    this.sceneData.triggers = allSerialized
-      .filter(o => o.type === 'trigger')
-      .map(o => ({
-        id: o.id,
-        name: o.name,
-        x: o.x,
-        y: o.y,
-        width: o.width,
-        height: o.height,
-        event: o.properties?.event || 'custom',
-        conditions: o.properties?.conditions || [],
-        oneShot: o.properties?.oneShot || false,
-        enabled: o.properties?.enabled !== false
-      }));
-
-    // Save lights to dedicated array
-    this.sceneData.lighting.lights = allSerialized
-      .filter(o => o.type === 'light')
-      .map(o => ({
-        id: o.id,
-        type: o.properties?.lightType || 'point',
-        x: o.x,
-        y: o.y,
-        color: o.properties?.color || '0xffffff',
-        intensity: o.properties?.intensity || 1.0,
-        radius: o.properties?.radius || 100,
-        castShadows: o.properties?.castShadows || false,
-        flickerRate: o.properties?.flickerRate || 0,
-        flickerAmount: o.properties?.flickerAmount || 0
-      }));
-
-    this.sceneData.metadata.modified = Date.now();
-
-    const json = JSON.stringify(this.sceneData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${this.sceneData.metadata.name.replace(/\s+/g, '_').toLowerCase()}.scene.json`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-
-    this.eventBus.emit('editor:saved', { name: this.sceneData.metadata.name });
-    console.log('EditorScene: Scene saved');
-  }
-
-  loadScenePrompt() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.scene.json';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const text = await file.text();
-      try {
-        const data = JSON.parse(text);
-        this.loadSceneData(data);
-      } catch (err) {
-        console.error('EditorScene: Invalid scene file:', err.message);
-      }
-    };
-    input.click();
-  }
-
-  loadSceneData(data) {
-    // Clear existing objects
-    for (const obj of this.placedObjects) {
-      obj.destroy();
-    }
-    this.placedObjects = [];
-    this.deselectAll();
-    this.undoStack = [];
-    this.redoStack = [];
-
-    this.sceneData = data;
-
-    // Recreate objects
-    if (data.objects) {
-      for (const objDef of data.objects) {
-        this.placeObjectWithoutUndo(objDef);
-      }
-    }
-
-    // Recreate triggers as editor objects
-    if (data.triggers) {
-      for (const trg of data.triggers) {
-        this.placeObjectWithoutUndo({
-          id: trg.id,
-          type: 'trigger',
-          name: trg.name || 'Trigger Zone',
-          x: trg.x,
-          y: trg.y,
-          width: trg.width || this.gridSize * 2,
-          height: trg.height || this.gridSize * 2,
-          layer: 'layer_objects',
-          properties: {
-            event: trg.event,
-            triggerType: trg.triggerType || 'onEnter',
-            conditions: trg.conditions || [],
-            oneShot: trg.oneShot || false,
-            enabled: trg.enabled !== false
-          }
+    _pushUndo(action, obj) {
+        this.undoStack.push({
+            action,
+            data: {
+                type: obj.editorData?.type,
+                x: obj.x,
+                y: obj.y,
+                properties: obj.editorData?.properties ? { ...obj.editorData.properties } : {},
+                layer: obj.editorData?.layer
+            },
+            ref: obj
         });
-      }
+        this.redoStack = [];
+
+        // Limit stack size
+        if (this.undoStack.length > 50) this.undoStack.shift();
     }
 
-    // Recreate lights as editor objects
-    if (data.lighting?.lights) {
-      for (const lgt of data.lighting.lights) {
-        this.placeObjectWithoutUndo({
-          id: lgt.id,
-          type: 'light',
-          name: `${lgt.type || 'Point'} Light`,
-          x: lgt.x,
-          y: lgt.y,
-          width: this.gridSize,
-          height: this.gridSize,
-          layer: 'layer_objects',
-          properties: {
-            lightType: lgt.type || 'point',
-            color: lgt.color || '0xffffff',
-            intensity: lgt.intensity || 1.0,
-            radius: lgt.radius || 100,
-            castShadows: lgt.castShadows || false,
-            flickerRate: lgt.flickerRate || 0,
-            flickerAmount: lgt.flickerAmount || 0
-          }
+    undo() {
+        if (this.undoStack.length === 0) return;
+        const entry = this.undoStack.pop();
+
+        if (entry.action === 'place') {
+            // Undo a placement = remove the object
+            this._removeObject(entry.ref);
+            this.redoStack.push(entry);
+        } else if (entry.action === 'delete') {
+            // Undo a deletion = re-place the object
+            this._placeObject(entry.data.x, entry.data.y, entry.data.type);
+            this.redoStack.push(entry);
+        }
+
+        this._updateStatusBar();
+    }
+
+    redo() {
+        if (this.redoStack.length === 0) return;
+        const entry = this.redoStack.pop();
+
+        if (entry.action === 'place') {
+            this._placeObject(entry.data.x, entry.data.y, entry.data.type);
+            this.undoStack.push(entry);
+        } else if (entry.action === 'delete') {
+            this._removeObject(entry.ref);
+            this.undoStack.push(entry);
+        }
+
+        this._updateStatusBar();
+    }
+
+    // ----------------------------------------------------------------
+    // Save / Load
+    // ----------------------------------------------------------------
+
+    saveScene() {
+        const sceneData = {
+            metadata: {
+                name: 'Untitled Scene',
+                author: 'Editor',
+                version: '1.0',
+                created: new Date().toISOString()
+            },
+            objects: [],
+            triggers: [],
+            lights: [],
+            spawns: []
+        };
+
+        this.editorObjects.forEach((obj) => {
+            const ed = obj.editorData;
+            const entry = {
+                type: ed.type,
+                x: Math.round(obj.x),
+                y: Math.round(obj.y),
+                properties: { ...ed.properties }
+            };
+
+            switch (ed.layer) {
+                case 'triggers': sceneData.triggers.push(entry); break;
+                case 'lights': sceneData.lights.push(entry); break;
+                case 'spawns': sceneData.spawns.push(entry); break;
+                default: sceneData.objects.push(entry); break;
+            }
         });
-      }
+
+        const json = JSON.stringify(sceneData, null, 2);
+
+        // Download as file
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'scene.json';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        console.log('[Editor] Scene saved:', sceneData);
     }
 
-    // Apply camera
-    if (data.camera) {
-      if (data.camera.x !== undefined) this.editorCamera.scrollX = data.camera.x;
-      if (data.camera.y !== undefined) this.editorCamera.scrollY = data.camera.y;
-      if (data.camera.zoom) this.editorCamera.setZoom(data.camera.zoom);
+    loadScene() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const sceneData = JSON.parse(ev.target.result);
+                    this._loadSceneData(sceneData);
+                    console.log('[Editor] Scene loaded:', sceneData.metadata?.name);
+                } catch (err) {
+                    console.error('[Editor] Failed to parse scene file:', err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
     }
 
-    this.updateObjectCount();
-    this.drawGrid();
+    _loadSceneData(sceneData) {
+        // Clear existing
+        [...this.editorObjects].forEach((obj) => this._removeObject(obj));
+        this.undoStack = [];
+        this.redoStack = [];
 
-    this.infoText.setText(`Editing: ${data.metadata?.name || 'Untitled'}`);
-    this.eventBus.emit('editor:loaded', { name: data.metadata?.name });
-    console.log(`EditorScene: Loaded scene '${data.metadata?.name}'`);
-  }
+        // Place objects
+        (sceneData.objects || []).forEach((obj) => {
+            this._placeObject(obj.x, obj.y, obj.type);
+        });
+        (sceneData.triggers || []).forEach((t) => {
+            this._placeTrigger(t.x, t.y);
+        });
+        (sceneData.lights || []).forEach((l) => {
+            this._placeLight(l.x, l.y);
+        });
 
-  // ─── Helpers ──────────────────────────────────────────────────────
-
-  updateObjectCount() {
-    const count = this.placedObjects.filter(o => o.active).length;
-    this.objectCountText.setText(`Objects: ${count}`);
-  }
-
-  // ─── Update Loop ──────────────────────────────────────────────────
-
-  update(time, delta) {
-    // Redraw grid on camera movement
-    if (this.isPanning) {
-      this.drawGrid();
+        this._updateStatusBar();
     }
 
-    // Update selection indicator position
-    if (this.selectedObject && this.selectedObject.active) {
-      this.updateSelectionIndicator();
-    }
+    // ----------------------------------------------------------------
+    // Update
+    // ----------------------------------------------------------------
 
-    // Refresh inspector panel with live values (e.g. during drag)
-    if (this.inspectorPanel) {
-      this.inspectorPanel.refresh();
+    update(time, delta) {
+        // Camera pan with arrow keys
+        const speed = 400 / this.cameras.main.zoom;
+        if (this.input.keyboard.addKey('LEFT').isDown) this.cameras.main.scrollX -= speed * (delta / 1000);
+        if (this.input.keyboard.addKey('RIGHT').isDown) this.cameras.main.scrollX += speed * (delta / 1000);
+        if (this.input.keyboard.addKey('UP').isDown) this.cameras.main.scrollY -= speed * (delta / 1000);
+        if (this.input.keyboard.addKey('DOWN').isDown) this.cameras.main.scrollY += speed * (delta / 1000);
     }
-  }
 }
-
-export default EditorScene;

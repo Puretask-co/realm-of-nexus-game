@@ -1,160 +1,199 @@
-import { EventBus } from '../core/EventBus.js';
+import EventBus from '../systems/EventBus.js';
 
 /**
- * NPC component — non-player character with dialogue, quests, and shops.
+ * NPC component — non-player character with dialogue and interaction.
  *
- * Wraps a Phaser game object with:
- *  - Interaction zone (player presses E to interact)
- *  - Dialogue triggers via EventBus
- *  - Visual indicators (name tag, interaction prompt)
- *  - Quest giver/turn-in support
- *  - Shop integration
+ * Features:
+ *  - Proximity detection: shows interaction prompt when player is near
+ *  - Dialogue system: sequential text lines with typewriter effect
+ *  - Quest giver / shop keeper / lore NPC roles
+ *  - Idle animation: gentle bob or facing toward player
+ *  - Interact key: E to talk
+ *
+ * NPCs are placed by the level editor or spawned from location data.
  */
-export class NPC {
-  constructor(scene, x, y, definition) {
-    this.scene = scene;
-    this.eventBus = EventBus.getInstance();
-    this.definition = definition;
-    this.id = definition.id;
-    this.name = definition.name || 'NPC';
+export default class NPC {
+    constructor(scene, x, y, config) {
+        this.scene = scene;
+        this.config = config || {};
 
-    // Visual (placeholder if no texture)
-    if (scene.textures.exists(definition.texture || 'npc')) {
-      this.sprite = scene.physics.add.sprite(x, y, definition.texture || 'npc');
-    } else {
-      this.sprite = scene.add.rectangle(x, y, 24, 32, 0x44ff88);
-      scene.physics.add.existing(this.sprite);
+        // Sprite
+        this.sprite = scene.physics.add.sprite(x, y, 'npc');
+        this.sprite.setDepth(4);
+        this.sprite.setImmovable(true);
+        this.sprite.owner = this;
+
+        // NPC data
+        this.name = config.name || 'Stranger';
+        this.role = config.role || 'lore'; // lore | quest | shop
+        this.dialogueLines = config.dialogue || ['...'];
+        this.dialogueIndex = 0;
+        this.isInteracting = false;
+
+        // Interaction radius
+        this.interactRadius = config.interactRadius || 60;
+
+        // Name label
+        this._nameTag = scene.add.text(x, y - 28, this.name, {
+            fontFamily: 'monospace', fontSize: '9px', color: '#44ff44',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(10);
+
+        // Prompt (hidden by default)
+        this._prompt = scene.add.text(x, y - 40, '[E] Talk', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#aaddaa',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(10).setVisible(false);
+
+        // Dialogue box (created on interaction)
+        this._dialogueBox = null;
+        this._dialogueText = null;
+
+        // Idle bobbing
+        this._bobTimer = Math.random() * Math.PI * 2;
+
+        // Input
+        scene.input.keyboard.on('keydown-E', () => {
+            if (this._playerInRange && !this.isInteracting) {
+                this._startDialogue();
+            } else if (this.isInteracting) {
+                this._advanceDialogue();
+            }
+        });
+
+        this._playerInRange = false;
     }
 
-    this.sprite.setDepth(4);
-    this.sprite.body.setImmovable(true);
-    this.sprite.owner = this;
+    // ----------------------------------------------------------------
+    // Update
+    // ----------------------------------------------------------------
 
-    // Name tag
-    const nameColor = definition.textColor || '#ffffff';
-    this.nameTag = scene.add.text(x, y - 28, this.name, {
-      fontSize: '10px',
-      fill: nameColor,
-      fontFamily: 'monospace',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5).setDepth(10);
+    update(delta, player) {
+        if (!player) return;
+        const dt = delta / 1000;
 
-    // Interaction prompt (hidden until player is near)
-    this.promptText = scene.add.text(x, y - 40, '[E] Talk', {
-      fontSize: '9px',
-      fill: '#ffff88',
-      fontFamily: 'monospace',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5).setDepth(10).setVisible(false);
+        // Idle bob
+        this._bobTimer += dt * 1.5;
+        this.sprite.y = this.sprite.body.y + Math.sin(this._bobTimer) * 2;
 
-    // Interaction range in pixels
-    this.interactRange = definition.interactRange || 60;
-    this.playerInRange = false;
+        // Update label position
+        this._nameTag.setPosition(this.sprite.x, this.sprite.y - 28);
+        this._prompt.setPosition(this.sprite.x, this.sprite.y - 40);
 
-    // Dialogue ID to start
-    this.dialogueId = definition.dialogueId || null;
+        // Proximity check
+        const playerSprite = player.sprite || player;
+        const dist = Phaser.Math.Distance.Between(
+            this.sprite.x, this.sprite.y,
+            playerSprite.x, playerSprite.y
+        );
 
-    // Quest info
-    this.questIds = definition.questIds || [];
-    this.isShopkeeper = definition.isShopkeeper || false;
-    this.shopInventory = definition.shopInventory || [];
+        this._playerInRange = dist < this.interactRadius;
+        this._prompt.setVisible(this._playerInRange && !this.isInteracting);
 
-    // State
-    this.hasInteracted = false;
-
-    // Listen for player interaction
-    this.interactUnsub = this.eventBus.on('player:interact', (data) => {
-      this.onPlayerInteract(data);
-    });
-  }
-
-  /**
-   * Check if the player is interacting and in range.
-   */
-  onPlayerInteract(data) {
-    if (!data) return;
-    const dx = data.x - this.sprite.x;
-    const dy = data.y - this.sprite.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist <= this.interactRange) {
-      this.interact();
-    }
-  }
-
-  /**
-   * Trigger interaction.
-   */
-  interact() {
-    this.hasInteracted = true;
-
-    if (this.dialogueId) {
-      this.eventBus.emit('dialogue:start', {
-        dialogueId: this.dialogueId,
-        npcId: this.id,
-        npcName: this.name,
-        definition: this.definition
-      });
+        // Face toward player when close
+        if (this._playerInRange) {
+            const dx = playerSprite.x - this.sprite.x;
+            this.sprite.setFlipX(dx < 0);
+        }
     }
 
-    if (this.isShopkeeper) {
-      this.eventBus.emit('shop:open', {
-        npcId: this.id,
-        npcName: this.name,
-        inventory: this.shopInventory
-      });
+    // ----------------------------------------------------------------
+    // Dialogue
+    // ----------------------------------------------------------------
+
+    _startDialogue() {
+        this.isInteracting = true;
+        this.dialogueIndex = 0;
+        this._prompt.setVisible(false);
+
+        // Create dialogue box
+        const cam = this.scene.cameras.main;
+        const boxW = 500;
+        const boxH = 80;
+        const boxX = (cam.width - boxW) / 2;
+        const boxY = cam.height - boxH - 20;
+
+        this._dialogueBox = this.scene.add.graphics().setDepth(20000).setScrollFactor(0);
+        this._dialogueBox.fillStyle(0x111122, 0.9);
+        this._dialogueBox.fillRect(boxX, boxY, boxW, boxH);
+        this._dialogueBox.lineStyle(2, 0x44ff44, 0.5);
+        this._dialogueBox.strokeRect(boxX, boxY, boxW, boxH);
+
+        // Speaker name
+        this._dialogueName = this.scene.add.text(boxX + 12, boxY + 8, this.name, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#44ff44',
+            fontStyle: 'bold'
+        }).setDepth(20001).setScrollFactor(0);
+
+        // Text content
+        this._dialogueText = this.scene.add.text(boxX + 12, boxY + 26, '', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#ccddcc',
+            wordWrap: { width: boxW - 24 }
+        }).setDepth(20001).setScrollFactor(0);
+
+        // Advance hint
+        this._dialogueHint = this.scene.add.text(boxX + boxW - 12, boxY + boxH - 14, '[E] Continue', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#667766'
+        }).setOrigin(1, 0.5).setDepth(20001).setScrollFactor(0);
+
+        this._showLine();
     }
 
-    if (this.questIds.length > 0) {
-      this.eventBus.emit('quest:npcInteract', {
-        npcId: this.id,
-        questIds: this.questIds
-      });
+    _showLine() {
+        if (!this._dialogueText) return;
+        const line = this.dialogueLines[this.dialogueIndex] || '';
+        this._typewriterEffect(line);
     }
 
-    this.eventBus.emit('npc:interact', {
-      npcId: this.id,
-      npcName: this.name,
-      definition: this.definition
-    });
-  }
-
-  // ─── Update ──────────────────────────────────────────────────────
-
-  update(delta, playerX, playerY) {
-    if (!this.sprite.active) return;
-
-    // Update name tag position
-    this.nameTag.setPosition(this.sprite.x, this.sprite.y - 28);
-    this.promptText.setPosition(this.sprite.x, this.sprite.y - 40);
-
-    // Show/hide interaction prompt based on player distance
-    if (playerX !== undefined && playerY !== undefined) {
-      const dx = playerX - this.sprite.x;
-      const dy = playerY - this.sprite.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const inRange = dist <= this.interactRange;
-
-      if (inRange !== this.playerInRange) {
-        this.playerInRange = inRange;
-        this.promptText.setVisible(inRange);
-      }
+    _typewriterEffect(text) {
+        this._dialogueText.setText('');
+        let i = 0;
+        const timer = this.scene.time.addEvent({
+            delay: 25,
+            callback: () => {
+                i++;
+                this._dialogueText.setText(text.substring(0, i));
+                if (i >= text.length) timer.remove();
+            },
+            loop: true
+        });
     }
-  }
 
-  // ─── Position Helpers ────────────────────────────────────────────
+    _advanceDialogue() {
+        this.dialogueIndex++;
+        if (this.dialogueIndex >= this.dialogueLines.length) {
+            this._endDialogue();
+            return;
+        }
+        this._showLine();
+    }
 
-  get x() { return this.sprite.x; }
-  get y() { return this.sprite.y; }
+    _endDialogue() {
+        this.isInteracting = false;
 
-  destroy() {
-    if (this.interactUnsub) this.interactUnsub();
-    this.nameTag.destroy();
-    this.promptText.destroy();
-    this.sprite.destroy();
-  }
+        if (this._dialogueBox) { this._dialogueBox.destroy(); this._dialogueBox = null; }
+        if (this._dialogueName) { this._dialogueName.destroy(); this._dialogueName = null; }
+        if (this._dialogueText) { this._dialogueText.destroy(); this._dialogueText = null; }
+        if (this._dialogueHint) { this._dialogueHint.destroy(); this._dialogueHint = null; }
+
+        EventBus.emit('npc-dialogue-complete', { npc: this.name, role: this.role });
+
+        // Role-specific follow-up
+        if (this.role === 'quest') {
+            EventBus.emit('quest-offer', { npc: this.name, questData: this.config.quest });
+        } else if (this.role === 'shop') {
+            EventBus.emit('shop-open', { npc: this.name, inventory: this.config.shopInventory });
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Cleanup
+    // ----------------------------------------------------------------
+
+    destroy() {
+        this._endDialogue();
+        this._nameTag.destroy();
+        this._prompt.destroy();
+        this.sprite.destroy();
+    }
 }
-
-export default NPC;

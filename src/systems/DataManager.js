@@ -1,598 +1,355 @@
-import { EventBus } from '../core/EventBus.js';
-import { HotReloadSystem } from './HotReloadSystem.js';
-import { spellSchema } from '../schemas/spellSchema.js';
-import { enemySchema } from '../schemas/enemySchema.js';
-import { itemSchema } from '../schemas/itemSchema.js';
-import { locationSchema } from '../schemas/locationSchema.js';
+import { spellSchema, enemySchema } from '../schemas/spellSchema.js';
+import EventBus from './EventBus.js';
 
 /**
- * DataManager - Central data hub for all game data.
- * Handles loading, validation, caching, querying, and hot-reload of
- * external JSON data files. Foundation of the data-driven architecture.
+ * Central data hub for all game data.
+ *
+ * Loads spell, enemy, item, location, and balance data from external
+ * JSON files so that game content can be edited without touching code.
+ * Supports hot-reload during development: change a JSON file, save,
+ * and the running game picks up the new values within seconds.
+ *
+ * This is the single most impactful workflow tool we can build.
+ * Without it, every balance tweak requires editing JavaScript,
+ * refreshing the browser, and navigating back to the point you
+ * were testing. With it, changes appear instantly.
  */
-export class DataManager {
-  static instance = null;
+class DataManager {
+    constructor() {
+        this.data = {
+            spells: [],
+            enemies: [],
+            items: [],
+            locations: [],
+            config: {}
+        };
 
-  constructor() {
-    if (DataManager.instance) return DataManager.instance;
+        this.schemas = {
+            spells: spellSchema,
+            enemies: enemySchema
+        };
 
-    this.eventBus = EventBus.getInstance();
+        this.loaded = false;
+        this.loadPromise = null;
 
-    // Raw data storage
-    this.data = {
-      spells: [],
-      enemies: [],
-      items: [],
-      locations: [],
-      config: {}
-    };
+        // Fast lookup caches (Map keyed by id)
+        this.cache = {
+            spellsById: new Map(),
+            enemiesById: new Map(),
+            itemsById: new Map(),
+            locationsById: new Map()
+        };
 
-    // Indexed caches for O(1) lookups
-    this.cache = {
-      spellsById: new Map(),
-      enemiesById: new Map(),
-      itemsById: new Map(),
-      locationsById: new Map(),
-      spellsByType: new Map(),
-      spellsByElement: new Map(),
-      spellsByTier: new Map(),
-      enemiesByType: new Map(),
-      enemiesByTier: new Map(),
-      itemsByType: new Map(),
-      itemsByRarity: new Map(),
-      locationsByType: new Map()
-    };
+        // Hot-reload bookkeeping
+        this.watchForChanges = false;
+        this.watchInterval = null;
 
-    // Schema registry
-    this.schemas = {
-      spells: spellSchema,
-      enemies: enemySchema,
-      items: itemSchema,
-      locations: locationSchema
-    };
+        // Validation state
+        this.validationErrors = [];
+    }
 
-    // Data file paths
-    this.dataPaths = {
-      spells: '/src/data/spells.json',
-      enemies: '/src/data/enemies.json',
-      items: '/src/data/items.json',
-      locations: '/src/data/locations.json',
-      config: '/src/data/config.json',
-      characters: '/src/data/characters.json',
-      dialogues: '/src/data/dialogues.json',
-      quests: '/src/data/quests.json'
-    };
+    // ----------------------------------------------------------------
+    // Loading
+    // ----------------------------------------------------------------
 
-    // Validation results
-    this.validationErrors = [];
-    this.validationWarnings = [];
+    async loadAllData() {
+        if (this.loadPromise) return this.loadPromise;
+        this.loadPromise = this._loadInternal();
+        return this.loadPromise;
+    }
 
-    // Hot-reload state
-    this.hotReloadEnabled = false;
-    this.hotReloadInterval = null;
-    this.fileHashes = new Map();
+    async _loadInternal() {
+        console.log('[DataManager] Loading game data...');
 
-    // Custom data sources
-    this.customSources = new Map();
+        try {
+            const [spellsData, enemiesData, itemsData, locationsData, configData] =
+                await Promise.all([
+                    this._loadJSON('./data/spells.json'),
+                    this._loadJSON('./data/enemies.json'),
+                    this._loadJSON('./data/items.json'),
+                    this._loadJSON('./data/locations.json'),
+                    this._loadJSON('./data/config.json')
+                ]);
 
-    // Modification tracking for modding support
-    this.modifications = new Map();
+            this.data.spells = spellsData.spells || [];
+            this.data.enemies = enemiesData.enemies || [];
+            this.data.items = itemsData.items || [];
+            this.data.locations = locationsData.locations || [];
+            this.data.config = configData;
 
-    DataManager.instance = this;
-  }
+            this.validateAllData();
+            this.buildCaches();
 
-  static getInstance() {
-    if (!DataManager.instance) new DataManager();
-    return DataManager.instance;
-  }
+            this.loaded = true;
+            console.log('[DataManager] Data loaded successfully');
+            console.log(`  - ${this.data.spells.length} spells`);
+            console.log(`  - ${this.data.enemies.length} enemies`);
+            console.log(`  - ${this.data.items.length} items`);
+            console.log(`  - ${this.data.locations.length} locations`);
 
-  // ─── Loading ──────────────────────────────────────────────────────
+            if (this.watchForChanges) {
+                this.startWatching();
+            }
+        } catch (error) {
+            console.error('[DataManager] Failed to load data:', error);
+            this.loadFallbackData();
+        }
+    }
 
-  async loadAllData() {
-    const startTime = performance.now();
-    const results = {};
-
-    const loadPromises = Object.entries(this.dataPaths).map(async ([key, path]) => {
-      try {
+    async _loadJSON(path) {
         const response = await fetch(path);
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${path}`);
-        const text = await response.text();
-        results[key] = JSON.parse(text);
-        this.fileHashes.set(key, this.hashString(text));
-      } catch (err) {
-        console.warn(`DataManager: Failed to load ${key} from ${path}: ${err.message}`);
-        results[key] = key === 'config' ? {} : [];
-      }
-    });
-
-    await Promise.all(loadPromises);
-
-    // Apply loaded data
-    for (const [key, value] of Object.entries(results)) {
-      this.data[key] = value;
-    }
-
-    const elapsed = performance.now() - startTime;
-    console.log(`DataManager: All data loaded in ${elapsed.toFixed(1)}ms`);
-
-    this.eventBus.emit('data:loaded', { keys: Object.keys(results), elapsed });
-    return this.data;
-  }
-
-  async loadDataFile(key, path) {
-    try {
-      const response = await fetch(path);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const text = await response.text();
-      this.data[key] = JSON.parse(text);
-      this.fileHashes.set(key, this.hashString(text));
-      this.eventBus.emit('data:fileLoaded', { key, path });
-      return this.data[key];
-    } catch (err) {
-      console.error(`DataManager: Failed to load ${key}: ${err.message}`);
-      throw err;
-    }
-  }
-
-  registerDataSource(key, path, schema = null) {
-    this.dataPaths[key] = path;
-    if (schema) this.schemas[key] = schema;
-    this.data[key] = [];
-    this.customSources.set(key, { path, schema });
-  }
-
-  // ─── Validation ───────────────────────────────────────────────────
-
-  validateAllData() {
-    this.validationErrors = [];
-    this.validationWarnings = [];
-
-    for (const [key, schema] of Object.entries(this.schemas)) {
-      const dataArray = this.data[key];
-      if (!Array.isArray(dataArray)) continue;
-
-      for (let i = 0; i < dataArray.length; i++) {
-        this.validateEntry(key, dataArray[i], schema, i);
-      }
-
-      // Check for duplicate IDs
-      this.checkDuplicateIds(key, dataArray);
-    }
-
-    // Cross-reference validation
-    this.validateCrossReferences();
-
-    // Log results
-    if (this.validationErrors.length > 0) {
-      console.error(`DataManager: ${this.validationErrors.length} validation errors found:`);
-      this.validationErrors.forEach(e => console.error(`  - ${e}`));
-    }
-    if (this.validationWarnings.length > 0) {
-      console.warn(`DataManager: ${this.validationWarnings.length} validation warnings:`);
-      this.validationWarnings.forEach(w => console.warn(`  - ${w}`));
-    }
-    if (this.validationErrors.length === 0 && this.validationWarnings.length === 0) {
-      console.log('DataManager: All data validated successfully');
-    }
-
-    this.eventBus.emit('data:validated', {
-      errors: this.validationErrors.length,
-      warnings: this.validationWarnings.length
-    });
-
-    return {
-      valid: this.validationErrors.length === 0,
-      errors: this.validationErrors,
-      warnings: this.validationWarnings
-    };
-  }
-
-  validateEntry(dataKey, entry, schema, index) {
-    const prefix = `${dataKey}[${index}]`;
-
-    // Check required fields
-    if (schema.required) {
-      for (const field of schema.required) {
-        if (entry[field] === undefined || entry[field] === null) {
-          this.validationErrors.push(`${prefix}: Missing required field '${field}'`);
+        if (!response.ok) {
+            throw new Error(`Failed to load ${path}: ${response.statusText}`);
         }
-      }
+        return response.json();
     }
 
-    // Check property types and constraints
-    if (schema.properties) {
-      for (const [field, rules] of Object.entries(schema.properties)) {
-        if (entry[field] === undefined) continue;
-        const value = entry[field];
+    // ----------------------------------------------------------------
+    // Validation
+    // ----------------------------------------------------------------
 
-        // Type check
-        if (rules.type) {
-          const actualType = Array.isArray(value) ? 'array' : typeof value;
-          if (actualType !== rules.type) {
-            this.validationErrors.push(
-              `${prefix}.${field}: Expected type '${rules.type}', got '${actualType}'`
+    validateAllData() {
+        this.validationErrors = [];
+
+        this.data.spells.forEach((spell, index) => {
+            const errors = this.validateObject(spell, this.schemas.spells);
+            if (errors.length > 0) {
+                this.validationErrors.push({ type: 'spell', index, id: spell.id, errors });
+            }
+        });
+
+        this.data.enemies.forEach((enemy, index) => {
+            const errors = this.validateObject(enemy, this.schemas.enemies);
+            if (errors.length > 0) {
+                this.validationErrors.push({ type: 'enemy', index, id: enemy.id, errors });
+            }
+        });
+
+        this.checkDuplicateIds();
+        this.checkReferences();
+
+        if (this.validationErrors.length > 0) {
+            console.warn(
+                `[DataManager] ${this.validationErrors.length} validation issues:`
             );
-            continue;
-          }
-        }
-
-        // Enum check
-        if (rules.enum && !rules.enum.includes(value)) {
-          this.validationErrors.push(
-            `${prefix}.${field}: Value '${value}' not in allowed values [${rules.enum.join(', ')}]`
-          );
-        }
-
-        // Number range
-        if (rules.min !== undefined && value < rules.min) {
-          this.validationErrors.push(
-            `${prefix}.${field}: Value ${value} below minimum ${rules.min}`
-          );
-        }
-        if (rules.max !== undefined && value > rules.max) {
-          this.validationErrors.push(
-            `${prefix}.${field}: Value ${value} above maximum ${rules.max}`
-          );
-        }
-
-        // String length
-        if (rules.minLength !== undefined && typeof value === 'string' && value.length < rules.minLength) {
-          this.validationErrors.push(
-            `${prefix}.${field}: String length ${value.length} below minimum ${rules.minLength}`
-          );
-        }
-        if (rules.maxLength !== undefined && typeof value === 'string' && value.length > rules.maxLength) {
-          this.validationErrors.push(
-            `${prefix}.${field}: String length ${value.length} above maximum ${rules.maxLength}`
-          );
-        }
-
-        // Pattern check
-        if (rules.pattern && typeof value === 'string' && !rules.pattern.test(value)) {
-          this.validationErrors.push(
-            `${prefix}.${field}: Value '${value}' does not match required pattern`
-          );
-        }
-      }
-    }
-  }
-
-  checkDuplicateIds(dataKey, dataArray) {
-    const ids = new Set();
-    for (const entry of dataArray) {
-      if (entry.id) {
-        if (ids.has(entry.id)) {
-          this.validationErrors.push(`${dataKey}: Duplicate ID '${entry.id}'`);
-        }
-        ids.add(entry.id);
-      }
-    }
-  }
-
-  validateCrossReferences() {
-    // Validate enemy abilities reference valid spells
-    for (const enemy of this.data.enemies) {
-      if (enemy.abilities) {
-        for (const ability of enemy.abilities) {
-          if (ability.spellId && !this.data.spells.find(s => s.id === ability.spellId)) {
-            this.validationWarnings.push(
-              `enemies.${enemy.id}: Ability references unknown spell '${ability.spellId}'`
-            );
-          }
-        }
-      }
-      // Validate loot table references valid items
-      if (enemy.lootTable) {
-        for (const loot of enemy.lootTable) {
-          if (loot.itemId && !this.data.items.find(i => i.id === loot.itemId)) {
-            this.validationWarnings.push(
-              `enemies.${enemy.id}: Loot table references unknown item '${loot.itemId}'`
-            );
-          }
-        }
-      }
-    }
-
-    // Validate location spawn references valid enemies
-    for (const location of this.data.locations) {
-      if (location.spawns) {
-        for (const spawn of location.spawns) {
-          if (spawn.enemyId && !this.data.enemies.find(e => e.id === spawn.enemyId)) {
-            this.validationWarnings.push(
-              `locations.${location.id}: Spawn references unknown enemy '${spawn.enemyId}'`
-            );
-          }
-        }
-      }
-      // Validate connections reference valid locations
-      if (location.connections) {
-        for (const conn of location.connections) {
-          if (conn.targetLocationId && !this.data.locations.find(l => l.id === conn.targetLocationId)) {
-            this.validationWarnings.push(
-              `locations.${location.id}: Connection references unknown location '${conn.targetLocationId}'`
-            );
-          }
-        }
-      }
-    }
-  }
-
-  // ─── Cache Building ───────────────────────────────────────────────
-
-  buildCaches() {
-    // Clear existing caches
-    for (const cache of Object.values(this.cache)) {
-      cache.clear();
-    }
-
-    // Build spell caches
-    for (const spell of this.data.spells) {
-      this.cache.spellsById.set(spell.id, spell);
-      this.addToGroupCache(this.cache.spellsByType, spell.type, spell);
-      if (spell.element) this.addToGroupCache(this.cache.spellsByElement, spell.element, spell);
-      if (spell.tier) this.addToGroupCache(this.cache.spellsByTier, spell.tier, spell);
-    }
-
-    // Build enemy caches
-    for (const enemy of this.data.enemies) {
-      this.cache.enemiesById.set(enemy.id, enemy);
-      this.addToGroupCache(this.cache.enemiesByType, enemy.type, enemy);
-      if (enemy.tier) this.addToGroupCache(this.cache.enemiesByTier, enemy.tier, enemy);
-    }
-
-    // Build item caches
-    for (const item of this.data.items) {
-      this.cache.itemsById.set(item.id, item);
-      this.addToGroupCache(this.cache.itemsByType, item.type, item);
-      this.addToGroupCache(this.cache.itemsByRarity, item.rarity, item);
-    }
-
-    // Build location caches
-    for (const location of this.data.locations) {
-      this.cache.locationsById.set(location.id, location);
-      this.addToGroupCache(this.cache.locationsByType, location.type, location);
-    }
-
-    console.log('DataManager: Caches built - ' +
-      `${this.cache.spellsById.size} spells, ` +
-      `${this.cache.enemiesById.size} enemies, ` +
-      `${this.cache.itemsById.size} items, ` +
-      `${this.cache.locationsById.size} locations`
-    );
-
-    this.eventBus.emit('data:cachesBuilt');
-  }
-
-  addToGroupCache(cacheMap, key, entry) {
-    if (!cacheMap.has(key)) {
-      cacheMap.set(key, []);
-    }
-    cacheMap.get(key).push(entry);
-  }
-
-  // ─── Querying ─────────────────────────────────────────────────────
-
-  getSpell(id) { return this.cache.spellsById.get(id) || null; }
-  getEnemy(id) { return this.cache.enemiesById.get(id) || null; }
-  getItem(id) { return this.cache.itemsById.get(id) || null; }
-  getLocation(id) { return this.cache.locationsById.get(id) || null; }
-
-  getSpellsByType(type) { return this.cache.spellsByType.get(type) || []; }
-  getSpellsByElement(element) { return this.cache.spellsByElement.get(element) || []; }
-  getSpellsByTier(tier) { return this.cache.spellsByTier.get(tier) || []; }
-  getEnemiesByType(type) { return this.cache.enemiesByType.get(type) || []; }
-  getEnemiesByTier(tier) { return this.cache.enemiesByTier.get(tier) || []; }
-  getItemsByType(type) { return this.cache.itemsByType.get(type) || []; }
-  getItemsByRarity(rarity) { return this.cache.itemsByRarity.get(rarity) || []; }
-  getLocationsByType(type) { return this.cache.locationsByType.get(type) || []; }
-
-  getConfig(path = null) {
-    if (!path) return this.data.config;
-    const parts = path.split('.');
-    let current = this.data.config;
-    for (const part of parts) {
-      if (current === undefined) return undefined;
-      current = current[part];
-    }
-    return current;
-  }
-
-  // Advanced querying with filters
-  query(dataKey, filters = {}) {
-    const dataArray = this.data[dataKey];
-    if (!Array.isArray(dataArray)) return [];
-
-    return dataArray.filter(entry => {
-      for (const [field, condition] of Object.entries(filters)) {
-        const value = entry[field];
-
-        if (typeof condition === 'function') {
-          if (!condition(value)) return false;
-        } else if (typeof condition === 'object' && condition !== null) {
-          if (condition.min !== undefined && value < condition.min) return false;
-          if (condition.max !== undefined && value > condition.max) return false;
-          if (condition.in && !condition.in.includes(value)) return false;
-          if (condition.notIn && condition.notIn.includes(value)) return false;
-          if (condition.contains && Array.isArray(value) && !value.includes(condition.contains)) return false;
-          if (condition.pattern && typeof value === 'string' && !condition.pattern.test(value)) return false;
+            this.validationErrors.forEach((e) => {
+                console.warn(`  - ${e.type} "${e.id}": ${e.errors.join(', ')}`);
+            });
         } else {
-          if (value !== condition) return false;
+            console.log('[DataManager] All data validated successfully');
         }
-      }
-      return true;
-    });
-  }
-
-  // ─── Hot Reload ───────────────────────────────────────────────────
-
-  /**
-   * Enable hot-reload using HotReloadSystem (Vite HMR preferred, polling fallback).
-   * Registers all data modules so changes are automatically detected and applied.
-   */
-  enableHotReload(intervalMs = 2000) {
-    if (this.hotReloadEnabled) return;
-    this.hotReloadEnabled = true;
-
-    const hotReload = HotReloadSystem.getInstance();
-    hotReload.initialize();
-
-    // Register each data path with HotReloadSystem
-    for (const [key, path] of Object.entries(this.dataPaths)) {
-      hotReload.registerModule(key, path, (newData) => {
-        this.applyReloadedData(key, newData);
-      });
     }
 
-    // If HotReloadSystem fell back to polling, use the caller's interval
-    if (hotReload.mode === 'polling') {
-      hotReload.pollingRate = intervalMs;
-    }
+    validateObject(obj, schema) {
+        const errors = [];
 
-    console.log(`DataManager: Hot reload enabled via HotReloadSystem (mode: ${hotReload.mode})`);
-    this.eventBus.emit('data:hotReloadEnabled', { mode: hotReload.mode });
-  }
-
-  /**
-   * Apply reloaded data for a specific key, re-validate, and rebuild caches.
-   */
-  applyReloadedData(key, newData) {
-    this.data[key] = newData;
-    this.validateAllData();
-    this.buildCaches();
-    this.eventBus.emit('data:hotReloaded', { key, success: true });
-  }
-
-  disableHotReload() {
-    if (this.hotReloadInterval) {
-      clearInterval(this.hotReloadInterval);
-      this.hotReloadInterval = null;
-    }
-    this.hotReloadEnabled = false;
-
-    const hotReload = HotReloadSystem.getInstance();
-    hotReload.shutdown();
-
-    this.eventBus.emit('data:hotReloadDisabled');
-  }
-
-  async checkForChanges() {
-    for (const [key, path] of Object.entries(this.dataPaths)) {
-      try {
-        const response = await fetch(path, { cache: 'no-store' });
-        if (!response.ok) continue;
-        const text = await response.text();
-        const newHash = this.hashString(text);
-        const oldHash = this.fileHashes.get(key);
-
-        if (oldHash && newHash !== oldHash) {
-          console.log(`DataManager: Change detected in ${key}, reloading...`);
-          this.data[key] = JSON.parse(text);
-          this.fileHashes.set(key, newHash);
-
-          // Re-validate and rebuild caches
-          this.validateAllData();
-          this.buildCaches();
-
-          this.eventBus.emit('data:hotReloaded', { key, path });
+        // Required fields
+        if (schema.required) {
+            schema.required.forEach((field) => {
+                if (!(field in obj)) {
+                    errors.push(`Missing required field: ${field}`);
+                }
+            });
         }
-      } catch (err) {
-        // Silently skip failed checks
-      }
+
+        // Property constraints
+        Object.keys(obj).forEach((key) => {
+            const propSchema = schema.properties?.[key];
+            if (!propSchema) return; // unknown props are tolerated
+
+            const value = obj[key];
+
+            if (propSchema.type === 'integer' && !Number.isInteger(value)) {
+                errors.push(`${key} must be an integer, got ${typeof value}`);
+            } else if (propSchema.type === 'number' && typeof value !== 'number') {
+                errors.push(`${key} must be a number, got ${typeof value}`);
+            } else if (propSchema.type === 'string' && typeof value !== 'string') {
+                errors.push(`${key} must be a string, got ${typeof value}`);
+            }
+
+            if (propSchema.min !== undefined && value < propSchema.min) {
+                errors.push(`${key} must be >= ${propSchema.min}, got ${value}`);
+            }
+            if (propSchema.max !== undefined && value > propSchema.max) {
+                errors.push(`${key} must be <= ${propSchema.max}, got ${value}`);
+            }
+            if (propSchema.pattern && typeof value === 'string' && !propSchema.pattern.test(value)) {
+                errors.push(`${key} does not match required pattern`);
+            }
+            if (propSchema.enum && !propSchema.enum.includes(value)) {
+                errors.push(`${key} must be one of: ${propSchema.enum.join(', ')}`);
+            }
+        });
+
+        return errors;
     }
-  }
 
-  // ─── Data Modification (Runtime) ──────────────────────────────────
+    checkDuplicateIds() {
+        const check = (items, type) => {
+            const seen = new Set();
+            items.forEach((item) => {
+                if (seen.has(item.id)) {
+                    this.validationErrors.push({
+                        type, id: item.id, errors: [`Duplicate ${type} ID: ${item.id}`]
+                    });
+                }
+                seen.add(item.id);
+            });
+        };
 
-  modifyEntry(dataKey, id, modifications) {
-    const entry = this.data[dataKey]?.find(e => e.id === id);
-    if (!entry) {
-      console.warn(`DataManager: Cannot modify ${dataKey}.${id} - not found`);
-      return null;
+        check(this.data.spells, 'spell');
+        check(this.data.enemies, 'enemy');
+        check(this.data.items, 'item');
+        check(this.data.locations, 'location');
     }
 
-    // Track original values for undo/mod support
-    if (!this.modifications.has(`${dataKey}.${id}`)) {
-      this.modifications.set(`${dataKey}.${id}`, { ...entry });
+    checkReferences() {
+        const spellIds = new Set(this.data.spells.map((s) => s.id));
+
+        // Spell combo references
+        this.data.spells.forEach((spell) => {
+            (spell.combosWith || []).forEach((comboId) => {
+                if (!spellIds.has(comboId)) {
+                    this.validationErrors.push({
+                        type: 'spell',
+                        id: spell.id,
+                        errors: [`References unknown spell in combos: ${comboId}`]
+                    });
+                }
+            });
+        });
+
+        // Enemy spell references
+        this.data.enemies.forEach((enemy) => {
+            (enemy.spells || []).forEach((spellId) => {
+                if (!spellIds.has(spellId)) {
+                    this.validationErrors.push({
+                        type: 'enemy',
+                        id: enemy.id,
+                        errors: [`References unknown spell: ${spellId}`]
+                    });
+                }
+            });
+        });
     }
 
-    Object.assign(entry, modifications);
-    this.buildCaches(); // Rebuild caches to reflect changes
+    // ----------------------------------------------------------------
+    // Cache
+    // ----------------------------------------------------------------
 
-    this.eventBus.emit('data:modified', { dataKey, id, modifications });
-    return entry;
-  }
+    buildCaches() {
+        this.cache.spellsById.clear();
+        this.cache.enemiesById.clear();
+        this.cache.itemsById.clear();
+        this.cache.locationsById.clear();
 
-  revertModification(dataKey, id) {
-    const modKey = `${dataKey}.${id}`;
-    const original = this.modifications.get(modKey);
-    if (!original) return null;
-
-    const index = this.data[dataKey].findIndex(e => e.id === id);
-    if (index >= 0) {
-      this.data[dataKey][index] = original;
-      this.modifications.delete(modKey);
-      this.buildCaches();
-      this.eventBus.emit('data:reverted', { dataKey, id });
-      return original;
+        this.data.spells.forEach((s) => this.cache.spellsById.set(s.id, s));
+        this.data.enemies.forEach((e) => this.cache.enemiesById.set(e.id, e));
+        this.data.items.forEach((i) => this.cache.itemsById.set(i.id, i));
+        this.data.locations.forEach((l) => this.cache.locationsById.set(l.id, l));
     }
-    return null;
-  }
 
-  // ─── Export ───────────────────────────────────────────────────────
+    // ----------------------------------------------------------------
+    // Query interface
+    // ----------------------------------------------------------------
 
-  exportData(dataKey) {
-    return JSON.stringify(this.data[dataKey], null, 2);
-  }
+    getSpell(id) { return this.cache.spellsById.get(id) || null; }
+    getAllSpells() { return [...this.data.spells]; }
+    getSpellsByTier(tier) { return this.data.spells.filter((s) => s.tier === tier); }
+    getSpellsByElement(element) { return this.data.spells.filter((s) => s.element === element); }
 
-  exportAllData() {
-    const exported = {};
-    for (const [key, value] of Object.entries(this.data)) {
-      exported[key] = value;
+    getEnemy(id) { return this.cache.enemiesById.get(id) || null; }
+    getAllEnemies() { return [...this.data.enemies]; }
+    getEnemiesForPhase(phase) {
+        return this.data.enemies.filter((e) => (e.phaseSpawnWeights?.[phase] || 1.0) > 0.5);
     }
-    return JSON.stringify(exported, null, 2);
-  }
 
-  // ─── Statistics ───────────────────────────────────────────────────
+    getItem(id) { return this.cache.itemsById.get(id) || null; }
+    getAllItems() { return [...this.data.items]; }
 
-  getStatistics() {
-    return {
-      spells: this.data.spells.length,
-      enemies: this.data.enemies.length,
-      items: this.data.items.length,
-      locations: this.data.locations.length,
-      cacheSize: {
-        spells: this.cache.spellsById.size,
-        enemies: this.cache.enemiesById.size,
-        items: this.cache.itemsById.size,
-        locations: this.cache.locationsById.size
-      },
-      validationErrors: this.validationErrors.length,
-      validationWarnings: this.validationWarnings.length,
-      modifications: this.modifications.size,
-      hotReload: this.hotReloadEnabled
-    };
-  }
+    getLocation(id) { return this.cache.locationsById.get(id) || null; }
+    getAllLocations() { return [...this.data.locations]; }
 
-  // ─── Utilities ────────────────────────────────────────────────────
-
-  hashString(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash |= 0; // Convert to 32-bit integer
+    getConfig(path) {
+        return path.split('.').reduce((obj, key) => obj?.[key], this.data.config);
     }
-    return hash.toString(36);
-  }
 
-  reset() {
-    this.data = { spells: [], enemies: [], items: [], locations: [], config: {} };
-    for (const cache of Object.values(this.cache)) cache.clear();
-    this.validationErrors = [];
-    this.validationWarnings = [];
-    this.modifications.clear();
-    this.disableHotReload();
-  }
+    // ----------------------------------------------------------------
+    // Hot-reload
+    // ----------------------------------------------------------------
+
+    enableHotReload() {
+        this.watchForChanges = true;
+        if (this.loaded) this.startWatching();
+    }
+
+    disableHotReload() {
+        this.watchForChanges = false;
+        if (this.watchInterval) {
+            clearInterval(this.watchInterval);
+            this.watchInterval = null;
+        }
+    }
+
+    startWatching() {
+        console.log('[DataManager] Watching for data changes...');
+        this.watchInterval = setInterval(() => this.checkForUpdates(), 2000);
+    }
+
+    async checkForUpdates() {
+        try {
+            const res = await fetch('./data/config.json');
+            const configData = await res.json();
+            if (configData.lastModified !== this.data.config.lastModified) {
+                console.log('[DataManager] Detected data changes, reloading...');
+                await this.reloadData();
+            }
+        } catch (_) {
+            // silent fail for polling
+        }
+    }
+
+    async reloadData() {
+        this.loaded = false;
+        this.loadPromise = null;
+        await this.loadAllData();
+        EventBus.emit('data-reloaded', {
+            spells: this.data.spells.length,
+            enemies: this.data.enemies.length
+        });
+        console.log('[DataManager] Data hot-reloaded successfully');
+    }
+
+    // ----------------------------------------------------------------
+    // Fallback
+    // ----------------------------------------------------------------
+
+    loadFallbackData() {
+        console.warn('[DataManager] Loading fallback hardcoded data...');
+        this.data.spells = [
+            { id: 'azure_bolt', name: 'Azure Bolt', tier: 1, baseDamage: 15, sapCost: 10, cooldown: 2 }
+        ];
+        this.data.config = { balance: { player: { startingSap: 100, startingHp: 100 } } };
+        this.buildCaches();
+        this.loaded = true;
+    }
+
+    // ----------------------------------------------------------------
+    // Reports
+    // ----------------------------------------------------------------
+
+    getValidationReport() {
+        return {
+            totalErrors: this.validationErrors.length,
+            errors: this.validationErrors,
+            summary: {
+                spellErrors: this.validationErrors.filter((e) => e.type === 'spell').length,
+                enemyErrors: this.validationErrors.filter((e) => e.type === 'enemy').length
+            }
+        };
+    }
 }
 
-export default DataManager;
+// Singleton
+const dataManager = new DataManager();
+export default dataManager;

@@ -1,279 +1,328 @@
-import { EventBus } from '../core/EventBus.js';
-import { GameConfig } from '../core/GameConfig.js';
+import EventBus from './EventBus.js';
 
 /**
- * PerformanceProfiler - Real-time FPS/memory/timer overlay (F3).
- * Provides named timer API for per-system profiling, rolling FPS graph,
- * game object counts, and periodic snapshot broadcast.
+ * Real-time performance profiler for the Verdance engine.
+ *
+ * Tracks:
+ *  - FPS (current, min, max, average over rolling window)
+ *  - Frame time breakdown by system (update, render, physics, etc.)
+ *  - Memory usage (JS heap if available)
+ *  - Draw calls / game object count
+ *  - Custom named timers for any code section
+ *  - History buffer for charting (last N frames)
+ *
+ * The profiler overlay can be toggled at runtime with F3.
+ * It renders as a Phaser Graphics overlay so it works without DOM.
+ *
+ * Usage:
+ *   profiler.begin('combat');
+ *   // ... combat update ...
+ *   profiler.end('combat');
+ *
+ * Integration:
+ *   Listens to EventBus 'profiler-toggle' to show/hide.
+ *   Emits 'profiler-snapshot' each second with aggregated data.
  */
-export class PerformanceProfiler {
-  static instance = null;
+export default class PerformanceProfiler {
+    constructor(scene) {
+        this.scene = scene;
+        this.enabled = true;
+        this.overlayVisible = false;
 
-  static getInstance() {
-    if (!PerformanceProfiler.instance) new PerformanceProfiler();
-    return PerformanceProfiler.instance;
-  }
+        // Rolling metrics
+        this.historySize = 120; // ~2 seconds at 60fps
+        this.fpsHistory = [];
+        this.frameTimeHistory = [];
 
-  constructor() {
-    if (PerformanceProfiler.instance) return PerformanceProfiler.instance;
+        // Per-system timers
+        this.timers = {};
+        this.timerHistory = {};
 
-    this.eventBus = EventBus.getInstance();
-    this.visible = false;
-    this.scene = null;
+        // Aggregate stats
+        this.stats = {
+            fps: 0,
+            fpsMin: Infinity,
+            fpsMax: 0,
+            fpsAvg: 0,
+            frameTime: 0,
+            frameTimeMax: 0,
+            drawCalls: 0,
+            gameObjects: 0,
+            memoryUsed: 0,
+            memoryLimit: 0,
+            lightsActive: 0,
+            particlesActive: 0
+        };
 
-    // FPS tracking
-    this.fps = 0;
-    this.fpsMin = Infinity;
-    this.fpsMax = 0;
-    this.fpsHistory = new Array(120).fill(60); // rolling 120 frames
-    this.fpsHistoryIndex = 0;
+        // Snapshot interval
+        this._snapshotInterval = 1000;
+        this._snapshotTimer = 0;
+        this._frameCount = 0;
 
-    // Frame time
-    this.frameTime = 0;
-    this.frameTimeAvg = 0;
+        // Active timer tracking
+        this._activeTimers = {};
 
-    // Named timers for per-system profiling
-    this.timers = new Map(); // name → { start, total, count }
-    this.timerResults = new Map(); // name → { avgMs, maxMs, totalMs }
+        // Overlay graphics
+        this._overlayGfx = null;
+        this._overlayTexts = [];
 
-    // Memory (Chrome only)
-    this.memoryUsed = 0;
-    this.memoryTotal = 0;
+        // Hotkey
+        if (scene.input && scene.input.keyboard) {
+            scene.input.keyboard.on('keydown-F3', () => {
+                this.toggleOverlay();
+            });
+        }
 
-    // Object counts
-    this.objectCounts = {};
-
-    // Snapshot interval
-    this.snapshotInterval = 2; // seconds
-    this.snapshotTimer = 0;
-
-    // DOM overlay elements
-    this.overlay = null;
-
-    PerformanceProfiler.instance = this;
-  }
-
-  /**
-   * Attach to a scene and set up F3 toggle.
-   */
-  attach(scene) {
-    this.scene = scene;
-
-    scene.input.keyboard.on('keydown-F3', () => {
-      this.toggle();
-    });
-  }
-
-  // ─── Timer API ───────────────────────────────────────────────────
-
-  /**
-   * Begin timing a named section.
-   */
-  begin(name) {
-    this.timers.set(name, {
-      start: performance.now(),
-      total: this.timers.get(name)?.total || 0,
-      count: (this.timers.get(name)?.count || 0)
-    });
-  }
-
-  /**
-   * End timing a named section.
-   */
-  end(name) {
-    const timer = this.timers.get(name);
-    if (!timer) return;
-
-    const elapsed = performance.now() - timer.start;
-    timer.total += elapsed;
-    timer.count++;
-
-    // Update results
-    const existing = this.timerResults.get(name) || { avgMs: 0, maxMs: 0, totalMs: 0, count: 0 };
-    existing.totalMs += elapsed;
-    existing.count++;
-    existing.avgMs = existing.totalMs / existing.count;
-    existing.maxMs = Math.max(existing.maxMs, elapsed);
-    this.timerResults.set(name, existing);
-  }
-
-  /**
-   * Measure a function's execution time.
-   */
-  measure(name, fn) {
-    this.begin(name);
-    const result = fn();
-    this.end(name);
-    return result;
-  }
-
-  // ─── Update ──────────────────────────────────────────────────────
-
-  update(delta) {
-    const dt = delta / 1000;
-
-    // FPS
-    this.fps = Math.round(1000 / delta);
-    this.fpsMin = Math.min(this.fpsMin, this.fps);
-    this.fpsMax = Math.max(this.fpsMax, this.fps);
-    this.fpsHistory[this.fpsHistoryIndex] = this.fps;
-    this.fpsHistoryIndex = (this.fpsHistoryIndex + 1) % this.fpsHistory.length;
-
-    // Frame time
-    this.frameTime = delta;
-    const sum = this.fpsHistory.reduce((a, b) => a + b, 0);
-    this.frameTimeAvg = 1000 / (sum / this.fpsHistory.length);
-
-    // Memory (Chrome)
-    if (performance.memory) {
-      this.memoryUsed = Math.round(performance.memory.usedJSHeapSize / 1048576);
-      this.memoryTotal = Math.round(performance.memory.totalJSHeapSize / 1048576);
+        EventBus.on('profiler-toggle', () => this.toggleOverlay());
     }
 
-    // Object counts
-    if (this.scene) {
-      this.objectCounts = {
-        gameObjects: this.scene.children?.list?.length || 0,
-        physics: this.scene.physics?.world?.bodies?.size || 0
-      };
+    // ----------------------------------------------------------------
+    // Timer API
+    // ----------------------------------------------------------------
+
+    /**
+     * Start timing a named section.
+     */
+    begin(name) {
+        if (!this.enabled) return;
+        this._activeTimers[name] = performance.now();
     }
 
-    // Snapshot broadcast
-    this.snapshotTimer += dt;
-    if (this.snapshotTimer >= this.snapshotInterval) {
-      this.snapshotTimer = 0;
-      this.broadcastSnapshot();
+    /**
+     * End timing a named section and record the duration.
+     */
+    end(name) {
+        if (!this.enabled || !this._activeTimers[name]) return;
+        const elapsed = performance.now() - this._activeTimers[name];
+        delete this._activeTimers[name];
+
+        if (!this.timers[name]) {
+            this.timers[name] = { total: 0, count: 0, max: 0, last: 0 };
+        }
+
+        const t = this.timers[name];
+        t.last = elapsed;
+        t.total += elapsed;
+        t.count++;
+        t.max = Math.max(t.max, elapsed);
+
+        // History
+        if (!this.timerHistory[name]) {
+            this.timerHistory[name] = [];
+        }
+        this.timerHistory[name].push(elapsed);
+        if (this.timerHistory[name].length > this.historySize) {
+            this.timerHistory[name].shift();
+        }
     }
 
-    // Update overlay if visible
-    if (this.visible && this.overlay) {
-      this.renderOverlay();
-    }
-  }
-
-  // ─── Overlay ─────────────────────────────────────────────────────
-
-  toggle() {
-    this.visible = !this.visible;
-    if (this.visible) {
-      this.createOverlay();
-    } else {
-      this.destroyOverlay();
-    }
-  }
-
-  createOverlay() {
-    if (this.overlay) return;
-
-    this.overlay = document.createElement('div');
-    this.overlay.id = 'verdance-profiler';
-    this.overlay.style.cssText = `
-      position: fixed; top: 10px; right: 10px; z-index: 10000;
-      background: rgba(0,0,0,0.85); color: #00ff00; padding: 10px;
-      font-family: monospace; font-size: 11px; line-height: 1.5;
-      border: 1px solid #00ff00; border-radius: 4px;
-      pointer-events: none; min-width: 220px;
-    `;
-    document.body.appendChild(this.overlay);
-  }
-
-  destroyOverlay() {
-    if (this.overlay) {
-      this.overlay.remove();
-      this.overlay = null;
-    }
-  }
-
-  renderOverlay() {
-    if (!this.overlay) return;
-
-    const fpsAvg = Math.round(this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length);
-    const fpsColor = this.fps >= 55 ? '#00ff00' : this.fps >= 30 ? '#ffaa00' : '#ff4444';
-
-    let html = `
-      <div style="color:${fpsColor};font-size:14px;font-weight:bold">
-        FPS: ${this.fps} (avg: ${fpsAvg})
-      </div>
-      <div>Min: ${this.fpsMin} | Max: ${this.fpsMax}</div>
-      <div>Frame: ${this.frameTime.toFixed(1)}ms</div>
-    `;
-
-    if (this.memoryUsed > 0) {
-      html += `<div>Memory: ${this.memoryUsed}MB / ${this.memoryTotal}MB</div>`;
+    /**
+     * Convenience: wrap a function call with timing.
+     */
+    measure(name, fn) {
+        this.begin(name);
+        const result = fn();
+        this.end(name);
+        return result;
     }
 
-    html += `<div>Objects: ${this.objectCounts.gameObjects || 0} | Physics: ${this.objectCounts.physics || 0}</div>`;
+    // ----------------------------------------------------------------
+    // Per-frame update
+    // ----------------------------------------------------------------
 
-    // System timers
-    if (this.timerResults.size > 0) {
-      html += `<div style="margin-top:4px;border-top:1px solid #333;padding-top:4px">`;
-      for (const [name, result] of this.timerResults) {
-        html += `<div>${name}: ${result.avgMs.toFixed(2)}ms (max: ${result.maxMs.toFixed(2)})</div>`;
-      }
-      html += `</div>`;
+    update(delta) {
+        if (!this.enabled) return;
+
+        this._frameCount++;
+        const fps = Math.round(1000 / Math.max(delta, 1));
+        const frameTime = delta;
+
+        // Rolling history
+        this.fpsHistory.push(fps);
+        this.frameTimeHistory.push(frameTime);
+        if (this.fpsHistory.length > this.historySize) this.fpsHistory.shift();
+        if (this.frameTimeHistory.length > this.historySize) this.frameTimeHistory.shift();
+
+        // Current stats
+        this.stats.fps = fps;
+        this.stats.frameTime = frameTime;
+        this.stats.fpsMin = Math.min(this.stats.fpsMin, fps);
+        this.stats.fpsMax = Math.max(this.stats.fpsMax, fps);
+        this.stats.frameTimeMax = Math.max(this.stats.frameTimeMax, frameTime);
+
+        // Average FPS over window
+        if (this.fpsHistory.length > 0) {
+            const sum = this.fpsHistory.reduce((a, b) => a + b, 0);
+            this.stats.fpsAvg = Math.round(sum / this.fpsHistory.length);
+        }
+
+        // Game objects count
+        if (this.scene.children) {
+            this.stats.gameObjects = this.scene.children.length;
+        }
+
+        // Memory (Chrome only)
+        if (performance.memory) {
+            this.stats.memoryUsed = Math.round(performance.memory.usedJSHeapSize / (1024 * 1024));
+            this.stats.memoryLimit = Math.round(performance.memory.jsHeapSizeLimit / (1024 * 1024));
+        }
+
+        // Snapshot broadcast
+        this._snapshotTimer += delta;
+        if (this._snapshotTimer >= this._snapshotInterval) {
+            this._snapshotTimer = 0;
+            this._emitSnapshot();
+        }
+
+        // Update overlay
+        if (this.overlayVisible) {
+            this._renderOverlay();
+        }
     }
 
-    // Mini FPS graph (last 60 frames)
-    html += `<div style="margin-top:4px;border-top:1px solid #333;padding-top:4px">`;
-    html += this.renderFPSGraph();
-    html += `</div>`;
+    // ----------------------------------------------------------------
+    // Overlay
+    // ----------------------------------------------------------------
 
-    this.overlay.innerHTML = html;
-  }
-
-  renderFPSGraph() {
-    const width = 200;
-    const height = 30;
-    const recent = [];
-
-    for (let i = 0; i < 60; i++) {
-      const idx = (this.fpsHistoryIndex - 60 + i + this.fpsHistory.length) % this.fpsHistory.length;
-      recent.push(this.fpsHistory[idx]);
+    toggleOverlay() {
+        this.overlayVisible = !this.overlayVisible;
+        if (!this.overlayVisible) {
+            this._destroyOverlay();
+        }
     }
 
-    // Build SVG sparkline
-    let path = '';
-    for (let i = 0; i < recent.length; i++) {
-      const x = (i / (recent.length - 1)) * width;
-      const y = height - (Math.min(recent[i], 70) / 70) * height;
-      path += (i === 0 ? 'M' : 'L') + `${x},${y}`;
+    _renderOverlay() {
+        if (!this._overlayGfx) {
+            this._overlayGfx = this.scene.add.graphics().setDepth(99999).setScrollFactor(0);
+        }
+        this._overlayTexts.forEach((t) => t.destroy());
+        this._overlayTexts = [];
+
+        const g = this._overlayGfx;
+        g.clear();
+
+        // Background panel
+        const panelX = 8;
+        const panelY = 50;
+        const panelW = 260;
+        const panelH = 200 + Object.keys(this.timers).length * 16;
+
+        g.fillStyle(0x000000, 0.75);
+        g.fillRect(panelX, panelY, panelW, panelH);
+        g.lineStyle(1, 0x44ff44, 0.4);
+        g.strokeRect(panelX, panelY, panelW, panelH);
+
+        let y = panelY + 8;
+        const addLine = (text, color = '#44ff44') => {
+            const t = this.scene.add.text(panelX + 8, y, text, {
+                fontFamily: 'monospace', fontSize: '11px', color,
+                stroke: '#000', strokeThickness: 1
+            }).setDepth(100000).setScrollFactor(0);
+            this._overlayTexts.push(t);
+            y += 14;
+        };
+
+        addLine('=== PERFORMANCE PROFILER ===', '#88ff88');
+        addLine(`FPS: ${this.stats.fps}  (min: ${this.stats.fpsMin}  max: ${this.stats.fpsMax}  avg: ${this.stats.fpsAvg})`);
+        addLine(`Frame: ${this.stats.frameTime.toFixed(1)}ms  (max: ${this.stats.frameTimeMax.toFixed(1)}ms)`);
+        addLine(`Objects: ${this.stats.gameObjects}`);
+
+        if (this.stats.memoryUsed > 0) {
+            addLine(`Memory: ${this.stats.memoryUsed}MB / ${this.stats.memoryLimit}MB`);
+        }
+
+        addLine(`Lights: ${this.stats.lightsActive}  Particles: ${this.stats.particlesActive}`);
+        y += 4;
+
+        // System timers
+        if (Object.keys(this.timers).length > 0) {
+            addLine('--- System Timers ---', '#88aaff');
+            Object.entries(this.timers).forEach(([name, t]) => {
+                const avg = t.count > 0 ? (t.total / t.count).toFixed(2) : '0.00';
+                addLine(`  ${name}: ${t.last.toFixed(2)}ms (avg: ${avg}ms, max: ${t.max.toFixed(2)}ms)`);
+            });
+        }
+
+        // FPS graph
+        y += 8;
+        this._renderFPSGraph(g, panelX + 8, y, panelW - 16, 40);
     }
 
-    return `<svg width="${width}" height="${height}" style="display:block">
-      <rect width="${width}" height="${height}" fill="rgba(0,0,0,0.3)"/>
-      <line x1="0" y1="${height - (60/70)*height}" x2="${width}" y2="${height - (60/70)*height}"
-            stroke="#333" stroke-dasharray="2,2"/>
-      <path d="${path}" fill="none" stroke="#00ff00" stroke-width="1"/>
-    </svg>`;
-  }
+    _renderFPSGraph(g, x, y, w, h) {
+        // Background
+        g.fillStyle(0x111111, 0.8);
+        g.fillRect(x, y, w, h);
 
-  // ─── Snapshot ────────────────────────────────────────────────────
+        // 60fps line
+        g.lineStyle(1, 0x444444, 0.5);
+        g.lineBetween(x, y + h * (1 - 60 / 120), x + w, y + h * (1 - 60 / 120));
 
-  broadcastSnapshot() {
-    const snapshot = {
-      fps: this.fps,
-      fpsAvg: Math.round(this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length),
-      fpsMin: this.fpsMin,
-      fpsMax: this.fpsMax,
-      frameTime: this.frameTime,
-      memoryUsed: this.memoryUsed,
-      objectCounts: { ...this.objectCounts },
-      timers: Object.fromEntries(this.timerResults)
-    };
+        // FPS curve
+        if (this.fpsHistory.length < 2) return;
 
-    this.eventBus.emit('profiler-snapshot', snapshot);
-  }
+        g.lineStyle(1, 0x44ff44, 0.8);
+        g.beginPath();
 
-  /**
-   * Reset all tracked stats.
-   */
-  reset() {
-    this.fpsMin = Infinity;
-    this.fpsMax = 0;
-    this.fpsHistory.fill(60);
-    this.timers.clear();
-    this.timerResults.clear();
-  }
+        const step = w / (this.historySize - 1);
+        for (let i = 0; i < this.fpsHistory.length; i++) {
+            const px = x + i * step;
+            const py = y + h * (1 - Math.min(this.fpsHistory[i], 120) / 120);
+            if (i === 0) {
+                g.moveTo(px, py);
+            } else {
+                g.lineTo(px, py);
+            }
+        }
+        g.strokePath();
+    }
+
+    _destroyOverlay() {
+        if (this._overlayGfx) {
+            this._overlayGfx.destroy();
+            this._overlayGfx = null;
+        }
+        this._overlayTexts.forEach((t) => t.destroy());
+        this._overlayTexts = [];
+    }
+
+    // ----------------------------------------------------------------
+    // Snapshot
+    // ----------------------------------------------------------------
+
+    _emitSnapshot() {
+        const snapshot = {
+            ...this.stats,
+            timers: {},
+            timestamp: Date.now()
+        };
+
+        Object.entries(this.timers).forEach(([name, t]) => {
+            snapshot.timers[name] = {
+                last: t.last,
+                avg: t.count > 0 ? t.total / t.count : 0,
+                max: t.max
+            };
+        });
+
+        EventBus.emit('profiler-snapshot', snapshot);
+    }
+
+    // ----------------------------------------------------------------
+    // Reset / Cleanup
+    // ----------------------------------------------------------------
+
+    resetStats() {
+        this.stats.fpsMin = Infinity;
+        this.stats.fpsMax = 0;
+        this.stats.frameTimeMax = 0;
+        this.timers = {};
+        this.timerHistory = {};
+        this.fpsHistory = [];
+        this.frameTimeHistory = [];
+    }
+
+    shutdown() {
+        this._destroyOverlay();
+        this.enabled = false;
+    }
 }
-
-export default PerformanceProfiler;

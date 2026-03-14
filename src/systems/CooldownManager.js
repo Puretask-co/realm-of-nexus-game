@@ -1,174 +1,147 @@
-import { EventBus } from '../core/EventBus.js';
+import EventBus from './EventBus.js';
 
 /**
- * CooldownManager - Centralized cooldown tracker for abilities, items, and systems.
- * Tracks named cooldowns with time-based resolution and progress queries.
+ * CooldownManager — Centralised cooldown tracker for spells,
+ * abilities, items, and any time-gated action.
+ *
+ * Each cooldown has:
+ *  - id: unique identifier (e.g. spell ID)
+ *  - duration: total cooldown in ms
+ *  - remaining: ms left before ready
+ *  - onReady: optional callback when cooldown expires
+ *
+ * The manager ticks every frame, emitting progress events
+ * so the UI can render cooldown overlays.
+ *
+ * Usage:
+ *   cooldownManager.start('azure_bolt', 3000);
+ *   cooldownManager.isReady('azure_bolt'); // false
+ *   // ... 3 seconds later ...
+ *   cooldownManager.isReady('azure_bolt'); // true
  */
-export class CooldownManager {
-  static instance = null;
-
-  static getInstance() {
-    if (!CooldownManager.instance) new CooldownManager();
-    return CooldownManager.instance;
-  }
-
-  constructor() {
-    if (CooldownManager.instance) return CooldownManager.instance;
-
-    this.eventBus = EventBus.getInstance();
-
-    // Map<string, { duration, remaining, paused }>
-    this.cooldowns = new Map();
-
-    // Cooldown reduction modifier (e.g. from gear or buffs)
-    this.globalCDR = 0; // 0-1 percentage reduction
-
-    CooldownManager.instance = this;
-  }
-
-  /**
-   * Start a named cooldown.
-   * @param {string} id - Unique cooldown identifier (e.g. 'spell_temporal_bolt')
-   * @param {number} duration - Cooldown duration in seconds
-   * @param {boolean} applyCDR - Whether to apply global cooldown reduction
-   */
-  start(id, duration, applyCDR = true) {
-    const effectiveDuration = applyCDR
-      ? duration * (1 - Math.min(this.globalCDR, 0.75))
-      : duration;
-
-    this.cooldowns.set(id, {
-      duration: effectiveDuration,
-      remaining: effectiveDuration,
-      paused: false
-    });
-
-    this.eventBus.emit('cooldown:started', { id, duration: effectiveDuration });
-  }
-
-  /**
-   * Check if a cooldown is active (still ticking).
-   */
-  isOnCooldown(id) {
-    const cd = this.cooldowns.get(id);
-    return cd ? cd.remaining > 0 : false;
-  }
-
-  /**
-   * Check if an ability is ready (not on cooldown).
-   */
-  isReady(id) {
-    return !this.isOnCooldown(id);
-  }
-
-  /**
-   * Get remaining time for a cooldown in seconds.
-   */
-  getRemaining(id) {
-    const cd = this.cooldowns.get(id);
-    return cd ? Math.max(0, cd.remaining) : 0;
-  }
-
-  /**
-   * Get cooldown progress (0 = just started, 1 = ready).
-   */
-  getProgress(id) {
-    const cd = this.cooldowns.get(id);
-    if (!cd || cd.duration === 0) return 1;
-    return 1 - (cd.remaining / cd.duration);
-  }
-
-  /**
-   * Reset a specific cooldown (make it ready immediately).
-   */
-  reset(id) {
-    if (this.cooldowns.has(id)) {
-      this.cooldowns.delete(id);
-      this.eventBus.emit('cooldown:reset', { id });
-    }
-  }
-
-  /**
-   * Reset all cooldowns.
-   */
-  resetAll() {
-    this.cooldowns.clear();
-    this.eventBus.emit('cooldown:resetAll');
-  }
-
-  /**
-   * Pause a specific cooldown.
-   */
-  pause(id) {
-    const cd = this.cooldowns.get(id);
-    if (cd) cd.paused = true;
-  }
-
-  /**
-   * Resume a paused cooldown.
-   */
-  resume(id) {
-    const cd = this.cooldowns.get(id);
-    if (cd) cd.paused = false;
-  }
-
-  /**
-   * Reduce a specific cooldown by a number of seconds.
-   */
-  reduce(id, seconds) {
-    const cd = this.cooldowns.get(id);
-    if (!cd) return;
-    cd.remaining = Math.max(0, cd.remaining - seconds);
-    if (cd.remaining <= 0) {
-      this.cooldowns.delete(id);
-      this.eventBus.emit('cooldown:ready', { id });
-    }
-  }
-
-  /**
-   * Set global cooldown reduction (0-1, max 0.75).
-   */
-  setGlobalCDR(cdr) {
-    this.globalCDR = Math.min(Math.max(cdr, 0), 0.75);
-  }
-
-  /**
-   * Update all cooldowns. Call each frame with delta in ms.
-   */
-  update(delta) {
-    const dt = delta / 1000;
-    const expired = [];
-
-    for (const [id, cd] of this.cooldowns) {
-      if (cd.paused) continue;
-      cd.remaining -= dt;
-      if (cd.remaining <= 0) {
-        expired.push(id);
-      }
+export default class CooldownManager {
+    constructor() {
+        this.cooldowns = new Map();
     }
 
-    for (const id of expired) {
-      this.cooldowns.delete(id);
-      this.eventBus.emit('cooldown:ready', { id });
-    }
-  }
+    /**
+     * Start a new cooldown.
+     * @param {string} id - Unique identifier
+     * @param {number} duration - Duration in milliseconds
+     * @param {Function} [onReady] - Callback when cooldown completes
+     */
+    start(id, duration, onReady) {
+        this.cooldowns.set(id, {
+            duration,
+            remaining: duration,
+            onReady: onReady || null
+        });
 
-  /**
-   * Get all active cooldowns as an array of { id, remaining, duration, progress }.
-   */
-  getAll() {
-    const result = [];
-    for (const [id, cd] of this.cooldowns) {
-      result.push({
-        id,
-        remaining: cd.remaining,
-        duration: cd.duration,
-        progress: 1 - (cd.remaining / cd.duration),
-        paused: cd.paused
-      });
+        EventBus.emit('cooldown-started', { id, duration });
     }
-    return result;
-  }
+
+    /**
+     * Check if a cooldown is ready (expired or never started).
+     */
+    isReady(id) {
+        if (!this.cooldowns.has(id)) return true;
+        return this.cooldowns.get(id).remaining <= 0;
+    }
+
+    /**
+     * Get remaining time in ms. Returns 0 if ready or unknown.
+     */
+    getRemaining(id) {
+        if (!this.cooldowns.has(id)) return 0;
+        return Math.max(0, this.cooldowns.get(id).remaining);
+    }
+
+    /**
+     * Get progress ratio (0 = just started, 1 = ready).
+     */
+    getProgress(id) {
+        if (!this.cooldowns.has(id)) return 1;
+        const cd = this.cooldowns.get(id);
+        if (cd.duration === 0) return 1;
+        return 1 - (cd.remaining / cd.duration);
+    }
+
+    /**
+     * Cancel a cooldown (make it immediately ready).
+     */
+    cancel(id) {
+        this.cooldowns.delete(id);
+        EventBus.emit('cooldown-cancelled', { id });
+    }
+
+    /**
+     * Reduce a cooldown by a flat amount (cooldown reduction ability).
+     */
+    reduce(id, amount) {
+        if (!this.cooldowns.has(id)) return;
+        const cd = this.cooldowns.get(id);
+        cd.remaining = Math.max(0, cd.remaining - amount);
+    }
+
+    /**
+     * Reset a cooldown back to full duration.
+     */
+    reset(id) {
+        if (!this.cooldowns.has(id)) return;
+        const cd = this.cooldowns.get(id);
+        cd.remaining = cd.duration;
+    }
+
+    /**
+     * Tick all cooldowns. Call from scene.update().
+     * @param {number} delta - Frame delta in ms
+     */
+    update(delta) {
+        const completed = [];
+
+        this.cooldowns.forEach((cd, id) => {
+            if (cd.remaining <= 0) return;
+
+            cd.remaining -= delta;
+
+            // Emit tick for UI
+            EventBus.emit('spell-cooldown-tick', id, Math.max(0, cd.remaining), cd.duration);
+
+            if (cd.remaining <= 0) {
+                cd.remaining = 0;
+                completed.push(id);
+            }
+        });
+
+        // Fire completion callbacks
+        completed.forEach((id) => {
+            const cd = this.cooldowns.get(id);
+            if (cd?.onReady) cd.onReady();
+            EventBus.emit('cooldown-ready', { id });
+            this.cooldowns.delete(id);
+        });
+    }
+
+    /**
+     * Get all active cooldowns as an array.
+     */
+    getAll() {
+        const result = [];
+        this.cooldowns.forEach((cd, id) => {
+            result.push({
+                id,
+                duration: cd.duration,
+                remaining: cd.remaining,
+                progress: 1 - (cd.remaining / cd.duration)
+            });
+        });
+        return result;
+    }
+
+    /**
+     * Clear all cooldowns.
+     */
+    clearAll() {
+        this.cooldowns.clear();
+    }
 }
-
-export default CooldownManager;

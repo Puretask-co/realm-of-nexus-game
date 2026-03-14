@@ -1,0 +1,52 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-02-09T00:00:00Z",
+    "items": [
+        {
+            "id": "minor_health_potion",
+            "name": "Minor Health Potion",
+            "type": "consumable",
+            "rarity": "common",
+            "description": "Restores 30 HP.",
+            "effects": { "healAmount": 30 },
+            "value": 10
+        },
+        {
+            "id": "sap_crystal",
+            "name": "Sap Crystal",
+            "type": "consumable",
+            "rarity": "uncommon",
+            "description": "Restores 25 Sap.",
+            "effects": { "sapRestore": 25 },
+            "value": 20
+        },
+        {
+            "id": "shadow_essence",
+            "name": "Shadow Essence",
+            "type": "material",
+            "rarity": "uncommon",
+            "description": "A dark, swirling essence extracted from shadow creatures.",
+            "effects": {},
+            "value": 35
+        },
+        {
+            "id": "crimson_shard",
+            "name": "Crimson Shard",
+            "type": "material",
+            "rarity": "uncommon",
+            "description": "A glowing shard pulsing with crimson energy.",
+            "effects": {},
+            "value": 40
+        },
+        {
+            "id": "warden_helm",
+            "name": "Warden's Helm",
+            "type": "equipment",
+            "slot": "head",
+            "rarity": "rare",
+            "description": "A sturdy helm once worn by the Crimson Wardens.",
+            "effects": { "defense": 5, "sapPool": 10 },
+            "value": 120
+        }
+    ]
+}
