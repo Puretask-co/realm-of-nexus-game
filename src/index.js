@@ -51,6 +51,9 @@ export { InventoryPanel } from './ui/InventoryPanel.js';
 export { SkillTreePanel } from './ui/SkillTreePanel.js';
 export { MainMenuPanel } from './ui/MainMenuPanel.js';
 
+// Scenes
+export { TitleScene } from './scenes/TitleScene.js';
+
 // Player Class System
 export { PlayerClassSystem } from './systems/PlayerClassSystem.js';
 

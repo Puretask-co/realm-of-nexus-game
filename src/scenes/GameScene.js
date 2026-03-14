@@ -116,28 +116,12 @@ export class GameScene extends Phaser.Scene {
     // ─── Event Listeners ─────────────────────────────────────────
     this.setupEventListeners();
 
-    // ─── HUD Info ────────────────────────────────────────────────
+    // ─── Debug HUD (only FPS counter, rest is in UIScene) ──────
     if (GameConfig.DEBUG.SHOW_FPS) {
       this.fpsText = this.add.text(10, 10, '', {
         fontSize: '12px', fill: '#00ff00', fontFamily: 'monospace'
       }).setScrollFactor(0).setDepth(9999);
     }
-
-    // Phase indicator
-    this.phaseText = this.add.text(GameConfig.WIDTH - 10, 10, '', {
-      fontSize: '12px', fill: '#4a9eff', fontFamily: 'monospace', align: 'right'
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(9999);
-
-    // Player stats display
-    this.statsText = this.add.text(10, GameConfig.HEIGHT - 60, '', {
-      fontSize: '11px', fill: '#ffffff', fontFamily: 'monospace'
-    }).setScrollFactor(0).setDepth(9999);
-
-    // Controls hint
-    this.add.text(GameConfig.WIDTH / 2, GameConfig.HEIGHT - 10,
-      'WASD: Move | 1-5: Spells | SPACE: Dash | E: Interact | F2: Editor', {
-      fontSize: '10px', fill: '#666666', fontFamily: 'monospace'
-    }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(9999);
 
     // F2 - Toggle to Editor Scene
     this.input.keyboard.on('keydown-F2', () => {
@@ -348,6 +332,21 @@ export class GameScene extends Phaser.Scene {
     this.eventBus.on('audio:playSFX', (data) => {
       this.audioManager.playSFX(data.key, data.config || {});
     });
+
+    // Game save/quit from MainMenuPanel
+    this.eventBus.on('game:save', () => {
+      this.saveManager.saveAll();
+    });
+    this.eventBus.on('game:quit', () => {
+      this.scene.stop('UIScene');
+      this.scene.start('TitleScene');
+    });
+    this.eventBus.on('game:paused', () => {
+      this.physics.pause();
+    });
+    this.eventBus.on('game:resumed', () => {
+      this.physics.resume();
+    });
   }
 
   onPhaseChanged(data) {
@@ -537,25 +536,16 @@ export class GameScene extends Phaser.Scene {
       this.fpsText.setText(`FPS: ${Math.round(this.game.loop.actualFps)}`);
     }
 
-    if (this.phaseText) {
-      const status = this.sapCycle.getStatus();
-      const remaining = Math.ceil(status.timeRemaining);
-      this.phaseText.setText(
-        `Phase: ${status.phase.toUpperCase()} (${remaining}s)\n` +
-        `Sap: ${Math.round(status.deepSapPool)}/${status.deepSapPoolMax}\n` +
-        `Cycle: ${status.totalCycles}`
-      );
-    }
+    // Emit stats to UIScene's HUDPanel via EventBus
+    const s = this.player.stats;
+    this.eventBus.emit('player:healthChanged', { current: s.hp, max: s.maxHp });
+    this.eventBus.emit('player:sapChanged', { current: s.sap, max: s.maxSap });
 
-    if (this.statsText) {
-      const s = this.player.stats;
-      const prog = this.progressionSystem;
-      this.statsText.setText(
-        `HP: ${Math.round(s.hp)}/${s.maxHp}  Sap: ${Math.round(s.sap)}/${s.maxSap}\n` +
-        `Lvl: ${prog.level}  XP: ${prog.experience}/${prog.getXPForNextLevel()}  ` +
-        `Enemies: ${this.enemies.length}`
-      );
-    }
+    const prog = this.progressionSystem;
+    this.eventBus.emit('player:experienceGained', {
+      current: prog.experience,
+      toNextLevel: prog.getXPForNextLevel()
+    });
   }
 }
 

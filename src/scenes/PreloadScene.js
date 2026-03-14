@@ -57,7 +57,7 @@ export class PreloadScene extends Phaser.Scene {
       console.warn('Data loading skipped (no data files yet):', err.message);
     }
 
-    this.scene.start('GameScene');
+    this.scene.start('TitleScene');
   }
 }
 

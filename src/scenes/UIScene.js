@@ -1,14 +1,16 @@
 import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
+import { UIFramework } from '../ui/UIFramework.js';
+import { HUDPanel } from '../ui/HUDPanel.js';
+import { InventoryPanel } from '../ui/InventoryPanel.js';
+import { SkillTreePanel } from '../ui/SkillTreePanel.js';
+import { MainMenuPanel } from '../ui/MainMenuPanel.js';
 
 /**
  * UIScene - Parallel HUD overlay scene that runs alongside GameScene.
- * Renders health/sap bars, spell cooldown slots, Sap Cycle indicator,
- * minimap placeholder, and combo counter.
- *
- * Launched by GameScene as a parallel scene so HUD elements are
- * always screen-fixed and don't scroll with the game camera.
+ * Uses UIFramework to manage all panels: HUD, Inventory, SkillTree, MainMenu.
+ * Keyboard shortcuts: I = Inventory, K = Skill Tree, ESC = Menu, TAB = Toggle HUD.
  */
 export class UIScene extends Phaser.Scene {
   constructor() {
@@ -17,143 +19,314 @@ export class UIScene extends Phaser.Scene {
   }
 
   create() {
-    const W = GameConfig.WIDTH;
-    const H = GameConfig.HEIGHT;
+    // ─── Initialize UIFramework ────────────────────────────────
+    // Reset singleton so it binds to this scene
+    UIFramework.instance = null;
+    this.ui = UIFramework.getInstance(this);
 
-    // ─── Health Bar ──────────────────────────────────────────────
-    this.healthBarBg = this.add.rectangle(125, 20, 220, 16, 0x222222, 0.8).setOrigin(0, 0.5);
-    this.healthBarFill = this.add.rectangle(125, 20, 220, 16, 0x44dd44, 1).setOrigin(0, 0.5);
-    this.healthText = this.add.text(15, 20, 'HP:', {
-      fontSize: '12px', fill: '#44dd44', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
-    this.healthValueText = this.add.text(235, 20, '100/100', {
-      fontSize: '10px', fill: '#ffffff', fontFamily: 'monospace'
-    }).setOrigin(0.5, 0.5);
+    // ─── Create Panels ─────────────────────────────────────────
+    this.hudPanel = new HUDPanel(this, this.ui);
+    this.inventoryPanel = new InventoryPanel(this, this.ui);
+    this.skillTreePanel = new SkillTreePanel(this, this.ui);
+    this.mainMenuPanel = new MainMenuPanel(this, this.ui);
 
-    // ─── Sap Bar ─────────────────────────────────────────────────
-    this.sapBarBg = this.add.rectangle(125, 42, 220, 12, 0x222222, 0.8).setOrigin(0, 0.5);
-    this.sapBarFill = this.add.rectangle(125, 42, 220, 12, 0x4488ff, 1).setOrigin(0, 0.5);
-    this.sapText = this.add.text(15, 42, 'SAP:', {
-      fontSize: '12px', fill: '#4488ff', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
+    // Register panels with UIFramework
+    this.ui.registerPanel('inventory', this.inventoryPanel);
+    this.ui.registerPanel('skillTree', this.skillTreePanel);
+    this.ui.registerPanel('mainMenu', this.mainMenuPanel);
 
-    // ─── XP Bar ──────────────────────────────────────────────────
-    this.xpBarBg = this.add.rectangle(125, 60, 220, 6, 0x222222, 0.6).setOrigin(0, 0.5);
-    this.xpBarFill = this.add.rectangle(125, 60, 0, 6, 0xffaa00, 1).setOrigin(0, 0.5);
-    this.levelText = this.add.text(15, 60, 'Lv.1', {
-      fontSize: '10px', fill: '#ffaa00', fontFamily: 'monospace'
-    }).setOrigin(0, 0.5);
+    // HUD is always visible (not toggled via panel system)
+    this.hudPanel.setVisible(true);
 
-    // ─── Sap Cycle Phase Indicator ───────────────────────────────
-    this.phaseIndicatorBg = this.add.rectangle(W - 90, 25, 160, 40, 0x111122, 0.8).setOrigin(0.5);
-    this.phaseLabel = this.add.text(W - 90, 15, 'BLUE PHASE', {
-      fontSize: '12px', fill: '#4488ff', fontFamily: 'monospace', fontStyle: 'bold'
-    }).setOrigin(0.5);
-    this.phaseTimer = this.add.text(W - 90, 33, '120s', {
-      fontSize: '10px', fill: '#aaaaaa', fontFamily: 'monospace'
-    }).setOrigin(0.5);
-
-    // ─── Spell Slots (1-5) ──────────────────────────────────────
-    this.spellSlots = [];
-    const slotStartX = W / 2 - 120;
-    const slotY = H - 40;
-
-    for (let i = 0; i < 5; i++) {
-      const x = slotStartX + i * 55;
-      const bg = this.add.rectangle(x, slotY, 44, 44, 0x222244, 0.8).setStrokeStyle(1, 0x4a9eff, 0.5);
-      const keyLabel = this.add.text(x - 18, slotY - 18, `${i + 1}`, {
-        fontSize: '8px', fill: '#666666', fontFamily: 'monospace'
-      });
-      const nameLabel = this.add.text(x, slotY, '', {
-        fontSize: '8px', fill: '#cccccc', fontFamily: 'monospace', align: 'center'
-      }).setOrigin(0.5);
-      const cdOverlay = this.add.rectangle(x, slotY, 44, 0, 0x000000, 0.6).setOrigin(0.5, 1);
-
-      this.spellSlots.push({ bg, keyLabel, nameLabel, cdOverlay });
-    }
-
-    // ─── Combo Counter ───────────────────────────────────────────
-    this.comboText = this.add.text(W / 2, H - 80, '', {
-      fontSize: '18px', fill: '#ffaa00', fontFamily: 'monospace', fontStyle: 'bold',
-      stroke: '#000000', strokeThickness: 3
-    }).setOrigin(0.5).setAlpha(0);
-
-    // ─── Event Listeners ─────────────────────────────────────────
-    this.eventBus.on('player-stats-updated', (stats) => this.updatePlayerStats(stats));
-    this.eventBus.on('phase-changed', (data) => this.updatePhaseIndicator(data));
-    this.eventBus.on('phase-transition', (data) => this.updatePhaseTransition(data));
-    this.eventBus.on('sap-changed', (data) => this.updateSapDisplay(data));
-    this.eventBus.on('combat:combo', (data) => this.showCombo(data));
-    this.eventBus.on('combat:comboReset', () => this.hideCombo());
-  }
-
-  // ─── Update Methods ──────────────────────────────────────────────
-
-  updatePlayerStats(stats) {
-    if (!stats) return;
-
-    // Health bar
-    const hpPercent = Math.max(0, stats.hp / stats.maxHp);
-    this.healthBarFill.setDisplaySize(220 * hpPercent, 16);
-    const hpColor = hpPercent > 0.5 ? 0x44dd44 : hpPercent > 0.25 ? 0xddaa00 : 0xff4444;
-    this.healthBarFill.setFillStyle(hpColor);
-    this.healthValueText.setText(`${Math.round(stats.hp)}/${stats.maxHp}`);
-
-    // Sap bar
-    if (stats.sap !== undefined && stats.maxSap) {
-      const sapPercent = Math.max(0, stats.sap / stats.maxSap);
-      this.sapBarFill.setDisplaySize(220 * sapPercent, 12);
-    }
-  }
-
-  updatePhaseIndicator(data) {
-    const phaseColors = {
-      blue: '#4488ff',
-      crimson: '#ff4444',
-      silver: '#ccccff'
-    };
-    const color = phaseColors[data.phase] || '#ffffff';
-    this.phaseLabel.setText(`${data.phase.toUpperCase()} PHASE`);
-    this.phaseLabel.setColor(color);
-  }
-
-  updatePhaseTransition(data) {
-    // Pulse effect during transition
-    const alpha = 0.5 + Math.sin(data.progress * Math.PI) * 0.5;
-    this.phaseIndicatorBg.setAlpha(alpha);
-  }
-
-  updateSapDisplay(data) {
-    if (data.current !== undefined && data.max) {
-      const percent = data.current / data.max;
-      this.sapBarFill.setDisplaySize(220 * percent, 12);
-    }
-  }
-
-  showCombo(data) {
-    this.comboText.setText(`${data.count}x COMBO`);
-    this.comboText.setAlpha(1);
-    this.comboText.setScale(1.3);
-    this.tweens.add({
-      targets: this.comboText,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 200,
-      ease: 'Back.easeOut'
+    // ─── Keyboard Shortcuts ────────────────────────────────────
+    this.input.keyboard.on('keydown-I', () => {
+      this.ui.togglePanel('inventory');
     });
+
+    this.input.keyboard.on('keydown-K', () => {
+      this.ui.togglePanel('skillTree');
+    });
+
+    this.input.keyboard.on('keydown-ESC', () => {
+      // If any panel is open, close it. Otherwise open main menu.
+      if (this.ui.activePanel) {
+        this.ui.hideAllPanels();
+      } else {
+        this.ui.togglePanel('mainMenu');
+      }
+    });
+
+    this.input.keyboard.on('keydown-TAB', (e) => {
+      e.preventDefault();
+      this.hudPanel.setVisible(!this.hudPanel.visible);
+    });
+
+    // ─── Skill Tree: Grant points on level up ──────────────────
+    this.eventBus.on('player:levelUp', (data) => {
+      this.skillTreePanel.addSkillPoints(2);
+    });
+
+    // ─── Sap Phase Theme ───────────────────────────────────────
+    this.eventBus.on('sapCycle:phaseChanged', (data) => {
+      this.ui.applySapPhaseTheme(data.phase);
+    });
+
+    // ─── Populate Skill Trees ──────────────────────────────────
+    this.populateSkillTrees();
+
+    // ─── Controls hint ─────────────────────────────────────────
+    this.controlsHint = this.add.text(
+      GameConfig.WIDTH / 2, GameConfig.HEIGHT - 10,
+      'WASD: Move | 1-5: Spells | SPACE: Dash | E: Interact | I: Inventory | K: Skills | ESC: Menu',
+      { fontSize: '10px', fill: '#555555', fontFamily: 'monospace' }
+    ).setOrigin(0.5, 1).setDepth(9999).setScrollFactor(0);
   }
 
-  hideCombo() {
-    this.tweens.add({
-      targets: this.comboText,
-      alpha: 0,
-      duration: 300
-    });
+  /**
+   * Register skill tree nodes for each Sap branch + Core.
+   */
+  populateSkillTrees() {
+    // ─── Core Abilities ──────────────────────────────────────────
+    const coreSkills = [
+      {
+        id: 'vitality', name: 'Vitality', branch: 'core', tier: 1, cost: 1, maxRank: 5,
+        position: { x: 350, y: 60 },
+        description: 'Increases max HP by 5% per rank.',
+        type: 'passive',
+        effects: [{ type: 'max_hp_bonus', value: 0.05, valuePerRank: 0.05, description: '+HP%' }],
+        connections: ['endurance', 'sap_mastery']
+      },
+      {
+        id: 'endurance', name: 'Endurance', branch: 'core', tier: 2, cost: 1, maxRank: 3,
+        position: { x: 220, y: 130 },
+        description: 'Reduces damage taken by 3% per rank.',
+        type: 'passive',
+        effects: [{ type: 'damage_reduction', value: 0.03, valuePerRank: 0.03, description: 'DR%' }],
+        prerequisites: ['vitality'], connections: ['unyielding']
+      },
+      {
+        id: 'sap_mastery', name: 'Sap Mastery', branch: 'core', tier: 2, cost: 1, maxRank: 3,
+        position: { x: 480, y: 130 },
+        description: 'Increases sap regeneration by 10% per rank.',
+        type: 'passive',
+        effects: [{ type: 'sap_regen_bonus', value: 0.10, valuePerRank: 0.10, description: 'Sap Regen%' }],
+        prerequisites: ['vitality'], connections: ['sap_overflow']
+      },
+      {
+        id: 'unyielding', name: 'Unyielding', branch: 'core', tier: 3, cost: 2, maxRank: 1,
+        position: { x: 220, y: 220 },
+        description: 'Survive a lethal hit once per 120s, retaining 1 HP.',
+        type: 'passive',
+        effects: [{ type: 'cheat_death', value: 120, description: 'Cheat Death' }],
+        prerequisites: ['endurance'], connections: []
+      },
+      {
+        id: 'sap_overflow', name: 'Sap Overflow', branch: 'core', tier: 3, cost: 2, maxRank: 1,
+        position: { x: 480, y: 220 },
+        description: 'Excess sap above max converts to bonus spell damage (1% per 5 sap).',
+        type: 'passive',
+        effects: [{ type: 'sap_to_damage', value: 0.01, description: 'Sap→Dmg' }],
+        prerequisites: ['sap_mastery'], connections: []
+      },
+      {
+        id: 'quick_dash', name: 'Quick Dash', branch: 'core', tier: 1, cost: 1, maxRank: 3,
+        position: { x: 350, y: 300 },
+        description: 'Reduces dash cooldown by 0.5s per rank.',
+        type: 'passive',
+        effects: [{ type: 'dash_cd_reduction', value: 0.5, valuePerRank: 0.5, description: 'Dash CD' }],
+        connections: ['phase_walker']
+      },
+      {
+        id: 'phase_walker', name: 'Phase Walker', branch: 'core', tier: 3, cost: 3, maxRank: 1,
+        position: { x: 350, y: 370 },
+        description: 'Dashing during a phase transition grants 3s invulnerability.',
+        type: 'ultimate',
+        effects: [{ type: 'dash_invuln', value: 3, description: 'Invuln' }],
+        prerequisites: ['quick_dash'], connections: []
+      }
+    ];
+
+    // ─── Temporal (Blue) Branch ──────────────────────────────────
+    const blueSkills = [
+      {
+        id: 'chrono_precision', name: 'Chrono Precision', branch: 'blue', tier: 1, cost: 1, maxRank: 5,
+        position: { x: 350, y: 60 },
+        description: 'Increases spell damage by 4% per rank during Blue Phase.',
+        type: 'passive',
+        effects: [{ type: 'spell_damage_bonus', value: 0.04, valuePerRank: 0.04, description: 'Spell Dmg%' }],
+        connections: ['time_warp', 'arcane_focus']
+      },
+      {
+        id: 'time_warp', name: 'Time Warp', branch: 'blue', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 200, y: 140 },
+        description: 'Spell cooldowns reduced by 5% per rank.',
+        type: 'passive',
+        effects: [{ type: 'cooldown_reduction', value: 0.05, valuePerRank: 0.05, description: 'CDR%' }],
+        prerequisites: ['chrono_precision'], connections: ['temporal_cascade']
+      },
+      {
+        id: 'arcane_focus', name: 'Arcane Focus', branch: 'blue', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 500, y: 140 },
+        description: 'Crit chance for spells increased by 3% per rank.',
+        type: 'passive',
+        effects: [{ type: 'spell_crit', value: 0.03, valuePerRank: 0.03, description: 'Crit%' }],
+        prerequisites: ['chrono_precision'], connections: ['temporal_cascade']
+      },
+      {
+        id: 'temporal_cascade', name: 'Temporal Cascade', branch: 'blue', tier: 3, cost: 3, maxRank: 1,
+        position: { x: 350, y: 240 },
+        description: 'Every 5th spell cast triggers a free echo of the previous spell.',
+        type: 'active',
+        effects: [{ type: 'spell_echo', value: 5, description: 'Echo every 5 casts' }],
+        prerequisites: ['time_warp', 'arcane_focus'], connections: ['temporal_mastery']
+      },
+      {
+        id: 'mana_tide', name: 'Mana Tide', branch: 'blue', tier: 2, cost: 1, maxRank: 3,
+        position: { x: 350, y: 330 },
+        description: 'Kills during Blue Phase restore 8% max sap per rank.',
+        type: 'passive',
+        effects: [{ type: 'kill_sap_restore', value: 0.08, valuePerRank: 0.08, description: 'Sap on Kill%' }],
+        connections: ['temporal_mastery']
+      },
+      {
+        id: 'temporal_mastery', name: 'Temporal Mastery', branch: 'blue', tier: 4, cost: 4, maxRank: 1,
+        position: { x: 350, y: 400 },
+        description: 'Blue Phase lasts 30% longer. All temporal spells cost 20% less sap.',
+        type: 'ultimate',
+        effects: [
+          { type: 'phase_duration_bonus', value: 0.30, description: 'Phase Duration' },
+          { type: 'sap_cost_reduction', value: 0.20, description: 'Sap Cost' }
+        ],
+        prerequisites: ['temporal_cascade'], connections: []
+      }
+    ];
+
+    // ─── Crimson Branch ──────────────────────────────────────────
+    const crimsonSkills = [
+      {
+        id: 'burning_strikes', name: 'Burning Strikes', branch: 'crimson', tier: 1, cost: 1, maxRank: 5,
+        position: { x: 350, y: 60 },
+        description: 'Attacks deal 3% bonus fire damage per rank.',
+        type: 'passive',
+        effects: [{ type: 'fire_damage_bonus', value: 0.03, valuePerRank: 0.03, description: 'Fire Dmg%' }],
+        connections: ['blood_thirst', 'fury_buildup']
+      },
+      {
+        id: 'blood_thirst', name: 'Blood Thirst', branch: 'crimson', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 200, y: 140 },
+        description: 'Heal for 3% of damage dealt per rank.',
+        type: 'passive',
+        effects: [{ type: 'lifesteal', value: 0.03, valuePerRank: 0.03, description: 'Lifesteal%' }],
+        prerequisites: ['burning_strikes'], connections: ['infernal_rage']
+      },
+      {
+        id: 'fury_buildup', name: 'Fury Buildup', branch: 'crimson', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 500, y: 140 },
+        description: 'Each consecutive hit increases damage by 2% per rank (max 5 stacks).',
+        type: 'passive',
+        effects: [{ type: 'ramping_damage', value: 0.02, valuePerRank: 0.02, description: 'Ramp%/hit' }],
+        prerequisites: ['burning_strikes'], connections: ['infernal_rage']
+      },
+      {
+        id: 'infernal_rage', name: 'Infernal Rage', branch: 'crimson', tier: 3, cost: 3, maxRank: 1,
+        position: { x: 350, y: 240 },
+        description: 'When below 30% HP, gain 50% attack speed and 25% damage.',
+        type: 'active',
+        effects: [
+          { type: 'low_hp_atk_speed', value: 0.50, description: 'Atk Speed' },
+          { type: 'low_hp_damage', value: 0.25, description: 'Bonus Dmg' }
+        ],
+        prerequisites: ['blood_thirst', 'fury_buildup'], connections: ['crimson_mastery']
+      },
+      {
+        id: 'flame_armor', name: 'Flame Armor', branch: 'crimson', tier: 2, cost: 1, maxRank: 3,
+        position: { x: 350, y: 330 },
+        description: 'Melee attackers take 5 fire damage per rank.',
+        type: 'passive',
+        effects: [{ type: 'thorns_fire', value: 5, valuePerRank: 5, description: 'Fire Thorns' }],
+        connections: ['crimson_mastery']
+      },
+      {
+        id: 'crimson_mastery', name: 'Crimson Mastery', branch: 'crimson', tier: 4, cost: 4, maxRank: 1,
+        position: { x: 350, y: 400 },
+        description: 'Crimson Phase grants permanent +15% damage. Kills extend Crimson Phase by 2s.',
+        type: 'ultimate',
+        effects: [
+          { type: 'phase_damage_bonus', value: 0.15, description: 'Phase Dmg' },
+          { type: 'kill_phase_extend', value: 2, description: 'Phase Extend' }
+        ],
+        prerequisites: ['infernal_rage'], connections: []
+      }
+    ];
+
+    // ─── Silver Branch ───────────────────────────────────────────
+    const silverSkills = [
+      {
+        id: 'arcane_barrier', name: 'Arcane Barrier', branch: 'silver', tier: 1, cost: 1, maxRank: 5,
+        position: { x: 350, y: 60 },
+        description: 'Shield strength increased by 5% per rank.',
+        type: 'passive',
+        effects: [{ type: 'shield_strength', value: 0.05, valuePerRank: 0.05, description: 'Shield%' }],
+        connections: ['reflective_guard', 'mystic_ward']
+      },
+      {
+        id: 'reflective_guard', name: 'Reflective Guard', branch: 'silver', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 200, y: 140 },
+        description: 'Reflect 5% of blocked damage per rank back to attacker.',
+        type: 'passive',
+        effects: [{ type: 'damage_reflect', value: 0.05, valuePerRank: 0.05, description: 'Reflect%' }],
+        prerequisites: ['arcane_barrier'], connections: ['silver_fortress']
+      },
+      {
+        id: 'mystic_ward', name: 'Mystic Ward', branch: 'silver', tier: 2, cost: 2, maxRank: 3,
+        position: { x: 500, y: 140 },
+        description: 'Gain 3% magic resistance per rank.',
+        type: 'passive',
+        effects: [{ type: 'magic_resist', value: 0.03, valuePerRank: 0.03, description: 'MR%' }],
+        prerequisites: ['arcane_barrier'], connections: ['silver_fortress']
+      },
+      {
+        id: 'silver_fortress', name: 'Silver Fortress', branch: 'silver', tier: 3, cost: 3, maxRank: 1,
+        position: { x: 350, y: 240 },
+        description: 'Standing still for 2s creates an aura reducing nearby enemy damage by 20%.',
+        type: 'active',
+        effects: [{ type: 'stationary_aura', value: 0.20, description: 'Enemy Dmg Reduction' }],
+        prerequisites: ['reflective_guard', 'mystic_ward'], connections: ['silver_mastery']
+      },
+      {
+        id: 'purify', name: 'Purify', branch: 'silver', tier: 2, cost: 1, maxRank: 3,
+        position: { x: 350, y: 330 },
+        description: 'Reduce debuff duration on self by 15% per rank.',
+        type: 'passive',
+        effects: [{ type: 'debuff_reduction', value: 0.15, valuePerRank: 0.15, description: 'Debuff DR%' }],
+        connections: ['silver_mastery']
+      },
+      {
+        id: 'silver_mastery', name: 'Silver Mastery', branch: 'silver', tier: 4, cost: 4, maxRank: 1,
+        position: { x: 350, y: 400 },
+        description: 'Silver Phase grants a shield equal to 20% max HP. Block chance +10%.',
+        type: 'ultimate',
+        effects: [
+          { type: 'phase_shield', value: 0.20, description: 'Phase Shield' },
+          { type: 'block_bonus', value: 0.10, description: 'Block%' }
+        ],
+        prerequisites: ['silver_fortress'], connections: []
+      }
+    ];
+
+    // Register all skills
+    const allSkills = [...coreSkills, ...blueSkills, ...crimsonSkills, ...silverSkills];
+    for (const skill of allSkills) {
+      this.skillTreePanel.registerSkill(skill);
+    }
   }
 
   update(time, delta) {
-    // Update phase timer display
-    // (SapCycleManager status is read via event, but we can also poll)
+    this.ui.update(time, delta);
+  }
+
+  shutdown() {
+    this.ui.destroy();
   }
 }
 
