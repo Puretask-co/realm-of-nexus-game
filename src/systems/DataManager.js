@@ -1,5 +1,5 @@
 import { spellSchema, enemySchema } from '../schemas/spellSchema.js';
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * Central data hub for all game data.

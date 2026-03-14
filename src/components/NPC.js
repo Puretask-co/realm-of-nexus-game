@@ -1,4 +1,4 @@
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * NPC component — non-player character with dialogue and interaction.

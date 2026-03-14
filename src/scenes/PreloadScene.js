@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DataManager } from '../systems/DataManager.js';
+import DataManager from '../systems/DataManager.js';
 
 /**
  * PreloadScene - Loads all game assets and initializes data systems.

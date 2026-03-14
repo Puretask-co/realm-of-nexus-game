@@ -1,6 +1,6 @@
 import { EventBus } from '../core/EventBus.js';
-import { SapCycleManager } from './SapCycleManager.js';
-import { CooldownManager } from './CooldownManager.js';
+import SapCycleManager from './SapCycleManager.js';
+import CooldownManager from './CooldownManager.js';
 import { CombatSystem } from './CombatSystem.js';
 
 /**

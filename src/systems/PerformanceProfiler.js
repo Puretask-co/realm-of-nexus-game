@@ -1,4 +1,4 @@
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * Real-time performance profiler for the Verdance engine.

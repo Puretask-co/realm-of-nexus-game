@@ -1,4 +1,4 @@
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * Projectile component — a spell projectile that travels from

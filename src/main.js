@@ -3,6 +3,8 @@ import BootScene from './scenes/BootScene.js';
 import GameScene from './scenes/GameScene.js';
 import EditorScene from './scenes/EditorScene.js';
 import UIScene from './scenes/UIScene.js';
+import NormalMapPipeline from './pipelines/NormalMapPipeline.js';
+import PostProcessingPipeline from './pipelines/PostProcessingPipeline.js';
 
 /**
  * Realm of Nexus — Main entry point.
@@ -38,6 +40,11 @@ const config = {
         pixelArt: true,
         antialias: false,
         roundPixels: true
+    },
+
+    pipeline: {
+        NormalMap: NormalMapPipeline,
+        PostProcessing: PostProcessingPipeline
     },
 
     scene: [BootScene, GameScene, EditorScene, UIScene]

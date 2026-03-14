@@ -1,5 +1,5 @@
 import { EventBus } from '../core/EventBus.js';
-import { DataManager } from './DataManager.js';
+import DataManager from './DataManager.js';
 
 /**
  * CSVDataLoader - Import/export game data as CSV for non-programmer contributions.

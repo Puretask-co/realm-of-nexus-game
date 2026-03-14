@@ -1,6 +1,6 @@
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
-import { DataManager } from './DataManager.js';
+import DataManager from './DataManager.js';
 
 /**
  * QuestSystem - Quest and progression tracking for Verdance.

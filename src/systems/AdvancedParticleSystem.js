@@ -1,4 +1,4 @@
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * Custom particle engine with multi-stage effects, sub-emitters,

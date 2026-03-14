@@ -1,4 +1,4 @@
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * MinimapRenderer — Draws a real-time minimap in the corner of the UI.
