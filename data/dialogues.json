@@ -1,0 +1,287 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "characters": [
+        {
+            "id": "elder",
+            "name": "Elder Thalos",
+            "nameColor": "#44ff88",
+            "voicePitch": 0.8,
+            "textSpeed": 0.9
+        },
+        {
+            "id": "herbalist",
+            "name": "Lyra the Herbalist",
+            "nameColor": "#88ff44",
+            "voicePitch": 1.2,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "scholar",
+            "name": "Archivist Kael",
+            "nameColor": "#4488ff",
+            "voicePitch": 1.0,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "merchant",
+            "name": "Merchant Orla",
+            "nameColor": "#ffaa44",
+            "voicePitch": 1.1,
+            "textSpeed": 1.2
+        }
+    ],
+    "dialogues": [
+        {
+            "id": "elder_awakening",
+            "startNode": "start",
+            "metadata": { "context": "First meeting with the Elder" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "Ah... you're awake at last. The Sap brought you here — I could feel its pull the moment you arrived.",
+                    "emotion": "neutral",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder",
+                    "text": "This is the Verdant Grove. The three streams of Sap — Blue, Crimson, and Silver — flow through everything here. They cycle endlessly, shaping the world.",
+                    "next": "task",
+                    "emotion": "neutral"
+                },
+                {
+                    "id": "task",
+                    "speaker": "elder",
+                    "text": "But something has gone wrong. The forest creatures have turned hostile. They attack anyone who draws near.",
+                    "choices": [
+                        {
+                            "text": "I'll help. What do I need to do?",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "setVariable", "variable": "player_attitude", "value": "helpful" }
+                            ]
+                        },
+                        {
+                            "text": "Why should I care about your problems?",
+                            "next": "reluctant",
+                            "effects": [
+                                { "type": "setVariable", "variable": "player_attitude", "value": "reluctant" }
+                            ]
+                        },
+                        {
+                            "text": "Tell me more about the Sap Cycle first.",
+                            "next": "sap_lore"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "elder",
+                    "text": "Good heart you have. Defeat three of the Forest Guardians that roam the grove. Return to me when it's done.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "awakening" }
+                    ]
+                },
+                {
+                    "id": "reluctant",
+                    "speaker": "elder",
+                    "text": "Because the Sap chose you, child. Whether you like it or not, your fate is bound to this land. Help us, and perhaps we can help you find your way home.",
+                    "next": "accept"
+                },
+                {
+                    "id": "sap_lore",
+                    "speaker": "elder",
+                    "text": "The Sap flows in three phases. Blue brings clarity and arcane power. Crimson ignites fury and raw strength. Silver unveils mystery and hidden truths. Your spells resonate differently with each phase.",
+                    "next": "task"
+                }
+            ]
+        },
+        {
+            "id": "elder_awakening_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "You've proven yourself capable. The Grove is safer thanks to you.",
+                    "next": "reward"
+                },
+                {
+                    "id": "reward",
+                    "speaker": "elder",
+                    "text": "Take these healing potions — you'll need them. And listen... something darker stirs in the Crystal Caverns. Shadow creatures are emerging.",
+                    "next": "warning"
+                },
+                {
+                    "id": "warning",
+                    "speaker": "elder",
+                    "text": "When you're ready, venture east to the caverns. But be careful — the shadows are unlike anything in this grove.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "chapter", "value": 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_shadow_threat",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Crystal Caverns lie to the northeast. The shadows there feed on the Silver phase of the Sap Cycle.",
+                    "next": "advice"
+                },
+                {
+                    "id": "advice",
+                    "speaker": "elder",
+                    "text": "Use Azure Bolt during the Blue phase — it will be at its strongest against them. Collect the Shadow Essence they drop. We may need it.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "shadow_threat" }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "herbalist_quest",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "herbalist",
+                    "text": "Oh, a traveler! Perfect timing. I'm running low on supplies and these woods have become too dangerous for me.",
+                    "next": "request"
+                },
+                {
+                    "id": "request",
+                    "speaker": "herbalist",
+                    "text": "Could you bring me 2 Health Potions? The forest creatures sometimes carry them. I'll make it worth your while!",
+                    "choices": [
+                        {
+                            "text": "Sure, I'll keep an eye out.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "herb_gathering" }
+                            ]
+                        },
+                        {
+                            "text": "Not right now, I'm busy.",
+                            "next": "decline"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "herbalist",
+                    "text": "Thank you! I'll be right here when you've gathered them."
+                },
+                {
+                    "id": "decline",
+                    "speaker": "herbalist",
+                    "text": "No worries! Come back if you change your mind."
+                }
+            ]
+        },
+        {
+            "id": "scholar_quest",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "scholar",
+                    "text": "Fascinating... the readings indicate a surge of sap energy from the Sunken Ruins to the south.",
+                    "next": "request"
+                },
+                {
+                    "id": "request",
+                    "speaker": "scholar",
+                    "text": "I'd investigate myself, but I'm more of a... theoretical type. Would you explore the ruins and deal with any hostiles?",
+                    "choices": [
+                        {
+                            "text": "I'll check it out.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "explore_ruins" }
+                            ]
+                        },
+                        {
+                            "text": "Sounds dangerous. Maybe later.",
+                            "next": "decline"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "scholar",
+                    "text": "Excellent! The ruins are southeast of here. Be careful of the fog — it plays tricks on the mind."
+                },
+                {
+                    "id": "decline",
+                    "speaker": "scholar",
+                    "text": "Understandable. Science can wait... I suppose."
+                }
+            ]
+        },
+        {
+            "id": "merchant_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "merchant",
+                    "text": "Welcome, welcome! Orla's the name, trade's the game. What can I do for you today?",
+                    "choices": [
+                        {
+                            "text": "Show me what you've got.",
+                            "next": "shop"
+                        },
+                        {
+                            "text": "What's the news around here?",
+                            "next": "gossip"
+                        },
+                        {
+                            "text": "Just passing through.",
+                            "next": "farewell"
+                        }
+                    ]
+                },
+                {
+                    "id": "shop",
+                    "speaker": "merchant",
+                    "text": "I've got potions, crystals, and the occasional piece of equipment. Take a look!",
+                    "effects": [
+                        { "type": "setVariable", "variable": "shop_visited", "value": true }
+                    ]
+                },
+                {
+                    "id": "gossip",
+                    "speaker": "merchant",
+                    "text": "Word is the Crimson Wardens on the plateau have gone completely mad. Something about the Sap corrupting them. Best stay clear unless you're looking for trouble.",
+                    "next": "shop_offer"
+                },
+                {
+                    "id": "shop_offer",
+                    "speaker": "merchant",
+                    "text": "If you ARE heading that way, might want to stock up on potions first. Just saying!",
+                    "choices": [
+                        {
+                            "text": "Good idea. Show me your wares.",
+                            "next": "shop"
+                        },
+                        {
+                            "text": "Thanks for the tip.",
+                            "next": "farewell"
+                        }
+                    ]
+                },
+                {
+                    "id": "farewell",
+                    "speaker": "merchant",
+                    "text": "Safe travels! Come back anytime."
+                }
+            ]
+        }
+    ]
+}

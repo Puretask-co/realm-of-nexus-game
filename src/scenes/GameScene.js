@@ -9,24 +9,26 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { AISystem } from '../systems/AISystem.js';
 import { ProgressionSystem } from '../systems/ProgressionSystem.js';
 import { SpellSystem } from '../systems/SpellSystem.js';
+import { QuestSystem } from '../systems/QuestSystem.js';
+import { DialogueSystem } from '../systems/DialogueSystem.js';
 import CooldownManager from '../systems/CooldownManager.js';
 import SaveManager from '../systems/SaveManager.js';
+import ContentInitializer from '../systems/ContentInitializer.js';
 import DamageNumberRenderer from '../renderers/DamageNumberRenderer.js';
 import MinimapRenderer from '../renderers/MinimapRenderer.js';
+import NPC from '../components/NPC.js';
 
 /**
  * GameScene — Main gameplay scene.
  *
  * Responsibilities:
  *  1. Initialise all engine systems (lighting, particles, camera, sap cycle, profiler).
- *  2. Build the world from location data (tilemap or procedural grid).
+ *  2. Build the world from location data with distinct zone visuals.
  *  3. Spawn the player, enemies, and NPCs.
  *  4. Handle input (movement, spell casting, UI hotkeys).
  *  5. Drive per-frame updates for every system.
- *  6. Process combat via EventBus events.
- *
- * The scene deliberately keeps high-level orchestration logic here
- * and delegates heavy work to dedicated systems.
+ *  6. Process combat, loot drops, quest updates via EventBus events.
+ *  7. Manage death/respawn cycle.
  */
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -46,6 +48,8 @@ export default class GameScene extends Phaser.Scene {
         this.aiSystem = AISystem.getInstance();
         this.progression = ProgressionSystem.getInstance();
         this.spellSystem = SpellSystem.getInstance();
+        this.questSystem = QuestSystem.getInstance();
+        this.dialogueSystem = DialogueSystem.getInstance(this);
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -55,14 +59,21 @@ export default class GameScene extends Phaser.Scene {
         this.damageNumbers = new DamageNumberRenderer(this);
         this.minimap = new MinimapRenderer(this);
 
+        // ---- Content Registration ----
+        ContentInitializer.registerQuests();
+        ContentInitializer.registerDialogues(this);
+
         // ---- World ----
         this._buildWorld();
 
         // ---- Player ----
         this._createPlayer();
 
-        // ---- Enemies ----
+        // ---- Enemies (zone-based) ----
         this._spawnEnemies();
+
+        // ---- NPCs ----
+        this._spawnNPCs();
 
         // ---- Camera ----
         this.cameraSystem.startFollow(this.player, {
@@ -92,17 +103,38 @@ export default class GameScene extends Phaser.Scene {
         // ---- Auto-save ----
         this.saveManager.enableAutoSave(60000);
 
+        // ---- Wire save system ----
+        ContentInitializer.wireSaveSystem({
+            questSystem: this.questSystem,
+            dialogueSystem: this.dialogueSystem
+        });
+
         // ---- EventBus listeners ----
         this._unsubs = [
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
-            EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data))
+            EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
+            EventBus.on('dialogue:start', (data) => this._onDialogueStart(data)),
+            EventBus.on('quest:start', (data) => this._onQuestStart(data)),
+            EventBus.on('quest:completed', (data) => this._onQuestCompleted(data))
         ];
 
-        console.log('[GameScene] Created');
+        // ---- Track current location ----
+        this.currentLocationId = 'verdant_grove';
+        this._emitLocationDiscovery('verdant_grove');
+
+        // ---- Start first quest automatically ----
+        this.time.delayedCall(2000, () => {
+            this.dialogueSystem.startDialogue('elder_awakening');
+        });
+
+        // ---- Death state ----
+        this.isDead = false;
+
+        console.log('[GameScene] Created — all content wired');
     }
 
     // ----------------------------------------------------------------
-    // World building
+    // World building — distinct zones per location
     // ----------------------------------------------------------------
 
     _buildWorld() {
@@ -112,47 +144,169 @@ export default class GameScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
 
-        // Ground layer (simple grid for now)
-        this._worldGfx = this.add.graphics().setDepth(0);
-        this._worldGfx.fillStyle(0x1a2a1a, 1);
-        this._worldGfx.fillRect(0, 0, worldWidth, worldHeight);
-
-        // Grid overlay for spatial reference
-        this._worldGfx.lineStyle(1, 0x223322, 0.3);
-        const gridSize = 64;
-        for (let x = 0; x <= worldWidth; x += gridSize) {
-            this._worldGfx.lineBetween(x, 0, x, worldHeight);
-        }
-        for (let y = 0; y <= worldHeight; y += gridSize) {
-            this._worldGfx.lineBetween(0, y, worldWidth, y);
-        }
-
-        // Decorative elements (trees, rocks)
-        this.decorations = this.add.group();
-        for (let i = 0; i < 40; i++) {
-            const dx = Phaser.Math.Between(50, worldWidth - 50);
-            const dy = Phaser.Math.Between(50, worldHeight - 50);
-            const gfx = this.add.graphics().setDepth(1);
-            gfx.fillStyle(0x225522, 0.8);
-            gfx.fillCircle(dx, dy, Phaser.Math.Between(8, 20));
-            this.decorations.add(gfx);
-        }
-
-        // Camera zones from location data
+        // Zone layout: 3 columns x 2 rows, each 800x900
         const locations = dataManager.getAllLocations();
+        this._worldGfx = this.add.graphics().setDepth(0);
+        this._zoneLabels = [];
+
+        // Zone definitions with grid positions
+        this.zones = [];
         locations.forEach((loc, i) => {
-            const zoneX = (i % 3) * 800;
-            const zoneY = Math.floor(i / 3) * 600;
+            const col = i % 3;
+            const row = Math.floor(i / 3);
+            const zoneX = col * 800;
+            const zoneY = row * 900;
+            const zoneW = 800;
+            const zoneH = 900;
+
+            const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: zoneW, h: zoneH } };
+            this.zones.push(zone);
+
+            // Draw zone background
+            const color = parseInt((loc.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+            this._worldGfx.fillStyle(color, 0.4);
+            this._worldGfx.fillRect(zoneX, zoneY, zoneW, zoneH);
+
+            // Zone border
+            this._worldGfx.lineStyle(2, color, 0.7);
+            this._worldGfx.strokeRect(zoneX + 2, zoneY + 2, zoneW - 4, zoneH - 4);
+
+            // Grid overlay
+            this._worldGfx.lineStyle(1, color, 0.15);
+            const gridSize = 64;
+            for (let x = zoneX; x <= zoneX + zoneW; x += gridSize) {
+                this._worldGfx.lineBetween(x, zoneY, x, zoneY + zoneH);
+            }
+            for (let y = zoneY; y <= zoneY + zoneH; y += gridSize) {
+                this._worldGfx.lineBetween(zoneX, y, zoneX + zoneW, y);
+            }
+
+            // Zone name label
+            const label = this.add.text(zoneX + zoneW / 2, zoneY + 20, loc.name.toUpperCase(), {
+                fontFamily: 'monospace',
+                fontSize: '14px',
+                color: `#${color.toString(16).padStart(6, '0')}`,
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.7);
+            this._zoneLabels.push(label);
+
+            // Level indicator
+            this.add.text(zoneX + zoneW / 2, zoneY + 38, `Lv.${loc.level} — ${loc.type}`, {
+                fontFamily: 'monospace',
+                fontSize: '10px',
+                color: '#888888',
+                stroke: '#000000',
+                strokeThickness: 2
+            }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.6);
+
+            // Weather effects per zone
+            if (loc.environment?.weather === 'fog') {
+                this._addFogEffect(zoneX, zoneY, zoneW, zoneH);
+            }
+
+            // Decorative elements (themed per zone)
+            this._addZoneDecorations(zoneX, zoneY, zoneW, zoneH, loc);
+
+            // Camera zone
             this.cameraSystem.addZone(
-                { x: zoneX, y: zoneY, width: 800, height: 600 },
+                { x: zoneX, y: zoneY, width: zoneW, height: zoneH },
                 {
                     zoom: loc.environment?.cameraZoom || 1.0,
                     priority: i,
-                    onEnter: () => console.log(`[Zone] Entered: ${loc.name}`),
+                    onEnter: () => {
+                        if (this.currentLocationId !== loc.id) {
+                            this.currentLocationId = loc.id;
+                            this._emitLocationDiscovery(loc.id);
+                            EventBus.emit('zone-entered', { locationId: loc.id, name: loc.name });
+                            console.log(`[Zone] Entered: ${loc.name}`);
+                        }
+                    },
                     onExit: () => console.log(`[Zone] Exited: ${loc.name}`)
                 }
             );
         });
+
+        // Connection paths between zones (visual)
+        this._drawZoneConnections(locations);
+    }
+
+    _addFogEffect(x, y, w, h) {
+        for (let i = 0; i < 8; i++) {
+            const fogX = x + Phaser.Math.Between(50, w - 50);
+            const fogY = y + Phaser.Math.Between(50, h - 50);
+            const fog = this.add.graphics().setDepth(3).setAlpha(0.15);
+            fog.fillStyle(0xaabbcc, 1);
+            fog.fillCircle(fogX, fogY, Phaser.Math.Between(40, 80));
+
+            // Animate fog drift
+            this.tweens.add({
+                targets: fog,
+                x: Phaser.Math.Between(-30, 30),
+                y: Phaser.Math.Between(-20, 20),
+                alpha: { from: 0.1, to: 0.2 },
+                duration: Phaser.Math.Between(4000, 8000),
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+    }
+
+    _addZoneDecorations(x, y, w, h, location) {
+        const count = location.type === 'dungeon' ? 15 : 25;
+        for (let i = 0; i < count; i++) {
+            const dx = x + Phaser.Math.Between(40, w - 40);
+            const dy = y + Phaser.Math.Between(60, h - 40);
+            const gfx = this.add.graphics().setDepth(1);
+
+            const color = parseInt((location.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+
+            if (location.type === 'dungeon') {
+                // Crystal formations
+                gfx.fillStyle(color, 0.6);
+                const size = Phaser.Math.Between(4, 12);
+                gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
+            } else if (location.type === 'boss') {
+                // Glowing pillars
+                gfx.fillStyle(color, 0.5);
+                gfx.fillRect(dx - 4, dy - 20, 8, 20);
+                gfx.fillStyle(0xffffff, 0.3);
+                gfx.fillCircle(dx, dy - 22, 6);
+            } else {
+                // Trees and rocks
+                gfx.fillStyle(color, 0.5);
+                gfx.fillCircle(dx, dy, Phaser.Math.Between(6, 16));
+            }
+        }
+    }
+
+    _drawZoneConnections(locations) {
+        const gfx = this.add.graphics().setDepth(0.5);
+        gfx.lineStyle(3, 0x888888, 0.3);
+
+        for (const loc of locations) {
+            const zone = this.zones.find(z => z.id === loc.id);
+            if (!zone) continue;
+            const fromX = zone.bounds.x + zone.bounds.w / 2;
+            const fromY = zone.bounds.y + zone.bounds.h / 2;
+
+            for (const connId of (loc.connections || [])) {
+                const connZone = this.zones.find(z => z.id === connId);
+                if (!connZone) continue;
+                const toX = connZone.bounds.x + connZone.bounds.w / 2;
+                const toY = connZone.bounds.y + connZone.bounds.h / 2;
+
+                // Only draw each connection once
+                if (loc.id < connId) {
+                    gfx.lineBetween(fromX, fromY, toX, toY);
+                }
+            }
+        }
+    }
+
+    _emitLocationDiscovery(locationId) {
+        EventBus.emit('location:discovered', { locationId });
     }
 
     // ----------------------------------------------------------------
@@ -161,8 +315,8 @@ export default class GameScene extends Phaser.Scene {
 
     _createPlayer() {
         const config = dataManager.getConfig('balance.player') || {};
-        const startX = 640;
-        const startY = 400;
+        const startX = 400;
+        const startY = 450;
 
         this.player = this.physics.add.sprite(startX, startY, 'player');
         this.player.setDepth(5);
@@ -178,8 +332,13 @@ export default class GameScene extends Phaser.Scene {
             sap: config.startingSap || 100,
             maxSap: config.startingSap || 100,
             speed: 200,
+            level: 1,
+            experience: 0,
+            gold: 0,
             spells: [],
-            cooldowns: {}
+            cooldowns: {},
+            defense: 0,
+            attack: 0
         };
 
         // Equip starting spells
@@ -194,46 +353,174 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // ----------------------------------------------------------------
-    // Enemies
+    // Enemies — zone-based spawning
     // ----------------------------------------------------------------
 
     _spawnEnemies() {
         this.enemies = this.physics.add.group();
 
-        const enemyDefs = dataManager.getAllEnemies();
-        const spawnCount = Math.min(enemyDefs.length * 2, 8);
+        // Spawn enemies per zone based on location data
+        for (const zone of this.zones) {
+            const enemyIds = zone.enemies || [];
+            const spawnCount = zone.type === 'boss' ? 4 : 3;
 
-        for (let i = 0; i < spawnCount; i++) {
-            const def = enemyDefs[i % enemyDefs.length];
-            const ex = Phaser.Math.Between(100, 2300);
-            const ey = Phaser.Math.Between(100, 1700);
+            for (let i = 0; i < spawnCount; i++) {
+                const enemyId = enemyIds[i % enemyIds.length];
+                if (!enemyId) continue;
 
-            const enemy = this.physics.add.sprite(ex, ey, 'enemy');
-            enemy.setDepth(4);
-            enemy.setCollideWorldBounds(true);
+                const def = dataManager.getEnemy(enemyId);
+                if (!def) continue;
 
-            enemy.data = {
-                definition: def,
-                hp: def.baseStats?.hp || 50,
-                maxHp: def.baseStats?.hp || 50,
-                aiState: 'idle',
-                aiTimer: 0,
-                patrolOrigin: { x: ex, y: ey }
-            };
+                const ex = zone.bounds.x + Phaser.Math.Between(60, zone.bounds.w - 60);
+                const ey = zone.bounds.y + Phaser.Math.Between(80, zone.bounds.h - 60);
 
-            this.enemies.add(enemy);
+                this._spawnSingleEnemy(def, ex, ey, zone.id);
+            }
         }
 
         // Player-enemy collision
         this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
-            // Contact damage
+            if (this.isDead) return;
             if (!enemy.data._contactCooldown) {
-                const dmg = 5;
+                const dmg = Math.max(1, 5 - this.player.stats.defense);
                 this.player.stats.hp = Math.max(0, this.player.stats.hp - dmg);
                 EventBus.emit('player-stats-updated', this.player.stats);
                 this.cameraSystem.shake('light');
+                this.damageNumbers.show(this.player.x, this.player.y - 20, dmg, 0xff4444);
                 enemy.data._contactCooldown = true;
                 this.time.delayedCall(500, () => { enemy.data._contactCooldown = false; });
+
+                // Check death
+                if (this.player.stats.hp <= 0) {
+                    this._onPlayerDeath();
+                }
+            }
+        });
+    }
+
+    _spawnSingleEnemy(def, x, y, zoneId) {
+        // Use zone-specific texture if available
+        const textureKey = `enemy_${def.id}`;
+        const texture = this.textures.exists(textureKey) ? textureKey : 'enemy';
+
+        const enemy = this.physics.add.sprite(x, y, texture);
+        enemy.setDepth(4);
+        enemy.setCollideWorldBounds(true);
+
+        enemy.data = {
+            definition: def,
+            hp: def.baseStats?.hp || 50,
+            maxHp: def.baseStats?.hp || 50,
+            aiState: 'idle',
+            aiTimer: 0,
+            patrolOrigin: { x, y },
+            zoneId
+        };
+
+        // HP bar above enemy
+        enemy._hpBar = this.add.graphics().setDepth(6);
+        this._updateEnemyHpBar(enemy);
+
+        this.enemies.add(enemy);
+        return enemy;
+    }
+
+    _updateEnemyHpBar(enemy) {
+        if (!enemy._hpBar || !enemy.active) return;
+        enemy._hpBar.clear();
+        const ratio = enemy.data.hp / enemy.data.maxHp;
+        const barW = 30;
+        const barH = 3;
+        const x = enemy.x - barW / 2;
+        const y = enemy.y - 22;
+
+        enemy._hpBar.fillStyle(0x333333, 0.7);
+        enemy._hpBar.fillRect(x, y, barW, barH);
+        enemy._hpBar.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
+        enemy._hpBar.fillRect(x, y, barW * ratio, barH);
+    }
+
+    // ----------------------------------------------------------------
+    // NPCs
+    // ----------------------------------------------------------------
+
+    _spawnNPCs() {
+        this.npcs = [];
+
+        // Elder — quest giver in Verdant Grove
+        const elder = new NPC(this, 300, 350, {
+            name: 'Elder Thalos',
+            role: 'quest',
+            dialogue: [
+                'The Sap flows through all things here.',
+                'Seek the Crystal Caverns when you are ready.',
+                'The three phases of Sap shape our world.'
+            ],
+            interactRadius: 70,
+            dialogueId: 'elder_awakening'
+        });
+        this.npcs.push(elder);
+
+        // Herbalist — repeatable quest in Verdant Grove
+        const herbalist = new NPC(this, 550, 300, {
+            name: 'Lyra',
+            role: 'quest',
+            dialogue: [
+                'Need more herbs... always more herbs.',
+                'The forest creatures carry useful ingredients.',
+                'Bring me potions and I\'ll reward you well!'
+            ],
+            interactRadius: 60,
+            dialogueId: 'herbalist_quest'
+        });
+        this.npcs.push(herbalist);
+
+        // Scholar — side quest near Sunken Ruins zone edge
+        const scholar = new NPC(this, 700, 750, {
+            name: 'Archivist Kael',
+            role: 'quest',
+            dialogue: [
+                'Fascinating readings from the south...',
+                'The Sunken Ruins hold ancient knowledge.',
+                'I\'d go myself, but... field work isn\'t my forte.'
+            ],
+            interactRadius: 60,
+            dialogueId: 'scholar_quest'
+        });
+        this.npcs.push(scholar);
+
+        // Merchant — shop NPC
+        const merchant = new NPC(this, 450, 600, {
+            name: 'Merchant Orla',
+            role: 'shop',
+            dialogue: [
+                'Welcome! Browse my wares.',
+                'Best potions this side of the Nexus!',
+                'Come back anytime!'
+            ],
+            interactRadius: 60,
+            dialogueId: 'merchant_greeting',
+            shopInventory: [
+                { itemId: 'minor_health_potion', price: 10 },
+                { itemId: 'sap_crystal', price: 20 }
+            ]
+        });
+        this.npcs.push(merchant);
+
+        // Override NPC E-key to use DialogueSystem for richer dialogues
+        this._wireNPCDialogues();
+    }
+
+    _wireNPCDialogues() {
+        // When an NPC completes its basic dialogue, check if it has a dialogueId
+        // for the full DialogueSystem
+        EventBus.on('npc-dialogue-complete', (data) => {
+            const npc = this.npcs.find(n => n.name === data.npc);
+            if (npc && npc.config.dialogueId) {
+                const dialogue = dataManager.getDialogue(npc.config.dialogueId);
+                if (dialogue) {
+                    this.dialogueSystem.startDialogue(npc.config.dialogueId);
+                }
             }
         });
     }
@@ -252,19 +539,19 @@ export default class GameScene extends Phaser.Scene {
             flicker: { speed: 3, amount: 0.08 }
         });
 
-        // Ambient lights scattered around
-        for (let i = 0; i < 6; i++) {
-            this.lighting.addLight(
-                Phaser.Math.Between(100, 2300),
-                Phaser.Math.Between(100, 1700),
-                {
-                    type: 'point',
-                    color: [0x4488ff, 0xff4466, 0x44ff88, 0xffcc44][i % 4],
-                    intensity: 0.6,
-                    radius: 120,
-                    pulse: { speed: 0.5, min: 0.4, max: 1.0 }
-                }
-            );
+        // Ambient lights per zone
+        for (const zone of this.zones) {
+            const color = parseInt((zone.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+            const cx = zone.bounds.x + zone.bounds.w / 2;
+            const cy = zone.bounds.y + zone.bounds.h / 2;
+
+            this.lighting.addLight(cx, cy, {
+                type: 'point',
+                color,
+                intensity: 0.5,
+                radius: 200,
+                pulse: { speed: 0.3, min: 0.3, max: 0.7 }
+            });
         }
     }
 
@@ -282,14 +569,6 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Spell keys 1-5
-        this.spellKeys = [];
-        for (let i = 1; i <= 5; i++) {
-            this.spellKeys.push(
-                this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes[`ONE`].valueOf() + (i - 1))
-            );
-        }
-
-        // Alternative: number keys
         this.input.keyboard.on('keydown-ONE', () => this._castSpell(0));
         this.input.keyboard.on('keydown-TWO', () => this._castSpell(1));
         this.input.keyboard.on('keydown-THREE', () => this._castSpell(2));
@@ -298,22 +577,19 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _castSpell(index) {
+        if (this.isDead) return;
+        if (this.dialogueSystem.isActive()) return;
+
         const spell = this.player.stats.spells[index];
         if (!spell) return;
 
         // Cooldown check
         const now = this.time.now;
         const cd = this.player.stats.cooldowns[spell.id];
-        if (cd && now < cd) {
-            console.log(`[Spell] ${spell.name} on cooldown`);
-            return;
-        }
+        if (cd && now < cd) return;
 
         // Sap cost check
-        if (this.player.stats.sap < spell.sapCost) {
-            console.log(`[Spell] Not enough Sap for ${spell.name}`);
-            return;
-        }
+        if (this.player.stats.sap < spell.sapCost) return;
 
         // Apply phase modifier
         const modifier = this.sapCycle.getBlendedModifier(spell);
@@ -333,17 +609,24 @@ export default class GameScene extends Phaser.Scene {
         const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
 
         if (spell.vfx?.castParticle) {
-            this.particles.burst(
-                this.player.x,
-                this.player.y,
-                spell.vfx.castParticle,
-                { count: 15 }
-            );
+            this.particles.burst(this.player.x, this.player.y, spell.vfx.castParticle, { count: 15 });
+        }
+
+        // Healing spell
+        if (spell.healAmount) {
+            const healMod = this.sapCycle.getBlendedModifier(spell);
+            const healAmt = Math.round(spell.healAmount * healMod);
+            this.player.stats.hp = Math.min(this.player.stats.maxHp, this.player.stats.hp + healAmt);
+            this.damageNumbers.show(this.player.x, this.player.y - 20, healAmt, 0x44ff88);
+            EventBus.emit('player-stats-updated', this.player.stats);
+            EventBus.emit('spell-cast', { spell, damage: 0, modifier });
+            this._broadcastCooldown(spell);
+            return;
         }
 
         // Find nearest enemy in range
         let targetEnemy = null;
-        let closestDist = 300; // spell range
+        let closestDist = 300;
         this.enemies.children.entries.forEach((e) => {
             if (!e.active) return;
             const d = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, e.x, e.y);
@@ -354,17 +637,22 @@ export default class GameScene extends Phaser.Scene {
         });
 
         if (targetEnemy) {
-            targetEnemy.data.hp -= damage;
+            const finalDmg = Math.max(1, damage + this.player.stats.attack);
+            targetEnemy.data.hp -= finalDmg;
 
             // Hit particles
             this.particles.burst(targetEnemy.x, targetEnemy.y, 'hit_sparks', { count: 10 });
+
+            // Damage number
+            this.damageNumbers.show(targetEnemy.x, targetEnemy.y - 20, finalDmg, 0xffaa44);
+
+            // Update HP bar
+            this._updateEnemyHpBar(targetEnemy);
 
             // Dramatic camera for big spells
             if (spell.tier >= 3) {
                 this.cameraSystem.dramaticSpellZoom(this.player, targetEnemy, 600);
             }
-
-            console.log(`[Spell] ${spell.name} hit for ${damage} (modifier: ${modifier.toFixed(2)})`);
 
             if (targetEnemy.data.hp <= 0) {
                 EventBus.emit('enemy-defeated', { enemy: targetEnemy, spell });
@@ -374,8 +662,10 @@ export default class GameScene extends Phaser.Scene {
         // Update UI
         EventBus.emit('player-stats-updated', this.player.stats);
         EventBus.emit('spell-cast', { spell, damage, modifier });
+        this._broadcastCooldown(spell);
+    }
 
-        // Broadcast cooldown for UI
+    _broadcastCooldown(spell) {
         const totalCd = spell.cooldown * 1000;
         const tickCd = () => {
             const remaining = this.player.stats.cooldowns[spell.id] - this.time.now;
@@ -403,42 +693,173 @@ export default class GameScene extends Phaser.Scene {
         // Death particles
         this.particles.burst(enemy.x, enemy.y, 'hit_sparks', { count: 20 });
 
-        // Drop loot
-        const loot = enemy.data.definition?.lootTable;
-        if (loot) {
-            loot.forEach((drop) => {
-                if (Math.random() < drop.chance) {
-                    console.log(`[Loot] Dropped: ${drop.itemId} x${drop.quantity}`);
+        // Destroy HP bar
+        if (enemy._hpBar) { enemy._hpBar.destroy(); enemy._hpBar = null; }
+
+        // Award XP
+        const xpReward = (enemy.data.definition?.baseStats?.hp || 50) / 2;
+        this.player.stats.experience += xpReward;
+        this.damageNumbers.show(enemy.x, enemy.y - 30, `+${Math.round(xpReward)} XP`, 0x44ff88);
+
+        // Award gold
+        const lootTable = enemy.data.definition?.lootTable;
+        if (lootTable) {
+            const goldDrop = Phaser.Math.Between(lootTable.goldMin || 5, lootTable.goldMax || 15);
+            this.player.stats.gold += goldDrop;
+
+            // Drop items to inventory
+            const items = lootTable.items || [];
+            for (const drop of items) {
+                if (Math.random() < drop.dropChance) {
+                    const itemData = dataManager.getItem(drop.itemId);
+                    EventBus.emit('inventory:addItem', {
+                        itemId: drop.itemId,
+                        quantity: 1,
+                        itemData: itemData || { id: drop.itemId, name: drop.itemId, stackable: true }
+                    });
+                    console.log(`[Loot] Dropped: ${drop.itemId}`);
                 }
-            });
+            }
+        }
+
+        // Notify quest system
+        const enemyId = enemy.data.definition?.id;
+        if (enemyId) {
+            EventBus.emit('enemy:defeated', { enemyId });
         }
 
         // Remove enemy
         enemy.destroy();
 
+        // Check level up
+        this._checkLevelUp();
+
+        // Update UI
+        EventBus.emit('player-stats-updated', this.player.stats);
+
         // Respawn after delay
-        this.time.delayedCall(10000, () => {
-            this._respawnEnemy(enemy.data.definition);
+        this.time.delayedCall(15000, () => {
+            this._respawnEnemy(enemy.data.definition, enemy.data.zoneId);
         });
     }
 
-    _respawnEnemy(def) {
-        if (!def) return;
-        const ex = Phaser.Math.Between(100, 2300);
-        const ey = Phaser.Math.Between(100, 1700);
+    _checkLevelUp() {
+        const xpTable = [0, 100, 250, 500, 800, 1200, 1800, 2500, 3500, 5000];
+        const currentLevel = this.player.stats.level;
+        const requiredXP = xpTable[currentLevel] || (currentLevel * currentLevel * 100);
 
-        const enemy = this.physics.add.sprite(ex, ey, 'enemy');
-        enemy.setDepth(4);
-        enemy.setCollideWorldBounds(true);
-        enemy.data = {
-            definition: def,
-            hp: def.baseStats?.hp || 50,
-            maxHp: def.baseStats?.hp || 50,
-            aiState: 'idle',
-            aiTimer: 0,
-            patrolOrigin: { x: ex, y: ey }
-        };
-        this.enemies.add(enemy);
+        if (this.player.stats.experience >= requiredXP && currentLevel < 50) {
+            this.player.stats.experience -= requiredXP;
+            this.player.stats.level++;
+            this.player.stats.maxHp += 15;
+            this.player.stats.hp = this.player.stats.maxHp;
+            this.player.stats.maxSap += 10;
+            this.player.stats.sap = this.player.stats.maxSap;
+
+            this.cameraSystem.shake('medium');
+            this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
+
+            EventBus.emit('player:levelUp', { level: this.player.stats.level });
+            EventBus.emit('player-stats-updated', this.player.stats);
+            console.log(`[Level Up] Player is now level ${this.player.stats.level}`);
+        }
+    }
+
+    _onDialogueStart(data) {
+        if (data.dialogueId) {
+            this.dialogueSystem.startDialogue(data.dialogueId);
+        }
+    }
+
+    _onQuestStart(data) {
+        if (data.questId) {
+            this.questSystem.startQuest(data.questId);
+        }
+    }
+
+    _onQuestCompleted(data) {
+        console.log(`[Quest] Completed: ${data.name}`);
+        this.cameraSystem.shake('medium');
+        this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 25 });
+    }
+
+    _respawnEnemy(def, zoneId) {
+        if (!def) return;
+        const zone = this.zones.find(z => z.id === zoneId);
+        if (!zone) return;
+
+        const ex = zone.bounds.x + Phaser.Math.Between(60, zone.bounds.w - 60);
+        const ey = zone.bounds.y + Phaser.Math.Between(80, zone.bounds.h - 60);
+
+        this._spawnSingleEnemy(def, ex, ey, zoneId);
+    }
+
+    // ----------------------------------------------------------------
+    // Death / Respawn
+    // ----------------------------------------------------------------
+
+    _onPlayerDeath() {
+        if (this.isDead) return;
+        this.isDead = true;
+
+        console.log('[GameScene] Player died');
+
+        // Death VFX
+        this.cameraSystem.shake('heavy');
+        this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 40 });
+
+        // Freeze player
+        this.player.setVelocity(0, 0);
+        this.player.setAlpha(0.3);
+
+        // Death overlay text
+        const deathText = this.add.text(
+            this.cameras.main.scrollX + 640,
+            this.cameras.main.scrollY + 300,
+            'YOU HAVE FALLEN',
+            { fontFamily: 'monospace', fontSize: '32px', color: '#ff4444', stroke: '#000', strokeThickness: 4 }
+        ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
+
+        const respawnText = this.add.text(
+            this.cameras.main.scrollX + 640,
+            this.cameras.main.scrollY + 350,
+            'Respawning...',
+            { fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa', stroke: '#000', strokeThickness: 2 }
+        ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
+
+        // Respawn after 3 seconds
+        this.time.delayedCall(3000, () => {
+            deathText.destroy();
+            respawnText.destroy();
+            this._respawnPlayer();
+        });
+    }
+
+    _respawnPlayer() {
+        this.isDead = false;
+
+        // Respawn at Verdant Grove start
+        this.player.setPosition(400, 450);
+        this.player.setAlpha(1);
+        this.player.stats.hp = Math.round(this.player.stats.maxHp * 0.5);
+        this.player.stats.sap = Math.round(this.player.stats.maxSap * 0.5);
+
+        // Lose some gold
+        const goldLoss = Math.floor(this.player.stats.gold * 0.1);
+        this.player.stats.gold = Math.max(0, this.player.stats.gold - goldLoss);
+
+        this.currentLocationId = 'verdant_grove';
+        EventBus.emit('player-stats-updated', this.player.stats);
+
+        // Brief invincibility flash
+        this.tweens.add({
+            targets: this.player,
+            alpha: { from: 0.3, to: 1 },
+            duration: 200,
+            repeat: 5
+        });
+
+        console.log('[GameScene] Player respawned');
     }
 
     // ----------------------------------------------------------------
@@ -453,6 +874,9 @@ export default class GameScene extends Phaser.Scene {
 
             const d = enemy.data;
             d.aiTimer += dt;
+
+            // Update HP bar position
+            this._updateEnemyHpBar(enemy);
 
             const distToPlayer = Phaser.Math.Distance.Between(
                 enemy.x, enemy.y, this.player.x, this.player.y
@@ -510,9 +934,11 @@ export default class GameScene extends Phaser.Scene {
     update(time, delta) {
         this.profiler.begin('total');
 
-        // Player movement
+        // Player movement (skip if dead or in dialogue)
         this.profiler.begin('input');
-        this._handleMovement();
+        if (!this.isDead && !this.dialogueSystem.isActive()) {
+            this._handleMovement();
+        }
         this.profiler.end('input');
 
         // Sap cycle
@@ -522,8 +948,15 @@ export default class GameScene extends Phaser.Scene {
 
         // Enemy AI
         this.profiler.begin('enemyAI');
-        this._updateEnemyAI(delta);
+        if (!this.isDead) {
+            this._updateEnemyAI(delta);
+        }
         this.profiler.end('enemyAI');
+
+        // NPCs
+        for (const npc of this.npcs) {
+            npc.update(delta, this.player);
+        }
 
         // Lighting
         this.profiler.begin('lighting');
@@ -563,7 +996,9 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.update(delta);
 
         // Sap regeneration
-        this._regenSap(delta);
+        if (!this.isDead) {
+            this._regenSap(delta);
+        }
 
         // Profiler (always last)
         this.profiler.end('total');
@@ -614,6 +1049,7 @@ export default class GameScene extends Phaser.Scene {
         this.damageNumbers.shutdown();
         this.minimap.destroy();
         this.saveManager.shutdown();
+        for (const npc of this.npcs) npc.destroy();
         this.scene.stop('UIScene');
     }
 }

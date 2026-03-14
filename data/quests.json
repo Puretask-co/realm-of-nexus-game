@@ -1,0 +1,235 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "quests": [
+        {
+            "id": "awakening",
+            "name": "The Awakening",
+            "description": "You awaken in the Verdant Grove with no memory. The Elder says the Sap has chosen you. Prove yourself by defeating the forest creatures that have turned hostile.",
+            "type": "main",
+            "category": "story",
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_guardians",
+                    "type": "kill",
+                    "description": "Defeat Forest Guardians",
+                    "target": "forest_guardian",
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "talk_elder",
+                    "type": "talk",
+                    "description": "Return to the Elder",
+                    "target": "elder_dialogue_return",
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "experience": 150,
+                "items": [
+                    { "id": "minor_health_potion", "quantity": 3 }
+                ]
+            },
+            "chainQuest": "shadow_threat",
+            "dialogueOnAccept": "elder_awakening",
+            "dialogueOnComplete": "elder_awakening_complete",
+            "tags": ["main_story", "chapter_1"]
+        },
+        {
+            "id": "shadow_threat",
+            "name": "The Shadow Threat",
+            "description": "The Elder warns of shadow creatures emerging from the Crystal Caverns. Venture inside and discover what stirs in the darkness.",
+            "type": "main",
+            "category": "story",
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_caverns",
+                    "type": "visit",
+                    "description": "Enter the Crystal Caverns",
+                    "target": "crystal_caverns",
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_stalkers",
+                    "type": "kill",
+                    "description": "Defeat Shadow Stalkers",
+                    "target": "shadow_stalker",
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "collect_essence",
+                    "type": "collect",
+                    "description": "Collect Shadow Essence",
+                    "target": "shadow_essence",
+                    "required": 3,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "experience": 300,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 5 }
+                ],
+                "spells": ["shadow_strike"]
+            },
+            "chainQuest": "crimson_rising",
+            "dialogueOnAccept": "elder_shadow_threat",
+            "tags": ["main_story", "chapter_2"]
+        },
+        {
+            "id": "crimson_rising",
+            "name": "The Crimson Rising",
+            "description": "Crimson energy surges across the land. The Wardens on the Crimson Plateau have gone mad with power. Put a stop to their corruption.",
+            "type": "main",
+            "category": "story",
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "shadow_threat" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_plateau",
+                    "type": "visit",
+                    "description": "Reach the Crimson Plateau",
+                    "target": "crimson_plateau",
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_wardens",
+                    "type": "kill",
+                    "description": "Defeat Crimson Wardens",
+                    "target": "crimson_warden",
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "collect_shards",
+                    "type": "collect",
+                    "description": "Collect Crimson Shards",
+                    "target": "crimson_shard",
+                    "required": 3,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "experience": 500,
+                "items": [
+                    { "id": "warden_helm", "quantity": 1 }
+                ]
+            },
+            "chainQuest": "nexus_convergence",
+            "tags": ["main_story", "chapter_3"]
+        },
+        {
+            "id": "nexus_convergence",
+            "name": "The Nexus Convergence",
+            "description": "All paths lead to the Nexus Spire. The three streams of Sap converge there. Face the ultimate challenge and restore balance.",
+            "type": "main",
+            "category": "story",
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "crimson_rising" },
+                { "type": "level", "level": 4 }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_nexus",
+                    "type": "visit",
+                    "description": "Enter the Nexus Spire",
+                    "target": "nexus_spire",
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_all",
+                    "type": "kill",
+                    "description": "Defeat all enemies at the Nexus",
+                    "target": "crimson_warden",
+                    "required": 3,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "experience": 1000,
+                "spells": ["radiant_burst"]
+            },
+            "tags": ["main_story", "chapter_4", "finale"]
+        },
+        {
+            "id": "herb_gathering",
+            "name": "Gathering Herbs",
+            "description": "The Herbalist needs potions ingredients from the Grove. Defeat creatures and collect what drops.",
+            "type": "side",
+            "category": "gathering",
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "collect_potions",
+                    "type": "collect",
+                    "description": "Collect Health Potions",
+                    "target": "minor_health_potion",
+                    "required": 2,
+                    "order": 1
+                }
+            ],
+            "rewards": {
+                "experience": 75,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 2 }
+                ]
+            },
+            "repeatable": true,
+            "dialogueOnAccept": "herbalist_quest",
+            "tags": ["side", "repeatable", "gathering"]
+        },
+        {
+            "id": "explore_ruins",
+            "name": "Sunken Secrets",
+            "description": "The Scholar has heard rumors of ancient knowledge hidden in the Sunken Ruins. Explore them and report back.",
+            "type": "side",
+            "category": "exploration",
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_ruins",
+                    "type": "visit",
+                    "description": "Explore the Sunken Ruins",
+                    "target": "sunken_ruins",
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_ruins_enemies",
+                    "type": "kill",
+                    "description": "Clear hostiles from the ruins",
+                    "target": "forest_guardian",
+                    "required": 2,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "experience": 200,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 3 }
+                ]
+            },
+            "dialogueOnAccept": "scholar_quest",
+            "tags": ["side", "exploration"]
+        }
+    ]
+}
