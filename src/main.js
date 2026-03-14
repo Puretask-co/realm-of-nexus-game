@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import ClassSelectionScene from './scenes/ClassSelectionScene.js';
 import GameScene from './scenes/GameScene.js';
 import EditorScene from './scenes/EditorScene.js';
 import UIScene from './scenes/UIScene.js';
@@ -47,7 +48,7 @@ const config = {
         PostProcessing: PostProcessingPipeline
     },
 
-    scene: [BootScene, GameScene, EditorScene, UIScene]
+    scene: [BootScene, ClassSelectionScene, GameScene, EditorScene, UIScene]
 };
 
 const game = new Phaser.Game(config);

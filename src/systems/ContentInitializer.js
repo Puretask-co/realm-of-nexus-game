@@ -2,6 +2,7 @@ import EventBus from '../core/EventBus.js';
 import dataManager from './DataManager.js';
 import { QuestSystem } from './QuestSystem.js';
 import { DialogueSystem } from './DialogueSystem.js';
+import { PlayerClassSystem } from './PlayerClassSystem.js';
 
 /**
  * ContentInitializer — Registers all game content (quests, dialogues, skills)
@@ -113,12 +114,14 @@ export default class ContentInitializer {
      */
     static wireSaveSystem(systems) {
         const { questSystem, dialogueSystem, inventoryPanel, skillTreePanel } = systems;
+        const classSystem = PlayerClassSystem.getInstance();
 
         EventBus.on('save-collect', (saveData) => {
             if (questSystem) saveData.quests = questSystem.saveState();
             if (dialogueSystem) saveData.dialogues = dialogueSystem.saveState();
             if (inventoryPanel) saveData.inventory = inventoryPanel.saveState();
             if (skillTreePanel) saveData.skills = skillTreePanel.saveState();
+            saveData.playerClass = classSystem.serialize();
         });
 
         EventBus.on('save-restore', (saveData) => {
@@ -126,6 +129,7 @@ export default class ContentInitializer {
             if (saveData.dialogues && dialogueSystem) dialogueSystem.loadState(saveData.dialogues);
             if (saveData.inventory && inventoryPanel) inventoryPanel.loadState(saveData.inventory);
             if (saveData.skills && skillTreePanel) skillTreePanel.loadState(saveData.skills);
+            if (saveData.playerClass) classSystem.deserialize(saveData.playerClass);
         });
 
         console.log('[ContentInit] Save system wired');

@@ -40,10 +40,10 @@ export default class BootScene extends Phaser.Scene {
 
             EventBus.emit('boot-complete');
             console.log('[BootScene] Boot complete, starting game...');
-            this.scene.start('GameScene');
+            this.scene.start('ClassSelectionScene');
         }).catch((err) => {
             console.error('[BootScene] Data load failed, using fallbacks:', err);
-            this.scene.start('GameScene');
+            this.scene.start('ClassSelectionScene');
         });
     }
 
@@ -201,6 +201,100 @@ export default class BootScene extends Phaser.Scene {
             gfx.fillRect(15, 0, 3, 5);
             gfx.fillCircle(16.5, 7, 0); // dot below !
             gfx.generateTexture('npc', 32, 32);
+            gfx.destroy();
+        }
+
+        // ---- Class-specific player sprites ----
+        // Temporal Mage: blue robed figure with clock motif
+        if (!this.textures.exists('class_temporal_mage')) {
+            const gfx = this.add.graphics();
+            gfx.fillStyle(0x223388, 1);
+            gfx.fillRoundedRect(8, 10, 16, 18, 3);
+            gfx.fillStyle(0x4488ff, 1);
+            gfx.fillCircle(16, 8, 7);
+            // Hat
+            gfx.fillStyle(0x2244aa, 1);
+            gfx.fillTriangle(10, 6, 16, -4, 22, 6);
+            // Clock symbol on body
+            gfx.lineStyle(1, 0x88bbff, 0.8);
+            gfx.strokeCircle(16, 19, 4);
+            gfx.lineBetween(16, 17, 16, 19);
+            gfx.lineBetween(16, 19, 18, 20);
+            // Eyes
+            gfx.fillStyle(0x88ccff, 1);
+            gfx.fillCircle(14, 7, 1.5);
+            gfx.fillCircle(18, 7, 1.5);
+            gfx.generateTexture('class_temporal_mage', 32, 32);
+            gfx.destroy();
+        }
+
+        // Crimson Berserker: red muscular figure with horns
+        if (!this.textures.exists('class_crimson_berserker')) {
+            const gfx = this.add.graphics();
+            gfx.fillStyle(0x881122, 1);
+            gfx.fillRoundedRect(6, 10, 20, 18, 3);
+            gfx.fillStyle(0xcc2233, 1);
+            gfx.fillCircle(16, 8, 7);
+            // Horns
+            gfx.fillStyle(0xff4422, 1);
+            gfx.fillTriangle(10, 4, 8, -2, 12, 4);
+            gfx.fillTriangle(20, 4, 24, -2, 22, 4);
+            // Broad shoulders
+            gfx.fillStyle(0x991122, 1);
+            gfx.fillRect(4, 12, 6, 8);
+            gfx.fillRect(22, 12, 6, 8);
+            // Eyes
+            gfx.fillStyle(0xff6644, 1);
+            gfx.fillCircle(14, 7, 1.5);
+            gfx.fillCircle(18, 7, 1.5);
+            gfx.generateTexture('class_crimson_berserker', 32, 32);
+            gfx.destroy();
+        }
+
+        // Silver Warden: silver armored figure with shield
+        if (!this.textures.exists('class_silver_warden')) {
+            const gfx = this.add.graphics();
+            gfx.fillStyle(0x556688, 1);
+            gfx.fillRoundedRect(8, 10, 16, 18, 3);
+            gfx.fillStyle(0x8899bb, 1);
+            gfx.fillCircle(16, 8, 7);
+            // Helmet visor
+            gfx.fillStyle(0xaabbdd, 1);
+            gfx.fillRect(11, 5, 10, 3);
+            // Shield on left
+            gfx.fillStyle(0x99aacc, 1);
+            gfx.fillRoundedRect(2, 12, 8, 14, 2);
+            gfx.lineStyle(1, 0xccddff, 0.7);
+            gfx.strokeRoundedRect(2, 12, 8, 14, 2);
+            // Eyes
+            gfx.fillStyle(0xccddff, 1);
+            gfx.fillCircle(14, 7, 1.5);
+            gfx.fillCircle(18, 7, 1.5);
+            gfx.generateTexture('class_silver_warden', 32, 32);
+            gfx.destroy();
+        }
+
+        // Verdant Druid: green robed figure with leaf crown
+        if (!this.textures.exists('class_verdant_druid')) {
+            const gfx = this.add.graphics();
+            gfx.fillStyle(0x226633, 1);
+            gfx.fillRoundedRect(8, 10, 16, 18, 3);
+            gfx.fillStyle(0x44aa55, 1);
+            gfx.fillCircle(16, 8, 7);
+            // Leaf crown
+            gfx.fillStyle(0x66dd66, 1);
+            gfx.fillTriangle(10, 4, 13, -2, 16, 4);
+            gfx.fillTriangle(16, 4, 19, -2, 22, 4);
+            // Staff
+            gfx.fillStyle(0x886633, 1);
+            gfx.fillRect(24, 4, 2, 24);
+            gfx.fillStyle(0x44ff44, 1);
+            gfx.fillCircle(25, 4, 3);
+            // Eyes
+            gfx.fillStyle(0x88ff88, 1);
+            gfx.fillCircle(14, 7, 1.5);
+            gfx.fillCircle(18, 7, 1.5);
+            gfx.generateTexture('class_verdant_druid', 32, 32);
             gfx.destroy();
         }
 

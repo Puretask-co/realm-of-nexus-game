@@ -72,6 +72,14 @@ export default class UIScene extends Phaser.Scene {
             }),
             EventBus.on('achievement:unlocked', (data) => {
                 this._showNotification(`Achievement: ${data.name}`, 0xffaa00);
+            }),
+            EventBus.on('class:applied', (data) => {
+                if (data.className) {
+                    this._updateClassName(data.className);
+                }
+            }),
+            EventBus.on('spell:unlocked', (data) => {
+                this._showNotification(`Spell Unlocked: ${data.spell.name}`, 0xcc66ff);
             })
         ];
     }
@@ -150,18 +158,24 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
         this.uiElements.sapBarFill.fillRect(x + 31, y + 20, 148, 10);
 
+        // Class name
+        this.uiElements.classText = this.add.text(x, y + 38, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#88aaff',
+            stroke: '#000', strokeThickness: 1
+        }).setDepth(10000);
+
         // Level & XP
-        this.uiElements.levelText = this.add.text(x, y + 38, 'Lv.1', {
+        this.uiElements.levelText = this.add.text(x, y + 52, 'Lv.1', {
             fontFamily: 'monospace', fontSize: '12px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
-        this.uiElements.xpText = this.add.text(x + 40, y + 39, 'XP: 0', {
+        this.uiElements.xpText = this.add.text(x + 40, y + 53, 'XP: 0', {
             fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa'
         }).setDepth(10000);
 
         // Gold
-        this.uiElements.goldText = this.add.text(x + 120, y + 39, 'Gold: 0', {
+        this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
             fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44'
         }).setDepth(10000);
     }
@@ -169,6 +183,31 @@ export default class UIScene extends Phaser.Scene {
     _updatePlayerBars(stats) {
         if (!stats) return;
         const x = 20;
+
+        // Update spell slot labels when spells change
+        if (stats.spells && stats.spells.length > 0) {
+            this._spellMapping = stats.spells.slice(0, 5).map(s => s.id);
+            for (let i = 0; i < 5; i++) {
+                const slot = this.uiElements.spellSlots[i];
+                if (slot && slot.nameLabel) {
+                    const spell = stats.spells[i];
+                    if (spell) {
+                        // Abbreviate spell name to fit
+                        const short = spell.name.length > 7
+                            ? spell.name.substring(0, 6) + '.'
+                            : spell.name;
+                        const color = spell.vfx?.color
+                            ? `#${parseInt(spell.vfx.color).toString(16).padStart(6, '0')}`
+                            : '#888888';
+                        slot.nameLabel.setText(short);
+                        slot.nameLabel.setColor(color);
+                    } else {
+                        slot.nameLabel.setText('---');
+                        slot.nameLabel.setColor('#444444');
+                    }
+                }
+            }
+        }
 
         // HP
         if (stats.hp !== undefined && stats.maxHp) {
@@ -199,6 +238,12 @@ export default class UIScene extends Phaser.Scene {
         }
     }
 
+    _updateClassName(name) {
+        if (this.uiElements.classText) {
+            this.uiElements.classText.setText(name);
+        }
+    }
+
     // ----------------------------------------------------------------
     // Spell slots
     // ----------------------------------------------------------------
@@ -209,29 +254,29 @@ export default class UIScene extends Phaser.Scene {
         const startX = 640 - (slotSize * 2.5);
         const y = 720 - slotSize - 16;
 
-        const spellNames = ['Azure', 'Crim', 'Bloom', 'Shadow', 'Radi'];
-        const spellColors = [0x4488ff, 0xff4444, 0x44ff88, 0x8844ff, 0xffffaa];
+        this._spellNames = ['Spell 1', 'Spell 2', 'Spell 3', 'Spell 4', 'Spell 5'];
+        this._spellColorValues = [0x888888, 0x888888, 0x888888, 0x888888, 0x888888];
 
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);
             const bg = this.add.graphics().setDepth(10000);
             bg.fillStyle(0x222244, 0.7);
             bg.fillRect(x, y, slotSize, slotSize);
-            bg.lineStyle(1, spellColors[i], 0.4);
+            bg.lineStyle(1, this._spellColorValues[i], 0.4);
             bg.strokeRect(x, y, slotSize, slotSize);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
             }).setDepth(10001);
 
-            // Spell name
-            this.add.text(x + slotSize / 2, y + slotSize - 4, spellNames[i], {
-                fontFamily: 'monospace', fontSize: '8px', color: `#${spellColors[i].toString(16).padStart(6, '0')}`
+            // Spell name label (updated dynamically)
+            const nameLabel = this.add.text(x + slotSize / 2, y + slotSize - 4, this._spellNames[i], {
+                fontFamily: 'monospace', fontSize: '8px', color: '#888888'
             }).setOrigin(0.5, 1).setDepth(10001);
 
             const cooldownOverlay = this.add.graphics().setDepth(10001);
 
-            this.uiElements.spellSlots[i] = { bg, keyLabel, cooldownOverlay, x, y, size: slotSize };
+            this.uiElements.spellSlots[i] = { bg, keyLabel, nameLabel, cooldownOverlay, x, y, size: slotSize };
         }
     }
 
@@ -251,8 +296,8 @@ export default class UIScene extends Phaser.Scene {
     }
 
     _getSlotForSpell(spellId) {
-        const mapping = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
-        return mapping.indexOf(spellId);
+        // Dynamic mapping — matches whatever spells the player has equipped
+        return this._spellMapping ? this._spellMapping.indexOf(spellId) : -1;
     }
 
     // ----------------------------------------------------------------

@@ -16,6 +16,7 @@ import SaveManager from '../systems/SaveManager.js';
 import ContentInitializer from '../systems/ContentInitializer.js';
 import DamageNumberRenderer from '../renderers/DamageNumberRenderer.js';
 import MinimapRenderer from '../renderers/MinimapRenderer.js';
+import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 import NPC from '../components/NPC.js';
 
 /**
@@ -50,6 +51,9 @@ export default class GameScene extends Phaser.Scene {
         this.spellSystem = SpellSystem.getInstance();
         this.questSystem = QuestSystem.getInstance();
         this.dialogueSystem = DialogueSystem.getInstance(this);
+
+        // ---- Class System ----
+        this.classSystem = PlayerClassSystem.getInstance();
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -314,42 +318,86 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _createPlayer() {
-        const config = dataManager.getConfig('balance.player') || {};
         const startX = 400;
         const startY = 450;
+        const classDef = this.classSystem.getCurrentClass();
 
-        this.player = this.physics.add.sprite(startX, startY, 'player');
+        // Use class sprite if available
+        const spriteKey = classDef?.sprite && this.textures.exists(classDef.sprite)
+            ? classDef.sprite : 'player';
+
+        this.player = this.physics.add.sprite(startX, startY, spriteKey);
         this.player.setDepth(5);
         this.player.setCollideWorldBounds(true);
         this.player.setDamping(true);
         this.player.setDrag(0.85);
         this.player.setMaxVelocity(250);
 
-        // Player stats
-        this.player.stats = {
-            hp: config.startingHp || 100,
-            maxHp: config.startingHp || 100,
-            sap: config.startingSap || 100,
-            maxSap: config.startingSap || 100,
-            speed: 200,
-            level: 1,
-            experience: 0,
-            gold: 0,
-            spells: [],
-            cooldowns: {},
-            defense: 0,
-            attack: 0
-        };
+        // Base stats — use class stats if selected, otherwise fallback
+        if (classDef) {
+            const base = classDef.baseStats;
+            this.player.stats = {
+                hp: base.hp, maxHp: base.maxHp,
+                sap: base.sap, maxSap: base.maxSap,
+                speed: base.speed || 200,
+                level: 1, experience: 0, gold: 0,
+                spells: [], cooldowns: {},
+                defense: base.def || 0,
+                attack: base.atk || 0,
+                magic: base.mag || 0,
+                agility: base.agi || 0,
+                critChance: base.critChance || 0,
+                critDamage: base.critDamage || 0,
+                dodge: base.dodge || 0,
+                block: base.block || 0,
+                sapRegenRate: base.sapRegenRate || 5,
+                classId: classDef.id,
+                className: classDef.name,
+                phaseAffinity: classDef.phaseAffinity
+            };
+        } else {
+            this.player.stats = {
+                hp: 100, maxHp: 100, sap: 100, maxSap: 100,
+                speed: 200, level: 1, experience: 0, gold: 0,
+                spells: [], cooldowns: {}, defense: 0, attack: 0,
+                magic: 0, agility: 0, critChance: 0.05, critDamage: 0.2,
+                dodge: 0.03, block: 0, sapRegenRate: 5,
+                classId: null, className: 'Adventurer', phaseAffinity: null
+            };
+        }
 
-        // Equip starting spells
-        const startSpells = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
-        startSpells.forEach((id) => {
+        // Equip starting spells — class spells first, then shared as fallback
+        const startSpellIds = classDef
+            ? this.classSystem.getStartingSpells()
+            : ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
+
+        startSpellIds.forEach((id) => {
             const spell = dataManager.getSpell(id);
             if (spell) this.player.stats.spells.push(spell);
         });
 
+        // If class has fewer than 5 starting spells, fill from shared pool
+        if (this.player.stats.spells.length < 5) {
+            const sharedSpells = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
+            for (const id of sharedSpells) {
+                if (this.player.stats.spells.length >= 5) break;
+                if (this.player.stats.spells.find(s => s.id === id)) continue;
+                const spell = dataManager.getSpell(id);
+                if (spell) this.player.stats.spells.push(spell);
+            }
+        }
+
+        // Apply class passives info
+        if (classDef) {
+            this.player.stats.passives = this.classSystem.getActivePassives(1);
+        }
+
         // Emit initial stats
         EventBus.emit('player-stats-updated', this.player.stats);
+        EventBus.emit('class:applied', {
+            classId: this.player.stats.classId,
+            className: this.player.stats.className
+        });
     }
 
     // ----------------------------------------------------------------
@@ -751,17 +799,42 @@ export default class GameScene extends Phaser.Scene {
         if (this.player.stats.experience >= requiredXP && currentLevel < 50) {
             this.player.stats.experience -= requiredXP;
             this.player.stats.level++;
-            this.player.stats.maxHp += 15;
-            this.player.stats.hp = this.player.stats.maxHp;
-            this.player.stats.maxSap += 10;
-            this.player.stats.sap = this.player.stats.maxSap;
+
+            const classDef = this.classSystem.getCurrentClass();
+            if (classDef) {
+                // Apply class-specific stat growth
+                const newStats = this.classSystem.applyLevelUpGrowth(this.player.stats, this.player.stats.level);
+                Object.assign(this.player.stats, newStats);
+
+                // Unlock new class spells at milestone levels
+                const availableSpells = this.classSystem.getAvailableSpells(this.player.stats.level);
+                for (const spellId of availableSpells) {
+                    if (!this.player.stats.spells.find(s => s.id === spellId)) {
+                        const spell = dataManager.getSpell(spellId);
+                        if (spell) {
+                            this.player.stats.spells.push(spell);
+                            EventBus.emit('spell:unlocked', { spell });
+                            console.log(`[Spell Unlocked] ${spell.name}`);
+                        }
+                    }
+                }
+
+                // Update passives
+                this.player.stats.passives = this.classSystem.getActivePassives(this.player.stats.level);
+            } else {
+                // Fallback flat growth
+                this.player.stats.maxHp += 15;
+                this.player.stats.hp = this.player.stats.maxHp;
+                this.player.stats.maxSap += 10;
+                this.player.stats.sap = this.player.stats.maxSap;
+            }
 
             this.cameraSystem.shake('medium');
             this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
 
             EventBus.emit('player:levelUp', { level: this.player.stats.level });
             EventBus.emit('player-stats-updated', this.player.stats);
-            console.log(`[Level Up] Player is now level ${this.player.stats.level}`);
+            console.log(`[Level Up] ${this.player.stats.className} is now level ${this.player.stats.level}`);
         }
     }
 
@@ -1027,7 +1100,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _regenSap(delta) {
-        const regenRate = 5; // sap per second
+        const regenRate = this.player.stats.sapRegenRate || 5;
         if (this.player.stats.sap < this.player.stats.maxSap) {
             this.player.stats.sap = Math.min(
                 this.player.stats.maxSap,
