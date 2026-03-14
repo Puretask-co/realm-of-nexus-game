@@ -23,7 +23,7 @@
                     "id": "talk_elder",
                     "type": "talk",
                     "description": "Return to the Elder",
-                    "target": "elder_dialogue_return",
+                    "target": "elder",
                     "required": 1,
                     "order": 2
                 }
@@ -129,6 +129,8 @@
                 ]
             },
             "chainQuest": "nexus_convergence",
+            "dialogueOnAccept": "elder_crimson_rising",
+            "dialogueOnComplete": "elder_crimson_complete",
             "tags": ["main_story", "chapter_3"]
         },
         {
@@ -164,6 +166,8 @@
                 "experience": 1000,
                 "spells": ["radiant_burst"]
             },
+            "dialogueOnAccept": "elder_nexus_convergence",
+            "dialogueOnComplete": "elder_nexus_complete",
             "tags": ["main_story", "chapter_4", "finale"]
         },
         {

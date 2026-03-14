@@ -282,6 +282,124 @@
                     "text": "Safe travels! Come back anytime."
                 }
             ]
+        },
+        {
+            "id": "elder_crimson_rising",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Crimson phase grows stronger each cycle. I feared this day would come.",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder",
+                    "text": "The Wardens on the Crimson Plateau were once protectors, like the Forest Guardians. But the Sap has twisted them — filled them with rage beyond reason.",
+                    "next": "task"
+                },
+                {
+                    "id": "task",
+                    "speaker": "elder",
+                    "text": "You must go to the plateau and end their suffering. Collect the Crimson Shards they carry — we'll need them to understand what went wrong.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "crimson_rising" }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_crimson_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Wardens have been put to rest. You've done a difficult thing today.",
+                    "next": "shards"
+                },
+                {
+                    "id": "shards",
+                    "speaker": "elder",
+                    "text": "These Crimson Shards... the energy inside them is immense. The corruption isn't random — something at the Nexus Spire is pulling the Sap out of balance.",
+                    "next": "warning"
+                },
+                {
+                    "id": "warning",
+                    "speaker": "elder",
+                    "text": "Take this helm — the Wardens would want it used for good. When you are strong enough, the Nexus Spire awaits. All three streams of Sap converge there.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "chapter", "value": 4 }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_nexus_convergence",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "So... you're ready. The Nexus Spire is where Blue, Crimson, and Silver converge into one. It is the heart of everything.",
+                    "next": "gravity"
+                },
+                {
+                    "id": "gravity",
+                    "speaker": "elder",
+                    "text": "Whatever has been corrupting the Sap — twisting Guardians, maddening Wardens, spawning Shadows — it all leads there.",
+                    "choices": [
+                        {
+                            "text": "I'm ready. Tell me what to expect.",
+                            "next": "briefing"
+                        },
+                        {
+                            "text": "I need to prepare more first.",
+                            "next": "wait"
+                        }
+                    ]
+                },
+                {
+                    "id": "briefing",
+                    "speaker": "elder",
+                    "text": "Every phase of the Sap will be in flux there. Master them all — use Blue for precision, Crimson for power, Silver for endurance. This is the final test.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "nexus_convergence" }
+                    ]
+                },
+                {
+                    "id": "wait",
+                    "speaker": "elder",
+                    "text": "Wise. The Spire has waited centuries — it can wait a little longer. Return when your body and spirit are ready."
+                }
+            ]
+        },
+        {
+            "id": "elder_nexus_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "You've done it. The Nexus Spire is cleansed. I can feel the Sap flowing true again — all three streams, in harmony.",
+                    "next": "reflect"
+                },
+                {
+                    "id": "reflect",
+                    "speaker": "elder",
+                    "text": "When you first awoke in this grove, I wondered if you were truly the one the Sap had chosen. I no longer wonder.",
+                    "next": "future"
+                },
+                {
+                    "id": "future",
+                    "speaker": "elder",
+                    "text": "The Radiant Burst spell is yours now — born of all three phases united. Use it well. This land will always need a guardian.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "game_complete", "value": true }
+                    ]
+                }
+            ]
         }
     ]
 }
