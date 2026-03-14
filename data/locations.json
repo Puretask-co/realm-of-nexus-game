@@ -1,15 +1,339 @@
 {
-    "version": "1.0.0",
-    "lastModified": "2026-02-09T00:00:00Z",
+    "version": "2.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
     "locations": [
         {
-            "id": "verdant_grove",
-            "name": "Verdant Grove",
-            "description": "A lush forest clearing where the Sap flows strongly through ancient trees.",
-            "type": "exploration",
+            "id": "canopy_of_life",
+            "name": "Canopy of Life",
+            "description": "The great tree-city of Verdance. Platforms and bridges connect living tree structures high above the forest floor. Home to all factions and the heart of civilization. Ten districts bustle with activity as over thirty NPCs go about their daily lives.",
+            "type": "hub",
             "level": 1,
-            "connections": ["crystal_caverns", "sunken_ruins"],
-            "enemies": ["forest_guardian"],
+            "tier": 1,
+            "zone": "verdance_central",
+            "connections": [
+                "hollowroot_catacombs",
+                "spindlewood_forest",
+                "emerald_cascades",
+                "glinting_groves",
+                "mycelium_nexus",
+                "sapling_plantation",
+                "canopy_overlook"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "market_square",
+                "residential_quarter",
+                "bloomguard_barracks",
+                "emerald_sanctum",
+                "council_hall",
+                "training_grounds",
+                "herbalist_row",
+                "craftsmans_lane",
+                "the_roost",
+                "players_dwelling"
+            ],
+            "npcs": [
+                "elder_thalos",
+                "commander_briara",
+                "archdruid_veyla",
+                "shadowmaster_kael",
+                "beastcaller_yenna",
+                "consortium_director_orin",
+                "sporecaller_mycel",
+                "seer_althea",
+                "innkeeper_maren",
+                "smith_garon",
+                "merchant_lirel",
+                "herbalist_tansy",
+                "trainer_borsk",
+                "courier_swift",
+                "guard_captain_reyla",
+                "stable_master_holt",
+                "archivist_scroll",
+                "chef_bramble",
+                "tailor_silk",
+                "jeweler_glint",
+                "alchemist_ferment",
+                "bard_melody",
+                "beggar_dusty",
+                "street_urchin_pip",
+                "town_crier_bellows",
+                "diplomat_grace",
+                "banker_vault",
+                "postmaster_seal",
+                "gardener_bloom",
+                "night_watch_shade"
+            ],
+            "services": ["shop", "forge", "sanctum", "workshop", "inn", "fast_travel", "bank", "mail", "training", "stables"],
+            "fastTravelNode": true,
+            "discoverable": false,
+            "requirements": {},
+            "sapPhaseEffects": {
+                "calm": { "description": "The city thrives in peaceful serenity. All services available at normal prices.", "serviceModifier": 1.0 },
+                "surging": { "description": "Blue Sap flows freely through the city roots. Crafting and healing services are enhanced.", "serviceModifier": 0.9 },
+                "volatile": { "description": "Strange lights flicker through the branches. Guards are on edge and curfew is enforced.", "serviceModifier": 1.1 },
+                "corrupted": { "description": "Dark tendrils creep along the outer platforms. Some districts are locked down.", "serviceModifier": 1.3 }
+            },
+            "discoveryXP": 0,
+            "lore": "Founded centuries ago by the First Keepers, the Canopy of Life grew from a single sacred sapling into the sprawling tree-metropolis it is today. Each district was cultivated by a different faction, and the living wood remembers every hand that shaped it.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x44aa55"
+            }
+        },
+        {
+            "id": "verdant_exchange",
+            "name": "Verdant Exchange",
+            "description": "A bustling marketplace beneath the Canopy's lower branches. Merchants from all factions trade goods, information, and favors. Five distinct shops cater to every adventurer's need.",
+            "type": "market",
+            "level": 1,
+            "tier": 1,
+            "zone": "verdance_central",
+            "connections": ["canopy_of_life"],
+            "enemies": [],
+            "subLocations": [
+                "general_goods_stall",
+                "sap_infusions_shop",
+                "armor_emporium",
+                "rare_materials_trader",
+                "black_market_alcove"
+            ],
+            "npcs": [
+                "merchant_lirel",
+                "trader_boskyn",
+                "rare_dealer_vashti",
+                "fence_nighthollow",
+                "auctioneer_pell"
+            ],
+            "services": ["shop", "trading", "auction"],
+            "fastTravelNode": false,
+            "discoverable": false,
+            "requirements": {},
+            "sapPhaseEffects": {
+                "calm": { "description": "Trade flows smoothly. Standard prices on all goods.", "priceModifier": 1.0 },
+                "surging": { "description": "Surplus Sap-infused goods flood the market. Prices drop on magical items.", "priceModifier": 0.85 },
+                "volatile": { "description": "Supply lines disrupted. Prices rise and rare goods become scarcer.", "priceModifier": 1.25 },
+                "corrupted": { "description": "The market is half-shuttered. Only essential goods are available at premium prices.", "priceModifier": 1.5 }
+            },
+            "discoveryXP": 0,
+            "lore": "The Verdant Exchange began as a simple barter ring where the first settlers traded seeds and tools. Over generations it grew into the commercial heart of Verdance, where fortunes are made and lost with the turning of the seasons.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x55bb66"
+            }
+        },
+        {
+            "id": "bloomguard_barracks",
+            "name": "Bloomguard Barracks",
+            "description": "The Bloomguard's fortress within the Canopy. Training grounds ring with the clash of weapons as soldiers prepare for the Abyss threat. Four buildings house the military might of Verdance. Bloomguard faction headquarters.",
+            "type": "military",
+            "level": 1,
+            "tier": 1,
+            "zone": "verdance_central",
+            "connections": ["canopy_of_life"],
+            "enemies": [],
+            "subLocations": [
+                "training_arena",
+                "armory",
+                "war_room",
+                "recruit_quarters"
+            ],
+            "npcs": [
+                "commander_briara",
+                "drillmaster_torvak",
+                "quartermaster_hessa",
+                "recruit_eldon"
+            ],
+            "services": ["training", "forge", "combat_drills"],
+            "fastTravelNode": false,
+            "discoverable": false,
+            "requirements": {},
+            "sapPhaseEffects": {
+                "calm": { "description": "Routine drills and training exercises. Recruitment is open.", "trainingBonus": 1.0 },
+                "surging": { "description": "Sap-enhanced training regimens push recruits harder. Training yields increased.", "trainingBonus": 1.2 },
+                "volatile": { "description": "All troops on high alert. Training shifts to defensive drills.", "trainingBonus": 1.1 },
+                "corrupted": { "description": "Full mobilization. The barracks is a war camp. Emergency combat training only.", "trainingBonus": 0.8 }
+            },
+            "discoveryXP": 0,
+            "lore": "Commander Briara established the Bloomguard after the first Abyss incursion claimed her predecessor. The barracks were grown from ironwood saplings, making them the hardest structures in the Canopy. Every scratch on the training arena floor tells the story of a defender forged.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x667744"
+            }
+        },
+        {
+            "id": "emerald_sanctum",
+            "name": "Emerald Sanctum",
+            "description": "The Emerald Coven's sacred temple. Ancient roots form natural arches over pools of pure Blue Sap. Five zones of mystical power offer magical services and DSP recovery. Emerald Coven faction headquarters.",
+            "type": "temple",
+            "level": 1,
+            "tier": 1,
+            "zone": "verdance_central",
+            "connections": ["canopy_of_life"],
+            "enemies": [],
+            "subLocations": [
+                "sap_pool_chamber",
+                "inscription_hall",
+                "meditation_grove",
+                "library_of_roots",
+                "soul_binding_altar"
+            ],
+            "npcs": [
+                "archdruid_veyla",
+                "acolyte_ferrin",
+                "lorekeeper_ashara",
+                "healer_brynn",
+                "soul_scribe_daleth"
+            ],
+            "services": ["sanctum", "healing", "spell_learning", "dsp_recovery", "enchanting"],
+            "fastTravelNode": false,
+            "discoverable": false,
+            "requirements": {},
+            "sapPhaseEffects": {
+                "calm": { "description": "The Sap pools glow softly. Standard healing and magical services available.", "healingModifier": 1.0 },
+                "surging": { "description": "The pools blaze with brilliant blue light. DSP recovery is doubled and new spells are available.", "healingModifier": 2.0 },
+                "volatile": { "description": "Wild magic crackles through the Sanctum. Healing is unpredictable but potentially more powerful.", "healingModifier": 1.5 },
+                "corrupted": { "description": "The Coven struggles to keep the pools purified. Healing costs increase as resources dwindle.", "healingModifier": 0.5 }
+            },
+            "discoveryXP": 0,
+            "lore": "The Emerald Sanctum was the first structure built in the Canopy, grown from the roots of the original World-Sapling. The Blue Sap that wells up here is the purest in all of Verdance, and the Coven has guarded it since the founding. The Soul Binding Altar predates even the Coven itself.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x22cc88"
+            }
+        },
+        {
+            "id": "whispering_veil",
+            "name": "Whispering Veil",
+            "description": "A grove of ancient silvered trees where the Veilkeepers reside. The air shimmers with knowledge of past, present, and future. Each consultation has a cost — and the truth is not always kind.",
+            "type": "grove",
+            "level": 1,
+            "tier": 1,
+            "zone": "verdance_central",
+            "connections": ["canopy_of_life"],
+            "enemies": [],
+            "subLocations": [
+                "oracle_pool",
+                "memory_garden",
+                "fate_loom"
+            ],
+            "npcs": [
+                "seer_althea",
+                "keeper_of_echoes",
+                "warden_of_threads"
+            ],
+            "services": ["divination", "lore", "consultation"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "quest": "intro_to_veilkeepers"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The Veil is transparent. Prophecies are clear and consultations are reliable.", "accuracyModifier": 1.0 },
+                "surging": { "description": "Visions pour through unbidden. The Veilkeepers offer deeper readings at no extra cost.", "accuracyModifier": 1.3 },
+                "volatile": { "description": "The Veil trembles. Prophecies are fragmentary and contradictory.", "accuracyModifier": 0.6 },
+                "corrupted": { "description": "The Veil is torn. The Veilkeepers see only darkness and refuse most consultations.", "accuracyModifier": 0.2 }
+            },
+            "discoveryXP": 50,
+            "lore": "The Whispering Veil exists in the space between moments. The silvered trees here were the first to grow after the Great Unbinding, and they carry the memory of the world before the Abyss. The Veilkeepers claim they do not predict the future — they simply remember what hasn't happened yet.",
+            "environment": {
+                "weather": "shimmer",
+                "timeOfDay": "twilight",
+                "ambientColor": "0xaabbdd"
+            }
+        },
+        {
+            "id": "hollowroot_catacombs",
+            "name": "Hollowroot Catacombs",
+            "description": "A labyrinth of roots and tunnels beneath the Canopy. The first Abyss breach opened here, and corruption still lingers in the deepest chambers. Two floors of ten rooms hide the Thornmaw Dryad in the depths.",
+            "type": "dungeon",
+            "level": 2,
+            "tier": 2,
+            "zone": "verdance_underground",
+            "connections": ["canopy_of_life", "mycelium_nexus"],
+            "enemies": ["void_wisp", "abyssal_crawler", "shadow_imp", "void_tendril", "thornmaw_dryad"],
+            "subLocations": [
+                "upper_tunnels",
+                "root_maze",
+                "dripping_gallery",
+                "corruption_pocket",
+                "breach_chamber_alpha",
+                "fungal_crossroads",
+                "collapsed_passage",
+                "bone_root_hall",
+                "void_tendril_lair",
+                "sealed_archive"
+            ],
+            "npcs": [
+                "lost_explorer_mika",
+                "bloomguard_scout_renn"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 2
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Corruption is dormant. Standard enemy spawns and loot tables.", "enemyModifier": 1.0 },
+                "surging": { "description": "Blue Sap seeps into the tunnels, weakening corrupted enemies.", "enemyModifier": 0.8 },
+                "volatile": { "description": "The breach flickers. Additional void enemies spawn from unstable rifts.", "enemyModifier": 1.3 },
+                "corrupted": { "description": "The first breach reopens fully. Elite enemies roam every chamber.", "enemyModifier": 1.8 }
+            },
+            "discoveryXP": 100,
+            "lore": "Before the Abyss, these tunnels were root-cellars where the earliest settlers stored food and supplies. The first breach was silent — a hairline crack in reality that nobody noticed until the shadows began to move. By the time the Bloomguard sealed it, a dozen settlers had vanished.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "night",
+                "ambientColor": "0x1a1a2e"
+            }
+        },
+        {
+            "id": "spindlewood_forest",
+            "name": "Spindlewood Forest",
+            "description": "A forest of impossibly thin, spiraling trees. The canopy creates ever-shifting patterns of light and shadow. Six sub-zones host both wildlife and corrupted creatures in an uneasy coexistence.",
+            "type": "exploration",
+            "level": 3,
+            "tier": 2,
+            "zone": "verdance_wilds",
+            "connections": [
+                "canopy_of_life",
+                "wildkin_hunting_grounds",
+                "thornbinder_training_grounds",
+                "glinting_groves",
+                "thornbinder_safehouse"
+            ],
+            "enemies": ["grove_sprite", "root_crawler", "sap_beetle", "ember_fox", "corrupted_sapling"],
+            "subLocations": [
+                "spiral_clearing",
+                "whispering_thicket",
+                "sunbeam_glade",
+                "tangled_hollow",
+                "ancient_stump_ring",
+                "fox_den"
+            ],
+            "npcs": [
+                "wandering_herbalist",
+                "wildkin_scout_fara"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 3
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Dappled sunlight filters through the spindletrees. Wildlife is plentiful and docile.", "enemyModifier": 1.0 },
+                "surging": { "description": "The trees grow visibly, spiraling faster. Rare herbs bloom in unexpected places.", "gatheringBonus": 1.5 },
+                "volatile": { "description": "The forest shifts and paths change. Navigation becomes unreliable.", "navigationPenalty": true },
+                "corrupted": { "description": "Half the forest is blighted. Corrupted creatures outnumber wildlife two to one.", "enemyModifier": 2.0 }
+            },
+            "discoveryXP": 75,
+            "lore": "The Spindlewood's peculiar spiral growth is believed to be caused by ley lines that twist beneath the forest floor. Wildkin naturalists have noted that the trees spiral clockwise above ley line intersections and counter-clockwise everywhere else. The forest predates the Canopy by at least a thousand years.",
             "environment": {
                 "weather": "none",
                 "timeOfDay": "day",
@@ -17,73 +341,868 @@
             }
         },
         {
-            "id": "crystal_caverns",
-            "name": "Crystal Caverns",
-            "description": "Deep underground tunnels lined with luminescent sap crystals.",
-            "type": "dungeon",
-            "level": 2,
-            "connections": ["verdant_grove", "shadow_vale"],
-            "enemies": ["shadow_stalker"],
+            "id": "mycelium_nexus",
+            "name": "Mycelium Nexus",
+            "description": "An underground network of massive mushroom structures connected by bioluminescent fungal pathways. The Sporecallers have built a second city here. Three districts surround the central fast travel hub with ten nodes.",
+            "type": "underground_city",
+            "level": 3,
+            "tier": 2,
+            "zone": "verdance_underground",
+            "connections": [
+                "hollowroot_catacombs",
+                "canopy_of_life",
+                "sporecaller_labs",
+                "corruption_quarantine_zone"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "spore_market",
+                "luminous_plaza",
+                "fungal_transit_hub"
+            ],
+            "npcs": [
+                "sporecaller_mycel",
+                "fungal_trader_grix",
+                "transit_keeper_lumina"
+            ],
+            "services": ["fast_travel", "shop", "alchemy"],
+            "fastTravelNode": true,
+            "discoverable": true,
+            "requirements": {
+                "level": 3
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The mycelium network pulses steadily. All transit nodes operational.", "transitNodes": 10 },
+                "surging": { "description": "The fungal network expands. New temporary transit nodes appear.", "transitNodes": 13 },
+                "volatile": { "description": "Spore storms disrupt some transit routes. Several nodes go offline.", "transitNodes": 6 },
+                "corrupted": { "description": "Corruption infiltrates the mycelium. Only emergency transit routes remain.", "transitNodes": 3 }
+            },
+            "discoveryXP": 150,
+            "lore": "The Sporecallers discovered the Mycelium Nexus when a routine excavation broke through into a cavern of luminous fungi the size of a cathedral. The mushrooms were already connected in a vast living network — the Sporecallers simply learned to speak its language. The transit hub exploits the mycelium's ability to transport matter instantaneously across its network.",
+            "environment": {
+                "weather": "spore_haze",
+                "timeOfDay": "night",
+                "ambientColor": "0x224466"
+            }
+        },
+        {
+            "id": "thornbinder_safehouse",
+            "name": "Thornbinder Safehouse",
+            "description": "A concealed network of connected treehouses accessible only to those who know the signs. The Thornbinders' center of operations. Five rooms hide secrets, a black market, and contracts for those with the reputation to enter.",
+            "type": "hidden",
+            "level": 3,
+            "tier": 2,
+            "zone": "verdance_wilds",
+            "connections": ["thornbinder_training_grounds", "spindlewood_forest"],
+            "enemies": [],
+            "subLocations": [
+                "shadow_parlor",
+                "contract_board",
+                "poison_workshop",
+                "informant_alcove",
+                "escape_tunnels"
+            ],
+            "npcs": [
+                "shadowmaster_kael",
+                "broker_silka",
+                "poisoner_vetch",
+                "informant_whisper"
+            ],
+            "services": ["shop", "training", "contracts", "black_market"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "reputation": {
+                    "faction": "thornbinders",
+                    "level": "known",
+                    "minValue": 10
+                }
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Business as usual. Full inventory and contract board active.", "contractBonus": 1.0 },
+                "surging": { "description": "High-value targets become vulnerable. Premium contracts appear on the board.", "contractBonus": 1.5 },
+                "volatile": { "description": "The underworld stirs. Double agents and betrayals make contracts riskier but more rewarding.", "contractBonus": 1.3 },
+                "corrupted": { "description": "The Thornbinders go to ground. Only trusted operatives can access the safehouse.", "contractBonus": 0.5 }
+            },
+            "discoveryXP": 200,
+            "lore": "The Thornbinder Safehouse has never been in the same location twice — or so the Thornbinders claim. In truth, the network of treehouses shifts along a predetermined route through the forest, moving every fortnight. Only those who know the current signs can find the entrance. The black market here deals in goods the Council has banned.",
             "environment": {
                 "weather": "none",
                 "timeOfDay": "night",
-                "ambientColor": "0x222244"
+                "ambientColor": "0x2a2a3a"
             }
         },
         {
-            "id": "sunken_ruins",
-            "name": "Sunken Ruins",
-            "description": "Ancient ruins half-submerged in a sap-infused lake.",
-            "type": "exploration",
-            "level": 2,
-            "connections": ["verdant_grove", "crimson_plateau"],
-            "enemies": ["forest_guardian", "crimson_warden"],
-            "environment": {
-                "weather": "fog",
-                "timeOfDay": "dusk",
-                "ambientColor": "0x4488aa"
-            }
-        },
-        {
-            "id": "shadow_vale",
-            "name": "Shadow Vale",
-            "description": "A dark valley where shadows move on their own.",
-            "type": "dungeon",
+            "id": "emerald_cascades",
+            "name": "Emerald Cascades",
+            "description": "Waterfalls of pure Blue Sap cascade down ancient stone formations. The most potent DSP recovery site in all of Verdance. Four sub-zones surround the Blue Sap springs that are the source of the falls.",
+            "type": "nature_reserve",
             "level": 3,
-            "connections": ["crystal_caverns", "nexus_spire"],
-            "enemies": ["shadow_stalker"],
+            "tier": 2,
+            "zone": "verdance_highlands",
+            "connections": [
+                "canopy_of_life",
+                "veil_echo_chamber",
+                "abyss_forward_camp",
+                "veil_tear_rift_alpha"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "upper_falls",
+                "sap_pools",
+                "meditation_ledge",
+                "crystal_grotto"
+            ],
+            "npcs": [
+                "hermit_druid_oakenshade",
+                "sap_collector_wren"
+            ],
+            "services": ["healing", "rest", "dsp_recovery"],
+            "fastTravelNode": true,
+            "discoverable": true,
+            "requirements": {
+                "level": 3
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The cascades flow steadily. DSP recovery is reliable and soothing.", "dspRecoveryRate": 1.0 },
+                "surging": { "description": "The falls thunder with Blue Sap. DSP recovery is massively enhanced. Rare crystallized Sap forms.", "dspRecoveryRate": 3.0 },
+                "volatile": { "description": "The springs pulse erratically. Recovery is inconsistent but can spike to extreme levels.", "dspRecoveryRate": 1.5 },
+                "corrupted": { "description": "Black streaks taint the Blue Sap. The springs may heal or harm. Use with caution.", "dspRecoveryRate": 0.3 }
+            },
+            "discoveryXP": 100,
+            "lore": "The Emerald Cascades are fed by an underground river of pure Blue Sap that originates from the Everwood Heart itself. The Emerald Coven maintains that the cascades are the lifeblood of Verdance made visible, and that the rhythm of the falls mirrors the heartbeat of the world.",
             "environment": {
-                "weather": "fog",
-                "timeOfDay": "night",
-                "ambientColor": "0x112233"
+                "weather": "mist",
+                "timeOfDay": "day",
+                "ambientColor": "0x33aacc"
             }
         },
         {
-            "id": "crimson_plateau",
-            "name": "Crimson Plateau",
-            "description": "A windswept plateau saturated with crimson sap energy.",
+            "id": "glinting_groves",
+            "name": "Glinting Groves",
+            "description": "A grove where crystallized Sap grows from every surface, refracting light into prismatic displays. Rich in rare crafting materials. The crystal formations here are found nowhere else in Verdance.",
             "type": "exploration",
-            "level": 3,
-            "connections": ["sunken_ruins", "nexus_spire"],
-            "enemies": ["crimson_warden"],
+            "level": 4,
+            "tier": 2,
+            "zone": "verdance_wilds",
+            "connections": [
+                "canopy_of_life",
+                "spindlewood_forest",
+                "sapling_plantation"
+            ],
+            "enemies": ["crystal_stag", "sap_beetle", "prism_wraith"],
+            "subLocations": [
+                "prismatic_clearing",
+                "crystal_caves",
+                "refraction_pools",
+                "geode_hollow"
+            ],
+            "npcs": [
+                "crystal_harvester_pria",
+                "geological_researcher_quartz"
+            ],
+            "services": ["gathering"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 4
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Crystals grow at a steady pace. Standard harvesting yields.", "gatheringModifier": 1.0 },
+                "surging": { "description": "Rapid crystallization creates abundant rare materials. The groves sing with resonance.", "gatheringModifier": 2.0 },
+                "volatile": { "description": "Crystals shatter unpredictably. Harvesting is dangerous but yields unique volatile shards.", "gatheringModifier": 1.2 },
+                "corrupted": { "description": "Dark crystals grow alongside pure ones. Corrupted materials can be harvested but carry risk.", "gatheringModifier": 0.7 }
+            },
+            "discoveryXP": 100,
+            "lore": "The Glinting Groves formed when a massive surge of Blue Sap erupted from the earth and crystallized instantly, fusing with the trees and soil. The Sapling Consortium has tried to claim mining rights for decades, but the Emerald Coven insists the groves are sacred. The crystals here resonate at frequencies that can shatter glass — or heal bones.",
             "environment": {
                 "weather": "none",
-                "timeOfDay": "dusk",
-                "ambientColor": "0xbb3344"
+                "timeOfDay": "day",
+                "ambientColor": "0x88ccee"
             }
         },
         {
-            "id": "nexus_spire",
-            "name": "Nexus Spire",
-            "description": "The convergence point of all sap streams. The final challenge awaits.",
-            "type": "boss",
+            "id": "thornbinder_training_grounds",
+            "name": "Thornbinder Training Grounds",
+            "description": "Hidden obstacle courses and sparring arenas where Thornbinders hone their stealth and combat skills. Specializes in trap construction and shadow techniques.",
+            "type": "training",
+            "level": 4,
+            "tier": 2,
+            "zone": "verdance_wilds",
+            "connections": [
+                "thornbinder_safehouse",
+                "spindlewood_forest",
+                "wildkin_hunting_grounds"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "shadow_run_course",
+                "blade_arena",
+                "trap_workshop",
+                "canopy_parkour"
+            ],
+            "npcs": [
+                "blademaster_sirath",
+                "trap_instructor_nettle"
+            ],
+            "services": ["training", "stealth_training", "trap_crafting"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "reputation": {
+                    "faction": "thornbinders",
+                    "level": "known",
+                    "minValue": 10
+                }
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Standard training regimens. All courses available.", "trainingBonus": 1.0 },
+                "surging": { "description": "Sap-enhanced agility courses push trainees beyond normal limits.", "trainingBonus": 1.3 },
+                "volatile": { "description": "Unpredictable conditions make for excellent improvisation training.", "trainingBonus": 1.1 },
+                "corrupted": { "description": "Real threats replace training dummies. Survival training only.", "trainingBonus": 0.9 }
+            },
+            "discoveryXP": 125,
+            "lore": "Blademaster Sirath designed every obstacle course personally, each one modeled after a real mission that went wrong. 'You learn more from failure than success,' she says, 'but you learn most from someone else's failure.' The canopy parkour course has a perfect safety record — if you don't count the broken bones.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "night",
+                "ambientColor": "0x2d3d2d"
+            }
+        },
+        {
+            "id": "wildkin_hunting_grounds",
+            "name": "Wildkin Hunting Grounds",
+            "description": "Vast, untamed woodlands where the Wildkin Pact communes with the most powerful beasts of Verdance. Beast companions can be found and bonded here. Wildkin Pact faction area.",
+            "type": "exploration",
+            "level": 4,
+            "tier": 2,
+            "zone": "verdance_wilds",
+            "connections": [
+                "spindlewood_forest",
+                "thornbinder_training_grounds",
+                "hollow_tree_grove"
+            ],
+            "enemies": ["thornback_bear", "ember_fox", "crystal_stag", "ancient_rootworm"],
+            "subLocations": [
+                "beast_trails",
+                "watering_hole",
+                "den_of_the_alpha",
+                "migration_path"
+            ],
+            "npcs": [
+                "beastcaller_yenna",
+                "tracker_grenn",
+                "beast_tamer_kova"
+            ],
+            "services": ["training", "beast_bonding", "beast_healing"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 4
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Beasts roam in natural patterns. Bonding attempts have standard success rates.", "bondingModifier": 1.0 },
+                "surging": { "description": "Sap-enriched prey draws rare beasts from deep wilderness. Legendary companions may appear.", "bondingModifier": 1.5 },
+                "volatile": { "description": "Beasts are agitated and territorial. Bonding is harder but yields stronger companions.", "bondingModifier": 0.7 },
+                "corrupted": { "description": "Many beasts flee or become corrupted. Only the strongest remain — and they are dangerous.", "bondingModifier": 0.4 }
+            },
+            "discoveryXP": 100,
+            "lore": "The Wildkin Pact believes that every beast in these woods carries a fragment of Verdance's wild soul. To bond with a beast is not to tame it but to forge a partnership of equals. The Den of the Alpha is said to be home to the oldest living creature in the forest — though no one agrees on what species it is.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x446633"
+            }
+        },
+        {
+            "id": "sporecaller_labs",
+            "name": "Sporecaller Labs",
+            "description": "A damp, sprawling complex of fungal chambers where Sporecallers experiment with spores, toxins, and the boundary between life and decay. Unique items and fungal experiments await those with sufficient faction standing.",
+            "type": "laboratory",
+            "level": 4,
+            "tier": 2,
+            "zone": "verdance_underground",
+            "connections": [
+                "mycelium_nexus",
+                "corruption_quarantine_zone"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "toxin_lab",
+                "growth_chamber",
+                "specimen_vault",
+                "decay_observation_room"
+            ],
+            "npcs": [
+                "lead_researcher_sporax",
+                "lab_assistant_moldwyn",
+                "containment_specialist_ward"
+            ],
+            "services": ["alchemy", "research", "fungal_crafting"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 4,
+                "reputation": {
+                    "faction": "sporecallers",
+                    "level": "friendly",
+                    "minValue": 20
+                }
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Experiments proceed normally. Standard research options available.", "researchSpeed": 1.0 },
+                "surging": { "description": "Fungal growth accelerates dramatically. Breakthrough discoveries become possible.", "researchSpeed": 2.0 },
+                "volatile": { "description": "Containment breaches occur. Some experiments mutate unpredictably — with fascinating results.", "researchSpeed": 1.3 },
+                "corrupted": { "description": "Emergency containment protocols. The labs study corruption itself, yielding dark but valuable data.", "researchSpeed": 0.6 }
+            },
+            "discoveryXP": 150,
+            "lore": "Lead Researcher Sporax maintains that fungi are the true architects of Verdance — the trees are merely their scaffolding. The labs have produced cures for a dozen plagues, weapons that dissolve armor, and a mushroom that tastes exactly like roast chicken. The Specimen Vault contains things that should not exist.",
+            "environment": {
+                "weather": "spore_haze",
+                "timeOfDay": "night",
+                "ambientColor": "0x334422"
+            }
+        },
+        {
+            "id": "veil_echo_chamber",
+            "name": "Veil Echo Chamber",
+            "description": "A resonating cavern where echoes of the Veil's knowledge manifest as ghostly visions. Fragments of prophecy drift through the air. Echoes of past events can be witnessed and studied for deep lore discovery.",
+            "type": "lore_site",
             "level": 5,
-            "connections": ["shadow_vale", "crimson_plateau"],
-            "enemies": ["crimson_warden", "shadow_stalker", "forest_guardian"],
+            "tier": 2,
+            "zone": "verdance_highlands",
+            "connections": [
+                "emerald_cascades",
+                "ancient_unbinding_site"
+            ],
+            "enemies": ["echo_phantom", "memory_wraith"],
+            "subLocations": [
+                "echo_hall",
+                "vision_pool",
+                "prophecy_wall"
+            ],
+            "npcs": [
+                "echo_warden_solivae"
+            ],
+            "services": ["divination", "lore_discovery"],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 5,
+                "quest": "seek_the_echoes"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Echoes are faint but clear. Careful study reveals historical truths.", "echoClarity": 1.0 },
+                "surging": { "description": "The chamber resonates with power. Echoes of the deep past become visible and audible.", "echoClarity": 2.0 },
+                "volatile": { "description": "Past, present, and future echoes overlap chaotically. Sorting truth from possibility is difficult.", "echoClarity": 0.5 },
+                "corrupted": { "description": "Abyssal echoes contaminate the visions. The chamber shows what the Abyss wants you to see.", "echoClarity": 0.2 }
+            },
+            "discoveryXP": 200,
+            "lore": "The Veil Echo Chamber was not built — it was discovered when a Veilkeeper heard voices coming from beneath a waterfall. The cavern's walls are made of a mineral that resonates with Veil energy, recording and replaying moments of intense emotional or magical significance. Some echoes are millennia old. Some haven't happened yet.",
             "environment": {
-                "weather": "storm",
+                "weather": "shimmer",
+                "timeOfDay": "twilight",
+                "ambientColor": "0x6677aa"
+            }
+        },
+        {
+            "id": "abyss_forward_camp",
+            "name": "Abyss Forward Camp",
+            "description": "The Bloomguard's last military outpost before the corrupted lands near The Scar. Soldiers here are hardened, supplies are scarce, and the darkness never sleeps.",
+            "type": "military_outpost",
+            "level": 6,
+            "tier": 3,
+            "zone": "verdance_border",
+            "connections": [
+                "emerald_cascades",
+                "hollow_tree_grove",
+                "corruption_quarantine_zone",
+                "the_scar"
+            ],
+            "enemies": ["void_sentinel", "abyssal_mage", "shadow_assassin"],
+            "subLocations": [
+                "command_tent",
+                "field_hospital",
+                "watchtower",
+                "supply_depot"
+            ],
+            "npcs": [
+                "captain_dorn",
+                "field_medic_sera",
+                "supply_officer_brent",
+                "war_correspondent_ivy"
+            ],
+            "services": ["shop", "forge", "healing", "fast_travel"],
+            "fastTravelNode": true,
+            "discoverable": true,
+            "requirements": {
+                "level": 6,
+                "quest": "march_to_the_border"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The camp operates under standard protocols. Resupply shipments arrive on schedule.", "supplyModifier": 1.0 },
+                "surging": { "description": "Sap-reinforced barriers hold strong. Morale is high and special munitions are available.", "supplyModifier": 1.3 },
+                "volatile": { "description": "Intermittent attacks keep the camp on edge. Supplies are rationed.", "supplyModifier": 0.7 },
+                "corrupted": { "description": "The camp is under siege. Emergency supplies only. Some soldiers are showing signs of corruption.", "supplyModifier": 0.3 }
+            },
+            "discoveryXP": 200,
+            "lore": "Captain Dorn has held this position for three years — the longest any officer has lasted. The previous four captains succumbed to corruption, madness, or simple despair. The watchtower offers a view of The Scar that no one who sees it ever forgets. Or ever stops dreaming about.",
+            "environment": {
+                "weather": "ash",
+                "timeOfDay": "dusk",
+                "ambientColor": "0x553322"
+            }
+        },
+        {
+            "id": "hollow_tree_grove",
+            "name": "Hollow Tree Grove",
+            "description": "A grove of ancient petrified trees, their insides consumed by Abyss corruption. What was once the most sacred grove in Verdance is now a nightmare. The Corrupted Elder lurks within.",
+            "type": "dungeon",
+            "level": 6,
+            "tier": 3,
+            "zone": "corrupted_lands",
+            "connections": [
+                "abyss_forward_camp",
+                "wildkin_hunting_grounds",
+                "corruption_quarantine_zone",
+                "ancient_unbinding_site"
+            ],
+            "enemies": ["corrupted_dryad", "blighted_treant", "corrupted_elder"],
+            "subLocations": [
+                "weeping_hollow",
+                "blackened_heartwood",
+                "dryad_graveyard",
+                "corruption_nexus",
+                "petrified_sanctuary"
+            ],
+            "npcs": [
+                "trapped_spirit_verdana"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 6
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The corruption sleeps fitfully. Standard enemy patrols and environmental hazards.", "corruptionLevel": 1.0 },
+                "surging": { "description": "Blue Sap pushes back the corruption temporarily. Safe paths through the grove become visible.", "corruptionLevel": 0.6 },
+                "volatile": { "description": "The petrified trees creak and shift. New passages open while old ones seal shut.", "corruptionLevel": 1.4 },
+                "corrupted": { "description": "The grove becomes a death trap. The Corrupted Elder awakens fully and the trees bleed darkness.", "corruptionLevel": 2.0 }
+            },
+            "discoveryXP": 250,
+            "lore": "These trees were alive when the world was young. The oldest was called the Grandmother, and it is said she whispered advice to the first druids. When the Abyss came, the Grandmother was the first to fall — her heartwood turned to stone in an instant. The dryads who tended her still haunt the grove, trapped between life and corruption.",
+            "environment": {
+                "weather": "corruption_mist",
                 "timeOfDay": "night",
-                "ambientColor": "0x884488"
+                "ambientColor": "0x1a0f1a"
+            }
+        },
+        {
+            "id": "corruption_quarantine_zone",
+            "name": "Corruption Quarantine Zone",
+            "description": "An area cordoned off by the Emerald Coven's wards. The corruption here is so thick it's visible as black mist. Environmental hazards deal continuous damage to the unprepared. Entry is forbidden... and tempting.",
+            "type": "hazard_zone",
+            "level": 7,
+            "tier": 3,
+            "zone": "corrupted_lands",
+            "connections": [
+                "abyss_forward_camp",
+                "hollow_tree_grove",
+                "mycelium_nexus",
+                "sporecaller_labs",
+                "the_scar"
+            ],
+            "enemies": ["corruption_wraith", "corrupted_thornweaver", "decay_knight", "void_parasite"],
+            "subLocations": [
+                "outer_wards",
+                "black_mist_zone",
+                "collapsed_ward_breach",
+                "quarantine_core"
+            ],
+            "npcs": [
+                "ward_keeper_solenne"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 7,
+                "quest": "breach_the_quarantine"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The wards hold. Corruption is contained but heavy. Environmental damage is steady.", "environmentalDamage": 1.0 },
+                "surging": { "description": "The wards blaze with power. A temporary safe zone forms in the center of the quarantine.", "environmentalDamage": 0.5 },
+                "volatile": { "description": "The wards flicker. Corruption surges through gaps and new hazards appear unpredictably.", "environmentalDamage": 1.5 },
+                "corrupted": { "description": "The wards fail. The quarantine zone expands and corruption levels become lethal.", "environmentalDamage": 2.5 }
+            },
+            "discoveryXP": 300,
+            "lore": "Ward Keeper Solenne has maintained these wards alone for two years since her team was corrupted. She sleeps in four-hour shifts and eats only what can be passed through the ward barrier. She says the corruption whispers to her in the voices of her lost colleagues, promising reunion if she just lowers the wards for one moment.",
+            "environment": {
+                "weather": "corruption_mist",
+                "timeOfDay": "night",
+                "ambientColor": "0x110822"
+            }
+        },
+        {
+            "id": "sapling_plantation",
+            "name": "Sapling Plantation",
+            "description": "The Sapling Consortium's vast cultivation grounds where they grow and harvest Sap-infused crops. Commerce and controversy intertwine at this resource farming operation. Sapling Consortium faction headquarters.",
+            "type": "faction_hq",
+            "level": 5,
+            "tier": 3,
+            "zone": "verdance_lowlands",
+            "connections": [
+                "canopy_of_life",
+                "glinting_groves"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "sap_fields",
+                "processing_facility",
+                "worker_quarters",
+                "consortium_office",
+                "experimental_greenhouse"
+            ],
+            "npcs": [
+                "consortium_director_orin",
+                "foreman_grubb",
+                "disgruntled_worker_pella",
+                "trade_inspector_voss"
+            ],
+            "services": ["shop", "trading", "resource_farming"],
+            "fastTravelNode": true,
+            "discoverable": true,
+            "requirements": {
+                "level": 5
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "Harvests proceed on schedule. Standard resource yields and prices.", "harvestModifier": 1.0 },
+                "surging": { "description": "Bumper crop season. The fields overflow with Sap-infused produce. Prices drop.", "harvestModifier": 2.5 },
+                "volatile": { "description": "Crops mutate unpredictably. Some yields are extraordinary, others are worthless.", "harvestModifier": 1.2 },
+                "corrupted": { "description": "Blight strikes the fields. The Consortium scrambles to save what they can. Resources become scarce.", "harvestModifier": 0.2 }
+            },
+            "discoveryXP": 150,
+            "lore": "Director Orin founded the Consortium on a simple premise: Verdance's resources belong to everyone, and someone needs to manage them efficiently. Critics call it exploitation. Supporters call it civilization. The experimental greenhouse contains crossbreeds of Sap-infused plants that could revolutionize agriculture — or poison the soil for generations.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "day",
+                "ambientColor": "0x669944"
+            }
+        },
+        {
+            "id": "ancient_unbinding_site",
+            "name": "Ancient Unbinding Site",
+            "description": "The ruins of the ancient ritual site where the first Unbinding was performed — the event that accidentally tore open the Abyss. The ground still bleeds magic. A lore-heavy location critical to understanding Verdance's history.",
+            "type": "ritual_site",
+            "level": 7,
+            "tier": 3,
+            "zone": "corrupted_lands",
+            "connections": [
+                "hollow_tree_grove",
+                "veil_echo_chamber",
+                "the_scar"
+            ],
+            "enemies": ["void_herald", "corruption_colossus", "memory_guardian"],
+            "subLocations": [
+                "shattered_ritual_circle",
+                "bleeding_stones",
+                "memory_fragments",
+                "unbinding_altar"
+            ],
+            "npcs": [
+                "ghost_of_the_unbound"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 7,
+                "quest": "secrets_of_the_unbinding"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The ritual scars glow faintly. Memory fragments drift lazily through the air.", "loreAccessLevel": 1.0 },
+                "surging": { "description": "The site pulses with ancient energy. The full ritual replays in ghostly detail.", "loreAccessLevel": 2.0 },
+                "volatile": { "description": "Reality tears echo the original Unbinding. Mini-rifts open and close unpredictably.", "loreAccessLevel": 1.0 },
+                "corrupted": { "description": "The Unbinding threatens to repeat. The altar activates on its own and must be stopped.", "loreAccessLevel": 0.5 }
+            },
+            "discoveryXP": 350,
+            "lore": "A thousand years ago, the greatest druids of Verdance attempted the Unbinding — a ritual to separate the world's soul from its body, granting immortality to the forest. Instead, they tore a hole in reality. The Abyss poured through. Every druid involved was consumed. The Ghost of the Unbound is the last surviving consciousness from that catastrophe, forever reliving their greatest mistake.",
+            "environment": {
+                "weather": "arcane_storm",
+                "timeOfDay": "twilight",
+                "ambientColor": "0x442266"
+            }
+        },
+        {
+            "id": "veil_tear_rift_alpha",
+            "name": "Veil Tear Rift Alpha",
+            "description": "The first and weakest of the discovered Veil tears — a rift into a pocket dimension of warped reality. No two visits are the same. A procedural mini-dungeon that reshuffles on each entry.",
+            "type": "procedural_dungeon",
+            "level": 7,
+            "tier": 4,
+            "zone": "veil_rifts",
+            "connections": ["emerald_cascades", "spindlewood_forest"],
+            "enemies": ["void_wisp", "shadow_imp", "corruption_wraith", "rift_stalker"],
+            "subLocations": [],
+            "npcs": [],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 7,
+                "quest": "veil_tear_investigation"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The rift is stable. Standard procedural layout and enemy spawns.", "riftInstability": 1.0 },
+                "surging": { "description": "Sap energy stabilizes the rift. Fewer enemies but better loot tables.", "riftInstability": 0.7 },
+                "volatile": { "description": "The rift expands and contracts. Additional rooms appear with rare rewards.", "riftInstability": 1.5 },
+                "corrupted": { "description": "The rift becomes a direct conduit to the Abyss. Maximum danger and maximum reward.", "riftInstability": 2.0 }
+            },
+            "discoveryXP": 200,
+            "lore": "Veil Tear Rift Alpha was the first tear catalogued by the Emerald Coven after the Great Unbinding. Unlike The Scar, these smaller tears do not connect directly to the Abyss — instead they open into unstable pocket dimensions that shift and reform constantly. The Coven theorizes they are the world's immune response, trying to seal the wound.",
+            "environment": {
+                "weather": "reality_flux",
+                "timeOfDay": "shifting",
+                "ambientColor": "0x665588"
+            }
+        },
+        {
+            "id": "veil_tear_rift_beta",
+            "name": "Veil Tear Rift Beta",
+            "description": "A deeper tear in the Veil where mirrored versions of familiar places twist into alien geometries. The corruption runs stronger here, and the rewards match the danger.",
+            "type": "procedural_dungeon",
+            "level": 8,
+            "tier": 4,
+            "zone": "veil_rifts",
+            "connections": ["hollow_tree_grove", "corruption_quarantine_zone"],
+            "enemies": ["void_sentinel", "abyssal_mage", "decay_knight", "mirror_horror"],
+            "subLocations": [],
+            "npcs": [],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 8,
+                "quest": "veil_tear_investigation"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The mirror dimensions hold steady. Navigation is disorienting but manageable.", "riftInstability": 1.0 },
+                "surging": { "description": "The reflections become clearer. Hidden paths and secret rooms are revealed.", "riftInstability": 0.8 },
+                "volatile": { "description": "Reality and reflection merge. Enemies and their mirror doubles attack simultaneously.", "riftInstability": 1.8 },
+                "corrupted": { "description": "The mirror shatters into a kaleidoscope of horror. Only the strongest survive.", "riftInstability": 2.5 }
+            },
+            "discoveryXP": 300,
+            "lore": "Rift Beta was discovered by a Thornbinder scout who reported finding an exact copy of the Canopy of Life inside — except everything was inverted, the trees grew downward, and the inhabitants were hollow. The scout refused to return. Three others have since confirmed her account, though each described a different version of the mirror-city.",
+            "environment": {
+                "weather": "reality_flux",
+                "timeOfDay": "shifting",
+                "ambientColor": "0x554477"
+            }
+        },
+        {
+            "id": "veil_tear_rift_gamma",
+            "name": "Veil Tear Rift Gamma",
+            "description": "The most dangerous Veil tear yet discovered. This rift opens directly toward the Abyss itself, offering tremendous risk and the greatest rewards in Verdance.",
+            "type": "procedural_dungeon",
+            "level": 9,
+            "tier": 4,
+            "zone": "veil_rifts",
+            "connections": ["the_scar", "ancient_unbinding_site"],
+            "enemies": ["abyssal_knight", "void_harbinger", "corruption_colossus", "rift_lord"],
+            "subLocations": [],
+            "npcs": [],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 9,
+                "quest": "veil_tear_investigation"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The rift barely holds together. Even in calm conditions, this is the deadliest location in Verdance.", "riftInstability": 2.0 },
+                "surging": { "description": "A fragile stability settles over the rift. The only safe window to attempt a deep run.", "riftInstability": 1.5 },
+                "volatile": { "description": "The rift screams. Dimensional collapses create instant-death zones alongside legendary loot.", "riftInstability": 3.0 },
+                "corrupted": { "description": "Rift Gamma becomes indistinguishable from the Abyss. Entry is suicide — or transcendence.", "riftInstability": 4.0 }
+            },
+            "discoveryXP": 500,
+            "lore": "Rift Gamma was not discovered — it announced itself. A column of void energy erupted from the ground and tore open a wound in reality visible from the Canopy. The Emerald Coven sent a team of twelve to investigate. One returned. She said nothing for three days, then spoke a single sentence: 'It knows we're here.' She has not spoken since.",
+            "environment": {
+                "weather": "void_storm",
+                "timeOfDay": "void",
+                "ambientColor": "0x330044"
+            }
+        },
+        {
+            "id": "the_scar",
+            "name": "The Scar",
+            "description": "A wound in reality itself. The Scar is where the Abyss bleeds into Verdance — a churning void of darkness, tentacles, and lost souls. The Scar Guardian stands between the world and oblivion.",
+            "type": "dungeon",
+            "level": 9,
+            "tier": 5,
+            "zone": "the_abyss",
+            "connections": [
+                "abyss_forward_camp",
+                "corruption_quarantine_zone",
+                "ancient_unbinding_site",
+                "veil_tear_rift_gamma",
+                "everwood_heart",
+                "void_nexus"
+            ],
+            "enemies": ["abyssal_knight", "void_harbinger", "abyssal_brute", "scar_guardian"],
+            "subLocations": [
+                "the_maw",
+                "void_bridge",
+                "soul_storm_gallery",
+                "reality_fracture"
+            ],
+            "npcs": [],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 9,
+                "quest": "assault_on_the_scar"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The Scar pulses slowly. A rhythm like breathing. The darkness is patient.", "abyssalIntensity": 1.0 },
+                "surging": { "description": "Blue Sap energy pushes the Abyss back slightly. Narrow safe corridors form temporarily.", "abyssalIntensity": 0.7 },
+                "volatile": { "description": "Reality convulses. The Scar widens and contracts. Everything is chaos.", "abyssalIntensity": 2.0 },
+                "corrupted": { "description": "The Scar tears wide open. The Abyss pours through unchecked. This is the end of all things — unless stopped.", "abyssalIntensity": 3.0 }
+            },
+            "discoveryXP": 500,
+            "lore": "The Scar is the wound left by the Unbinding — a permanent tear between Verdance and the Abyss. It has been growing slowly for a thousand years. The Scar Guardian is a being of pure void energy that serves as the Abyss's immune system, preventing anything from crossing in either direction without its permission. To pass, you must either destroy it or convince it to step aside.",
+            "environment": {
+                "weather": "void_storm",
+                "timeOfDay": "night",
+                "ambientColor": "0x0a0010"
+            }
+        },
+        {
+            "id": "everwood_heart",
+            "name": "Everwood Heart",
+            "description": "The beating heart of the Everwood itself — a chamber of living wood and pure Sap that sustains all of Verdance. The living center of the world. To reach it is to touch the world's soul.",
+            "type": "sanctum",
+            "level": 10,
+            "tier": 5,
+            "zone": "verdance_core",
+            "connections": [
+                "canopy_of_life",
+                "canopy_overlook",
+                "the_scar"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "root_nexus",
+                "sap_wellspring",
+                "world_pulse_chamber"
+            ],
+            "npcs": [
+                "spirit_of_verdance"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": true,
+            "requirements": {
+                "level": 10,
+                "quest": "heart_of_the_world"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "The Heart beats steadily. The world is sustained. The Spirit of Verdance speaks in gentle tones.", "worldPulse": "steady" },
+                "surging": { "description": "The Heart blazes with life. All of Verdance thrives. The Spirit reveals its deepest secrets.", "worldPulse": "thriving" },
+                "volatile": { "description": "The Heart stutters. Verdance trembles. The Spirit pleads for help.", "worldPulse": "faltering" },
+                "corrupted": { "description": "The Heart is under direct assault. If it stops, Verdance dies. This is the final stand.", "worldPulse": "dying" }
+            },
+            "discoveryXP": 1000,
+            "lore": "The Everwood Heart is not a place — it is a living organ. The entire forest of Verdance is a single organism, and this chamber is where its consciousness resides. The Spirit of Verdance is the forest's voice, its will, its dream. It has been dreaming for ten thousand years, and it is afraid of waking up to find the dream has become a nightmare.",
+            "environment": {
+                "weather": "none",
+                "timeOfDay": "eternal_dawn",
+                "ambientColor": "0x44ff88"
+            }
+        },
+        {
+            "id": "void_nexus",
+            "name": "Void Nexus",
+            "description": "The final boss arena beyond The Scar. The Void Architect's domain at the intersection of all realities. The arena shifts and transforms based on the player's chosen ending path, reflecting either domination or harmony.",
+            "type": "boss_arena",
+            "level": 10,
+            "tier": 5,
+            "zone": "the_abyss",
+            "connections": ["the_scar"],
+            "enemies": ["void_architect"],
+            "subLocations": [
+                "warped_antechamber",
+                "throne_of_void",
+                "reality_collapse_zone",
+                "convergence_ring",
+                "balance_nexus"
+            ],
+            "npcs": [
+                "void_architect",
+                "voice_of_the_abyss"
+            ],
+            "services": [],
+            "fastTravelNode": false,
+            "discoverable": false,
+            "requirements": {
+                "level": 10,
+                "quest": "final_confrontation",
+                "ending_path": "any"
+            },
+            "sapPhaseEffects": {
+                "domination_path": { "description": "The arena manifests as the Void Architect's throne room. Reality warps to the Abyss's will. A battle to the death.", "arenaForm": "throne_of_void" },
+                "harmony_path": { "description": "The arena manifests as a negotiation ground between worlds. The boundary between Verdance and the Abyss dissolves into possibility.", "arenaForm": "convergence_ring" },
+                "corruption_path": { "description": "The arena reflects the player's own corruption. The Void Architect offers partnership, not opposition.", "arenaForm": "mirror_of_self" }
+            },
+            "discoveryXP": 0,
+            "lore": "The Void Nexus exists outside of time. It is the point where the Abyss began — or where it will end. The Void Architect has waited here since before the Unbinding, patient and vast and curious. It does not hate Verdance. It does not love the Abyss. It simply wants to understand what happens when two worlds collide. Your answer — blade or word — will define reality forever.",
+            "environment": {
+                "weather": "void_storm",
+                "timeOfDay": "void",
+                "ambientColor": "0x0a0008"
+            }
+        },
+        {
+            "id": "canopy_overlook",
+            "name": "Canopy Overlook",
+            "description": "The highest point of the Canopy of Life. From here, all of Verdance stretches out below — and the growing darkness at its borders is impossible to ignore.",
+            "type": "vista",
+            "level": 8,
+            "tier": 4,
+            "zone": "verdance_central",
+            "connections": [
+                "canopy_of_life",
+                "everwood_heart"
+            ],
+            "enemies": [],
+            "subLocations": [
+                "summit_platform",
+                "star_compass",
+                "elder_seat"
+            ],
+            "npcs": [
+                "elder_thalos"
+            ],
+            "services": ["fast_travel"],
+            "fastTravelNode": true,
+            "discoverable": true,
+            "requirements": {
+                "level": 8,
+                "quest": "ascend_the_canopy"
+            },
+            "sapPhaseEffects": {
+                "calm": { "description": "A breathtaking panorama of green and gold. The world looks at peace from up here.", "visibilityRange": "full" },
+                "surging": { "description": "Blue Sap light illuminates the entire forest. Hidden locations become visible on the star compass.", "visibilityRange": "enhanced" },
+                "volatile": { "description": "Storm winds batter the summit. The view is obscured by rolling clouds.", "visibilityRange": "partial" },
+                "corrupted": { "description": "The darkness is visible from here — a tide of black creeping across the land. The star compass spins wildly.", "visibilityRange": "corrupted" }
+            },
+            "discoveryXP": 250,
+            "lore": "Elder Thalos comes here every dawn to survey his domain. He says the view from the Overlook tells him everything he needs to know about the state of the world. When the Scar first appeared on the horizon, he wept. He has not wept since — but he has not stopped watching, either.",
+            "environment": {
+                "weather": "wind",
+                "timeOfDay": "day",
+                "ambientColor": "0x88bbdd"
             }
         }
     ]

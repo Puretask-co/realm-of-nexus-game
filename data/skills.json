@@ -1,202 +1,572 @@
 {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "lastModified": "2026-03-14T00:00:00Z",
-    "skills": [
+    "talentTrees": [
         {
-            "id": "vitality",
-            "name": "Vitality",
-            "description": "Increases maximum HP.",
-            "branch": "core",
-            "tier": 1,
-            "cost": 1,
-            "maxRank": 5,
-            "prerequisites": [],
-            "position": { "x": 200, "y": 60 },
-            "type": "passive",
-            "effects": [{ "type": "stat_bonus", "stat": "maxHp", "value": 20, "valuePerRank": 20, "description": "+HP" }],
-            "connections": ["resilience", "sap_attunement"]
+            "id": "martial_prowess",
+            "name": "Martial Prowess",
+            "description": "Physical combat mastery focusing on weapon techniques, raw power, and battlefield dominance.",
+            "category": "combat",
+            "talents": [
+                {
+                    "id": "weapon_mastery",
+                    "name": "Weapon Mastery",
+                    "description": "+1 to all attack rolls with equipped weapons.",
+                    "unlockLevel": 1,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "stat_bonus",
+                            "stat": "attackRolls",
+                            "value": 1,
+                            "description": "+1 attack rolls"
+                        }
+                    ]
+                },
+                {
+                    "id": "power_strike",
+                    "name": "Power Strike",
+                    "description": "Critical hits deal an additional 1d6 damage.",
+                    "unlockLevel": 3,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "crit_bonus",
+                            "stat": "critDamage",
+                            "value": "1d6",
+                            "description": "+1d6 damage on critical hits"
+                        }
+                    ]
+                },
+                {
+                    "id": "combat_reflexes",
+                    "name": "Combat Reflexes",
+                    "description": "Gain +1 Action Point on the first turn of combat.",
+                    "unlockLevel": 5,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "combat_start_bonus",
+                            "stat": "actionPoints",
+                            "value": 1,
+                            "condition": "first_turn",
+                            "description": "+1 AP on first turn of combat"
+                        }
+                    ]
+                },
+                {
+                    "id": "dual_threat",
+                    "name": "Dual Threat",
+                    "description": "Attack two adjacent enemies with a single attack action.",
+                    "unlockLevel": 7,
+                    "type": "active",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "dual_threat",
+                            "targetCount": 2,
+                            "targetCondition": "adjacent",
+                            "description": "Attack two adjacent enemies with one action"
+                        }
+                    ]
+                },
+                {
+                    "id": "devastating_blow",
+                    "name": "Devastating Blow",
+                    "description": "On a natural 20 attack roll, the attack completely ignores the target's Guard.",
+                    "unlockLevel": 9,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "devastating_blow",
+                            "condition": "natural_20",
+                            "description": "Ignore Guard on natural 20"
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "id": "sap_attunement",
-            "name": "Sap Attunement",
-            "description": "Increases maximum Sap pool.",
-            "branch": "core",
-            "tier": 1,
-            "cost": 1,
-            "maxRank": 5,
-            "prerequisites": [],
-            "position": { "x": 400, "y": 60 },
-            "type": "passive",
-            "effects": [{ "type": "stat_bonus", "stat": "maxSap", "value": 15, "valuePerRank": 15, "description": "+Sap" }],
-            "connections": ["vitality", "sap_regen"]
+            "id": "guardians_oath",
+            "name": "Guardian's Oath",
+            "description": "Defensive and tanking specialization focused on shielding allies and enduring punishment.",
+            "category": "defense",
+            "talents": [
+                {
+                    "id": "shield_bearer",
+                    "name": "Shield Bearer",
+                    "description": "Increases maximum Guard capacity by 3.",
+                    "unlockLevel": 1,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "stat_bonus",
+                            "stat": "guardCap",
+                            "value": 3,
+                            "description": "+3 Guard cap"
+                        }
+                    ]
+                },
+                {
+                    "id": "stalwart_defense",
+                    "name": "Stalwart Defense",
+                    "description": "The Defend action grants +5 Guard regeneration instead of the normal +4.",
+                    "unlockLevel": 3,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "action_modifier",
+                            "action": "defend",
+                            "stat": "guardRegen",
+                            "value": 5,
+                            "replaces": 4,
+                            "description": "Defend grants +5 Guard regen instead of +4"
+                        }
+                    ]
+                },
+                {
+                    "id": "bodyguard",
+                    "name": "Bodyguard",
+                    "description": "Intercept an attack targeting an adjacent ally, taking the damage instead. Usable once per round.",
+                    "unlockLevel": 5,
+                    "type": "reactive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "bodyguard",
+                            "usesPerRound": 1,
+                            "targetCondition": "adjacent_ally",
+                            "description": "Intercept attacks on adjacent allies, 1/round"
+                        }
+                    ]
+                },
+                {
+                    "id": "unbreakable",
+                    "name": "Unbreakable",
+                    "description": "Once per combat, survive a killing blow and remain at 1 HP instead of being defeated.",
+                    "unlockLevel": 7,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "unbreakable",
+                            "usesPerCombat": 1,
+                            "surviveAt": 1,
+                            "description": "Survive killing blow once per combat at 1 HP"
+                        }
+                    ]
+                },
+                {
+                    "id": "fortress",
+                    "name": "Fortress",
+                    "description": "Guard cannot be bypassed by any effect, including abilities that normally ignore Guard.",
+                    "unlockLevel": 9,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "fortress",
+                            "description": "Guard cannot be bypassed by any effect"
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "id": "resilience",
-            "name": "Resilience",
-            "description": "Reduces damage taken from all sources.",
-            "branch": "core",
-            "tier": 2,
-            "cost": 2,
-            "maxRank": 3,
-            "prerequisites": ["vitality"],
-            "position": { "x": 200, "y": 160 },
-            "type": "passive",
-            "effects": [{ "type": "stat_bonus", "stat": "defense", "value": 3, "valuePerRank": 3, "description": "+DEF" }],
-            "connections": ["vitality", "second_wind"]
+            "id": "soul_magic_mastery",
+            "name": "Soul Magic Mastery",
+            "description": "Spellcasting refinement that reduces costs, extends range, and unlocks advanced magical techniques.",
+            "category": "magic",
+            "talents": [
+                {
+                    "id": "efficient_casting",
+                    "name": "Efficient Casting",
+                    "description": "All spells cost 2 less DSP to cast (minimum 1).",
+                    "unlockLevel": 1,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "cost_reduction",
+                            "stat": "dspCost",
+                            "value": -2,
+                            "minimum": 1,
+                            "description": "-2 DSP on all spells"
+                        }
+                    ]
+                },
+                {
+                    "id": "extended_range",
+                    "name": "Extended Range",
+                    "description": "All spells gain +2 to their casting range.",
+                    "unlockLevel": 3,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "stat_bonus",
+                            "stat": "spellRange",
+                            "value": 2,
+                            "description": "+2 spell range"
+                        }
+                    ]
+                },
+                {
+                    "id": "dual_concentration",
+                    "name": "Dual Concentration",
+                    "description": "Maintain concentration on two spells simultaneously instead of the normal one.",
+                    "unlockLevel": 5,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "dual_concentration",
+                            "maxConcentration": 2,
+                            "description": "Maintain 2 concentration spells simultaneously"
+                        }
+                    ]
+                },
+                {
+                    "id": "spell_weaving",
+                    "name": "Spell Weaving",
+                    "description": "When combining spells in a combo, the total DSP cost is reduced by 5.",
+                    "unlockLevel": 7,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "cost_reduction",
+                            "stat": "comboDspCost",
+                            "value": -5,
+                            "condition": "spell_combo",
+                            "description": "Combo spells cost -5 DSP"
+                        }
+                    ]
+                },
+                {
+                    "id": "soul_conduit",
+                    "name": "Soul Conduit",
+                    "description": "Tier 3 spells cost only 2 AP instead of the normal 3 AP.",
+                    "unlockLevel": 9,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "cost_reduction",
+                            "stat": "apCost",
+                            "value": 2,
+                            "condition": "tier_3_spell",
+                            "replaces": 3,
+                            "description": "Tier 3 spells cost 2 AP instead of 3"
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "id": "sap_regen",
-            "name": "Sap Flow",
-            "description": "Increases Sap regeneration rate.",
-            "branch": "core",
-            "tier": 2,
-            "cost": 2,
-            "maxRank": 3,
-            "prerequisites": ["sap_attunement"],
-            "position": { "x": 400, "y": 160 },
-            "type": "passive",
-            "effects": [{ "type": "stat_bonus", "stat": "sapRegen", "value": 2, "valuePerRank": 2, "description": "+Sap/s" }],
-            "connections": ["sap_attunement"]
+            "id": "verdant_bond",
+            "name": "Verdant Bond",
+            "description": "Nature and companion specialization that strengthens the bond between character and the natural world.",
+            "category": "nature",
+            "talents": [
+                {
+                    "id": "natures_ally",
+                    "name": "Nature's Ally",
+                    "description": "+1 to all nature spell effects including damage, healing, and duration.",
+                    "unlockLevel": 1,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "spell_bonus",
+                            "element": "nature",
+                            "value": 1,
+                            "description": "+1 to all nature spell effects"
+                        }
+                    ]
+                },
+                {
+                    "id": "beast_friend",
+                    "name": "Beast Friend",
+                    "description": "Your companion creature gains +10 maximum HP.",
+                    "unlockLevel": 3,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "companion_bonus",
+                            "stat": "maxHp",
+                            "value": 10,
+                            "description": "Companion gains +10 HP"
+                        }
+                    ]
+                },
+                {
+                    "id": "symbiosis",
+                    "name": "Symbiosis",
+                    "description": "When you heal, your companion heals for 50% of the amount, and vice versa.",
+                    "unlockLevel": 5,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "symbiosis",
+                            "healTransfer": 0.5,
+                            "bidirectional": true,
+                            "description": "Heal companion when you heal, and vice versa (50%)"
+                        }
+                    ]
+                },
+                {
+                    "id": "wild_empathy",
+                    "name": "Wild Empathy",
+                    "description": "Attempt to pacify wildlife enemies instead of fighting them. Requires a DC 14 check.",
+                    "unlockLevel": 7,
+                    "type": "active",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "wild_empathy",
+                            "dc": 14,
+                            "targetType": "wildlife",
+                            "description": "Can pacify wildlife enemies, DC 14"
+                        }
+                    ]
+                },
+                {
+                    "id": "primal_surge",
+                    "name": "Primal Surge",
+                    "description": "Your companion gains an extra attack each turn.",
+                    "unlockLevel": 9,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "companion_bonus",
+                            "stat": "attacksPerTurn",
+                            "value": 1,
+                            "description": "Companion gets extra attack per turn"
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "id": "second_wind",
-            "name": "Second Wind",
-            "description": "Survive a killing blow once per 60 seconds, restoring 30% HP.",
-            "branch": "core",
-            "tier": 3,
-            "cost": 3,
-            "maxRank": 1,
-            "prerequisites": ["resilience"],
-            "position": { "x": 300, "y": 260 },
-            "type": "ultimate",
-            "effects": [{ "type": "special", "value": "second_wind", "description": "Cheat death (60s CD)" }],
-            "connections": ["resilience"]
-        },
-        {
-            "id": "azure_mastery",
-            "name": "Azure Mastery",
-            "description": "Increases damage of arcane spells.",
-            "branch": "blue",
-            "tier": 1,
-            "cost": 1,
-            "maxRank": 5,
-            "prerequisites": [],
-            "position": { "x": 200, "y": 60 },
-            "type": "passive",
-            "effects": [{ "type": "spell_bonus", "element": "arcane", "value": 0.08, "valuePerRank": 0.08, "description": "+Arcane Dmg%" }],
-            "connections": ["temporal_shift"]
-        },
-        {
-            "id": "temporal_shift",
-            "name": "Temporal Shift",
-            "description": "Reduces cooldowns during Blue phase.",
-            "branch": "blue",
-            "tier": 2,
-            "cost": 2,
-            "maxRank": 3,
-            "prerequisites": ["azure_mastery"],
-            "position": { "x": 200, "y": 160 },
-            "type": "passive",
-            "effects": [{ "type": "phase_bonus", "phase": "blue", "stat": "cooldownReduction", "value": 0.05, "valuePerRank": 0.05, "description": "-CD% in Blue" }],
-            "connections": ["azure_mastery", "time_lock"]
-        },
-        {
-            "id": "time_lock",
-            "name": "Time Lock",
-            "description": "Azure Bolt has a chance to freeze enemies briefly during Blue phase.",
-            "branch": "blue",
-            "tier": 3,
-            "cost": 3,
-            "maxRank": 1,
-            "prerequisites": ["temporal_shift"],
-            "position": { "x": 200, "y": 260 },
-            "type": "ultimate",
-            "effects": [{ "type": "special", "value": "time_lock", "description": "25% freeze chance in Blue" }],
-            "connections": ["temporal_shift"]
-        },
-        {
-            "id": "crimson_fury",
-            "name": "Crimson Fury",
-            "description": "Increases damage during Crimson phase.",
-            "branch": "crimson",
-            "tier": 1,
-            "cost": 1,
-            "maxRank": 5,
-            "prerequisites": [],
-            "position": { "x": 200, "y": 60 },
-            "type": "passive",
-            "effects": [{ "type": "phase_bonus", "phase": "crimson", "stat": "damage", "value": 0.06, "valuePerRank": 0.06, "description": "+Dmg% in Crimson" }],
-            "connections": ["bloodlust"]
-        },
-        {
-            "id": "bloodlust",
-            "name": "Bloodlust",
-            "description": "Defeating an enemy during Crimson phase restores HP.",
-            "branch": "crimson",
-            "tier": 2,
-            "cost": 2,
-            "maxRank": 3,
-            "prerequisites": ["crimson_fury"],
-            "position": { "x": 200, "y": 160 },
-            "type": "passive",
-            "effects": [{ "type": "on_kill", "phase": "crimson", "stat": "healOnKill", "value": 10, "valuePerRank": 5, "description": "+HP on kill in Crimson" }],
-            "connections": ["crimson_fury", "berserker"]
-        },
-        {
-            "id": "berserker",
-            "name": "Berserker Rage",
-            "description": "Below 30% HP during Crimson phase, gain massive damage boost.",
-            "branch": "crimson",
-            "tier": 3,
-            "cost": 3,
-            "maxRank": 1,
-            "prerequisites": ["bloodlust"],
-            "position": { "x": 200, "y": 260 },
-            "type": "ultimate",
-            "effects": [{ "type": "special", "value": "berserker_rage", "description": "+50% Dmg below 30% HP in Crimson" }],
-            "connections": ["bloodlust"]
-        },
-        {
-            "id": "silver_insight",
-            "name": "Silver Insight",
-            "description": "Increases Sap regeneration during Silver phase.",
-            "branch": "silver",
-            "tier": 1,
-            "cost": 1,
-            "maxRank": 5,
-            "prerequisites": [],
-            "position": { "x": 200, "y": 60 },
-            "type": "passive",
-            "effects": [{ "type": "phase_bonus", "phase": "silver", "stat": "sapRegen", "value": 1, "valuePerRank": 1, "description": "+Sap/s in Silver" }],
-            "connections": ["mystic_veil"]
-        },
-        {
-            "id": "mystic_veil",
-            "name": "Mystic Veil",
-            "description": "Reduces damage taken during Silver phase.",
-            "branch": "silver",
-            "tier": 2,
-            "cost": 2,
-            "maxRank": 3,
-            "prerequisites": ["silver_insight"],
-            "position": { "x": 200, "y": 160 },
-            "type": "passive",
-            "effects": [{ "type": "phase_bonus", "phase": "silver", "stat": "damageReduction", "value": 0.05, "valuePerRank": 0.05, "description": "-Dmg% in Silver" }],
-            "connections": ["silver_insight", "omniscience"]
-        },
-        {
-            "id": "omniscience",
-            "name": "Omniscience",
-            "description": "During Silver phase, all spells deal bonus damage regardless of element.",
-            "branch": "silver",
-            "tier": 3,
-            "cost": 3,
-            "maxRank": 1,
-            "prerequisites": ["mystic_veil"],
-            "position": { "x": 200, "y": 260 },
-            "type": "ultimate",
-            "effects": [{ "type": "special", "value": "omniscience", "description": "+25% all spell Dmg in Silver" }],
-            "connections": ["mystic_veil"]
+            "id": "tactical_mind",
+            "name": "Tactical Mind",
+            "description": "Strategy and utility talents that enhance awareness, positioning, and team coordination.",
+            "category": "utility",
+            "talents": [
+                {
+                    "id": "scout",
+                    "name": "Scout",
+                    "description": "+1 to Perception checks and enemy intent is revealed one turn earlier than normal.",
+                    "unlockLevel": 1,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "stat_bonus",
+                            "stat": "perception",
+                            "value": 1,
+                            "description": "+1 Perception"
+                        },
+                        {
+                            "type": "special",
+                            "value": "early_intent",
+                            "turnsEarlier": 1,
+                            "description": "Reveal enemy intent 1 turn earlier"
+                        }
+                    ]
+                },
+                {
+                    "id": "opportunist",
+                    "name": "Opportunist",
+                    "description": "+2 to attack rolls against enemies that are flanked.",
+                    "unlockLevel": 3,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "conditional_bonus",
+                            "stat": "attackRolls",
+                            "value": 2,
+                            "condition": "target_flanked",
+                            "description": "+2 attack on flanked enemies"
+                        }
+                    ]
+                },
+                {
+                    "id": "trap_expert",
+                    "name": "Trap Expert",
+                    "description": "Place traps on the battlefield that deal 2d8 damage when an enemy triggers them.",
+                    "unlockLevel": 5,
+                    "type": "active",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "place_trap",
+                            "damage": "2d8",
+                            "triggerCondition": "enemy_enters",
+                            "description": "Place traps, 2d8 damage when triggered"
+                        }
+                    ]
+                },
+                {
+                    "id": "commander",
+                    "name": "Commander",
+                    "description": "After you defeat an enemy, all allies gain +1 to all rolls for 1 turn.",
+                    "unlockLevel": 7,
+                    "type": "passive",
+                    "effects": [
+                        {
+                            "type": "on_kill",
+                            "stat": "allRolls",
+                            "value": 1,
+                            "target": "all_allies",
+                            "duration": 1,
+                            "description": "Allies gain +1 to all rolls for 1 turn after your kill"
+                        }
+                    ]
+                },
+                {
+                    "id": "master_tactician",
+                    "name": "Master Tactician",
+                    "description": "At the start of combat, choose the initiative order for your entire party.",
+                    "unlockLevel": 9,
+                    "type": "active",
+                    "effects": [
+                        {
+                            "type": "special",
+                            "value": "master_tactician",
+                            "timing": "combat_start",
+                            "description": "Choose initiative order for party"
+                        }
+                    ]
+                }
+            ]
         }
-    ]
+    ],
+    "skills": {
+        "categories": [
+            {
+                "id": "combat",
+                "name": "Combat",
+                "skills": [
+                    {
+                        "id": "melee",
+                        "name": "Melee",
+                        "description": "Proficiency with close-range weapons including swords, axes, maces, and natural weapons.",
+                        "attribute": "strength"
+                    },
+                    {
+                        "id": "ranged",
+                        "name": "Ranged",
+                        "description": "Proficiency with long-range weapons including bows, crossbows, and thrown weapons.",
+                        "attribute": "dexterity"
+                    },
+                    {
+                        "id": "arcana",
+                        "name": "Arcana",
+                        "description": "Knowledge of magical theory, spell identification, and arcane phenomena.",
+                        "attribute": "intelligence"
+                    },
+                    {
+                        "id": "athletics",
+                        "name": "Athletics",
+                        "description": "Physical prowess for climbing, jumping, swimming, and feats of strength.",
+                        "attribute": "strength"
+                    }
+                ]
+            },
+            {
+                "id": "physical",
+                "name": "Physical",
+                "skills": [
+                    {
+                        "id": "stealth",
+                        "name": "Stealth",
+                        "description": "Ability to move unseen, hide effectively, and avoid detection.",
+                        "attribute": "dexterity"
+                    },
+                    {
+                        "id": "perception",
+                        "name": "Perception",
+                        "description": "Awareness of surroundings, spotting hidden objects, detecting traps, and noticing subtle details.",
+                        "attribute": "wisdom"
+                    },
+                    {
+                        "id": "survival",
+                        "name": "Survival",
+                        "description": "Wilderness knowledge including tracking, foraging, navigation, and understanding natural hazards.",
+                        "attribute": "wisdom"
+                    }
+                ]
+            },
+            {
+                "id": "mental",
+                "name": "Mental",
+                "skills": [
+                    {
+                        "id": "lore",
+                        "name": "Lore",
+                        "description": "Knowledge of history, legends, ancient civilizations, and the world's lore.",
+                        "attribute": "intelligence"
+                    },
+                    {
+                        "id": "medicine",
+                        "name": "Medicine",
+                        "description": "Understanding of anatomy, healing techniques, herbalism, and treating ailments.",
+                        "attribute": "wisdom"
+                    },
+                    {
+                        "id": "crafting",
+                        "name": "Crafting",
+                        "description": "Skill in creating, repairing, and modifying equipment, potions, and other items.",
+                        "attribute": "intelligence"
+                    }
+                ]
+            },
+            {
+                "id": "social",
+                "name": "Social",
+                "skills": [
+                    {
+                        "id": "persuasion",
+                        "name": "Persuasion",
+                        "description": "Ability to convince others through diplomacy, charm, deception, or logical argument.",
+                        "attribute": "charisma"
+                    },
+                    {
+                        "id": "intimidation",
+                        "name": "Intimidation",
+                        "description": "Ability to coerce, threaten, or frighten others into compliance.",
+                        "attribute": "charisma"
+                    }
+                ]
+            }
+        ],
+        "ranks": [
+            {
+                "rank": 0,
+                "name": "Untrained",
+                "modifier": -2
+            },
+            {
+                "rank": 1,
+                "name": "Novice",
+                "modifier": 0
+            },
+            {
+                "rank": 2,
+                "name": "Practiced",
+                "modifier": 2
+            },
+            {
+                "rank": 3,
+                "name": "Expert",
+                "modifier": 4
+            },
+            {
+                "rank": 4,
+                "name": "Master",
+                "modifier": 6
+            }
+        ],
+        "maxRank": 4,
+        "maxSkillsAtMaxRank": 2,
+        "totalSkillCount": 12
+    }
 }

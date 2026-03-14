@@ -1,48 +1,263 @@
 {
-    "version": "1.0.0",
-    "lastModified": "2026-02-09T00:00:00Z",
+    "version": "2.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
     "balance": {
         "sapCycle": {
-            "phaseDurationSeconds": 180,
-            "transitionDurationSeconds": 5,
-            "phases": ["blue", "crimson", "silver"]
+            "totalDays": 15,
+            "phases": [
+                {
+                    "name": "Crimson",
+                    "durationDays": 5,
+                    "order": 1,
+                    "modifiers": {
+                        "enemyDamageBonus": 0.10,
+                        "magicCostBonusDSP": 5,
+                        "healingDieStepChange": -1,
+                        "corruptionSaveDCBonus": 2,
+                        "shopPriceMultiplier": 1.20,
+                        "lootRateMultiplier": 0.90
+                    }
+                },
+                {
+                    "name": "Silver",
+                    "durationDays": 3,
+                    "order": 2,
+                    "modifiers": {
+                        "magicDamageDieStepChange": 1,
+                        "magicCostBonusDSP": -5,
+                        "critRange": [18, 19, 20],
+                        "dspDrainPerDay": -3,
+                        "rareEnemySpawn": true
+                    }
+                },
+                {
+                    "name": "Blue",
+                    "durationDays": 7,
+                    "order": 3,
+                    "modifiers": {
+                        "allSavesBonus": 2,
+                        "healingDieStepChange": 1,
+                        "dspRegenPerDay": 5,
+                        "guardRegenPerTurn": 1,
+                        "debuffDurationMultiplier": 0.50,
+                        "craftingBonus": 0.10,
+                        "diplomacyBonus": 2
+                    }
+                }
+            ]
         },
-        "player": {
-            "startingSap": 100,
-            "startingHp": 100,
-            "levelUpSapBonus": 15,
-            "levelUpHpBonus": 20,
-            "baseCritChance": 0.15,
-            "baseCritMultiplier": 1.5
+        "attributes": {
+            "list": ["Might", "Agility", "Resilience", "Insight", "Charisma"],
+            "pointsAtCreation": 8,
+            "minAtCreation": 0,
+            "maxAtCreation": 4,
+            "absoluteCap": 6
+        },
+        "derivedStats": {
+            "hp": {
+                "base": 20,
+                "perResilience": 5,
+                "formula": "20 + (Resilience x 5)"
+            },
+            "guard": {
+                "base": 5,
+                "bonusSource": "Armor",
+                "formula": "5 + Armor"
+            },
+            "speed": {
+                "base": 4,
+                "bonusSource": "Agility modifier",
+                "formula": "4 + Agility modifier"
+            },
+            "evasion": {
+                "base": 10,
+                "bonusSources": ["Agility", "Armor"],
+                "formula": "10 + Agility + Armor"
+            },
+            "carry": {
+                "base": 10,
+                "perMight": 5,
+                "formula": "10 + (Might x 5)"
+            }
         },
         "combat": {
-            "turnTimeLimitSeconds": 30,
-            "maxCombatantsPerSide": 4,
-            "escapeChance": 0.5,
-            "fleeSpeedRequirement": 2
+            "type": "turn-based tactical",
+            "actionPoints": {
+                "base": 2,
+                "bonusThreshold": {
+                    "attribute": "Agility",
+                    "minimum": 4,
+                    "bonusAP": 1
+                }
+            },
+            "actions": {
+                "move": { "apCost": 1 },
+                "attack": { "apCost": 1 },
+                "tier1Spell": { "apCost": 1, "dspCost": 5 },
+                "tier2Spell": { "apCost": 2, "dspCostMin": 10, "dspCostMax": 15 },
+                "tier3Spell": { "apCost": 3, "dspCostMin": 20, "dspCostMax": 30 },
+                "useItem": { "apCost": 1 },
+                "defend": { "apCost": 1 }
+            },
+            "initiative": {
+                "formula": "d20 + Agility"
+            },
+            "attackRoll": {
+                "formula": "d20 + Attribute + Skill Rank vs Enemy Evasion (10 + Agility + Armor)"
+            },
+            "critical": {
+                "naturalRoll": 20,
+                "silverSapExpandedRange": [18, 19, 20]
+            },
+            "positioning": {
+                "highGround": { "attackBonus": 1 },
+                "flanking": { "attackBonus": 2 },
+                "cover": { "evasionBonus": 2 }
+            }
+        },
+        "guardSystem": {
+            "description": "Damage hits Guard first, then HP",
+            "passiveRegenPerTurn": 2,
+            "defendRegenPerTurn": 4,
+            "armorCaps": {
+                "light": 5,
+                "medium": 10,
+                "heavy": 15
+            }
+        },
+        "dsp": {
+            "name": "Domain Soul Pool",
+            "min": 0,
+            "max": 100,
+            "startingValue": 100,
+            "shared": true,
+            "thresholds": {
+                "healthy": { "min": 90, "max": 100 },
+                "stable": { "min": 70, "max": 89 },
+                "strained": {
+                    "min": 50,
+                    "max": 69,
+                    "effects": {
+                        "shopPriceIncrease": 0.10,
+                        "encounterRateIncrease": 0.10
+                    }
+                },
+                "crisis": { "min": 30, "max": 49 },
+                "catastrophic": { "min": 10, "max": 29 },
+                "imminentCollapse": { "min": 0, "max": 9 }
+            },
+            "recovery": {
+                "blueSapPerDay": 5,
+                "longRest": 10,
+                "questMin": 5,
+                "questMax": 15,
+                "silverSapUnbindingMin": 30,
+                "silverSapUnbindingMax": 60
+            }
         },
         "progression": {
-            "levelUpXpMultiplier": 1.5,
-            "skillPointsPerLevel": 2,
-            "maxLevel": 50
-        },
-        "difficulty": {
-            "easy": {
-                "damageMultiplier": 0.7,
-                "enemyHpMultiplier": 0.8,
-                "xpMultiplier": 1.2
+            "maxLevel": 10,
+            "xpThresholds": {
+                "1to2": 100,
+                "2to3": 250,
+                "3to4": 500,
+                "4to5": 850,
+                "5to6": 1300,
+                "6to7": 1900,
+                "7to8": 2600,
+                "8to9": 3500,
+                "9to10": 5000
             },
-            "normal": {
-                "damageMultiplier": 1.0,
-                "enemyHpMultiplier": 1.0,
-                "xpMultiplier": 1.0
-            },
-            "hard": {
-                "damageMultiplier": 1.3,
-                "enemyHpMultiplier": 1.5,
-                "xpMultiplier": 0.8
+            "perLevelRewards": {
+                "attributePoints": 1,
+                "hpBonus": 10,
+                "guardBonus": 5,
+                "skillRanks": 1,
+                "talents": 1
             }
+        },
+        "skillChecks": {
+            "formula": "d20 + Attribute + Skill Rank vs DC",
+            "difficultyClasses": {
+                "veryEasy": 8,
+                "easy": 10,
+                "moderate": 12,
+                "hard": 14,
+                "veryHard": 16,
+                "extremelyHard": 18,
+                "nearlyImpossible": 20
+            }
+        },
+        "criminality": {
+            "min": 0,
+            "max": 100,
+            "unit": "percent"
+        },
+        "party": {
+            "maxCompanions": 2,
+            "totalPartySize": 3,
+            "description": "Player + 2 companions max"
+        },
+        "equipment": {
+            "slots": [
+                "Main Hand",
+                "Off Hand",
+                "Armor",
+                "Trinket",
+                "Quick Slot 1",
+                "Quick Slot 2",
+                "Ammo"
+            ],
+            "totalSlots": 7
+        },
+        "crafting": {
+            "stations": [
+                "Bloomguard Forge",
+                "Emerald Coven Sanctum",
+                "Sapling Workshop"
+            ],
+            "totalStations": 3,
+            "blueSapSuccessBonus": 0.10
+        },
+        "magic": {
+            "maxSpellsKnown": 10
+        },
+        "statusEffects": {
+            "buffs": [
+                { "name": "Soul Shield", "type": "buff" },
+                { "name": "Blessed", "type": "buff" },
+                { "name": "Hastened", "type": "buff" },
+                { "name": "Regenerating", "type": "buff" }
+            ],
+            "debuffs": [
+                { "name": "Poisoned", "type": "debuff" },
+                { "name": "Bleeding", "type": "debuff" },
+                { "name": "Rooted", "type": "debuff" },
+                { "name": "Blinded", "type": "debuff" },
+                { "name": "Corrupted", "type": "debuff" },
+                { "name": "Slowed", "type": "debuff" }
+            ],
+            "controls": [
+                { "name": "Stunned", "type": "control" },
+                { "name": "Feared", "type": "control" }
+            ],
+            "totalCount": 12
+        },
+        "factionReputation": {
+            "min": -50,
+            "max": 50,
+            "totalFactions": 6,
+            "perFaction": true
         }
+    },
+    "performance": {
+        "targetResolution": "1920x1080",
+        "targetFPS": 60,
+        "maxRAM_MB": 200
+    },
+    "saveSystem": {
+        "autoSave": true,
+        "manualSlots": 3
     },
     "ui": {
         "damageNumberDuration": 1500,
