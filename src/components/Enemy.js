@@ -1,4 +1,4 @@
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * Enemy component — encapsulates a single enemy entity.

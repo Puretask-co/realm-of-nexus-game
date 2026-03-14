@@ -1,10 +1,18 @@
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 import dataManager from '../systems/DataManager.js';
 import SapCycleManager from '../systems/SapCycleManager.js';
 import AdvancedLightingSystem from '../systems/AdvancedLightingSystem.js';
 import AdvancedParticleSystem from '../systems/AdvancedParticleSystem.js';
 import AdvancedCameraSystem from '../systems/AdvancedCameraSystem.js';
 import PerformanceProfiler from '../systems/PerformanceProfiler.js';
+import { CombatSystem } from '../systems/CombatSystem.js';
+import { AISystem } from '../systems/AISystem.js';
+import { ProgressionSystem } from '../systems/ProgressionSystem.js';
+import { SpellSystem } from '../systems/SpellSystem.js';
+import CooldownManager from '../systems/CooldownManager.js';
+import SaveManager from '../systems/SaveManager.js';
+import DamageNumberRenderer from '../renderers/DamageNumberRenderer.js';
+import MinimapRenderer from '../renderers/MinimapRenderer.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -26,12 +34,26 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // ---- Systems ----
+        // ---- Core Systems ----
         this.sapCycle = new SapCycleManager(this);
         this.lighting = new AdvancedLightingSystem(this);
         this.particles = new AdvancedParticleSystem(this);
         this.cameraSystem = new AdvancedCameraSystem(this);
         this.profiler = new PerformanceProfiler(this);
+
+        // ---- Gameplay Systems (singletons) ----
+        this.combatSystem = CombatSystem.getInstance();
+        this.aiSystem = AISystem.getInstance();
+        this.progression = ProgressionSystem.getInstance();
+        this.spellSystem = SpellSystem.getInstance();
+
+        // ---- Utilities ----
+        this.cooldowns = new CooldownManager();
+        this.saveManager = new SaveManager();
+
+        // ---- Renderers ----
+        this.damageNumbers = new DamageNumberRenderer(this);
+        this.minimap = new MinimapRenderer(this);
 
         // ---- World ----
         this._buildWorld();
@@ -63,6 +85,12 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-F2', () => {
             this.scene.switch('EditorScene');
         });
+
+        // ---- Minimap binding ----
+        this.minimap.bind(this.player, this.enemies, null, this.cameras.main);
+
+        // ---- Auto-save ----
+        this.saveManager.enableAutoSave(60000);
 
         // ---- EventBus listeners ----
         this._unsubs = [
@@ -516,6 +544,24 @@ export default class GameScene extends Phaser.Scene {
         this.cameraSystem.update(delta);
         this.profiler.end('camera');
 
+        // Combat & spells
+        this.profiler.begin('combat');
+        this.combatSystem.update(delta);
+        this.spellSystem.update(delta);
+        this.cooldowns.update(delta);
+        this.profiler.end('combat');
+
+        // AI
+        this.profiler.begin('ai');
+        this.aiSystem.update(delta, [this.player]);
+        this.profiler.end('ai');
+
+        // Damage numbers
+        this.damageNumbers.update(delta);
+
+        // Minimap
+        this.minimap.update(delta);
+
         // Sap regeneration
         this._regenSap(delta);
 
@@ -565,6 +611,9 @@ export default class GameScene extends Phaser.Scene {
         this.particles.shutdown();
         this.cameraSystem.shutdown();
         this.profiler.shutdown();
+        this.damageNumbers.shutdown();
+        this.minimap.destroy();
+        this.saveManager.shutdown();
         this.scene.stop('UIScene');
     }
 }

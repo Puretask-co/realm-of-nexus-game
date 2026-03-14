@@ -1,4 +1,4 @@
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * 2D lighting engine layered on top of Phaser's renderer.

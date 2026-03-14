@@ -1,4 +1,4 @@
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * SaveManager — Handles game save/load to localStorage.

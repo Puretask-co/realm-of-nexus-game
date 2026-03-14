@@ -18,14 +18,17 @@ After thorough analysis comparing our current Phaser.js stack against Unity and 
 
 ```
 src/
-├── main.js                     # Entry point — Phaser.Game config
+├── main.js                     # Entry point — Phaser.Game config + pipeline registration
+├── index.js                    # Library export hub (re-exports all systems)
 ├── scenes/
 │   ├── BootScene.js            # Asset loading, placeholder generation
 │   ├── GameScene.js            # Main gameplay orchestration
 │   ├── EditorScene.js          # Visual level editor (F2)
 │   └── UIScene.js              # HUD overlay (parallel scene)
-├── systems/
+├── core/
 │   ├── EventBus.js             # Singleton event bus (decoupled comms)
+│   └── GameConfig.js           # Global game configuration
+├── systems/
 │   ├── DataManager.js          # JSON data loading, validation, hot-reload
 │   ├── SapCycleManager.js      # Phase cycle: blue → crimson → silver
 │   ├── AdvancedLightingSystem.js  # Render-texture 2D lighting
@@ -33,30 +36,57 @@ src/
 │   ├── AdvancedCameraSystem.js    # Smooth follow, shake, cinematics
 │   ├── PerformanceProfiler.js     # FPS/memory/timer overlay (F3)
 │   ├── CooldownManager.js        # Centralised cooldown tracker
-│   └── SaveManager.js            # localStorage save/load with slots
+│   ├── SaveManager.js            # localStorage save/load with slots
+│   ├── CombatSystem.js           # Damage calculation, phase modifiers
+│   ├── AISystem.js                # State-machine enemy behaviours
+│   ├── SpellSystem.js             # Spell casting, channelling, effects
+│   ├── ProgressionSystem.js       # XP, levelling, stat growth, unlocks
+│   ├── QuestSystem.js             # Quest tracking and objectives
+│   ├── DialogueSystem.js          # NPC dialogue trees
+│   ├── PlayerClassSystem.js       # Class selection and abilities
+│   ├── AudioManager.js            # Sound effects and music
+│   ├── AdvancedAnimationSystem.js # Sprite animation state machines
+│   ├── CameraZoneSystem.js        # Zone-based camera behaviour
+│   ├── CSVDataLoader.js           # CSV import/export for data
+│   ├── HotReloadSystem.js         # Dev-mode data hot-reloading
+│   ├── ParticleCollisionSystem.js # Particle-world collision
+│   └── SceneLoader.js             # Scene file loading
 ├── integration/
 │   ├── SpellVFXIntegration.js  # Bridges spells → particles + lights
-│   ├── CombatSystem.js         # Damage calculation, phase modifiers
-│   ├── ProgressionSystem.js    # XP, levelling, stat growth, unlocks
-│   └── AISystem.js             # State-machine enemy behaviours
+│   ├── SpellParticleIntegration.js # Maps spells to particle effects
+│   ├── SapCycleLightingIntegration.js # Syncs phases to lighting
+│   └── CombatCameraIntegration.js # Combat events → camera reactions
 ├── components/
 │   ├── Player.js               # Player entity (stats, movement, dash)
 │   ├── Enemy.js                # Enemy entity (health bar, AI state)
 │   ├── NPC.js                  # NPC with dialogue, quests, shops
 │   └── Projectile.js           # Spell projectile (homing, AOE, trail)
 ├── configs/
-│   ├── LightingPresets.js      # Per-location + per-phase light setups
-│   ├── ParticlePresets.js      # Spell, combat, environment particles
-│   └── CameraPresets.js        # Follow modes, shake, cinematics
+│   ├── lightingPresets.js      # Per-location + per-phase light setups
+│   ├── particlePresets.js      # Spell, combat, environment particles
+│   ├── cinematicPresets.js     # Camera cinematic sequences
+│   └── sceneFormatSpec.js      # Scene file format specification
 ├── pipelines/
 │   ├── NormalMapPipeline.js    # WebGL normal-mapped sprite lighting
 │   └── PostProcessingPipeline.js  # Vignette, bloom, color grading
 ├── renderers/
 │   ├── MinimapRenderer.js      # Real-time minimap with fog of war
 │   └── DamageNumberRenderer.js # Floating combat text (pooled)
-└── schemas/
-    ├── spellSchema.js          # Validation: spells + enemies
-    └── itemSchema.js           # Validation: items + locations + scenes
+├── effects/
+│   └── ScreenSpaceEffects.js   # Full-screen visual effects
+├── schemas/
+│   ├── spellSchema.js          # Validation: spells
+│   ├── enemySchema.js          # Validation: enemies
+│   ├── itemSchema.js           # Validation: items
+│   └── locationSchema.js       # Validation: locations
+└── ui/
+    ├── UIFramework.js          # Base UI panel system
+    ├── HUDPanel.js             # In-game HUD
+    ├── InventoryPanel.js       # Inventory screen
+    ├── SkillTreePanel.js       # Skill tree / abilities
+    ├── MainMenuPanel.js        # Main menu
+    ├── InspectorPanel.js       # Editor property inspector
+    └── HotReloadOverlay.js     # Dev-mode reload notifications
 
 data/
 ├── config.json                 # Balance tuning (hot-reloadable)
@@ -65,6 +95,35 @@ data/
 ├── items.json                  # 5 items (consumable, material, equipment)
 └── locations.json              # 6 world locations with connections
 ```
+
+---
+
+## System Wiring
+
+GameScene initializes and orchestrates all systems:
+
+**Core systems** (instantiated directly):
+- `SapCycleManager` — phase cycle driver
+- `AdvancedLightingSystem` — 2D lighting engine
+- `AdvancedParticleSystem` — particle effects
+- `AdvancedCameraSystem` — camera control
+- `PerformanceProfiler` — performance overlay
+
+**Gameplay systems** (singletons via `getInstance()`):
+- `CombatSystem` — damage calculation and combat flow
+- `AISystem` — enemy behaviour state machines
+- `ProgressionSystem` — XP, levelling, stat growth
+- `SpellSystem` — spell casting and effects
+
+**Utilities** (instantiated directly):
+- `CooldownManager` — spell/ability cooldown tracking
+- `SaveManager` — save/load with auto-save
+- `DamageNumberRenderer` — floating combat text
+- `MinimapRenderer` — real-time minimap
+
+**Pipelines** (registered in Phaser config):
+- `NormalMapPipeline` — normal-mapped sprite lighting
+- `PostProcessingPipeline` — vignette, bloom, color grading
 
 ---
 
@@ -122,7 +181,7 @@ A complete in-game level editor accessible via F2.
 
 ### Tool 3: Advanced Lighting System
 
-**Files:** `AdvancedLightingSystem.js`, `LightingPresets.js`, `NormalMapPipeline.js`
+**Files:** `AdvancedLightingSystem.js`, `lightingPresets.js`, `NormalMapPipeline.js`
 
 Render-texture based 2D lighting with multiplicative blending.
 
@@ -142,12 +201,11 @@ const light = lightingSystem.addLight(400, 300, {
   type: 'point', color: 0xff6644, intensity: 1.2, radius: 150,
   flicker: { speed: 3, amount: 0.1 }
 });
-lightingSystem.applyPreset(LightingPresets.get('crystal_caverns'));
 ```
 
 ### Tool 4: Advanced Particle System
 
-**Files:** `AdvancedParticleSystem.js`, `ParticlePresets.js`
+**Files:** `AdvancedParticleSystem.js`, `particlePresets.js`
 
 Custom particle engine with object pooling for zero GC pressure.
 
@@ -163,12 +221,11 @@ Custom particle engine with object pooling for zero GC pressure.
 **How to use:**
 ```js
 particles.burst(x, y, 'fireball', { count: 20 });
-particles.createEmitter(x, y, ParticlePresets.get('fireflies'));
 ```
 
 ### Tool 5: Advanced Camera System
 
-**Files:** `AdvancedCameraSystem.js`, `CameraPresets.js`
+**Files:** `AdvancedCameraSystem.js`, `cinematicPresets.js`
 
 Smooth follow, shake, and cinematic camera control.
 
@@ -184,9 +241,8 @@ Smooth follow, shake, and cinematic camera control.
 
 **How to use:**
 ```js
-cameraSystem.startFollow(player, CameraPresets.get('follow_exploration'));
+cameraSystem.startFollow(player, { lerpX: 0.08, lerpY: 0.08 });
 cameraSystem.shake('explosion');
-cameraSystem.playCinematic(CameraPresets.get('cinematic_boss_reveal'));
 ```
 
 ### Tool 6: Performance Profiler
@@ -217,7 +273,7 @@ profiler.end('combat');
 
 ## System Communication
 
-All systems are decoupled via the **EventBus** singleton. No system directly references another.
+All systems are decoupled via the **EventBus** singleton (`src/core/EventBus.js`). No system directly references another.
 
 Key events:
 | Event | Emitter | Listeners |

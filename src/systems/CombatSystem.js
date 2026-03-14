@@ -1,5 +1,5 @@
 import { EventBus } from '../core/EventBus.js';
-import { SapCycleManager } from './SapCycleManager.js';
+import SapCycleManager from './SapCycleManager.js';
 
 /**
  * CombatSystem - Turn-based tactical combat for Verdance.

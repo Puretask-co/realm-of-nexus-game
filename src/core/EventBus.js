@@ -56,25 +56,25 @@ export class EventBus {
     };
   }
 
-  emit(event, data = null) {
+  emit(event, ...args) {
     // Regular listeners
     if (this.listeners.has(event)) {
-      for (const { callback, context } of this.listeners.get(event)) {
-        callback.call(context, data, event);
+      for (const { callback, context } of [...this.listeners.get(event)]) {
+        callback.apply(context, args);
       }
     }
 
     // Once listeners
     if (this.onceListeners.has(event)) {
       for (const { callback, context } of this.onceListeners.get(event)) {
-        callback.call(context, data, event);
+        callback.apply(context, args);
       }
       this.onceListeners.delete(event);
     }
 
     // Wildcard listeners
     for (const callback of this.wildcardListeners) {
-      callback(event, data);
+      callback(event, ...args);
     }
   }
 
@@ -85,4 +85,4 @@ export class EventBus {
   }
 }
 
-export default EventBus;
+export default EventBus.getInstance();

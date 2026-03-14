@@ -1,4 +1,4 @@
-import EventBus from './EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * CooldownManager — Centralised cooldown tracker for spells,

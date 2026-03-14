@@ -1,5 +1,5 @@
 import dataManager from '../systems/DataManager.js';
-import EventBus from '../systems/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * BootScene — First scene loaded.

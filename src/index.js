@@ -8,7 +8,7 @@ export { EventBus } from './core/EventBus.js';
 export { GameConfig } from './core/GameConfig.js';
 
 // Tool 1: Data-Driven Architecture
-export { DataManager } from './systems/DataManager.js';
+export { default as DataManager } from './systems/DataManager.js';
 export { CSVDataLoader } from './systems/CSVDataLoader.js';
 
 // Tool 2: Visual Level Editor
@@ -18,16 +18,16 @@ export { HotReloadOverlay } from './ui/HotReloadOverlay.js';
 export { HotReloadSystem } from './systems/HotReloadSystem.js';
 
 // Tool 3: Advanced Lighting System
-export { AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
+export { default as AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
 export { SapCycleLightingIntegration } from './integration/SapCycleLightingIntegration.js';
 
 // Tool 4: Advanced Particle System
-export { AdvancedParticleSystem } from './systems/AdvancedParticleSystem.js';
+export { default as AdvancedParticleSystem } from './systems/AdvancedParticleSystem.js';
 export { ParticleCollisionSystem } from './systems/ParticleCollisionSystem.js';
 export { SpellParticleIntegration } from './integration/SpellParticleIntegration.js';
 
 // Tool 5: Advanced Camera System
-export { AdvancedCameraSystem } from './systems/AdvancedCameraSystem.js';
+export { default as AdvancedCameraSystem } from './systems/AdvancedCameraSystem.js';
 export { CombatCameraIntegration } from './integration/CombatCameraIntegration.js';
 export { ScreenSpaceEffects } from './effects/ScreenSpaceEffects.js';
 export { CameraZoneSystem } from './systems/CameraZoneSystem.js';
@@ -55,23 +55,28 @@ export { MainMenuPanel } from './ui/MainMenuPanel.js';
 export { PlayerClassSystem } from './systems/PlayerClassSystem.js';
 
 // Game Systems
-export { SapCycleManager } from './systems/SapCycleManager.js';
-export { CooldownManager } from './systems/CooldownManager.js';
+export { default as SapCycleManager } from './systems/SapCycleManager.js';
+export { default as CooldownManager } from './systems/CooldownManager.js';
 export { CombatSystem } from './systems/CombatSystem.js';
 export { SpellSystem } from './systems/SpellSystem.js';
 export { ProgressionSystem } from './systems/ProgressionSystem.js';
 export { AISystem } from './systems/AISystem.js';
-export { SaveManager } from './systems/SaveManager.js';
-export { PerformanceProfiler } from './systems/PerformanceProfiler.js';
+export { default as SaveManager } from './systems/SaveManager.js';
+export { default as PerformanceProfiler } from './systems/PerformanceProfiler.js';
 
 // Components
-export { Player } from './components/Player.js';
-export { Enemy } from './components/Enemy.js';
-export { NPC } from './components/NPC.js';
-export { Projectile } from './components/Projectile.js';
+export { default as Player } from './components/Player.js';
+export { default as Enemy } from './components/Enemy.js';
+export { default as NPC } from './components/NPC.js';
+export { default as Projectile } from './components/Projectile.js';
 
 // Pipelines
-export { NormalMapPipeline } from './pipelines/NormalMapPipeline.js';
+export { default as NormalMapPipeline } from './pipelines/NormalMapPipeline.js';
+export { default as PostProcessingPipeline } from './pipelines/PostProcessingPipeline.js';
+
+// Renderers
+export { default as DamageNumberRenderer } from './renderers/DamageNumberRenderer.js';
+export { default as MinimapRenderer } from './renderers/MinimapRenderer.js';
 
 // Schemas
 export { spellSchema } from './schemas/spellSchema.js';

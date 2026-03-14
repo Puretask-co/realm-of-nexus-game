@@ -1,5 +1,5 @@
 import { EventBus } from '../core/EventBus.js';
-import { SapCycleManager } from './SapCycleManager.js';
+import SapCycleManager from './SapCycleManager.js';
 
 /**
  * AISystem - Enemy behavior state machine with 5 behavior patterns.
