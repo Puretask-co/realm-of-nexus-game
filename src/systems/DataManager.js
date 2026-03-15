@@ -24,7 +24,11 @@ class DataManager {
             quests: [],
             dialogues: { characters: [], dialogues: [] },
             skills: [],
-            config: {}
+            config: {},
+            classes: { classes: [] },
+            ancestries: { ancestries: [] },
+            story: { eras: [], acts: [] },
+            veilkeepers: { veilkeepers: [] }
         };
 
         this.schemas = {
@@ -65,7 +69,7 @@ class DataManager {
         console.log('[DataManager] Loading game data...');
 
         try {
-            const [spellsData, enemiesData, itemsData, locationsData, configData, questsData, dialoguesData, skillsData] =
+            const [spellsData, enemiesData, itemsData, locationsData, configData, questsData, dialoguesData, skillsData, classesData, ancestriesData, storyData, veilkeepersData] =
                 await Promise.all([
                     this._loadJSON('./data/spells.json'),
                     this._loadJSON('./data/enemies.json'),
@@ -74,7 +78,11 @@ class DataManager {
                     this._loadJSON('./data/config.json'),
                     this._loadJSON('./data/quests.json').catch(() => ({ quests: [] })),
                     this._loadJSON('./data/dialogues.json').catch(() => ({ characters: [], dialogues: [] })),
-                    this._loadJSON('./data/skills.json').catch(() => ({ skills: [] }))
+                    this._loadJSON('./data/skills.json').catch(() => ({ skills: [] })),
+                    this._loadJSON('./data/classes.json').catch(() => ({ classes: [] })),
+                    this._loadJSON('./data/ancestries.json').catch(() => ({ ancestries: [] })),
+                    this._loadJSON('./data/story.json').catch(() => ({ eras: [], acts: [] })),
+                    this._loadJSON('./data/veilkeepers.json').catch(() => ({ veilkeepers: [] }))
                 ]);
 
             this.data.spells = spellsData.spells || [];
@@ -85,6 +93,10 @@ class DataManager {
             this.data.dialogues = dialoguesData;
             this.data.skills = skillsData.skills || [];
             this.data.config = configData;
+            this.data.classes = classesData;
+            this.data.ancestries = ancestriesData;
+            this.data.story = storyData;
+            this.data.veilkeepers = veilkeepersData;
 
             this.validateAllData();
             this.buildCaches();
@@ -98,6 +110,10 @@ class DataManager {
             console.log(`  - ${this.data.quests.length} quests`);
             console.log(`  - ${(this.data.dialogues.dialogues || []).length} dialogues`);
             console.log(`  - ${this.data.skills.length} skills`);
+            console.log(`  - ${(this.data.classes.classes || []).length} classes`);
+            console.log(`  - ${(this.data.ancestries.ancestries || []).length} ancestries`);
+            console.log(`  - ${(this.data.story.eras || []).length} story eras`);
+            console.log(`  - ${(this.data.veilkeepers.veilkeepers || []).length} veilkeepers`);
 
             if (this.watchForChanges) {
                 this.startWatching();
@@ -295,6 +311,30 @@ class DataManager {
     getConfig(path) {
         return path.split('.').reduce((obj, key) => obj?.[key], this.data.config);
     }
+
+    // ---- Classes ----
+    getClassData() { return this.data.classes; }
+    getAllClasses() { return this.data.classes.classes || []; }
+    getClassById(id) { return (this.data.classes.classes || []).find(c => c.id === id) || null; }
+    getClassTierProgression() { return this.data.classes.tierProgression || {}; }
+    getMulticlassingRules() { return this.data.classes.multiclassing || {}; }
+
+    // ---- Ancestries ----
+    getAncestryData() { return this.data.ancestries; }
+    getAllAncestries() { return this.data.ancestries.ancestries || []; }
+    getAncestryById(id) { return (this.data.ancestries.ancestries || []).find(a => a.id === id) || null; }
+    getAvailableAncestries() { return (this.data.ancestries.ancestries || []).filter(a => a.availableAtStart !== false); }
+
+    // ---- Story ----
+    getStoryData() { return this.data.story; }
+    getAllEras() { return this.data.story.eras || []; }
+    getEraById(id) { return (this.data.story.eras || []).find(e => e.id === id) || null; }
+    getAllActs() { return this.data.story.acts || []; }
+
+    // ---- Veilkeepers ----
+    getVeilkeeperData() { return this.data.veilkeepers; }
+    getAllVeilkeepers() { return this.data.veilkeepers.veilkeepers || []; }
+    getVeilkeeperById(id) { return (this.data.veilkeepers.veilkeepers || []).find(v => v.id === id) || null; }
 
     // ----------------------------------------------------------------
     // Hot-reload
