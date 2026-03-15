@@ -1,20 +1,25 @@
 import { EventBus } from '../core/EventBus.js';
+import dataManager from './DataManager.js';
 
 /**
- * PlayerClassSystem — Defines the 4 player classes of Verdance.
+ * PlayerClassSystem — Rewired to consume classes.json with Verdance class names.
+ *
+ * 5 Verdance classes (from classes.json):
+ *   Bloomguard     — Tank (Resilience-focused)
+ *   Thornbinder    — Rogue (Agility-focused)
+ *   Emerald Mystic — Caster/Healer (Insight-focused)
+ *   Wildkin Ranger — Ranged DPS (Agility/Might)
+ *   Sporecaller    — Debuffer/Controller (Resilience/Insight)
  *
  * Each class has:
- *  - Unique base stats and stat growth rates
- *  - Starting spells and class-exclusive spells
- *  - Passive abilities that modify gameplay
- *  - A class-specific ultimate ability
- *  - Sap Phase affinity (bonus during a specific phase)
+ *   - Verdance attributes (Might, Agility, Resilience, Insight, Charisma)
+ *   - Starting HP, Guard, and AP
+ *   - Starting spells and class abilities at levels 1, 3, 7, and ultimate at 10
+ *   - A talent tree with 5 nodes
+ *   - Pure and Blighted variants
+ *   - Preferred weapons and armor
  *
- * Classes:
- *  TEMPORAL_MAGE  — Blue Phase affinity, ranged caster, time manipulation
- *  CRIMSON_BERSERKER — Crimson Phase affinity, melee bruiser, fire & fury
- *  SILVER_WARDEN  — Silver Phase affinity, tank/support, shields & arcane
- *  VERDANT_DRUID  — Balanced affinity, healer/hybrid, nature & life
+ * Also supports legacy 4 classes for backwards compatibility.
  */
 export class PlayerClassSystem {
   static instance = null;
@@ -29,254 +34,97 @@ export class PlayerClassSystem {
     this.eventBus = EventBus.getInstance();
     this.currentClass = null;
     this.classDefinitions = new Map();
-    this.registerAllClasses();
+    this.tierProgression = {};
+    this.multiclassingRules = {};
+    this.pureBlightedVariant = null; // 'pure' or 'blighted'
+
+    // Load from data
+    this._loadFromData();
+
+    // Listen for data reloads
+    this.eventBus.on('data-reloaded', () => this._loadFromData());
+
     PlayerClassSystem.instance = this;
   }
 
-  registerAllClasses() {
-    // ═══════════════════════════════════════════════════════════════
-    // TEMPORAL MAGE — Blue Phase Specialist
-    // ═══════════════════════════════════════════════════════════════
-    this.classDefinitions.set('temporal_mage', {
-      id: 'temporal_mage',
-      name: 'Temporal Mage',
-      description: 'Masters of time and Blue Sap, Temporal Mages warp reality with devastating ranged spells. Fragile but lethal.',
-      phaseAffinity: 'blue',
-      sprite: 'class_temporal_mage',
-      color: 0x4488ff,
+  /**
+   * Load class definitions from classes.json via DataManager.
+   */
+  _loadFromData() {
+    const classData = dataManager.getClassData?.() || {};
+    const classes = classData.classes || [];
+    this.tierProgression = classData.tierProgression || {};
+    this.multiclassingRules = classData.multiclassing || {};
 
-      baseStats: {
-        hp: 80, maxHp: 80,
-        sap: 150, maxSap: 150,
-        atk: 6, def: 3, agi: 7, mag: 15,
-        speed: 190,
-        critChance: 0.08, critDamage: 0.3,
-        dodge: 0.04, block: 0,
-        sapRegenRate: 8
+    this.classDefinitions.clear();
+
+    for (const cls of classes) {
+      this.classDefinitions.set(cls.id, cls);
+    }
+
+    // If no classes loaded from JSON, register legacy fallbacks
+    if (this.classDefinitions.size === 0) {
+      this._registerLegacyClasses();
+    }
+
+    console.log(`[PlayerClassSystem] Loaded ${this.classDefinitions.size} classes from data`);
+  }
+
+  /**
+   * Legacy fallback classes (old 4-class system).
+   */
+  _registerLegacyClasses() {
+    const legacy = [
+      {
+        id: 'bloomguard', name: 'Bloomguard', role: 'Tank',
+        description: 'Front-line protector channeling the Verdance\'s great trees.',
+        baseStats: { might: 3, agility: 0, resilience: 4, insight: 1, charisma: 1 },
+        startingHP: 45, startingGuard: 10, baseAP: 3,
+        startingSpells: ['soul_shield', 'verdant_grasp'],
+        classAbilities: { level1: [] }, talentTree: { id: 'guardians_oath' },
+        preferredWeapons: ['mace', 'sword_and_shield'], preferredArmor: 'heavy'
       },
-
-      statGrowth: {
-        hp: 8, maxHp: 8,
-        sap: 12, maxSap: 12,
-        atk: 1, def: 1, agi: 1, mag: 3,
-        critChance: 0.005, dodge: 0.002
+      {
+        id: 'thornbinder', name: 'Thornbinder', role: 'Rogue',
+        description: 'Shadow operative who uses stealth and precision strikes.',
+        baseStats: { might: 1, agility: 4, resilience: 1, insight: 2, charisma: 1 },
+        startingHP: 30, startingGuard: 3, baseAP: 4,
+        startingSpells: ['shadow_step', 'thorn_volley'],
+        classAbilities: { level1: [] }, talentTree: { id: 'tactical_mind' },
+        preferredWeapons: ['dagger', 'shortbow'], preferredArmor: 'light'
       },
-
-      startingSpells: ['temporal_bolt', 'sap_surge'],
-      classSpells: [
-        'temporal_bolt', 'chrono_freeze', 'time_rewind',
-        'temporal_storm', 'sap_surge', 'blink',
-        'arcane_missiles', 'temporal_rift'
-      ],
-      ultimateSpell: 'temporal_rift',
-
-      passives: [
-        {
-          id: 'time_dilation',
-          name: 'Time Dilation',
-          description: 'Spell cooldowns reduced by 15% during Blue Phase.',
-          effect: { type: 'cooldown_reduction', value: 0.15, condition: 'blue_phase' }
-        },
-        {
-          id: 'sap_attunement',
-          name: 'Sap Attunement',
-          description: 'Sap regeneration increased by 25%.',
-          effect: { type: 'sap_regen_bonus', value: 0.25 }
-        },
-        {
-          id: 'temporal_echo',
-          name: 'Temporal Echo',
-          description: 'Offensive spells have a 10% chance to cast twice.',
-          effect: { type: 'double_cast_chance', value: 0.10 },
-          unlockLevel: 10
-        }
-      ],
-
-      resistances: { temporal: 0.2, void: -0.1, fire: -0.15 }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // CRIMSON BERSERKER — Crimson Phase Specialist
-    // ═══════════════════════════════════════════════════════════════
-    this.classDefinitions.set('crimson_berserker', {
-      id: 'crimson_berserker',
-      name: 'Crimson Berserker',
-      description: 'Fueled by rage and Crimson Sap, Berserkers deal massive melee damage. Their fury grows as their health drops.',
-      phaseAffinity: 'crimson',
-      sprite: 'class_crimson_berserker',
-      color: 0xff4422,
-
-      baseStats: {
-        hp: 130, maxHp: 130,
-        sap: 80, maxSap: 80,
-        atk: 18, def: 6, agi: 10, mag: 4,
-        speed: 220,
-        critChance: 0.10, critDamage: 0.5,
-        dodge: 0.03, block: 0.05,
-        sapRegenRate: 4
+      {
+        id: 'emerald_mystic', name: 'Emerald Mystic', role: 'Caster/Healer',
+        description: 'Soul magic specialist who channels the Sap for healing and destruction.',
+        baseStats: { might: 0, agility: 1, resilience: 1, insight: 4, charisma: 3 },
+        startingHP: 28, startingGuard: 2, baseAP: 3,
+        startingSpells: ['verdant_bloom', 'verdant_heal'],
+        classAbilities: { level1: [] }, talentTree: { id: 'soul_magic_mastery' },
+        preferredWeapons: ['staff', 'wand'], preferredArmor: 'light'
       },
-
-      statGrowth: {
-        hp: 18, maxHp: 18,
-        sap: 4, maxSap: 4,
-        atk: 3, def: 2, agi: 2, mag: 0.5,
-        critChance: 0.008, critDamage: 0.03
+      {
+        id: 'wildkin_ranger', name: 'Wildkin Ranger', role: 'Ranged DPS',
+        description: 'Nature-bonded ranger with beast companion and ranged mastery.',
+        baseStats: { might: 2, agility: 3, resilience: 1, insight: 2, charisma: 1 },
+        startingHP: 34, startingGuard: 4, baseAP: 3,
+        startingSpells: ['thorn_volley', 'wind_arrow'],
+        classAbilities: { level1: [] }, talentTree: { id: 'verdant_bond' },
+        preferredWeapons: ['longbow', 'crossbow'], preferredArmor: 'medium'
       },
+      {
+        id: 'sporecaller', name: 'Sporecaller', role: 'Debuffer/Controller',
+        description: 'Decay magic user who weakens enemies and controls the battlefield.',
+        baseStats: { might: 0, agility: 1, resilience: 3, insight: 3, charisma: 2 },
+        startingHP: 32, startingGuard: 5, baseAP: 3,
+        startingSpells: ['spore_cloud', 'root_snare'],
+        classAbilities: { level1: [] }, talentTree: { id: 'martial_prowess' },
+        preferredWeapons: ['staff', 'sickle'], preferredArmor: 'medium'
+      }
+    ];
 
-      startingSpells: ['crimson_flare', 'flame_dash'],
-      classSpells: [
-        'crimson_flare', 'flame_dash', 'blazing_strike',
-        'inferno_slam', 'blood_rage', 'fire_whirl',
-        'magma_eruption', 'crimson_apocalypse'
-      ],
-      ultimateSpell: 'crimson_apocalypse',
-
-      passives: [
-        {
-          id: 'berserker_rage',
-          name: 'Berserker Rage',
-          description: 'Attack damage increases by up to 40% as HP drops below 50%.',
-          effect: { type: 'low_hp_damage_bonus', value: 0.40, threshold: 0.5 }
-        },
-        {
-          id: 'crimson_fury',
-          name: 'Crimson Fury',
-          description: 'Each kill restores 10% max HP and boosts attack speed for 3s.',
-          effect: { type: 'on_kill_heal', value: 0.10, duration: 3 }
-        },
-        {
-          id: 'unstoppable',
-          name: 'Unstoppable',
-          description: 'Cannot be slowed or stunned during Crimson Phase.',
-          effect: { type: 'cc_immunity', condition: 'crimson_phase' },
-          unlockLevel: 10
-        }
-      ],
-
-      resistances: { fire: 0.25, nature: -0.1, ice: -0.2 }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // SILVER WARDEN — Silver Phase Specialist
-    // ═══════════════════════════════════════════════════════════════
-    this.classDefinitions.set('silver_warden', {
-      id: 'silver_warden',
-      name: 'Silver Warden',
-      description: 'Arcane guardians channeling Silver Sap into impenetrable shields. They protect allies and punish aggressors with reflected damage.',
-      phaseAffinity: 'silver',
-      sprite: 'class_silver_warden',
-      color: 0xccccff,
-
-      baseStats: {
-        hp: 120, maxHp: 120,
-        sap: 110, maxSap: 110,
-        atk: 10, def: 12, agi: 5, mag: 10,
-        speed: 170,
-        critChance: 0.04, critDamage: 0.2,
-        dodge: 0.02, block: 0.15,
-        sapRegenRate: 6
-      },
-
-      statGrowth: {
-        hp: 14, maxHp: 14,
-        sap: 8, maxSap: 8,
-        atk: 1.5, def: 3, agi: 1, mag: 2,
-        block: 0.01, dodge: 0.001
-      },
-
-      startingSpells: ['silver_shield', 'arcane_bolt'],
-      classSpells: [
-        'silver_shield', 'arcane_bolt', 'reflective_ward',
-        'holy_smite', 'sanctuary', 'silver_chains',
-        'purification', 'silver_nova'
-      ],
-      ultimateSpell: 'silver_nova',
-
-      passives: [
-        {
-          id: 'aegis_mastery',
-          name: 'Aegis Mastery',
-          description: 'Shield effects are 30% stronger and last 2s longer.',
-          effect: { type: 'shield_bonus', value: 0.30, durationBonus: 2 }
-        },
-        {
-          id: 'damage_reflection',
-          name: 'Damage Reflection',
-          description: 'While shielded, reflect 15% of damage back to attackers.',
-          effect: { type: 'damage_reflect', value: 0.15 }
-        },
-        {
-          id: 'silver_resonance',
-          name: 'Silver Resonance',
-          description: 'During Silver Phase, all allies gain 10% damage reduction.',
-          effect: { type: 'party_damage_reduction', value: 0.10, condition: 'silver_phase' },
-          unlockLevel: 10
-        }
-      ],
-
-      resistances: { light: 0.2, void: 0.15, shadow: -0.1 }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // VERDANT DRUID — Balanced / Nature Specialist
-    // ═══════════════════════════════════════════════════════════════
-    this.classDefinitions.set('verdant_druid', {
-      id: 'verdant_druid',
-      name: 'Verdant Druid',
-      description: 'Caretakers of the Nexus who draw power from all three Sap phases. They heal, summon, and command nature itself.',
-      phaseAffinity: null, // balanced — benefits from all phases equally
-      sprite: 'class_verdant_druid',
-      color: 0x44cc44,
-
-      baseStats: {
-        hp: 100, maxHp: 100,
-        sap: 120, maxSap: 120,
-        atk: 8, def: 7, agi: 7, mag: 12,
-        speed: 185,
-        critChance: 0.05, critDamage: 0.2,
-        dodge: 0.03, block: 0.05,
-        sapRegenRate: 7
-      },
-
-      statGrowth: {
-        hp: 12, maxHp: 12,
-        sap: 10, maxSap: 10,
-        atk: 1.5, def: 1.5, agi: 1.5, mag: 2.5,
-        critChance: 0.004
-      },
-
-      startingSpells: ['verdant_heal', 'thorn_whip'],
-      classSpells: [
-        'verdant_heal', 'thorn_whip', 'natures_grasp',
-        'regrowth', 'summon_treant', 'spore_cloud',
-        'wild_surge', 'verdant_cataclysm'
-      ],
-      ultimateSpell: 'verdant_cataclysm',
-
-      passives: [
-        {
-          id: 'cycle_harmony',
-          name: 'Cycle Harmony',
-          description: 'Gains a small bonus from every Sap Phase instead of just one.',
-          effect: { type: 'all_phase_bonus', value: 0.08 }
-        },
-        {
-          id: 'natural_regeneration',
-          name: 'Natural Regeneration',
-          description: 'Continuously regenerates 1% max HP per second.',
-          effect: { type: 'hp_regen_percent', value: 0.01 }
-        },
-        {
-          id: 'natures_wrath',
-          name: "Nature's Wrath",
-          description: 'Healing spells also deal 20% of heal amount as nature damage to nearby enemies.',
-          effect: { type: 'heal_damage', value: 0.20, radius: 3 },
-          unlockLevel: 10
-        }
-      ],
-
-      resistances: { nature: 0.2, fire: 0.05, ice: 0.05, temporal: 0.05 }
-    });
+    for (const cls of legacy) {
+      this.classDefinitions.set(cls.id, cls);
+    }
   }
 
   // ─── API ────────────────────────────────────────────────────────────
@@ -303,80 +151,148 @@ export class PlayerClassSystem {
   }
 
   /**
-   * Apply class stats to a player stats object.
+   * Set Pure or Blighted variant.
    */
-  applyClassStats(playerStats) {
-    if (!this.currentClass) return playerStats;
+  setVariant(variant) {
+    if (variant !== 'pure' && variant !== 'blighted') return false;
+    this.pureBlightedVariant = variant;
+    this.eventBus.emit('class:variantSet', { variant });
+    return true;
+  }
 
-    const base = this.currentClass.baseStats;
-    return {
-      ...playerStats,
-      hp: base.hp,
-      maxHp: base.maxHp,
-      sap: base.sap,
-      maxSap: base.maxSap,
-      atk: base.atk,
-      def: base.def,
-      agi: base.agi,
-      mag: base.mag,
-      speed: base.speed,
-      critChance: base.critChance,
-      critDamage: base.critDamage,
-      dodge: base.dodge,
-      block: base.block,
-      resistances: { ...base.resistances || {} }
-    };
+  getVariant() {
+    return this.pureBlightedVariant;
   }
 
   /**
-   * Apply stat growth for a level-up.
+   * Get class abilities available at a given level.
    */
-  applyLevelUpGrowth(playerStats, level) {
-    if (!this.currentClass) return playerStats;
-
-    const growth = this.currentClass.statGrowth;
-    const newStats = { ...playerStats };
-    for (const [stat, value] of Object.entries(growth)) {
-      if (newStats[stat] !== undefined) {
-        newStats[stat] += value;
-      }
+  getAbilitiesForLevel(level) {
+    if (!this.currentClass?.classAbilities) return [];
+    const abilities = [];
+    if (level >= 1 && this.currentClass.classAbilities.level1) {
+      abilities.push(...this.currentClass.classAbilities.level1);
     }
-    // Heal to max on level up
-    newStats.hp = newStats.maxHp;
-    newStats.sap = newStats.maxSap;
-    return newStats;
+    if (level >= 3 && this.currentClass.classAbilities.level3) {
+      abilities.push(...this.currentClass.classAbilities.level3);
+    }
+    if (level >= 7 && this.currentClass.classAbilities.level7) {
+      abilities.push(...this.currentClass.classAbilities.level7);
+    }
+    if (level >= 10 && this.currentClass.classAbilities.ultimate) {
+      abilities.push(this.currentClass.classAbilities.ultimate);
+    }
+    return abilities;
+  }
+
+  /**
+   * Get talent tree for current class.
+   */
+  getTalentTree() {
+    return this.currentClass?.talentTree || null;
   }
 
   /**
    * Get starting spells for the current class.
    */
   getStartingSpells() {
-    return this.currentClass?.startingSpells || ['temporal_bolt'];
+    return this.currentClass?.startingSpells || [];
   }
 
   /**
-   * Get all spells available to the current class up to a given level.
+   * Apply class base stats to create initial player stats.
+   * Uses Verdance attribute system (Might, Agility, Resilience, Insight, Charisma).
+   */
+  applyClassStats(playerStats) {
+    if (!this.currentClass) return playerStats;
+
+    const cls = this.currentClass;
+    return {
+      ...playerStats,
+      hp: cls.startingHP || 30,
+      maxHp: cls.startingHP || 30,
+      guard: cls.startingGuard || 0,
+      maxGuard: cls.startingGuard || 0,
+      ap: cls.baseAP || 2,
+      maxAP: cls.baseAP || 2,
+      might: cls.baseStats?.might || 0,
+      agility: cls.baseStats?.agility || 0,
+      resilience: cls.baseStats?.resilience || 0,
+      insight: cls.baseStats?.insight || 0,
+      charisma: cls.baseStats?.charisma || 0,
+      classId: cls.id,
+      className: cls.name,
+      classRole: cls.role,
+      preferredWeapons: cls.preferredWeapons || [],
+      preferredArmor: cls.preferredArmor || 'light'
+    };
+  }
+
+  /**
+   * Apply stat growth for a level-up.
+   * In the new system: +1 attribute point, +10 HP, +5 Guard, +1 skill rank
+   */
+  applyLevelUpGrowth(playerStats, level) {
+    if (!this.currentClass) return playerStats;
+
+    const newStats = { ...playerStats };
+
+    // HP growth
+    newStats.maxHp += 10;
+    newStats.hp = newStats.maxHp; // Full heal on level up
+
+    // Guard growth
+    newStats.maxGuard += 5;
+    newStats.guard = newStats.maxGuard;
+
+    // AP check: if agility reaches 4, gain +1 AP
+    if (newStats.agility >= 4 && newStats.maxAP < 3) {
+      newStats.maxAP = 3;
+      newStats.ap = newStats.maxAP;
+    }
+
+    return newStats;
+  }
+
+  /**
+   * Get available spells for current class up to a given level.
    */
   getAvailableSpells(level) {
-    if (!this.currentClass) return [];
-    // Class spells unlock roughly every 5 levels
-    const count = Math.min(this.currentClass.classSpells.length, Math.ceil(level / 5) + 2);
-    return this.currentClass.classSpells.slice(0, count);
+    const spells = [...(this.currentClass?.startingSpells || [])];
+
+    // Add class ability spells at milestone levels
+    if (level >= 3 && this.currentClass?.classAbilities?.level3) {
+      for (const ability of this.currentClass.classAbilities.level3) {
+        if (ability.type === 'active') spells.push(ability.id);
+      }
+    }
+    if (level >= 7 && this.currentClass?.classAbilities?.level7) {
+      for (const ability of this.currentClass.classAbilities.level7) {
+        if (ability.type === 'active') spells.push(ability.id);
+      }
+    }
+    if (level >= 10 && this.currentClass?.classAbilities?.ultimate) {
+      const ult = this.currentClass.classAbilities.ultimate;
+      if (ult.id) spells.push(ult.id);
+    }
+
+    return spells;
   }
 
   /**
-   * Get passives for the current class, filtered by level.
+   * Get passive abilities active at a given level.
    */
   getActivePassives(level) {
-    if (!this.currentClass) return [];
-    return this.currentClass.passives.filter(p => (p.unlockLevel || 1) <= level);
-  }
+    const passives = [];
+    const tree = this.currentClass?.talentTree;
+    if (!tree?.nodes) return passives;
 
-  /**
-   * Check if current class has phase affinity.
-   */
-  getPhaseAffinity() {
-    return this.currentClass?.phaseAffinity || null;
+    for (const node of tree.nodes) {
+      if ((node.unlockLevel || 1) <= level && node.type === 'passive') {
+        passives.push(node);
+      }
+    }
+    return passives;
   }
 
   /**
@@ -384,13 +300,17 @@ export class PlayerClassSystem {
    */
   serialize() {
     return {
-      currentClassId: this.currentClass?.id || null
+      currentClassId: this.currentClass?.id || null,
+      pureBlightedVariant: this.pureBlightedVariant
     };
   }
 
   deserialize(data) {
     if (data?.currentClassId) {
       this.selectClass(data.currentClassId);
+    }
+    if (data?.pureBlightedVariant) {
+      this.pureBlightedVariant = data.pureBlightedVariant;
     }
   }
 }

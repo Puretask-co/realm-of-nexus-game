@@ -7,9 +7,12 @@ import EventBus from '../core/EventBus.js';
  * Displays:
  *  - Sap cycle phase indicator and timer
  *  - Player HP / Sap bars
+ *  - Level, XP, and Gold display
  *  - Spell cooldowns
+ *  - Quest tracker
+ *  - Location indicator
  *  - Mini-map (stub)
- *  - Phase transition overlay
+ *  - Notification toasts
  *
  * All data comes through EventBus so this scene has zero direct
  * coupling to GameScene.
@@ -21,12 +24,15 @@ export default class UIScene extends Phaser.Scene {
 
     create() {
         this.uiElements = {};
+        this._notifications = [];
 
         this._createPhaseIndicator();
         this._createPlayerBars();
         this._createSpellSlots();
         this._createMinimap();
         this._createFPSCounter();
+        this._createQuestTracker();
+        this._createLocationIndicator();
 
         // EventBus bindings
         this._unsubs = [
@@ -41,6 +47,39 @@ export default class UIScene extends Phaser.Scene {
             }),
             EventBus.on('spell-cooldown-tick', (spellId, remaining, total) => {
                 this._updateSpellCooldown(spellId, remaining, total);
+            }),
+            EventBus.on('quest:started', (data) => {
+                this._updateQuestTracker(data);
+                this._showNotification(`Quest Started: ${data.name}`, 0x4488ff);
+            }),
+            EventBus.on('quest:objectiveUpdated', (data) => {
+                this._updateQuestObjective(data);
+            }),
+            EventBus.on('quest:completed', (data) => {
+                this._showNotification(`Quest Complete: ${data.name}`, 0x44ff44);
+                this._clearQuestTracker();
+            }),
+            EventBus.on('zone-entered', (data) => {
+                this._updateLocation(data.name);
+                this._showNotification(data.name, 0xccccdd, true);
+            }),
+            EventBus.on('player:levelUp', (data) => {
+                this._showNotification(`Level Up! Lv.${data.level}`, 0xffaa44);
+            }),
+            EventBus.on('inventory:addItem', (data) => {
+                const name = data.itemData?.name || data.itemId;
+                this._showNotification(`+${data.quantity || 1} ${name}`, 0xffdd44);
+            }),
+            EventBus.on('achievement:unlocked', (data) => {
+                this._showNotification(`Achievement: ${data.name}`, 0xffaa00);
+            }),
+            EventBus.on('class:applied', (data) => {
+                if (data.className) {
+                    this._updateClassName(data.className);
+                }
+            }),
+            EventBus.on('spell:unlocked', (data) => {
+                this._showNotification(`Spell Unlocked: ${data.spell.name}`, 0xcc66ff);
             })
         ];
     }
@@ -53,14 +92,10 @@ export default class UIScene extends Phaser.Scene {
         const PHASE_COLORS = { blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd' };
 
         this.uiElements.phaseLabel = this.add.text(640, 16, 'BLUE PHASE', {
-            fontFamily: 'monospace',
-            fontSize: '16px',
-            color: PHASE_COLORS.blue,
-            stroke: '#000000',
-            strokeThickness: 3
+            fontFamily: 'monospace', fontSize: '16px', color: PHASE_COLORS.blue,
+            stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5, 0).setDepth(10000);
 
-        // Phase timer bar
         this.uiElements.phaseBarBg = this.add.graphics().setDepth(10000);
         this.uiElements.phaseBarBg.fillStyle(0x111122, 0.6);
         this.uiElements.phaseBarBg.fillRect(440, 36, 400, 6);
@@ -106,6 +141,10 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.hpBarFill.fillStyle(0xff4444, 0.9);
         this.uiElements.hpBarFill.fillRect(x + 25, y + 2, 148, 10);
 
+        this.uiElements.hpText = this.add.text(x + 99, y + 7, '100/100', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#ffaaaa'
+        }).setOrigin(0.5).setDepth(10001);
+
         // Sap bar
         this.uiElements.sapLabel = this.add.text(x, y + 18, 'SAP', {
             fontFamily: 'monospace', fontSize: '11px', color: '#66aaff'
@@ -118,18 +157,65 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.sapBarFill = this.add.graphics().setDepth(10000);
         this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
         this.uiElements.sapBarFill.fillRect(x + 31, y + 20, 148, 10);
+
+        // Class name
+        this.uiElements.classText = this.add.text(x, y + 38, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#88aaff',
+            stroke: '#000', strokeThickness: 1
+        }).setDepth(10000);
+
+        // Level & XP
+        this.uiElements.levelText = this.add.text(x, y + 52, 'Lv.1', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ffaa44',
+            stroke: '#000', strokeThickness: 2
+        }).setDepth(10000);
+
+        this.uiElements.xpText = this.add.text(x + 40, y + 53, 'XP: 0', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa'
+        }).setDepth(10000);
+
+        // Gold
+        this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44'
+        }).setDepth(10000);
     }
 
     _updatePlayerBars(stats) {
         if (!stats) return;
         const x = 20;
 
+        // Update spell slot labels when spells change
+        if (stats.spells && stats.spells.length > 0) {
+            this._spellMapping = stats.spells.slice(0, 5).map(s => s.id);
+            for (let i = 0; i < 5; i++) {
+                const slot = this.uiElements.spellSlots[i];
+                if (slot && slot.nameLabel) {
+                    const spell = stats.spells[i];
+                    if (spell) {
+                        // Abbreviate spell name to fit
+                        const short = spell.name.length > 7
+                            ? spell.name.substring(0, 6) + '.'
+                            : spell.name;
+                        const color = spell.vfx?.color
+                            ? `#${parseInt(spell.vfx.color).toString(16).padStart(6, '0')}`
+                            : '#888888';
+                        slot.nameLabel.setText(short);
+                        slot.nameLabel.setColor(color);
+                    } else {
+                        slot.nameLabel.setText('---');
+                        slot.nameLabel.setColor('#444444');
+                    }
+                }
+            }
+        }
+
         // HP
         if (stats.hp !== undefined && stats.maxHp) {
             const ratio = Math.max(0, stats.hp / stats.maxHp);
             this.uiElements.hpBarFill.clear();
-            this.uiElements.hpBarFill.fillStyle(0xff4444, 0.9);
+            this.uiElements.hpBarFill.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
             this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+            this.uiElements.hpText.setText(`${Math.ceil(stats.hp)}/${stats.maxHp}`);
         }
 
         // Sap
@@ -138,6 +224,23 @@ export default class UIScene extends Phaser.Scene {
             this.uiElements.sapBarFill.clear();
             this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
             this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+        }
+
+        // Level & XP
+        if (stats.level !== undefined) {
+            this.uiElements.levelText.setText(`Lv.${stats.level}`);
+        }
+        if (stats.experience !== undefined) {
+            this.uiElements.xpText.setText(`XP: ${Math.floor(stats.experience)}`);
+        }
+        if (stats.gold !== undefined) {
+            this.uiElements.goldText.setText(`Gold: ${stats.gold}`);
+        }
+    }
+
+    _updateClassName(name) {
+        if (this.uiElements.classText) {
+            this.uiElements.classText.setText(name);
         }
     }
 
@@ -151,26 +254,33 @@ export default class UIScene extends Phaser.Scene {
         const startX = 640 - (slotSize * 2.5);
         const y = 720 - slotSize - 16;
 
+        this._spellNames = ['Spell 1', 'Spell 2', 'Spell 3', 'Spell 4', 'Spell 5'];
+        this._spellColorValues = [0x888888, 0x888888, 0x888888, 0x888888, 0x888888];
+
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);
             const bg = this.add.graphics().setDepth(10000);
             bg.fillStyle(0x222244, 0.7);
             bg.fillRect(x, y, slotSize, slotSize);
-            bg.lineStyle(1, 0x4466aa, 0.6);
+            bg.lineStyle(1, this._spellColorValues[i], 0.4);
             bg.strokeRect(x, y, slotSize, slotSize);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
             }).setDepth(10001);
 
+            // Spell name label (updated dynamically)
+            const nameLabel = this.add.text(x + slotSize / 2, y + slotSize - 4, this._spellNames[i], {
+                fontFamily: 'monospace', fontSize: '8px', color: '#888888'
+            }).setOrigin(0.5, 1).setDepth(10001);
+
             const cooldownOverlay = this.add.graphics().setDepth(10001);
 
-            this.uiElements.spellSlots[i] = { bg, keyLabel, cooldownOverlay, x, y, size: slotSize };
+            this.uiElements.spellSlots[i] = { bg, keyLabel, nameLabel, cooldownOverlay, x, y, size: slotSize };
         }
     }
 
     _updateSpellCooldown(spellId, remaining, total) {
-        // Map spell IDs to slot indices (placeholder mapping)
         const slotIndex = this._getSlotForSpell(spellId);
         if (slotIndex === -1) return;
 
@@ -186,8 +296,140 @@ export default class UIScene extends Phaser.Scene {
     }
 
     _getSlotForSpell(spellId) {
-        const mapping = ['azure_bolt', 'crimson_surge', 'verdant_bloom', 'shadow_strike', 'radiant_burst'];
-        return mapping.indexOf(spellId);
+        // Dynamic mapping — matches whatever spells the player has equipped
+        return this._spellMapping ? this._spellMapping.indexOf(spellId) : -1;
+    }
+
+    // ----------------------------------------------------------------
+    // Quest tracker
+    // ----------------------------------------------------------------
+
+    _createQuestTracker() {
+        const x = 1280 - 260;
+        const y = 160;
+
+        this.uiElements.questTitle = this.add.text(x, y, '', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ffaa44',
+            stroke: '#000', strokeThickness: 2
+        }).setDepth(10000);
+
+        this.uiElements.questObjectives = [];
+        for (let i = 0; i < 4; i++) {
+            const obj = this.add.text(x + 8, y + 18 + i * 16, '', {
+                fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa',
+                stroke: '#000', strokeThickness: 1
+            }).setDepth(10000);
+            this.uiElements.questObjectives.push(obj);
+        }
+
+        this._currentQuestData = null;
+    }
+
+    _updateQuestTracker(data) {
+        this._currentQuestData = data;
+        this.uiElements.questTitle.setText(data.name || '');
+
+        const objectives = data.objectives || [];
+        for (let i = 0; i < 4; i++) {
+            if (i < objectives.length) {
+                const obj = objectives[i];
+                this.uiElements.questObjectives[i].setText(
+                    `[ ] ${obj.description} (0/${obj.required})`
+                );
+                this.uiElements.questObjectives[i].setColor('#aaaaaa');
+            } else {
+                this.uiElements.questObjectives[i].setText('');
+            }
+        }
+    }
+
+    _updateQuestObjective(data) {
+        if (!this._currentQuestData) return;
+
+        const objectives = this._currentQuestData.objectives || [];
+        const objIndex = objectives.findIndex(o => o.id === data.objectiveId);
+        if (objIndex >= 0 && objIndex < 4) {
+            const obj = objectives[objIndex];
+            const done = data.current >= data.required;
+            this.uiElements.questObjectives[objIndex].setText(
+                `${done ? '[x]' : '[ ]'} ${obj.description} (${data.current}/${data.required})`
+            );
+            this.uiElements.questObjectives[objIndex].setColor(done ? '#44ff44' : '#aaaaaa');
+        }
+    }
+
+    _clearQuestTracker() {
+        this.uiElements.questTitle.setText('');
+        for (const obj of this.uiElements.questObjectives) {
+            obj.setText('');
+        }
+        this._currentQuestData = null;
+    }
+
+    // ----------------------------------------------------------------
+    // Location indicator
+    // ----------------------------------------------------------------
+
+    _createLocationIndicator() {
+        this.uiElements.locationText = this.add.text(640, 700, '', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#888888',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5, 1).setDepth(10000).setAlpha(0);
+    }
+
+    _updateLocation(name) {
+        this.uiElements.locationText.setText(name);
+        this.uiElements.locationText.setAlpha(1);
+
+        // Fade out after 3 seconds
+        this.tweens.add({
+            targets: this.uiElements.locationText,
+            alpha: 0,
+            delay: 3000,
+            duration: 1000
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Notifications
+    // ----------------------------------------------------------------
+
+    _showNotification(text, color = 0xffffff, isLarge = false) {
+        const y = 120 + this._notifications.length * 24;
+        const colorStr = `#${color.toString(16).padStart(6, '0')}`;
+
+        const notification = this.add.text(640, isLarge ? 360 : y, text, {
+            fontFamily: 'monospace',
+            fontSize: isLarge ? '20px' : '12px',
+            color: colorStr,
+            stroke: '#000000',
+            strokeThickness: isLarge ? 4 : 2
+        }).setOrigin(0.5).setDepth(10002).setAlpha(0);
+
+        this._notifications.push(notification);
+
+        // Animate in
+        this.tweens.add({
+            targets: notification,
+            alpha: 1,
+            y: notification.y - 10,
+            duration: 300,
+            ease: 'Back.easeOut'
+        });
+
+        // Animate out
+        this.tweens.add({
+            targets: notification,
+            alpha: 0,
+            y: notification.y - 30,
+            delay: isLarge ? 2000 : 3000,
+            duration: 500,
+            onComplete: () => {
+                const idx = this._notifications.indexOf(notification);
+                if (idx >= 0) this._notifications.splice(idx, 1);
+                notification.destroy();
+            }
+        });
     }
 
     // ----------------------------------------------------------------
@@ -211,7 +453,7 @@ export default class UIScene extends Phaser.Scene {
     }
 
     // ----------------------------------------------------------------
-    // FPS counter (dev)
+    // FPS counter
     // ----------------------------------------------------------------
 
     _createFPSCounter() {

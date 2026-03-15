@@ -1,8 +1,18 @@
 import { EventBus } from '../core/EventBus.js';
+import dataManager from './DataManager.js';
+import { AttributeSystem } from './AttributeSystem.js';
+import { SkillCheckSystem } from './SkillCheckSystem.js';
+import { PlayerClassSystem } from './PlayerClassSystem.js';
 
 /**
- * ProgressionSystem - XP, leveling, stat growth, skill points, and achievements.
- * Driven by config.json progression data (hot-reloadable).
+ * ProgressionSystem — Verdance-specific XP & leveling (max level 10).
+ *
+ * Design doc alignment:
+ *   - Max level 10 (multiclassing at 5, ultimate at 10)
+ *   - XP table: 100, 250, 500, 850, 1300, 1900, 2600, 3500, 5000
+ *   - Per level: +1 attribute point, +10 HP, +5 Guard, +1 talent, +1 skill rank
+ *   - Stats use Verdance attributes (Might, Agility, Resilience, Insight, Charisma)
+ *   - No generic atk/def/agi/mag stats
  */
 export class ProgressionSystem {
   static instance = null;
@@ -17,61 +27,50 @@ export class ProgressionSystem {
 
     this.eventBus = EventBus.getInstance();
 
-    // Config (from config.json)
-    this.maxLevel = 50;
-    this.experiencePerLevel = [];
-    this.skillPointsPerLevel = 2;
-    this.statPointsPerLevel = 3;
+    // Config from config.json
+    const progCfg = dataManager.getConfig('balance.progression') || {};
+    this.maxLevel = progCfg.maxLevel || 10;
+
+    // XP thresholds (from config.json)
+    const xpThresholds = progCfg.xpThresholds || {};
+    this.experiencePerLevel = [
+      0,
+      xpThresholds['1to2'] || 100,
+      xpThresholds['2to3'] || 250,
+      xpThresholds['3to4'] || 500,
+      xpThresholds['4to5'] || 850,
+      xpThresholds['5to6'] || 1300,
+      xpThresholds['6to7'] || 1900,
+      xpThresholds['7to8'] || 2600,
+      xpThresholds['8to9'] || 3500,
+      xpThresholds['9to10'] || 5000
+    ];
+
+    // Per-level rewards (from config.json)
+    const rewards = progCfg.perLevelRewards || {};
+    this.attributePointsPerLevel = rewards.attributePoints || 1;
+    this.hpBonusPerLevel = rewards.hpBonus || 10;
+    this.guardBonusPerLevel = rewards.guardBonus || 5;
+    this.talentsPerLevel = rewards.talents || 1;
 
     // Player progression state
     this.level = 1;
     this.experience = 0;
     this.totalExperience = 0;
-    this.skillPoints = 0;
-    this.statPoints = 0;
+    this.talentPoints = 0;
+    this.unlockedTalents = new Set();
 
-    // Base stats (modifiable via stat points)
-    this.baseStats = {
-      hp: 100,
-      maxHp: 100,
-      atk: 10,
-      def: 5,
-      agi: 8,
-      mag: 10,
-      critChance: 0,
-      critDamage: 0,
-      dodge: 0,
-      block: 0
-    };
-
-    // Stat growth per point invested
-    this.statGrowth = {
-      hp: 15,
-      atk: 2,
-      def: 2,
-      agi: 1,
-      mag: 2
-    };
-
-    // Invested stat points tracker
-    this.statInvestments = {
-      hp: 0,
-      atk: 0,
-      def: 0,
-      agi: 0,
-      mag: 0
-    };
-
-    // Skills (unlocked abilities/passives)
-    this.unlockedSkills = new Set();
-    this.skillTree = new Map(); // id → { name, description, cost, requires[], effects[] }
+    // Multiclassing (available at level 5)
+    this.secondaryClass = null;
+    this.multiclassAvailable = false;
 
     // Achievements
-    this.achievements = new Map(); // id → { name, description, completed, progress, target }
+    this.achievements = new Map();
 
     // Listen for events
     this.eventBus.on('enemy-defeated', (data) => this.onEnemyDefeated(data));
     this.eventBus.on('combat:ended', (data) => this.onCombatEnded(data));
+    this.eventBus.on('tactical:combatEnded', (data) => this.onCombatEnded(data));
     this.eventBus.on('data-reloaded', (data) => {
       if (data?.key === 'config') this.applyConfig(data.data);
     });
@@ -80,19 +79,27 @@ export class ProgressionSystem {
   }
 
   applyConfig(config) {
-    if (!config?.progression) return;
-    const p = config.progression;
+    if (!config?.balance?.progression) return;
+    const p = config.balance.progression;
     if (p.maxLevel !== undefined) this.maxLevel = p.maxLevel;
-    if (p.experiencePerLevel) this.experiencePerLevel = p.experiencePerLevel;
-    if (p.skillPointsPerLevel !== undefined) this.skillPointsPerLevel = p.skillPointsPerLevel;
-    if (p.statPointsPerLevel !== undefined) this.statPointsPerLevel = p.statPointsPerLevel;
+    if (p.xpThresholds) {
+      this.experiencePerLevel = [
+        0,
+        p.xpThresholds['1to2'] || 100,
+        p.xpThresholds['2to3'] || 250,
+        p.xpThresholds['3to4'] || 500,
+        p.xpThresholds['4to5'] || 850,
+        p.xpThresholds['5to6'] || 1300,
+        p.xpThresholds['6to7'] || 1900,
+        p.xpThresholds['7to8'] || 2600,
+        p.xpThresholds['8to9'] || 3500,
+        p.xpThresholds['9to10'] || 5000
+      ];
+    }
   }
 
   // ─── XP & Leveling ────────────────────────────────────────────────
 
-  /**
-   * Award experience points.
-   */
   awardExperience(amount) {
     if (this.level >= this.maxLevel) return;
 
@@ -106,160 +113,140 @@ export class ProgressionSystem {
       level: this.level
     });
 
-    // Check for level ups (can gain multiple levels at once)
     while (this.level < this.maxLevel && this.experience >= this.getXPForNextLevel()) {
       this.experience -= this.getXPForNextLevel();
       this.levelUp();
     }
   }
 
-  /**
-   * Get XP required for next level.
-   */
   getXPForNextLevel() {
     if (this.level >= this.maxLevel) return Infinity;
-    if (this.experiencePerLevel.length > this.level) {
+    if (this.level < this.experiencePerLevel.length) {
       return this.experiencePerLevel[this.level];
     }
-    // Fallback formula if table doesn't go high enough
-    return Math.round(100 * Math.pow(1.5, this.level - 1));
+    return Infinity;
   }
 
-  /**
-   * Get XP progress toward next level (0-1).
-   */
   getXPProgress() {
     const needed = this.getXPForNextLevel();
     if (needed === Infinity) return 1;
     return this.experience / needed;
   }
 
-  /**
-   * Level up the player.
-   */
   levelUp() {
     this.level++;
-    this.skillPoints += this.skillPointsPerLevel;
-    this.statPoints += this.statPointsPerLevel;
 
-    // Grow base stats slightly per level
-    this.baseStats.maxHp += 10;
-    this.baseStats.hp = this.baseStats.maxHp; // Full heal on level up
-    this.baseStats.atk += 1;
-    this.baseStats.def += 1;
-    this.baseStats.mag += 1;
+    // Award attribute point via AttributeSystem
+    const attrSystem = AttributeSystem.getInstance();
+    attrSystem.addAttributePoints(this.attributePointsPerLevel);
+
+    // Award talent point
+    this.talentPoints += this.talentsPerLevel;
+
+    // HP and Guard growth via PlayerClassSystem
+    const classSystem = PlayerClassSystem.getInstance();
+    const playerStats = classSystem.applyLevelUpGrowth({}, this.level);
+
+    // Check multiclassing availability at level 5
+    if (this.level >= 5 && !this.multiclassAvailable) {
+      this.multiclassAvailable = true;
+      this.eventBus.emit('progression:multiclassAvailable', { level: this.level });
+    }
+
+    // Check ultimate ability at level 10
+    if (this.level >= 10) {
+      const abilities = classSystem.getAbilitiesForLevel(10);
+      if (abilities.length > 0) {
+        this.eventBus.emit('progression:ultimateUnlocked', {
+          level: this.level,
+          abilities
+        });
+      }
+    }
 
     this.eventBus.emit('player-stats-updated', {
       type: 'levelUp',
       level: this.level,
-      skillPoints: this.skillPoints,
-      statPoints: this.statPoints,
-      stats: this.getEffectiveStats()
+      talentPoints: this.talentPoints,
+      hpBonus: this.hpBonusPerLevel,
+      guardBonus: this.guardBonusPerLevel,
+      attributePoints: this.attributePointsPerLevel
     });
 
     this.checkAchievements('level', this.level);
   }
 
-  // ─── Stat Investment ──────────────────────────────────────────────
+  // ─── Talents ───────────────────────────────────────────────────────
 
-  /**
-   * Invest a stat point into a specific stat.
-   * @param {string} stat - 'hp', 'atk', 'def', 'agi', or 'mag'
-   * @returns {boolean} success
-   */
-  investStatPoint(stat) {
-    if (this.statPoints <= 0) return false;
-    if (!this.statGrowth[stat]) return false;
+  unlockTalent(talentId) {
+    if (this.unlockedTalents.has(talentId)) return false;
+    if (this.talentPoints <= 0) return false;
 
-    this.statPoints--;
-    this.statInvestments[stat]++;
-    this.baseStats[stat] += this.statGrowth[stat];
-
-    if (stat === 'hp') {
-      this.baseStats.maxHp += this.statGrowth.hp;
-    }
+    this.talentPoints--;
+    this.unlockedTalents.add(talentId);
 
     this.eventBus.emit('player-stats-updated', {
-      type: 'statInvested',
-      stat,
-      value: this.baseStats[stat],
-      remainingPoints: this.statPoints,
-      stats: this.getEffectiveStats()
+      type: 'talentUnlocked',
+      talentId,
+      remainingTalentPoints: this.talentPoints
     });
 
     return true;
   }
 
-  /**
-   * Get effective stats (base + investments + equipment + buffs).
-   */
+  hasTalent(talentId) {
+    return this.unlockedTalents.has(talentId);
+  }
+
+  // ─── Multiclassing ────────────────────────────────────────────────
+
+  setSecondaryClass(classId) {
+    if (!this.multiclassAvailable || this.level < 5) return false;
+    if (this.secondaryClass) return false;
+
+    const classSystem = PlayerClassSystem.getInstance();
+    const classDef = classSystem.getClass(classId);
+    if (!classDef) return false;
+    if (classDef.id === classSystem.getCurrentClass()?.id) return false;
+
+    this.secondaryClass = classId;
+    this.eventBus.emit('progression:multiclassed', {
+      secondaryClass: classId,
+      className: classDef.name
+    });
+
+    return true;
+  }
+
+  // ─── Effective Stats (Verdance attribute-derived) ──────────────────
+
   getEffectiveStats() {
-    // For now, just return base stats. Equipment/buff modifiers
-    // would be layered on top by other systems.
-    return { ...this.baseStats };
-  }
+    const attrSystem = AttributeSystem.getInstance();
+    const classSystem = PlayerClassSystem.getInstance();
+    const classDef = classSystem.getCurrentClass();
 
-  // ─── Skills ───────────────────────────────────────────────────────
+    // Compute derived stats from attributes + class
+    const derived = attrSystem.computeDerivedStats(classDef);
 
-  /**
-   * Register a skill in the skill tree.
-   */
-  registerSkill(id, skillDef) {
-    this.skillTree.set(id, {
-      name: skillDef.name,
-      description: skillDef.description || '',
-      cost: skillDef.cost || 1,
-      requires: skillDef.requires || [],
-      effects: skillDef.effects || [],
-      unlockLevel: skillDef.unlockLevel || 1
-    });
-  }
+    // Apply per-level HP/Guard growth
+    const levelBonusHP = (this.level - 1) * this.hpBonusPerLevel;
+    const levelBonusGuard = (this.level - 1) * this.guardBonusPerLevel;
 
-  /**
-   * Unlock a skill by spending skill points.
-   */
-  unlockSkill(id) {
-    if (this.unlockedSkills.has(id)) return false;
-
-    const skill = this.skillTree.get(id);
-    if (!skill) return false;
-
-    // Check level requirement
-    if (this.level < skill.unlockLevel) return false;
-
-    // Check prerequisites
-    for (const reqId of skill.requires) {
-      if (!this.unlockedSkills.has(reqId)) return false;
-    }
-
-    // Check cost
-    if (this.skillPoints < skill.cost) return false;
-
-    this.skillPoints -= skill.cost;
-    this.unlockedSkills.add(id);
-
-    this.eventBus.emit('player-stats-updated', {
-      type: 'skillUnlocked',
-      skillId: id,
-      skill,
-      remainingSkillPoints: this.skillPoints
-    });
-
-    return true;
-  }
-
-  /**
-   * Check if a skill is unlocked.
-   */
-  hasSkill(id) {
-    return this.unlockedSkills.has(id);
+    return {
+      ...derived,
+      maxHp: derived.maxHp + levelBonusHP,
+      hp: derived.hp + levelBonusHP,
+      maxGuard: derived.maxGuard + levelBonusGuard,
+      guard: derived.guard + levelBonusGuard,
+      level: this.level,
+      classId: classDef?.id,
+      className: classDef?.name,
+      secondaryClass: this.secondaryClass
+    };
   }
 
   // ─── Achievements ─────────────────────────────────────────────────
 
-  /**
-   * Register an achievement.
-   */
   registerAchievement(id, def) {
     this.achievements.set(id, {
       name: def.name,
@@ -270,14 +257,9 @@ export class ProgressionSystem {
     });
   }
 
-  /**
-   * Check and update achievements by category.
-   */
   checkAchievements(category, value) {
     for (const [id, ach] of this.achievements) {
       if (ach.completed) continue;
-
-      // Match by naming convention: category_* achievements
       if (id.startsWith(category)) {
         ach.progress = value;
         if (ach.progress >= ach.target) {
@@ -291,7 +273,7 @@ export class ProgressionSystem {
   // ─── Event Handlers ───────────────────────────────────────────────
 
   onEnemyDefeated(data) {
-    this.checkAchievements('kills', 1); // Increment kill counter
+    this.checkAchievements('kills', 1);
   }
 
   onCombatEnded(data) {
@@ -302,36 +284,28 @@ export class ProgressionSystem {
 
   // ─── Serialization ────────────────────────────────────────────────
 
-  /**
-   * Serialize progression state for saving.
-   */
   serialize() {
     return {
       level: this.level,
       experience: this.experience,
       totalExperience: this.totalExperience,
-      skillPoints: this.skillPoints,
-      statPoints: this.statPoints,
-      baseStats: { ...this.baseStats },
-      statInvestments: { ...this.statInvestments },
-      unlockedSkills: [...this.unlockedSkills],
+      talentPoints: this.talentPoints,
+      unlockedTalents: [...this.unlockedTalents],
+      secondaryClass: this.secondaryClass,
+      multiclassAvailable: this.multiclassAvailable,
       achievements: Object.fromEntries(this.achievements)
     };
   }
 
-  /**
-   * Restore progression state from save data.
-   */
   deserialize(data) {
     if (!data) return;
     this.level = data.level || 1;
     this.experience = data.experience || 0;
     this.totalExperience = data.totalExperience || 0;
-    this.skillPoints = data.skillPoints || 0;
-    this.statPoints = data.statPoints || 0;
-    if (data.baseStats) this.baseStats = { ...data.baseStats };
-    if (data.statInvestments) this.statInvestments = { ...data.statInvestments };
-    if (data.unlockedSkills) this.unlockedSkills = new Set(data.unlockedSkills);
+    this.talentPoints = data.talentPoints || 0;
+    if (data.unlockedTalents) this.unlockedTalents = new Set(data.unlockedTalents);
+    this.secondaryClass = data.secondaryClass || null;
+    this.multiclassAvailable = data.multiclassAvailable || false;
   }
 }
 

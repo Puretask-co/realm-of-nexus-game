@@ -1,0 +1,658 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "characters": [
+        {
+            "id": "elder",
+            "name": "Elder Thalos",
+            "nameColor": "#44ff88",
+            "voicePitch": 0.8,
+            "textSpeed": 0.9
+        },
+        {
+            "id": "herbalist",
+            "name": "Lyra the Herbalist",
+            "nameColor": "#88ff44",
+            "voicePitch": 1.2,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "scholar",
+            "name": "Archivist Kael",
+            "nameColor": "#4488ff",
+            "voicePitch": 1.0,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "merchant",
+            "name": "Merchant Orla",
+            "nameColor": "#ffaa44",
+            "voicePitch": 1.1,
+            "textSpeed": 1.2
+        },
+        {
+            "id": "briara",
+            "name": "Commander Briara",
+            "nameColor": "#44cc44",
+            "voicePitch": 0.9,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "veyla",
+            "name": "Archdruid Veyla",
+            "nameColor": "#66aaff",
+            "voicePitch": 1.1,
+            "textSpeed": 0.8
+        },
+        {
+            "id": "yenna",
+            "name": "Beastcaller Yenna",
+            "nameColor": "#cc8844",
+            "voicePitch": 1.0,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "althea",
+            "name": "Seer Althea",
+            "nameColor": "#cc66ff",
+            "voicePitch": 1.3,
+            "textSpeed": 0.7
+        },
+        {
+            "id": "garon",
+            "name": "Smith Garon",
+            "nameColor": "#cc6644",
+            "voicePitch": 0.7,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "mycel",
+            "name": "Sporecaller Mycel",
+            "nameColor": "#88cc44",
+            "voicePitch": 0.6,
+            "textSpeed": 0.9
+        },
+        {
+            "id": "borsk",
+            "name": "Trainer Borsk",
+            "nameColor": "#cc8866",
+            "voicePitch": 0.7,
+            "textSpeed": 1.2
+        },
+        {
+            "id": "maren",
+            "name": "Innkeeper Maren",
+            "nameColor": "#ffcc88",
+            "voicePitch": 1.2,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "reyla",
+            "name": "Guard Captain Reyla",
+            "nameColor": "#44cc88",
+            "voicePitch": 0.9,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "lirel",
+            "name": "Merchant Lirel",
+            "nameColor": "#ffaa44",
+            "voicePitch": 1.1,
+            "textSpeed": 1.0
+        }
+    ],
+    "dialogues": [
+        {
+            "id": "elder_awakening",
+            "startNode": "start",
+            "metadata": { "context": "First meeting with the Elder" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "Ah... you're awake at last. The Sap brought you here — I could feel its pull the moment you arrived.",
+                    "emotion": "neutral",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder",
+                    "text": "This is the Verdant Grove. The three streams of Sap — Blue, Crimson, and Silver — flow through everything here. They cycle endlessly, shaping the world.",
+                    "next": "task",
+                    "emotion": "neutral"
+                },
+                {
+                    "id": "task",
+                    "speaker": "elder",
+                    "text": "But something has gone wrong. The forest creatures have turned hostile. They attack anyone who draws near.",
+                    "choices": [
+                        {
+                            "text": "I'll help. What do I need to do?",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "setVariable", "variable": "player_attitude", "value": "helpful" }
+                            ]
+                        },
+                        {
+                            "text": "Why should I care about your problems?",
+                            "next": "reluctant",
+                            "effects": [
+                                { "type": "setVariable", "variable": "player_attitude", "value": "reluctant" }
+                            ]
+                        },
+                        {
+                            "text": "Tell me more about the Sap Cycle first.",
+                            "next": "sap_lore"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "elder",
+                    "text": "Good heart you have. Defeat three of the Forest Guardians that roam the grove. Return to me when it's done.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "awakening" }
+                    ]
+                },
+                {
+                    "id": "reluctant",
+                    "speaker": "elder",
+                    "text": "Because the Sap chose you, child. Whether you like it or not, your fate is bound to this land. Help us, and perhaps we can help you find your way home.",
+                    "next": "accept"
+                },
+                {
+                    "id": "sap_lore",
+                    "speaker": "elder",
+                    "text": "The Sap flows in three phases. Blue brings clarity and arcane power. Crimson ignites fury and raw strength. Silver unveils mystery and hidden truths. Your spells resonate differently with each phase.",
+                    "next": "task"
+                }
+            ]
+        },
+        {
+            "id": "elder_awakening_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "You've proven yourself capable. The Grove is safer thanks to you.",
+                    "next": "reward"
+                },
+                {
+                    "id": "reward",
+                    "speaker": "elder",
+                    "text": "Take these healing potions — you'll need them. And listen... something darker stirs in the Crystal Caverns. Shadow creatures are emerging.",
+                    "next": "warning"
+                },
+                {
+                    "id": "warning",
+                    "speaker": "elder",
+                    "text": "When you're ready, venture east to the caverns. But be careful — the shadows are unlike anything in this grove.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "chapter", "value": 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_shadow_threat",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Crystal Caverns lie to the northeast. The shadows there feed on the Silver phase of the Sap Cycle.",
+                    "next": "advice"
+                },
+                {
+                    "id": "advice",
+                    "speaker": "elder",
+                    "text": "Use Azure Bolt during the Blue phase — it will be at its strongest against them. Collect the Shadow Essence they drop. We may need it.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "shadow_threat" }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "herbalist_quest",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "herbalist",
+                    "text": "Oh, a traveler! Perfect timing. I'm running low on supplies and these woods have become too dangerous for me.",
+                    "next": "request"
+                },
+                {
+                    "id": "request",
+                    "speaker": "herbalist",
+                    "text": "Could you bring me 2 Health Potions? The forest creatures sometimes carry them. I'll make it worth your while!",
+                    "choices": [
+                        {
+                            "text": "Sure, I'll keep an eye out.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "herb_gathering" }
+                            ]
+                        },
+                        {
+                            "text": "Not right now, I'm busy.",
+                            "next": "decline"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "herbalist",
+                    "text": "Thank you! I'll be right here when you've gathered them."
+                },
+                {
+                    "id": "decline",
+                    "speaker": "herbalist",
+                    "text": "No worries! Come back if you change your mind."
+                }
+            ]
+        },
+        {
+            "id": "scholar_quest",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "scholar",
+                    "text": "Fascinating... the readings indicate a surge of sap energy from the Sunken Ruins to the south.",
+                    "next": "request"
+                },
+                {
+                    "id": "request",
+                    "speaker": "scholar",
+                    "text": "I'd investigate myself, but I'm more of a... theoretical type. Would you explore the ruins and deal with any hostiles?",
+                    "choices": [
+                        {
+                            "text": "I'll check it out.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "explore_ruins" }
+                            ]
+                        },
+                        {
+                            "text": "Sounds dangerous. Maybe later.",
+                            "next": "decline"
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "scholar",
+                    "text": "Excellent! The ruins are southeast of here. Be careful of the fog — it plays tricks on the mind."
+                },
+                {
+                    "id": "decline",
+                    "speaker": "scholar",
+                    "text": "Understandable. Science can wait... I suppose."
+                }
+            ]
+        },
+        {
+            "id": "merchant_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "merchant",
+                    "text": "Welcome, welcome! Orla's the name, trade's the game. What can I do for you today?",
+                    "choices": [
+                        {
+                            "text": "Show me what you've got.",
+                            "next": "shop"
+                        },
+                        {
+                            "text": "What's the news around here?",
+                            "next": "gossip"
+                        },
+                        {
+                            "text": "Just passing through.",
+                            "next": "farewell"
+                        }
+                    ]
+                },
+                {
+                    "id": "shop",
+                    "speaker": "merchant",
+                    "text": "I've got potions, crystals, and the occasional piece of equipment. Take a look!",
+                    "effects": [
+                        { "type": "setVariable", "variable": "shop_visited", "value": true }
+                    ]
+                },
+                {
+                    "id": "gossip",
+                    "speaker": "merchant",
+                    "text": "Word is the Crimson Wardens on the plateau have gone completely mad. Something about the Sap corrupting them. Best stay clear unless you're looking for trouble.",
+                    "next": "shop_offer"
+                },
+                {
+                    "id": "shop_offer",
+                    "speaker": "merchant",
+                    "text": "If you ARE heading that way, might want to stock up on potions first. Just saying!",
+                    "choices": [
+                        {
+                            "text": "Good idea. Show me your wares.",
+                            "next": "shop"
+                        },
+                        {
+                            "text": "Thanks for the tip.",
+                            "next": "farewell"
+                        }
+                    ]
+                },
+                {
+                    "id": "farewell",
+                    "speaker": "merchant",
+                    "text": "Safe travels! Come back anytime."
+                }
+            ]
+        },
+        {
+            "id": "elder_crimson_rising",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Crimson phase grows stronger each cycle. I feared this day would come.",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder",
+                    "text": "The Wardens on the Crimson Plateau were once protectors, like the Forest Guardians. But the Sap has twisted them — filled them with rage beyond reason.",
+                    "next": "task"
+                },
+                {
+                    "id": "task",
+                    "speaker": "elder",
+                    "text": "You must go to the plateau and end their suffering. Collect the Crimson Shards they carry — we'll need them to understand what went wrong.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "crimson_rising" }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_crimson_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "The Wardens have been put to rest. You've done a difficult thing today.",
+                    "next": "shards"
+                },
+                {
+                    "id": "shards",
+                    "speaker": "elder",
+                    "text": "These Crimson Shards... the energy inside them is immense. The corruption isn't random — something at the Nexus Spire is pulling the Sap out of balance.",
+                    "next": "warning"
+                },
+                {
+                    "id": "warning",
+                    "speaker": "elder",
+                    "text": "Take this helm — the Wardens would want it used for good. When you are strong enough, the Nexus Spire awaits. All three streams of Sap converge there.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "chapter", "value": 4 }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "elder_nexus_convergence",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "So... you're ready. The Nexus Spire is where Blue, Crimson, and Silver converge into one. It is the heart of everything.",
+                    "next": "gravity"
+                },
+                {
+                    "id": "gravity",
+                    "speaker": "elder",
+                    "text": "Whatever has been corrupting the Sap — twisting Guardians, maddening Wardens, spawning Shadows — it all leads there.",
+                    "choices": [
+                        {
+                            "text": "I'm ready. Tell me what to expect.",
+                            "next": "briefing"
+                        },
+                        {
+                            "text": "I need to prepare more first.",
+                            "next": "wait"
+                        }
+                    ]
+                },
+                {
+                    "id": "briefing",
+                    "speaker": "elder",
+                    "text": "Every phase of the Sap will be in flux there. Master them all — use Blue for precision, Crimson for power, Silver for endurance. This is the final test.",
+                    "effects": [
+                        { "type": "startQuest", "questId": "nexus_convergence" }
+                    ]
+                },
+                {
+                    "id": "wait",
+                    "speaker": "elder",
+                    "text": "Wise. The Spire has waited centuries — it can wait a little longer. Return when your body and spirit are ready."
+                }
+            ]
+        },
+        {
+            "id": "elder_nexus_complete",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder",
+                    "text": "You've done it. The Nexus Spire is cleansed. I can feel the Sap flowing true again — all three streams, in harmony.",
+                    "next": "reflect"
+                },
+                {
+                    "id": "reflect",
+                    "speaker": "elder",
+                    "text": "When you first awoke in this grove, I wondered if you were truly the one the Sap had chosen. I no longer wonder.",
+                    "next": "future"
+                },
+                {
+                    "id": "future",
+                    "speaker": "elder",
+                    "text": "The Radiant Burst spell is yours now — born of all three phases united. Use it well. This land will always need a guardian.",
+                    "effects": [
+                        { "type": "setVariable", "variable": "game_complete", "value": true }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "briara_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "briara",
+                    "text": "Recruit. I am Commander Briara of the Bloomguard. We are the shield of the Canopy — and we could use fighters like you.",
+                    "choices": [
+                        { "text": "I'd like to help the Bloomguard.", "next": "join" },
+                        { "text": "What threats does the Canopy face?", "next": "threats" },
+                        { "text": "Not right now.", "next": "dismiss" }
+                    ]
+                },
+                { "id": "join", "speaker": "briara", "text": "Good. Report to the barracks when you're ready for patrol duty. We always need capable hands.", "effects": [{ "type": "startQuest", "questId": "bloomguard_patrol" }] },
+                { "id": "threats", "speaker": "briara", "text": "Corruption spreads from the south. Our scouts report hollow creatures and corrupted treants. The Sap Cycle grows more volatile each day." },
+                { "id": "dismiss", "speaker": "briara", "text": "The Bloomguard will be here when you change your mind. Stay safe out there." }
+            ]
+        },
+        {
+            "id": "veyla_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "veyla",
+                    "text": "Welcome, child of the Sap. I am Archdruid Veyla of the Emerald Coven. We seek to understand the ancient mysteries that bind Verdance together.",
+                    "choices": [
+                        { "text": "Tell me about the Emerald Coven.", "next": "coven" },
+                        { "text": "I need magical knowledge.", "next": "magic" },
+                        { "text": "Farewell.", "next": "end" }
+                    ]
+                },
+                { "id": "coven", "speaker": "veyla", "text": "We are scholars, healers, and seekers of truth. The Rite of Renewal approaches — a ceremony to replenish the world's DSP. We could use an outsider's perspective.", "effects": [{ "type": "startQuest", "questId": "coven_rite_of_renewal" }] },
+                { "id": "magic", "speaker": "veyla", "text": "The Sap holds all magic. During Blue Phase, spells cost less DSP. During Crimson, they grow fiercer but drain the world more. Learn this balance and you will thrive." },
+                { "id": "end", "speaker": "veyla", "text": "May the Sap guide your path." }
+            ]
+        },
+        {
+            "id": "yenna_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "yenna",
+                    "text": "The wild ones whisper of a stranger. That'd be you. I'm Yenna — the Wildkin Pact speaks through me.",
+                    "choices": [
+                        { "text": "What is the Wildkin Pact?", "next": "pact" },
+                        { "text": "The forest seems troubled.", "next": "troubled" },
+                        { "text": "Just passing through.", "next": "end" }
+                    ]
+                },
+                { "id": "pact", "speaker": "yenna", "text": "We guard the wild balance. Not civilization — nature itself. The beasts, the trees, the rivers. When corruption stains the land, they cry out, and we answer." },
+                { "id": "troubled", "speaker": "yenna", "text": "Aye. Timber wolves growing aggressive, spore creatures multiplying... something drives them mad. The Great Hunt will cull the worst of it.", "effects": [{ "type": "startQuest", "questId": "wildkin_great_hunt" }] },
+                { "id": "end", "speaker": "yenna", "text": "Watch your step. The forest doesn't forgive the careless." }
+            ]
+        },
+        {
+            "id": "althea_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "althea",
+                    "text": "I saw you coming. In dreams, the Veilkeepers showed me your arrival. I am Althea — I See what others cannot.",
+                    "choices": [
+                        { "text": "What do you See for me?", "next": "vision" },
+                        { "text": "Tell me about the Veilkeepers.", "next": "keepers" },
+                        { "text": "That's unsettling.", "next": "end" }
+                    ]
+                },
+                { "id": "vision", "speaker": "althea", "text": "Many paths branch before you. I see four endings — Domination, Harmony, Sacrifice, Collapse. Each choice you make narrows the possibilities. Choose wisely, for consequences echo across eras." },
+                { "id": "keepers", "speaker": "althea", "text": "Five spirits of ancient wisdom. They will answer your questions — but each consultation costs 10 DSP from the world. Ask too much, and they Hollow. Ask too little, and you may walk blind into ruin." },
+                { "id": "end", "speaker": "althea", "text": "Truth often is. Return when you're ready to hear more." }
+            ]
+        },
+        {
+            "id": "garon_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "garon",
+                    "text": "Hmph. Another one who thinks a sharp blade is all they need. I'm Garon — I forge the weapons that keep this Canopy standing.",
+                    "choices": [
+                        { "text": "Show me your wares.", "next": "shop" },
+                        { "text": "Can you repair my equipment?", "next": "repair" },
+                        { "text": "Maybe later.", "next": "end" }
+                    ]
+                },
+                { "id": "shop", "speaker": "garon", "text": "Here. Sap-tempered steel, ironbark shields, everything a Bloomguard or Thornbinder needs. Prices are fair — I don't gouge during Crimson Phase like some." },
+                { "id": "repair", "speaker": "garon", "text": "Bring it here. Maintenance costs half what a new piece would. I use the Bloomguard Forge — best facility in all Verdance." },
+                { "id": "end", "speaker": "garon", "text": "Don't wait too long. A dull blade won't save your life." }
+            ]
+        },
+        {
+            "id": "mycel_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "mycel",
+                    "text": "Don't look at me like that. The Sporecaller Syndicate isn't your enemy. Decay is merely... transformation.",
+                    "choices": [
+                        { "text": "What does the Syndicate want?", "next": "goals" },
+                        { "text": "Decay magic sounds dangerous.", "next": "danger" },
+                        { "text": "I'll be going.", "next": "end" }
+                    ]
+                },
+                { "id": "goals", "speaker": "mycel", "text": "We study the Hollowing — the corruption. Not to spread it, but to understand it. If we can harness decay, we can reverse it. The others fear what they don't understand.", "effects": [{ "type": "startQuest", "questId": "sporecaller_experiment" }] },
+                { "id": "danger", "speaker": "mycel", "text": "All magic is dangerous. The Coven draws from DSP recklessly. We at least acknowledge the cost. Come to our labs — see for yourself." },
+                { "id": "end", "speaker": "mycel", "text": "Remember: nature doesn't judge growth and decay differently. Only people do." }
+            ]
+        },
+        {
+            "id": "borsk_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "borsk",
+                    "text": "You looking to train? I'm Borsk. Been training Bloomguard recruits for twenty years. I can teach you a thing or two about staying alive.",
+                    "choices": [
+                        { "text": "Teach me about combat.", "next": "combat" },
+                        { "text": "I'm already skilled.", "next": "cocky" }
+                    ]
+                },
+                { "id": "combat", "speaker": "borsk", "text": "Good attitude. Remember: Action Points are everything. You get 2 per turn — 3 if you're quick enough. Positioning matters: flank your enemies for bonus damage, use cover to survive." },
+                { "id": "cocky", "speaker": "borsk", "text": "Ha! Every recruit says that right before a Hollow Knight puts them on their back. Come back when you've humbled up." }
+            ]
+        },
+        {
+            "id": "maren_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "maren",
+                    "text": "Welcome to the Roost! Best inn in the Canopy. Need a room, a meal, or just someone to listen?",
+                    "choices": [
+                        { "text": "I'd like to rest.", "next": "rest" },
+                        { "text": "Any news?", "next": "news" }
+                    ]
+                },
+                { "id": "rest", "speaker": "maren", "text": "A good rest will restore your health and recover 10 DSP for the world. The Sap heals while we sleep, you know.", "effects": [{ "type": "rewardXP", "amount": 10 }] },
+                { "id": "news", "speaker": "maren", "text": "Travelers say the Hollowroot Catacombs are stirring again. And the Sporecallers have been buying strange supplies. Something's brewing..." }
+            ]
+        },
+        {
+            "id": "reyla_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "reyla",
+                    "text": "Halt. Guard Captain Reyla. State your business in the Canopy.",
+                    "choices": [
+                        { "text": "I'm an adventurer.", "next": "adventurer" },
+                        { "text": "I want to report something.", "next": "report" }
+                    ]
+                },
+                { "id": "adventurer", "speaker": "reyla", "text": "Another one. Fine — keep your weapons sheathed inside city limits. If you cause trouble, the Bloomguard will handle it. If you want to help, speak to Commander Briara." },
+                { "id": "report", "speaker": "reyla", "text": "Go on. The guard takes all reports seriously. Corruption sightings, criminal activity, suspicious Sporecaller operations — anything helps." }
+            ]
+        },
+        {
+            "id": "merchant_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "merchant",
+                    "text": "Welcome, welcome! Merchant Lirel at your service. Finest goods from across Verdance. Potions, crystals, supplies — I have it all!",
+                    "choices": [
+                        { "text": "Show me your inventory.", "next": "shop" },
+                        { "text": "Any rare items?", "next": "rare" }
+                    ]
+                },
+                { "id": "shop", "speaker": "merchant", "text": "Of course! Prices vary with the Sap Cycle — during Crimson, everything costs 20% more. Blue Phase? Best deals you'll find anywhere." },
+                { "id": "rare", "speaker": "merchant", "text": "Ah, a connoisseur! Check back during Silver Phase — rare enemy spawns drop rare materials, and I buy and sell them." }
+            ]
+        }
+    ]
+}
+
