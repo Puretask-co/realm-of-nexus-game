@@ -172,7 +172,41 @@
                     }
                 ]
             },
-            "unlockRequirements": null
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Ironbloom Sentinel",
+                    "description": "A radiant protector who channels Lumen energy to bolster Guard generation and emit a passive healing aura, keeping allies alive through sustained restoration and ironclad defense.",
+                    "bonusAbility": {
+                        "id": "bg_pure_lumen_aegis",
+                        "name": "Lumen Aegis",
+                        "description": "Emit a healing aura in a 2-tile radius. At the start of each of your turns, all allies within the aura regain 1d6 HP and gain +2 Guard.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "resilience": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Armor glows with warm golden light. Vines bloom with radiant white and gold flowers. Shield emanates a soft luminous barrier."
+                },
+                "blighted": {
+                    "name": "Rotwood Warden",
+                    "description": "A dread sentinel wrapped in decaying bark who punishes attackers with thorns damage and instills fear in nearby enemies, turning defense into a weapon of attrition.",
+                    "bonusAbility": {
+                        "id": "bg_blighted_rotwood_thorns",
+                        "name": "Rotwood Thorns",
+                        "description": "Enemies who strike you in melee take 1d8 necrotic damage and must pass an Insight save or become Frightened for 1 turn, unable to willingly move closer to you.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "resilience": 1
+                    },
+                    "visualTheme": "Bark armor is cracked and oozing dark sap. Thorny growths twist outward from joints. Eyes glow a sickly green, and a faint miasma of decay surrounds the character."
+                }
+            }
         },
         {
             "id": "thornbinder",
@@ -336,7 +370,41 @@
                     }
                 ]
             },
-            "unlockRequirements": null
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Silvervine Scout",
+                    "description": "A luminous ranger who uses purified vine magic to reveal hidden enemies and deploy healing traps that restore allies who step on them, blending reconnaissance with battlefield support.",
+                    "bonusAbility": {
+                        "id": "tb_pure_revealing_light",
+                        "name": "Revealing Light",
+                        "description": "Mark a 3-tile radius area for 3 turns. All hidden or invisible enemies within are revealed, and you may place a Healing Snare trap that restores 2d6 HP to the first ally who enters its tile.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Thorns are replaced by shimmering silver vines. Daggers gleam with pale moonlight. Traps emit a soft white glow when placed."
+                },
+                "blighted": {
+                    "name": "Blightshadow",
+                    "description": "A venomous assassin who coats weapons in concentrated blight toxins, applying stacking poison and decay damage over time that eats through even the hardiest foes.",
+                    "bonusAbility": {
+                        "id": "tb_blighted_creeping_decay",
+                        "name": "Creeping Decay",
+                        "description": "Your poison effects now also apply Decay, dealing an additional 1d4 necrotic damage per turn for 3 turns. Decay stacks up to 3 times on a single target.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Shadow cloak drips with dark ichor. Blades are corroded and ooze a viscous purple-black poison. Footsteps leave briefly withered ground."
+                }
+            }
         },
         {
             "id": "emerald_mystic",
@@ -504,7 +572,41 @@
                     }
                 ]
             },
-            "unlockRequirements": null
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Soulweaver",
+                    "description": "A luminous healer who channels pure Lumen energy to dramatically enhance healing potency and gains the rare ability to resurrect fallen allies, serving as the ultimate lifeline for any party.",
+                    "bonusAbility": {
+                        "id": "em_pure_resurrection",
+                        "name": "Lumen Resurrection",
+                        "description": "Once per combat, revive a fallen ally within 4 tiles with 50% of their maximum HP. The resurrected ally gains +5 Guard and immunity to damage until the start of their next turn.",
+                        "type": "active",
+                        "tier": 3
+                    },
+                    "statModifiers": {
+                        "insight": 2,
+                        "charisma": 1
+                    },
+                    "visualTheme": "Robes shimmer with pure white and emerald light. Hands trail luminous motes when casting. A halo of soft green energy crowns the caster during healing spells."
+                },
+                "blighted": {
+                    "name": "Hollowed Sage",
+                    "description": "A dark spellcaster who drains life force from enemies to fuel twisted magic, converting stolen vitality into devastating necrotic attacks and self-sustaining dark rituals.",
+                    "bonusAbility": {
+                        "id": "em_blighted_life_drain",
+                        "name": "Siphon Vitality",
+                        "description": "Target an enemy within 5 tiles. Deal 2d8 necrotic damage and heal yourself for the amount dealt. If the target is killed by this ability, regain 3 DSP.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "might": 1
+                    },
+                    "visualTheme": "Robes are tattered and stained with dark veins of corruption. Eyes glow hollow purple. Healing spells manifest as dark tendrils that stitch wounds with shadow-thread."
+                }
+            }
         },
         {
             "id": "wildkin_ranger",
@@ -667,7 +769,41 @@
                     }
                 ]
             },
-            "unlockRequirements": null
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Sunlit Stalker",
+                    "description": "A radiant ranger who deepens their bond with nature, gaining an enhanced beast companion infused with Lumen energy and the ability to summon additional creatures to aid in battle.",
+                    "bonusAbility": {
+                        "id": "wr_pure_beast_summon",
+                        "name": "Call of the Wild",
+                        "description": "Summon a Lumen Beast ally with 25 HP that fights alongside your companion for 4 turns. The summoned beast attacks for 1d8 radiant damage and grants +1 AP to your companion on the turn it is summoned.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "charisma": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Armor and cloak are woven with golden vines and sunlit feathers. Beast companion glows with warm amber light. Arrows trail streaks of golden energy."
+                },
+                "blighted": {
+                    "name": "Duskfang Hunter",
+                    "description": "A sinister hunter whose beast companion is corrupted with blight energy, and whose arrows instill supernatural fear, breaking enemy morale while the corrupted beast savages terrified foes.",
+                    "bonusAbility": {
+                        "id": "wr_blighted_fear_arrow",
+                        "name": "Dread Arrow",
+                        "description": "Fire a blight-infused arrow at a target within range. On hit, deal normal damage plus 1d6 necrotic damage and the target becomes Frightened for 2 turns. Frightened enemies have disadvantage on attacks and cannot willingly move toward you or your companion.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Cloak is dark and tattered, trailing wisps of shadow. Beast companion has glowing red eyes and corrupted fur or feathers. Arrows are black-shafted and drip with dark energy."
+                }
+            }
         },
         {
             "id": "sporecaller",
@@ -836,7 +972,41 @@
                     }
                 ]
             },
-            "unlockRequirements": null
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Mycelium Sage",
+                    "description": "A nurturing fungal healer who uses purified spore magic to restore allies through symbiotic connections, creating healing zones and forging mycelial bonds that share vitality across the party.",
+                    "bonusAbility": {
+                        "id": "sc_pure_symbiotic_spores",
+                        "name": "Symbiotic Spores",
+                        "description": "Release a cloud of healing spores in a 3-tile radius. Allies within the cloud regain 1d6 HP at the start of each of their turns for 3 turns. While in the cloud, allies gain +1 to all saving throws.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "charisma": 1
+                    },
+                    "visualTheme": "Spores glow with soft bioluminescent blue and green light. Fungal growths are clean and symmetrical, resembling coral. Mycelial threads shimmer with healing energy."
+                },
+                "blighted": {
+                    "name": "Plague Herald",
+                    "description": "A harbinger of pestilence who weaponizes mass poison clouds and a persistent decay aura, slowly rotting everything in their vicinity and turning entire battlefields into toxic wastelands.",
+                    "bonusAbility": {
+                        "id": "sc_blighted_decay_aura",
+                        "name": "Aura of Decay",
+                        "description": "Emit a persistent 2-tile radius aura of decay. All enemies within the aura take 1d6 necrotic damage at the start of their turns and have their healing received reduced by 50%. Lasts until the end of combat.",
+                        "type": "active",
+                        "tier": 3
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Body is partially overtaken by dark, pulsating fungal growths. Spore clouds are thick and black-green. The ground visibly rots and withers in a radius around the character."
+                }
+            }
         }
     ]
 }

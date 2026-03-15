@@ -4,16 +4,16 @@ import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 import { AttributeSystem } from '../systems/AttributeSystem.js';
 
 /**
- * CharacterCreationScene — Ancestry selection and attribute point allocation.
+ * CharacterCreationScene — 5-step character creation.
  *
  * Flow: ClassSelectionScene → CharacterCreationScene → GameScene
  *
- * Features:
- *   - 3 ancestries (Human, Soulborn, Half-Abyss)
- *   - 8 attribute points to allocate across 5 attributes (max 4 each, cap 6)
- *   - Ancestry modifiers applied on top
- *   - Special ability preview per ancestry
- *   - Human gets +1 to any chosen attribute
+ * Steps:
+ *   1. Ancestry selection (Human, Soulborn, Half-Abyss) — done here
+ *   2. Class was already selected in ClassSelectionScene
+ *   3. Attribute point allocation (8 points, max 4 each, cap 6)
+ *   4. Pure/Blighted variant selection
+ *   5. Backstory selection (8 backgrounds that affect dialogue/quests)
  */
 export default class CharacterCreationScene extends Phaser.Scene {
     constructor() {
@@ -40,6 +40,20 @@ export default class CharacterCreationScene extends Phaser.Scene {
         this.pointsRemaining = 8;
         this.maxPerAttr = 4;
         this.humanBonusAttr = null; // For Human's +1 choice
+        this.selectedVariant = 'pure'; // Pure or Blighted
+        this.selectedBackstoryIndex = 0;
+
+        // 8 backstory options
+        this.backstories = [
+            { id: 'orphan_of_the_grove', name: 'Orphan of the Grove', description: 'Raised by the trees themselves after your family vanished during a Crimson Sap surge.', bonusSkill: 'survival', bonusQuest: 'find_your_family' },
+            { id: 'coven_apprentice', name: 'Coven Apprentice', description: 'Trained by an Emerald Coven mystic who disappeared, leaving only cryptic notes.', bonusSkill: 'arcana', bonusQuest: 'the_missing_mentor' },
+            { id: 'bloomguard_recruit', name: 'Bloomguard Recruit', description: 'You served as a Bloomguard cadet before a scandal forced you out. Now you seek redemption.', bonusSkill: 'athletics', bonusQuest: 'clear_your_name' },
+            { id: 'wandering_trader', name: 'Wandering Trader', description: 'A Sapling Consortium merchant who stumbled into something far larger than any trade deal.', bonusSkill: 'persuasion', bonusQuest: 'the_lost_caravan' },
+            { id: 'corruption_survivor', name: 'Corruption Survivor', description: 'You survived Blight infection as a child, leaving you scarred but resistant.', bonusSkill: 'medicine', bonusQuest: 'the_cure' },
+            { id: 'veil_touched', name: 'Veil-Touched', description: 'Born during a Silver Sap phase, you occasionally hear whispers from beyond the Veil.', bonusSkill: 'perception', bonusQuest: 'voices_in_the_veil' },
+            { id: 'beast_raised', name: 'Beast-Raised', description: 'Abandoned as an infant and raised by Wildkin creatures in the deep forest.', bonusSkill: 'nature', bonusQuest: 'the_wild_calling' },
+            { id: 'noble_exile', name: 'Noble Exile', description: 'Heir to a disgraced Thornbinder house, you walk the line between shadow and light.', bonusSkill: 'deception', bonusQuest: 'house_of_thorns' }
+        ];
 
         // Apply class starting attributes as base
         const cls = this.classSystem.getCurrentClass();
@@ -71,10 +85,16 @@ export default class CharacterCreationScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // ---- Left panel: Ancestry Selection ----
-        this._buildAncestryPanel(30, 80, 500, 280);
+        this._buildAncestryPanel(30, 80, 500, 210);
 
         // ---- Right panel: Attribute Allocation ----
         this._buildAttributePanel(560, 80, 400, 280);
+
+        // ---- Middle-left: Pure/Blighted Variant ----
+        this._buildVariantPanel(30, 300, 240, 90);
+
+        // ---- Middle-right: Backstory Selection ----
+        this._buildBackstoryPanel(280, 300, 250, 90);
 
         // ---- Bottom: Summary + Confirm ----
         this._buildSummaryPanel(width / 2, 400, 600, 200);
@@ -301,6 +321,102 @@ export default class CharacterCreationScene extends Phaser.Scene {
         }
     }
 
+    _buildVariantPanel(x, y, w, h) {
+        this.add.text(x + w / 2, y, 'PATH', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5);
+
+        const variants = [
+            { id: 'pure', name: 'Pure (Lumen)', color: 0x44cc88, desc: 'Healing, protection, growth' },
+            { id: 'blighted', name: 'Blighted', color: 0xcc4488, desc: 'Decay, corruption, chaos' }
+        ];
+
+        this._variantBgs = [];
+        variants.forEach((v, i) => {
+            const vx = x + 5;
+            const vy = y + 18 + i * 34;
+            const vw = w - 10;
+
+            const bg = this.add.graphics();
+            bg.fillStyle(0x111133, 0.8);
+            bg.fillRoundedRect(vx, vy, vw, 30, 4);
+            bg.lineStyle(2, v.color, this.selectedVariant === v.id ? 1.0 : 0.3);
+            bg.strokeRoundedRect(vx, vy, vw, 30, 4);
+            this._variantBgs.push({ bg, vx, vy, vw, color: v.color, id: v.id });
+
+            const colorStr = `#${v.color.toString(16).padStart(6, '0')}`;
+            this.add.text(vx + 8, vy + 4, v.name, {
+                fontFamily: 'monospace', fontSize: '10px', color: colorStr
+            });
+            this.add.text(vx + 8, vy + 17, v.desc, {
+                fontFamily: 'monospace', fontSize: '7px', color: '#8888aa'
+            });
+
+            const hitZone = this.add.zone(vx + vw / 2, vy + 15, vw, 30).setInteractive({ useHandCursor: true });
+            hitZone.on('pointerdown', () => {
+                this.selectedVariant = v.id;
+                this._refreshVariantHighlight();
+                this._updateSummary();
+            });
+        });
+    }
+
+    _refreshVariantHighlight() {
+        for (const v of this._variantBgs) {
+            v.bg.clear();
+            const selected = this.selectedVariant === v.id;
+            v.bg.fillStyle(selected ? 0x1a1a55 : 0x111133, 0.8);
+            v.bg.fillRoundedRect(v.vx, v.vy, v.vw, 30, 4);
+            v.bg.lineStyle(2, v.color, selected ? 1.0 : 0.3);
+            v.bg.strokeRoundedRect(v.vx, v.vy, v.vw, 30, 4);
+        }
+    }
+
+    _buildBackstoryPanel(x, y, w, h) {
+        this.add.text(x + w / 2, y, 'BACKSTORY', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5);
+
+        // Compact list with left/right arrows
+        const listY = y + 20;
+        const listW = w - 40;
+
+        this._backstoryNameText = this.add.text(x + w / 2, listY + 8, this.backstories[0].name, {
+            fontFamily: 'monospace', fontSize: '10px', color: '#88aaff'
+        }).setOrigin(0.5);
+
+        this._backstoryDescText = this.add.text(x + w / 2, listY + 24, this.backstories[0].description, {
+            fontFamily: 'monospace', fontSize: '7px', color: '#8888aa',
+            wordWrap: { width: listW }, align: 'center', lineSpacing: 1
+        }).setOrigin(0.5, 0);
+
+        this._backstoryBonusText = this.add.text(x + w / 2, listY + 56, `Bonus: +1 ${this.backstories[0].bonusSkill}`, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#ffcc44'
+        }).setOrigin(0.5);
+
+        // Arrow buttons
+        const leftBtn = this.add.text(x + 5, listY + 8, '<', {
+            fontFamily: 'monospace', fontSize: '18px', color: '#4488ff'
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+        leftBtn.on('pointerdown', () => this._navigateBackstory(-1));
+
+        const rightBtn = this.add.text(x + w - 5, listY + 8, '>', {
+            fontFamily: 'monospace', fontSize: '18px', color: '#4488ff'
+        }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
+        rightBtn.on('pointerdown', () => this._navigateBackstory(1));
+    }
+
+    _navigateBackstory(dir) {
+        this.selectedBackstoryIndex = (this.selectedBackstoryIndex + dir + this.backstories.length) % this.backstories.length;
+        const bs = this.backstories[this.selectedBackstoryIndex];
+        this._backstoryNameText.setText(bs.name);
+        this._backstoryDescText.setText(bs.description);
+        this._backstoryBonusText.setText(`Bonus: +1 ${bs.bonusSkill}`);
+        this._updateSummary();
+    }
+
     _buildSummaryPanel(cx, y, w, h) {
         const x = cx - w / 2;
 
@@ -360,18 +476,18 @@ export default class CharacterCreationScene extends Phaser.Scene {
     _updateSummary() {
         const cls = this.classSystem.getCurrentClass();
         const ancestry = this.ancestries[this.selectedAncestryIndex];
+        const backstory = this.backstories[this.selectedBackstoryIndex];
         const clsName = cls?.name || 'Adventurer';
         const ancName = ancestry?.name || 'Unknown';
-        const abilName = ancestry?.specialAbility?.name || 'None';
+        const variantLabel = this.selectedVariant === 'pure' ? 'Pure (Lumen)' : 'Blighted';
 
         const hp = (cls?.startingHP || 30) + (this.attributes.Resilience * 5);
         const guard = cls?.startingGuard || 5;
 
         const lines = [
-            `${ancName} ${clsName}`,
+            `${ancName} ${variantLabel} ${clsName}  —  ${backstory?.name || ''}`,
             `HP: ${hp}  |  Guard: ${guard}  |  AP: ${cls?.baseAP || 2}`,
             `MIG: ${this.attributes.Might}  AGI: ${this.attributes.Agility}  RES: ${this.attributes.Resilience}  INS: ${this.attributes.Insight}  CHA: ${this.attributes.Charisma}`,
-            `Ancestry Ability: ${abilName}`,
             this.pointsRemaining > 0 ? `(${this.pointsRemaining} attribute points remaining)` : ''
         ].filter(Boolean);
 
@@ -395,16 +511,22 @@ export default class CharacterCreationScene extends Phaser.Scene {
         }
 
         const ancestry = this.ancestries[this.selectedAncestryIndex];
+        const backstory = this.backstories[this.selectedBackstoryIndex];
 
         // Store selections in registry for GameScene to pick up
         this.registry.set('selectedAncestry', ancestry?.id || 'human');
         this.registry.set('allocatedAttributes', { ...this.attributes });
+        this.registry.set('selectedVariant', this.selectedVariant);
+        this.registry.set('selectedBackstory', backstory?.id || 'orphan_of_the_grove');
 
         // Apply to AttributeSystem
         this.attributeSystem.setAttributes(this.attributes);
         if (ancestry) {
             this.attributeSystem.applyAncestryBonuses(ancestry.id);
         }
+
+        // Apply variant to PlayerClassSystem
+        this.classSystem.setVariant(this.selectedVariant);
 
         // Transition
         const { width, height } = this.scale;
@@ -420,7 +542,11 @@ export default class CharacterCreationScene extends Phaser.Scene {
                 EventBus.emit('character:created', {
                     ancestry: ancestry?.id,
                     attributes: this.attributes,
-                    classId: this.classSystem.getCurrentClass()?.id
+                    classId: this.classSystem.getCurrentClass()?.id,
+                    variant: this.selectedVariant,
+                    backstory: backstory?.id,
+                    backstoryBonusSkill: backstory?.bonusSkill,
+                    backstoryBonusQuest: backstory?.bonusQuest
                 });
                 this.scene.start('GameScene');
             }

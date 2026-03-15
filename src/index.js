@@ -64,6 +64,20 @@ export { AISystem } from './systems/AISystem.js';
 export { default as SaveManager } from './systems/SaveManager.js';
 export { default as PerformanceProfiler } from './systems/PerformanceProfiler.js';
 
+// Design-Doc Aligned Systems
+export { TacticalCombatSystem } from './systems/TacticalCombatSystem.js';
+export { DSPSystem } from './systems/DSPSystem.js';
+export { AttributeSystem } from './systems/AttributeSystem.js';
+export { FactionSystem } from './systems/FactionSystem.js';
+export { VeilkeeperSystem } from './systems/VeilkeeperSystem.js';
+export { NarrativeSystem } from './systems/NarrativeSystem.js';
+export { MoralChoiceSystem } from './systems/MoralChoiceSystem.js';
+export { CompanionSystem } from './systems/CompanionSystem.js';
+export { CraftingSystem } from './systems/CraftingSystem.js';
+export { SkillCheckSystem } from './systems/SkillCheckSystem.js';
+export { DifficultySystem } from './systems/DifficultySystem.js';
+export { AIDungeonMaster } from './systems/AIDungeonMaster.js';
+
 // Components
 export { default as Player } from './components/Player.js';
 export { default as Enemy } from './components/Enemy.js';

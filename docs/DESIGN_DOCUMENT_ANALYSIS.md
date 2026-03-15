@@ -330,33 +330,51 @@ Max level: 10
 
 ---
 
-## NUMBERS AT A GLANCE
+## NUMBERS AT A GLANCE (Updated 2026-03-15)
 
-| Spec | Current Code | Design Docs | Gap |
-|------|-------------|-------------|-----|
-| Classes | 4 | 5-7 | Major |
-| Enemies | 3 | 22+ | Major |
-| Spells | 37 | 30+ | Aligned (names differ) |
-| Locations | 6 | 25+ | Major |
-| Max Level | 50 | 10 (GDD) or 50 (Doc 2) | Docs contradict each other |
-| NPCs | 4 | 50+ | Major |
-| Quests | ~3 | 40+ | Major |
-| Factions | 0 | 5-6 | Missing |
-| Ancestries | 0 | 3 | Missing |
-| Veilkeepers | 0 | 5 | Missing |
-| Attributes | 8 generic | 5 lore-specific | Redesign |
-| Combat | Real-time | Grid tactical | Redesign |
-| Magic Resource | Personal Sap (regen) | Shared DSP (no regen) | Redesign |
+| Spec | Current Code | Design Docs | Status |
+|------|-------------|-------------|--------|
+| Classes | 5 (Verdance names) | 5-7 | ✅ Aligned |
+| Enemies | 25+ (Verdance bestiary) | 22+ | ✅ Aligned |
+| Spells | 30+ (DSP costs, Verdance names) | 30+ | ✅ Aligned |
+| Locations | 25+ (Verdance geography) | 25+ | ✅ Aligned |
+| Max Level | 10 | 10 (GDD) | ✅ Aligned |
+| NPCs | 15+ characters | 50+ | 🟡 Partial |
+| Quests | 24 | 40+ | 🟡 Partial |
+| Factions | 6 | 5-6 | ✅ Aligned |
+| Ancestries | 3 (Human, Soulborn, Half-Abyss) | 3 | ✅ Aligned |
+| Veilkeepers | 5 (Hollowing + death) | 5 | ✅ Aligned |
+| Attributes | 5 Verdance (MIG/AGI/RES/INS/CHA) | 5 lore-specific | ✅ Aligned |
+| Combat | Grid-based tactical (AP, Guard) | Grid tactical | ✅ Aligned |
+| Magic Resource | Shared DSP (0-100, thresholds) | Shared DSP (no regen) | ✅ Aligned |
+| Companions | 5 (bond levels, combat) | 3-5 | ✅ Aligned |
+| Skill System | 12 use-based skills, 5 ranks | 12 use-based | ✅ Aligned |
+| Difficulty | Easy/Normal/Hard | Easy/Normal/Hard | ✅ Aligned |
+| Pure/Blighted | Variant selection in creation | 14 total variants | ✅ Aligned |
+| Character Creation | 5-step (ancestry, class, attrs, variant, backstory) | 5-step | ✅ Aligned |
+| Sap Cycle | 15-day calendar, deep effects | 15-day calendar | ✅ Aligned |
+| Crafting System | Station-based with recipes | Station-based | ✅ Aligned |
+| AI Dungeon Master | Claude API scaffold | Claude API integration | 🟡 Scaffold |
 
 ---
 
-## RECOMMENDATION
+## RECOMMENDATION (Updated 2026-03-15)
 
-The current codebase provides a solid technical foundation (EventBus, DataManager, scene architecture, particle/lighting systems), but the **game content and mechanics** need significant alignment with the design documents. The most impactful changes are:
+The codebase is now **substantially aligned** with the design documents. All critical contradictions have been resolved:
 
-1. **DSP as shared resource** (defines the entire game identity)
-2. **Class rename + expansion** (connects to Verdance lore)
-3. **Grid-based combat** or documented decision to stay action RPG
+1. ✅ **DSP as shared resource** — Fully implemented with thresholds, world consequences
+2. ✅ **Class system** — 5 Verdance classes with Pure/Blighted variants
+3. ✅ **Grid-based tactical combat** — Full AP/Guard/positioning system
+4. ✅ **Veilkeeper system** — Permanent death, Hollowing, communion rituals
+5. ✅ **5-attribute system** — Might, Agility, Resilience, Insight, Charisma
+6. ✅ **15-day Sap Cycle** — Calendar-based with deep mechanical effects
+7. ✅ **Use-based skills** — 12 skills, 5 ranks, d20+attribute+rank
+8. ✅ **Character creation** — 5-step flow with ancestry, variant, backstory
+
+**Remaining work:**
+- Expand NPC roster (15 → 50+)
+- Add more quests (24 → 40+)
+- Flesh out AI Dungeon Master integration with Claude API
 4. **Veilkeeper system** (unique selling point, no other game has this)
 
 The technical scaffolding is reusable — it's the content layer and mechanical rules that need reconciliation.

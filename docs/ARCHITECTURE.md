@@ -22,6 +22,8 @@ src/
 ├── index.js                    # Library export hub (re-exports all systems)
 ├── scenes/
 │   ├── BootScene.js            # Asset loading, placeholder generation
+│   ├── ClassSelectionScene.js  # 5-class selection with Verdance lore
+│   ├── CharacterCreationScene.js # 5-step: ancestry, attrs, variant, backstory
 │   ├── GameScene.js            # Main gameplay orchestration
 │   ├── EditorScene.js          # Visual level editor (F2)
 │   └── UIScene.js              # HUD overlay (parallel scene)
@@ -50,7 +52,20 @@ src/
 │   ├── CSVDataLoader.js           # CSV import/export for data
 │   ├── HotReloadSystem.js         # Dev-mode data hot-reloading
 │   ├── ParticleCollisionSystem.js # Particle-world collision
-│   └── SceneLoader.js             # Scene file loading
+│   ├── SceneLoader.js             # Scene file loading
+│   ├── TacticalCombatSystem.js    # Grid-based tactical combat (AP, Guard, positioning)
+│   ├── DSPSystem.js               # Shared world magic resource (Domain Soul Pool)
+│   ├── AttributeSystem.js         # 5 core attributes (Might/Agi/Res/Ins/Cha)
+│   ├── FactionSystem.js           # 6-faction reputation tracking
+│   ├── VeilkeeperSystem.js        # 5 mentor spirits with permanent death
+│   ├── CompanionSystem.js         # 5 recruitable companions with bond levels
+│   ├── SkillCheckSystem.js        # 12 use-based skills with 5 ranks
+│   ├── DifficultySystem.js        # Easy/Normal/Hard difficulty multipliers
+│   ├── NarrativeSystem.js         # 6-era campaign structure
+│   ├── MoralChoiceSystem.js       # Consequence tracking for player choices
+│   ├── CraftingSystem.js          # Station-based crafting with recipes
+│   ├── AIDungeonMaster.js         # Claude API integration for emergent narrative
+│   └── ContentInitializer.js      # Registers quests, dialogues, factions, etc.
 ├── integration/
 │   ├── SpellVFXIntegration.js  # Bridges spells → particles + lights
 │   ├── SpellParticleIntegration.js # Maps spells to particle effects
