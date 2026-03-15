@@ -2,11 +2,11 @@ import EventBus from '../core/EventBus.js';
 import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 
 /**
- * ClassSelectionScene — Lets the player choose one of 4 classes before gameplay.
+ * ClassSelectionScene — Lets the player choose one of 5 Verdance classes.
  *
- * Displays each class with name, description, stats radar, phase affinity,
- * starting spells, and passives. Selecting a class applies it via
- * PlayerClassSystem and transitions to GameScene.
+ * Displays each class with name, role, description, Verdance attributes,
+ * starting spells, and abilities. Selecting a class applies it via
+ * PlayerClassSystem and transitions to CharacterCreationScene (or GameScene).
  */
 export default class ClassSelectionScene extends Phaser.Scene {
     constructor() {
@@ -19,6 +19,15 @@ export default class ClassSelectionScene extends Phaser.Scene {
         this.selectedIndex = 0;
 
         const { width, height } = this.scale;
+
+        // Class color mapping by role
+        this._roleColors = {
+            'Tank': 0x44cc44,
+            'Rogue': 0x8844cc,
+            'Caster/Healer': 0x4488ff,
+            'Ranged DPS': 0xcc8844,
+            'Debuffer/Controller': 0xcc4488
+        };
 
         // Background
         const bg = this.add.graphics();
@@ -36,20 +45,20 @@ export default class ClassSelectionScene extends Phaser.Scene {
             stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, 62, 'Each class has a Sap Phase affinity that shapes your playstyle', {
+        this.add.text(width / 2, 62, 'Each class has unique abilities and a role in the Verdance', {
             fontFamily: 'monospace', fontSize: '11px', color: '#666688'
         }).setOrigin(0.5);
 
-        // Class cards
+        // Class cards — 5 classes, narrower cards
         this._cards = [];
-        const cardW = 280;
-        const cardH = 480;
-        const gap = 20;
+        const cardW = 230;
+        const cardH = 500;
+        const gap = 15;
         const totalW = this.classes.length * cardW + (this.classes.length - 1) * gap;
         const startX = (width - totalW) / 2;
 
         this.classes.forEach((cls, i) => {
-            const card = this._createClassCard(startX + i * (cardW + gap), 90, cardW, cardH, cls, i);
+            const card = this._createClassCard(startX + i * (cardW + gap), 85, cardW, cardH, cls, i);
             this._cards.push(card);
         });
 
@@ -75,117 +84,139 @@ export default class ClassSelectionScene extends Phaser.Scene {
         this._highlightCard(0);
     }
 
+    _getClassColor(cls) {
+        return this._roleColors[cls.role] || 0x888888;
+    }
+
     _createClassCard(x, y, w, h, cls, index) {
         const container = this.add.container(x, y);
+        const color = this._getClassColor(cls);
 
         // Card background
         const bg = this.add.graphics();
         bg.fillStyle(0x111133, 0.8);
         bg.fillRoundedRect(0, 0, w, h, 8);
-        bg.lineStyle(2, cls.color, 0.5);
+        bg.lineStyle(2, color, 0.5);
         bg.strokeRoundedRect(0, 0, w, h, 8);
         container.add(bg);
 
         // Class sprite preview
         const spriteKey = this.textures.exists(cls.sprite) ? cls.sprite : 'player';
-        const sprite = this.add.image(w / 2, 50, spriteKey).setScale(2.5);
-        sprite.setTint(cls.color);
+        const sprite = this.add.image(w / 2, 45, spriteKey).setScale(2.5);
+        sprite.setTint(color);
         container.add(sprite);
 
         // Class name
-        const colorStr = `#${cls.color.toString(16).padStart(6, '0')}`;
-        const nameText = this.add.text(w / 2, 85, cls.name, {
-            fontFamily: 'monospace', fontSize: '16px', color: colorStr,
+        const colorStr = `#${color.toString(16).padStart(6, '0')}`;
+        const nameText = this.add.text(w / 2, 80, cls.name, {
+            fontFamily: 'monospace', fontSize: '14px', color: colorStr,
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5);
         container.add(nameText);
 
-        // Phase affinity
-        const affinityText = cls.phaseAffinity
-            ? `${cls.phaseAffinity.toUpperCase()} Phase`
-            : 'ALL Phases';
-        const affinityColor = {
-            blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd', null: '#44cc44'
-        }[cls.phaseAffinity] || '#44cc44';
-
-        container.add(this.add.text(w / 2, 105, affinityText, {
-            fontFamily: 'monospace', fontSize: '10px', color: affinityColor
+        // Role
+        container.add(this.add.text(w / 2, 98, cls.role, {
+            fontFamily: 'monospace', fontSize: '10px', color: '#8888aa'
         }).setOrigin(0.5));
 
-        // Description
-        const desc = this.add.text(w / 2, 125, cls.description, {
-            fontFamily: 'monospace', fontSize: '9px', color: '#8888aa',
-            wordWrap: { width: w - 20 }, align: 'center', lineSpacing: 2
+        // Description (truncated)
+        const descText = (cls.description || '').substring(0, 120) + (cls.description?.length > 120 ? '...' : '');
+        const desc = this.add.text(w / 2, 114, descText, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#7777aa',
+            wordWrap: { width: w - 16 }, align: 'center', lineSpacing: 2
         }).setOrigin(0.5, 0);
         container.add(desc);
 
-        // Stats
-        const statsY = 195;
-        const stats = cls.baseStats;
-        const statEntries = [
-            { label: 'HP', value: stats.hp, max: 150, color: '#ff6666' },
-            { label: 'SAP', value: stats.sap, max: 150, color: '#6688ff' },
-            { label: 'ATK', value: stats.atk, max: 20, color: '#ffaa44' },
-            { label: 'DEF', value: stats.def, max: 15, color: '#88aacc' },
-            { label: 'MAG', value: stats.mag, max: 15, color: '#cc66ff' },
-            { label: 'SPD', value: stats.speed, max: 250, color: '#66ffaa' }
+        // Verdance Attributes
+        const statsY = 185;
+        container.add(this.add.text(10, statsY - 14, 'Attributes:', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
+        }));
+
+        const attrs = cls.baseStats || {};
+        const attrEntries = [
+            { label: 'MIG', value: attrs.might || 0, color: '#ff6666' },
+            { label: 'AGI', value: attrs.agility || 0, color: '#66ffaa' },
+            { label: 'RES', value: attrs.resilience || 0, color: '#88aacc' },
+            { label: 'INS', value: attrs.insight || 0, color: '#cc66ff' },
+            { label: 'CHA', value: attrs.charisma || 0, color: '#ffcc44' }
         ];
 
-        statEntries.forEach((stat, si) => {
+        attrEntries.forEach((attr, si) => {
             const sy = statsY + si * 16;
-
-            container.add(this.add.text(10, sy, stat.label, {
-                fontFamily: 'monospace', fontSize: '9px', color: stat.color
+            container.add(this.add.text(10, sy, attr.label, {
+                fontFamily: 'monospace', fontSize: '9px', color: attr.color
             }));
 
-            // Bar background
+            // Bar
             const barGfx = this.add.graphics();
             barGfx.fillStyle(0x222244, 0.6);
-            barGfx.fillRect(45, sy + 2, 160, 8);
-            const ratio = Math.min(1, stat.value / stat.max);
-            const barColor = parseInt(stat.color.replace('#', ''), 16);
+            barGfx.fillRect(42, sy + 2, 130, 8);
+            const ratio = Math.min(1, attr.value / 4);
+            const barColor = parseInt(attr.color.replace('#', ''), 16);
             barGfx.fillStyle(barColor, 0.7);
-            barGfx.fillRect(45, sy + 2, 160 * ratio, 8);
+            barGfx.fillRect(42, sy + 2, 130 * ratio, 8);
             container.add(barGfx);
 
-            container.add(this.add.text(210, sy, `${stat.value}`, {
+            container.add(this.add.text(178, sy, `${attr.value}`, {
                 fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc'
             }));
         });
 
+        // Combat stats row
+        const combatY = statsY + attrEntries.length * 16 + 6;
+        const hp = cls.startingHP || 30;
+        const guard = cls.startingGuard || 0;
+        const ap = cls.baseAP || 2;
+        container.add(this.add.text(10, combatY, `HP: ${hp}  Guard: ${guard}  AP: ${ap}`, {
+            fontFamily: 'monospace', fontSize: '9px', color: '#88aa88'
+        }));
+
         // Starting spells
-        const spellY = statsY + statEntries.length * 16 + 10;
+        const spellY = combatY + 18;
         container.add(this.add.text(10, spellY, 'Starting Spells:', {
             fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
         }));
 
-        cls.startingSpells.forEach((spellId, si) => {
+        const startSpells = cls.startingSpells || [];
+        startSpells.forEach((spellId, si) => {
             const spellName = spellId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             container.add(this.add.text(15, spellY + 14 + si * 12, `- ${spellName}`, {
                 fontFamily: 'monospace', fontSize: '9px', color: colorStr
             }));
         });
 
-        // Passives
-        const passiveY = spellY + 14 + cls.startingSpells.length * 12 + 8;
-        container.add(this.add.text(10, passiveY, 'Passives:', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
-        }));
-
-        cls.passives.forEach((passive, pi) => {
-            const lvlTag = passive.unlockLevel ? ` (Lv.${passive.unlockLevel})` : '';
-            container.add(this.add.text(15, passiveY + 14 + pi * 12, `- ${passive.name}${lvlTag}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#8888aa'
+        // Level 1 abilities
+        const abilityY = spellY + 14 + startSpells.length * 12 + 8;
+        const lvl1Abilities = cls.classAbilities?.level1 || [];
+        if (lvl1Abilities.length > 0) {
+            container.add(this.add.text(10, abilityY, 'Abilities:', {
+                fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
             }));
-        });
+
+            lvl1Abilities.slice(0, 3).forEach((ability, ai) => {
+                container.add(this.add.text(15, abilityY + 14 + ai * 12, `- ${ability.name}`, {
+                    fontFamily: 'monospace', fontSize: '9px', color: '#8888aa'
+                }));
+            });
+        }
 
         // Ultimate
-        const ultY = passiveY + 14 + cls.passives.length * 12 + 8;
-        const ultName = cls.ultimateSpell.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        container.add(this.add.text(10, ultY, `Ultimate: ${ultName}`, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44',
-            stroke: '#000', strokeThickness: 1
-        }));
+        const ultAbility = cls.classAbilities?.ultimate;
+        if (ultAbility) {
+            const ultY = abilityY + 14 + Math.min(lvl1Abilities.length, 3) * 12 + 8;
+            container.add(this.add.text(10, ultY, `Ultimate: ${ultAbility.name}`, {
+                fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44',
+                stroke: '#000', strokeThickness: 1
+            }));
+        }
+
+        // Preferred armor/weapons
+        const gearY = h - 40;
+        const armorStr = (cls.preferredArmor || 'light').charAt(0).toUpperCase() + (cls.preferredArmor || 'light').slice(1);
+        container.add(this.add.text(w / 2, gearY, `${armorStr} Armor`, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#666688'
+        }).setOrigin(0.5));
 
         // Click interaction
         const hitZone = this.add.zone(w / 2, h / 2, w, h).setInteractive({ useHandCursor: true });
@@ -198,7 +229,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
                 bg.clear();
                 bg.fillStyle(0x1a1a44, 0.9);
                 bg.fillRoundedRect(0, 0, w, h, 8);
-                bg.lineStyle(2, cls.color, 0.6);
+                bg.lineStyle(2, color, 0.6);
                 bg.strokeRoundedRect(0, 0, w, h, 8);
             }
         });
@@ -207,13 +238,13 @@ export default class ClassSelectionScene extends Phaser.Scene {
                 bg.clear();
                 bg.fillStyle(0x111133, 0.8);
                 bg.fillRoundedRect(0, 0, w, h, 8);
-                bg.lineStyle(2, cls.color, 0.5);
+                bg.lineStyle(2, color, 0.5);
                 bg.strokeRoundedRect(0, 0, w, h, 8);
             }
         });
         container.add(hitZone);
 
-        return { container, bg, cls, w, h };
+        return { container, bg, cls, w, h, color };
     }
 
     _createConfirmButton(cx, cy) {
@@ -271,16 +302,16 @@ export default class ClassSelectionScene extends Phaser.Scene {
             if (isSelected) {
                 card.bg.fillStyle(0x1a1a55, 0.95);
                 card.bg.fillRoundedRect(0, 0, card.w, card.h, 8);
-                card.bg.lineStyle(3, card.cls.color, 1.0);
+                card.bg.lineStyle(3, card.color, 1.0);
                 card.bg.strokeRoundedRect(0, 0, card.w, card.h, 8);
 
                 // Glow effect
-                card.bg.lineStyle(6, card.cls.color, 0.15);
+                card.bg.lineStyle(6, card.color, 0.15);
                 card.bg.strokeRoundedRect(-3, -3, card.w + 6, card.h + 6, 10);
             } else {
                 card.bg.fillStyle(0x111133, 0.6);
                 card.bg.fillRoundedRect(0, 0, card.w, card.h, 8);
-                card.bg.lineStyle(2, card.cls.color, 0.3);
+                card.bg.lineStyle(2, card.color, 0.3);
                 card.bg.strokeRoundedRect(0, 0, card.w, card.h, 8);
             }
 
@@ -300,13 +331,14 @@ export default class ClassSelectionScene extends Phaser.Scene {
         if (!cls) return;
 
         this.classSystem.selectClass(cls.id);
+        const color = this._getClassColor(cls);
 
         // Flash and transition
-        this.cameras.main.flash(400, ...this._hexToRGB(cls.color));
+        this.cameras.main.flash(400, ...this._hexToRGB(color));
 
         const { width, height } = this.scale;
         const overlay = this.add.graphics().setDepth(100);
-        overlay.fillStyle(cls.color, 0);
+        overlay.fillStyle(color, 0);
         overlay.fillRect(0, 0, width, height);
 
         this.tweens.add({
@@ -315,14 +347,15 @@ export default class ClassSelectionScene extends Phaser.Scene {
             duration: 600,
             onComplete: () => {
                 EventBus.emit('class:confirmed', { classId: cls.id });
-                this.scene.start('GameScene');
+                // Go to character creation (ancestry + attributes) before game
+                this.scene.start('CharacterCreationScene');
             }
         });
 
         // Confirm text
         this.add.text(width / 2, height / 2, cls.name.toUpperCase(), {
             fontFamily: 'monospace', fontSize: '36px',
-            color: `#${cls.color.toString(16).padStart(6, '0')}`,
+            color: `#${color.toString(16).padStart(6, '0')}`,
             stroke: '#000', strokeThickness: 5
         }).setOrigin(0.5).setDepth(101).setAlpha(0).setScale(0.5);
 

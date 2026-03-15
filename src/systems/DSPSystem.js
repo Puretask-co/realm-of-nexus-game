@@ -204,6 +204,15 @@ export class DSPSystem {
       this._previousThreshold = this.getCurrentThreshold();
     }
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
+
+  drain(amount, source) {
+    this.currentDSP = Math.max(this.min, this.currentDSP - amount);
+    this.eventBus.emit('dsp:drained', { amount, source, current: this.currentDSP });
+    this._checkThreshold();
+  }
 }
 
 export default DSPSystem;

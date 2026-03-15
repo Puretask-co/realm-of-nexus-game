@@ -196,6 +196,26 @@ export class FactionSystem {
       if (faction) faction.reputation = rep;
     }
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
+
+  registerFaction(id, factionData) {
+    if (this.factions.has(id)) return false;
+    this.factions.set(id, {
+      id,
+      name: factionData.name || id,
+      description: factionData.description || '',
+      color: factionData.color || 0x888888,
+      reputation: factionData.reputation || 0,
+      ...factionData
+    });
+    return true;
+  }
+
+  modifyReputation(factionId, amount, source = 'unknown') {
+    this.changeReputation(factionId, amount, source);
+  }
 }
 
 export default FactionSystem;

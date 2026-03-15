@@ -215,6 +215,9 @@ export class CompanionSystem {
       if (c) Object.assign(c, state);
     }
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
 }
 
 export default CompanionSystem;

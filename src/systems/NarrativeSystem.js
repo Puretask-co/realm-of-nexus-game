@@ -243,6 +243,13 @@ export class NarrativeSystem {
     if (data.discoveredTruths) this.discoveredTruths = new Set(data.discoveredTruths);
     if (data.availableEndings) this.availableEndings = new Set(data.availableEndings);
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
+
+  loadStoryData(storyData) {
+    this.initialize(storyData);
+  }
 }
 
 export default NarrativeSystem;

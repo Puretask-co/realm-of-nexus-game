@@ -201,6 +201,9 @@ export class MoralChoiceSystem {
     if (data.pendingConsequences) this.pendingConsequences = data.pendingConsequences;
     if (data.resolvedConsequences) this.resolvedConsequences = data.resolvedConsequences;
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
 }
 
 export default MoralChoiceSystem;

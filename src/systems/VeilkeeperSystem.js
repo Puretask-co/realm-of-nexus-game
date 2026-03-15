@@ -309,6 +309,13 @@ export class VeilkeeperSystem {
     if (data.communionUsed) this.communionUsed = new Set(data.communionUsed);
     if (data.consultationHistory) this.consultationHistory = data.consultationHistory;
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
+
+  getAliveCount() {
+    return this.getLivingVeilkeepers().length;
+  }
 }
 
 export default VeilkeeperSystem;

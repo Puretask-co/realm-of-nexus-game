@@ -19,6 +19,20 @@ import MinimapRenderer from '../renderers/MinimapRenderer.js';
 import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 import NPC from '../components/NPC.js';
 
+// ---- New Systems (Design Doc aligned) ----
+import { TacticalCombatSystem } from '../systems/TacticalCombatSystem.js';
+import { DSPSystem } from '../systems/DSPSystem.js';
+import { AttributeSystem } from '../systems/AttributeSystem.js';
+import { FactionSystem } from '../systems/FactionSystem.js';
+import { VeilkeeperSystem } from '../systems/VeilkeeperSystem.js';
+import { NarrativeSystem } from '../systems/NarrativeSystem.js';
+import { MoralChoiceSystem } from '../systems/MoralChoiceSystem.js';
+import { CompanionSystem } from '../systems/CompanionSystem.js';
+import { CraftingSystem } from '../systems/CraftingSystem.js';
+import { SkillCheckSystem } from '../systems/SkillCheckSystem.js';
+import { DifficultySystem } from '../systems/DifficultySystem.js';
+import { AIDungeonMaster } from '../systems/AIDungeonMaster.js';
+
 /**
  * GameScene — Main gameplay scene.
  *
@@ -46,6 +60,7 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Gameplay Systems (singletons) ----
         this.combatSystem = CombatSystem.getInstance();
+        this.tacticalCombat = TacticalCombatSystem.getInstance();
         this.aiSystem = AISystem.getInstance();
         this.progression = ProgressionSystem.getInstance();
         this.spellSystem = SpellSystem.getInstance();
@@ -54,6 +69,19 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Class System ----
         this.classSystem = PlayerClassSystem.getInstance();
+
+        // ---- New Design-Doc Systems ----
+        this.dspSystem = DSPSystem.getInstance();
+        this.attributeSystem = AttributeSystem.getInstance();
+        this.factionSystem = FactionSystem.getInstance();
+        this.veilkeeperSystem = VeilkeeperSystem.getInstance();
+        this.narrativeSystem = NarrativeSystem.getInstance();
+        this.moralChoiceSystem = MoralChoiceSystem.getInstance();
+        this.companionSystem = CompanionSystem.getInstance();
+        this.craftingSystem = CraftingSystem.getInstance();
+        this.skillCheckSystem = SkillCheckSystem.getInstance();
+        this.difficultySystem = DifficultySystem.getInstance();
+        this.dungeonMaster = AIDungeonMaster.getInstance();
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -66,6 +94,9 @@ export default class GameScene extends Phaser.Scene {
         // ---- Content Registration ----
         ContentInitializer.registerQuests();
         ContentInitializer.registerDialogues(this);
+        ContentInitializer.registerFactions(this.factionSystem);
+        ContentInitializer.registerNarrative(this.narrativeSystem);
+        ContentInitializer.registerVeilkeepers(this.veilkeeperSystem);
 
         // ---- World ----
         this._buildWorld();
@@ -110,7 +141,15 @@ export default class GameScene extends Phaser.Scene {
         // ---- Wire save system ----
         ContentInitializer.wireSaveSystem({
             questSystem: this.questSystem,
-            dialogueSystem: this.dialogueSystem
+            dialogueSystem: this.dialogueSystem,
+            dspSystem: this.dspSystem,
+            factionSystem: this.factionSystem,
+            narrativeSystem: this.narrativeSystem,
+            moralChoiceSystem: this.moralChoiceSystem,
+            companionSystem: this.companionSystem,
+            attributeSystem: this.attributeSystem,
+            veilkeeperSystem: this.veilkeeperSystem,
+            skillCheckSystem: this.skillCheckSystem
         });
 
         // ---- EventBus listeners ----
@@ -119,12 +158,21 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
             EventBus.on('dialogue:start', (data) => this._onDialogueStart(data)),
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
-            EventBus.on('quest:completed', (data) => this._onQuestCompleted(data))
+            EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
+            EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
+            EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
+            EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
+            EventBus.on('narrative:eraChanged', (data) => this._onEraChanged(data)),
+            EventBus.on('companion:recruited', (data) => this._onCompanionRecruited(data)),
+            EventBus.on('veilkeeper:consulted', (data) => this._onVeilkeeperConsulted(data)),
+            EventBus.on('veilkeeper:died', (data) => this._onVeilkeeperDied(data)),
+            EventBus.on('dm:narration', (data) => this._onDMNarration(data)),
+            EventBus.on('dm:encounter', (data) => this._onDMEncounter(data))
         ];
 
         // ---- Track current location ----
-        this.currentLocationId = 'verdant_grove';
-        this._emitLocationDiscovery('verdant_grove');
+        this.currentLocationId = 'canopy_of_life';
+        this._emitLocationDiscovery('canopy_of_life');
 
         // ---- Start first quest automatically ----
         this.time.delayedCall(2000, () => {
@@ -333,36 +381,31 @@ export default class GameScene extends Phaser.Scene {
         this.player.setDrag(0.85);
         this.player.setMaxVelocity(250);
 
-        // Base stats — use class stats if selected, otherwise fallback
+        // Base stats — use Verdance attribute-based system
         if (classDef) {
-            const base = classDef.baseStats;
-            this.player.stats = {
-                hp: base.hp, maxHp: base.maxHp,
-                sap: base.sap, maxSap: base.maxSap,
-                speed: base.speed || 200,
+            const baseStats = this.classSystem.applyClassStats({
                 level: 1, experience: 0, gold: 0,
                 spells: [], cooldowns: {},
-                defense: base.def || 0,
-                attack: base.atk || 0,
-                magic: base.mag || 0,
-                agility: base.agi || 0,
-                critChance: base.critChance || 0,
-                critDamage: base.critDamage || 0,
-                dodge: base.dodge || 0,
-                block: base.block || 0,
-                sapRegenRate: base.sapRegenRate || 5,
-                classId: classDef.id,
-                className: classDef.name,
-                phaseAffinity: classDef.phaseAffinity
-            };
+                speed: 200, sapRegenRate: 5,
+                sap: 100, maxSap: 100
+            });
+
+            this.player.stats = baseStats;
+
+            // Apply ancestry bonuses if selected
+            const ancestry = this.registry?.get('selectedAncestry');
+            if (ancestry && this.attributeSystem) {
+                this.attributeSystem.applyAncestryBonuses(ancestry);
+            }
         } else {
             this.player.stats = {
-                hp: 100, maxHp: 100, sap: 100, maxSap: 100,
+                hp: 30, maxHp: 30, guard: 5, maxGuard: 5,
+                sap: 100, maxSap: 100, ap: 2, maxAP: 2,
                 speed: 200, level: 1, experience: 0, gold: 0,
-                spells: [], cooldowns: {}, defense: 0, attack: 0,
-                magic: 0, agility: 0, critChance: 0.05, critDamage: 0.2,
-                dodge: 0.03, block: 0, sapRegenRate: 5,
-                classId: null, className: 'Adventurer', phaseAffinity: null
+                spells: [], cooldowns: {},
+                might: 2, agility: 2, resilience: 2, insight: 2, charisma: 0,
+                sapRegenRate: 5,
+                classId: null, className: 'Adventurer', classRole: 'Adventurer'
             };
         }
 
@@ -495,65 +538,80 @@ export default class GameScene extends Phaser.Scene {
     _spawnNPCs() {
         this.npcs = [];
 
-        // Elder — quest giver in Verdant Grove
-        const elder = new NPC(this, 300, 350, {
-            name: 'Elder Thalos',
-            role: 'quest',
-            dialogue: [
-                'The Sap flows through all things here.',
-                'Seek the Crystal Caverns when you are ready.',
-                'The three phases of Sap shape our world.'
-            ],
-            interactRadius: 70,
-            dialogueId: 'elder_awakening'
-        });
-        this.npcs.push(elder);
+        // NPC definitions — driven by location data and dialogue system
+        const npcDefs = [
+            // ---- Canopy of Life (Hub) ----
+            { name: 'Elder Thalos', role: 'quest', x: 300, y: 350, zoneId: 'canopy_of_life',
+              dialogue: ['The Sap flows through all things here.', 'Seek the Hollowroot Catacombs when you are ready.', 'The three phases of Sap shape our world.'],
+              dialogueId: 'elder_awakening', interactRadius: 70 },
+            { name: 'Commander Briara', role: 'quest', x: 200, y: 280, zoneId: 'canopy_of_life',
+              dialogue: ['The Bloomguard stands ready.', 'Our scouts report corruption in the south.', 'Will you serve the Canopy?'],
+              dialogueId: 'briara_greeting', interactRadius: 60 },
+            { name: 'Archdruid Veyla', role: 'quest', x: 350, y: 250, zoneId: 'canopy_of_life',
+              dialogue: ['The Emerald Coven preserves ancient knowledge.', 'The Sap speaks to those who listen.', 'Seek wisdom before strength.'],
+              dialogueId: 'veyla_greeting', interactRadius: 60 },
+            { name: 'Beastcaller Yenna', role: 'quest', x: 500, y: 350, zoneId: 'canopy_of_life',
+              dialogue: ['The wild ones are restless...', 'The Wildkin Pact watches the forest borders.', 'Nature knows when something is wrong.'],
+              dialogueId: 'yenna_greeting', interactRadius: 60 },
+            { name: 'Seer Althea', role: 'quest', x: 150, y: 450, zoneId: 'canopy_of_life',
+              dialogue: ['I see many paths before you...', 'The Veilkeepers whisper of change.', 'Choose wisely, for consequences echo.'],
+              dialogueId: 'althea_greeting', interactRadius: 60 },
+            { name: 'Smith Garon', role: 'shop', x: 600, y: 280, zoneId: 'canopy_of_life',
+              dialogue: ['Finest weapons in the Canopy!', 'Need something repaired?', 'I work with Sap-tempered steel.'],
+              dialogueId: 'garon_greeting', interactRadius: 60,
+              shopInventory: [{ itemId: 'iron_sword', price: 50 }, { itemId: 'leather_armor', price: 40 }] },
+            { name: 'Merchant Lirel', role: 'shop', x: 450, y: 600, zoneId: 'canopy_of_life',
+              dialogue: ['Welcome! Browse my wares.', 'Best potions this side of the Nexus!', 'Come back anytime!'],
+              dialogueId: 'merchant_greeting', interactRadius: 60,
+              shopInventory: [{ itemId: 'minor_health_potion', price: 10 }, { itemId: 'sap_crystal', price: 20 }] },
+            { name: 'Herbalist Tansy', role: 'quest', x: 550, y: 300, zoneId: 'canopy_of_life',
+              dialogue: ['Need more herbs... always more herbs.', 'The forest creatures carry useful ingredients.', 'Bring me potions and I\'ll reward you well!'],
+              dialogueId: 'herbalist_quest', interactRadius: 60 },
+            { name: 'Trainer Borsk', role: 'quest', x: 650, y: 450, zoneId: 'canopy_of_life',
+              dialogue: ['Ready to train?', 'Combat is an art. Let me show you.', 'Practice makes perfect, recruit.'],
+              dialogueId: 'borsk_greeting', interactRadius: 60 },
+            { name: 'Innkeeper Maren', role: 'shop', x: 400, y: 500, zoneId: 'canopy_of_life',
+              dialogue: ['Need a room? Meal?', 'Rest here to recover your strength.', 'The inn is always open.'],
+              dialogueId: 'maren_greeting', interactRadius: 60 },
+            { name: 'Guard Captain Reyla', role: 'quest', x: 100, y: 350, zoneId: 'canopy_of_life',
+              dialogue: ['Keep your weapons ready.', 'Report any suspicious activity.', 'The Canopy must be protected.'],
+              dialogueId: 'reyla_greeting', interactRadius: 60 },
+            { name: 'Sporecaller Mycel', role: 'quest', x: 700, y: 550, zoneId: 'canopy_of_life',
+              dialogue: ['Decay is natural... embrace it.', 'The Syndicate sees truth in corruption.', 'We are not your enemy.'],
+              dialogueId: 'mycel_greeting', interactRadius: 60 },
+            // ---- Spindlewood Forest ----
+            { name: 'Ranger Scout', role: 'quest', x: 180, y: 980, zoneId: 'spindlewood_forest',
+              dialogue: ['Wolves have been aggressive lately.', 'The forest paths are treacherous.', 'Watch for Thorn Sprites in the undergrowth.'],
+              interactRadius: 60 },
+            // ---- Hollowroot Catacombs ----
+            { name: 'Catacomb Guide', role: 'quest', x: 850, y: 150, zoneId: 'hollowroot_catacombs',
+              dialogue: ['These tunnels run deep.', 'Ancient dead stir when the Crimson phase rises.', 'Stay close to the light sources.'],
+              interactRadius: 60 },
+            // ---- Emerald Cascades ----
+            { name: 'Water Sage', role: 'quest', x: 1650, y: 150, zoneId: 'emerald_cascades',
+              dialogue: ['The cascades carry Sap through the land.', 'Something poisons the water upstream.', 'Cleanse the source and the land will heal.'],
+              interactRadius: 60 },
+            // ---- Glinting Groves ----
+            { name: 'Crystal Hermit', role: 'quest', x: 150, y: 1350, zoneId: 'glinting_groves',
+              dialogue: ['The crystals remember everything.', 'Touch them and see visions of the past.', 'Some memories are best left buried.'],
+              interactRadius: 60 },
+            // ---- Mycelium Nexus ----
+            { name: 'Corrupted Scholar', role: 'quest', x: 900, y: 1350, zoneId: 'mycelium_nexus',
+              dialogue: ['I came to study the corruption...', 'It\'s beautiful, in its own terrible way.', 'Help me gather samples before it spreads further.'],
+              interactRadius: 60 }
+        ];
 
-        // Herbalist — repeatable quest in Verdant Grove
-        const herbalist = new NPC(this, 550, 300, {
-            name: 'Lyra',
-            role: 'quest',
-            dialogue: [
-                'Need more herbs... always more herbs.',
-                'The forest creatures carry useful ingredients.',
-                'Bring me potions and I\'ll reward you well!'
-            ],
-            interactRadius: 60,
-            dialogueId: 'herbalist_quest'
-        });
-        this.npcs.push(herbalist);
-
-        // Scholar — side quest near Sunken Ruins zone edge
-        const scholar = new NPC(this, 700, 750, {
-            name: 'Archivist Kael',
-            role: 'quest',
-            dialogue: [
-                'Fascinating readings from the south...',
-                'The Sunken Ruins hold ancient knowledge.',
-                'I\'d go myself, but... field work isn\'t my forte.'
-            ],
-            interactRadius: 60,
-            dialogueId: 'scholar_quest'
-        });
-        this.npcs.push(scholar);
-
-        // Merchant — shop NPC
-        const merchant = new NPC(this, 450, 600, {
-            name: 'Merchant Orla',
-            role: 'shop',
-            dialogue: [
-                'Welcome! Browse my wares.',
-                'Best potions this side of the Nexus!',
-                'Come back anytime!'
-            ],
-            interactRadius: 60,
-            dialogueId: 'merchant_greeting',
-            shopInventory: [
-                { itemId: 'minor_health_potion', price: 10 },
-                { itemId: 'sap_crystal', price: 20 }
-            ]
-        });
-        this.npcs.push(merchant);
+        for (const def of npcDefs) {
+            const npc = new NPC(this, def.x, def.y, {
+                name: def.name,
+                role: def.role,
+                dialogue: def.dialogue || [],
+                interactRadius: def.interactRadius || 60,
+                dialogueId: def.dialogueId,
+                shopInventory: def.shopInventory
+            });
+            this.npcs.push(npc);
+        }
 
         // Override NPC E-key to use DialogueSystem for richer dialogues
         this._wireNPCDialogues();
@@ -643,8 +701,10 @@ export default class GameScene extends Phaser.Scene {
         const modifier = this.sapCycle.getBlendedModifier(spell);
         const damage = Math.round(spell.baseDamage * modifier);
 
-        // Consume sap
+        // Consume sap (personal) and DSP (world resource)
         this.player.stats.sap -= spell.sapCost;
+        const dspCost = spell.dspCost || spell.sapCost;
+        this.dspSystem.drain(dspCost, `spell:${spell.id}`);
 
         // Set cooldown
         this.player.stats.cooldowns[spell.id] = now + spell.cooldown * 1000;
@@ -792,11 +852,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _checkLevelUp() {
-        const xpTable = [0, 100, 250, 500, 800, 1200, 1800, 2500, 3500, 5000];
+        // Max level 10 per design docs (config.json balance.progression.maxLevel)
+        const xpTable = [0, 100, 250, 500, 850, 1300, 1900, 2600, 3500, 5000];
         const currentLevel = this.player.stats.level;
-        const requiredXP = xpTable[currentLevel] || (currentLevel * currentLevel * 100);
+        const requiredXP = xpTable[currentLevel] || 5000;
 
-        if (this.player.stats.experience >= requiredXP && currentLevel < 50) {
+        if (this.player.stats.experience >= requiredXP && currentLevel < 10) {
             this.player.stats.experience -= requiredXP;
             this.player.stats.level++;
 
@@ -832,6 +893,9 @@ export default class GameScene extends Phaser.Scene {
             this.cameraSystem.shake('medium');
             this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
 
+            // Award attribute point per level (design doc: balance.progression.perLevelRewards)
+            this.attributeSystem.addAttributePoints(1);
+
             EventBus.emit('player:levelUp', { level: this.player.stats.level });
             EventBus.emit('player-stats-updated', this.player.stats);
             console.log(`[Level Up] ${this.player.stats.className} is now level ${this.player.stats.level}`);
@@ -854,6 +918,17 @@ export default class GameScene extends Phaser.Scene {
         console.log(`[Quest] Completed: ${data.name}`);
         this.cameraSystem.shake('medium');
         this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 25 });
+
+        // Quest completion recovers DSP (+5 to +15 per design docs)
+        const dspRecover = Phaser.Math.Between(5, 15);
+        this.dspSystem.recover(dspRecover, `quest:${data.questId || data.name}`);
+
+        // Apply faction reputation from quest rewards
+        if (data.rewards?.reputation) {
+            for (const [factionId, amount] of Object.entries(data.rewards.reputation)) {
+                this.factionSystem.modifyReputation(factionId, amount);
+            }
+        }
     }
 
     _respawnEnemy(def, zoneId) {
@@ -865,6 +940,101 @@ export default class GameScene extends Phaser.Scene {
         const ey = zone.bounds.y + Phaser.Math.Between(80, zone.bounds.h - 60);
 
         this._spawnSingleEnemy(def, ex, ey, zoneId);
+    }
+
+    // ----------------------------------------------------------------
+    // New System Event Handlers
+    // ----------------------------------------------------------------
+
+    _onDSPThresholdChanged(data) {
+        const { threshold, value } = data;
+        console.log(`[DSP] World state: ${threshold} (${value}/100)`);
+
+        // Visual feedback for DSP state
+        if (threshold === 'crisis' || threshold === 'catastrophic') {
+            this.cameraSystem.shake('light');
+            // Tint the world darker as DSP drops
+            const tint = threshold === 'catastrophic' ? 0.6 : 0.8;
+            this.cameras.main.setAlpha(tint);
+        } else {
+            this.cameras.main.setAlpha(1);
+        }
+    }
+
+    _onFactionRepChanged(data) {
+        const { factionId, newRep, oldRep } = data;
+        const direction = newRep > oldRep ? 'increased' : 'decreased';
+        console.log(`[Faction] ${factionId} reputation ${direction}: ${oldRep} → ${newRep}`);
+    }
+
+    _onMoralChoice(data) {
+        const { choiceId, alignment } = data;
+        console.log(`[Moral] Choice made: ${choiceId} (${alignment})`);
+        this.cameraSystem.shake('light');
+    }
+
+    _onEraChanged(data) {
+        const { eraId, eraName } = data;
+        console.log(`[Narrative] New era: ${eraName}`);
+
+        // Show era transition text
+        const text = this.add.text(
+            this.cameras.main.scrollX + 640,
+            this.cameras.main.scrollY + 200,
+            eraName.toUpperCase(),
+            { fontFamily: 'monospace', fontSize: '28px', color: '#88aaff', stroke: '#000', strokeThickness: 4 }
+        ).setOrigin(0.5).setDepth(10000).setScrollFactor(0).setAlpha(0);
+
+        this.tweens.add({
+            targets: text,
+            alpha: { from: 0, to: 1 },
+            y: text.y - 30,
+            duration: 1500,
+            hold: 2000,
+            yoyo: true,
+            onComplete: () => text.destroy()
+        });
+    }
+
+    _onCompanionRecruited(data) {
+        console.log(`[Companion] ${data.name} joined the party`);
+        this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 20 });
+    }
+
+    _onVeilkeeperConsulted(data) {
+        const { keeperId, hint, dspCost } = data;
+        console.log(`[Veilkeeper] Consulted ${keeperId} — DSP cost: ${dspCost}`);
+    }
+
+    _onVeilkeeperDied(data) {
+        const { keeperId, name } = data;
+        console.log(`[Veilkeeper] ${name} has perished! Their knowledge is lost forever.`);
+        this.cameraSystem.shake('heavy');
+
+        // Death notification
+        const text = this.add.text(
+            this.cameras.main.scrollX + 640,
+            this.cameras.main.scrollY + 250,
+            `${name} has been lost to the Hollowing...`,
+            { fontFamily: 'monospace', fontSize: '18px', color: '#ff4444', stroke: '#000', strokeThickness: 3 }
+        ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
+
+        this.tweens.add({
+            targets: text,
+            alpha: { from: 1, to: 0 },
+            duration: 4000,
+            onComplete: () => text.destroy()
+        });
+    }
+
+    _onDMNarration(data) {
+        const { text, priority } = data;
+        EventBus.emit('ui:showNarration', { text, priority });
+    }
+
+    _onDMEncounter(data) {
+        const { type, description } = data;
+        console.log(`[DM] Encounter: ${type} — ${description}`);
     }
 
     // ----------------------------------------------------------------
@@ -921,7 +1091,7 @@ export default class GameScene extends Phaser.Scene {
         const goldLoss = Math.floor(this.player.stats.gold * 0.1);
         this.player.stats.gold = Math.max(0, this.player.stats.gold - goldLoss);
 
-        this.currentLocationId = 'verdant_grove';
+        this.currentLocationId = 'canopy_of_life';
         EventBus.emit('player-stats-updated', this.player.stats);
 
         // Brief invincibility flash
@@ -1067,6 +1237,13 @@ export default class GameScene extends Phaser.Scene {
 
         // Minimap
         this.minimap.update(delta);
+
+        // New systems update
+        this.profiler.begin('newSystems');
+        if (this.dspSystem.update) this.dspSystem.update(delta);
+        if (this.narrativeSystem.update) this.narrativeSystem.update(delta);
+        if (this.companionSystem.update) this.companionSystem.update(delta, this.player);
+        this.profiler.end('newSystems');
 
         // Sap regeneration
         if (!this.isDead) {

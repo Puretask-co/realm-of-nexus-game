@@ -29,6 +29,76 @@
             "nameColor": "#ffaa44",
             "voicePitch": 1.1,
             "textSpeed": 1.2
+        },
+        {
+            "id": "briara",
+            "name": "Commander Briara",
+            "nameColor": "#44cc44",
+            "voicePitch": 0.9,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "veyla",
+            "name": "Archdruid Veyla",
+            "nameColor": "#66aaff",
+            "voicePitch": 1.1,
+            "textSpeed": 0.8
+        },
+        {
+            "id": "yenna",
+            "name": "Beastcaller Yenna",
+            "nameColor": "#cc8844",
+            "voicePitch": 1.0,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "althea",
+            "name": "Seer Althea",
+            "nameColor": "#cc66ff",
+            "voicePitch": 1.3,
+            "textSpeed": 0.7
+        },
+        {
+            "id": "garon",
+            "name": "Smith Garon",
+            "nameColor": "#cc6644",
+            "voicePitch": 0.7,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "mycel",
+            "name": "Sporecaller Mycel",
+            "nameColor": "#88cc44",
+            "voicePitch": 0.6,
+            "textSpeed": 0.9
+        },
+        {
+            "id": "borsk",
+            "name": "Trainer Borsk",
+            "nameColor": "#cc8866",
+            "voicePitch": 0.7,
+            "textSpeed": 1.2
+        },
+        {
+            "id": "maren",
+            "name": "Innkeeper Maren",
+            "nameColor": "#ffcc88",
+            "voicePitch": 1.2,
+            "textSpeed": 1.0
+        },
+        {
+            "id": "reyla",
+            "name": "Guard Captain Reyla",
+            "nameColor": "#44cc88",
+            "voicePitch": 0.9,
+            "textSpeed": 1.1
+        },
+        {
+            "id": "lirel",
+            "name": "Merchant Lirel",
+            "nameColor": "#ffaa44",
+            "voicePitch": 1.1,
+            "textSpeed": 1.0
         }
     ],
     "dialogues": [
@@ -400,6 +470,189 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "briara_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "briara",
+                    "text": "Recruit. I am Commander Briara of the Bloomguard. We are the shield of the Canopy — and we could use fighters like you.",
+                    "choices": [
+                        { "text": "I'd like to help the Bloomguard.", "next": "join" },
+                        { "text": "What threats does the Canopy face?", "next": "threats" },
+                        { "text": "Not right now.", "next": "dismiss" }
+                    ]
+                },
+                { "id": "join", "speaker": "briara", "text": "Good. Report to the barracks when you're ready for patrol duty. We always need capable hands.", "effects": [{ "type": "startQuest", "questId": "bloomguard_patrol" }] },
+                { "id": "threats", "speaker": "briara", "text": "Corruption spreads from the south. Our scouts report hollow creatures and corrupted treants. The Sap Cycle grows more volatile each day." },
+                { "id": "dismiss", "speaker": "briara", "text": "The Bloomguard will be here when you change your mind. Stay safe out there." }
+            ]
+        },
+        {
+            "id": "veyla_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "veyla",
+                    "text": "Welcome, child of the Sap. I am Archdruid Veyla of the Emerald Coven. We seek to understand the ancient mysteries that bind Verdance together.",
+                    "choices": [
+                        { "text": "Tell me about the Emerald Coven.", "next": "coven" },
+                        { "text": "I need magical knowledge.", "next": "magic" },
+                        { "text": "Farewell.", "next": "end" }
+                    ]
+                },
+                { "id": "coven", "speaker": "veyla", "text": "We are scholars, healers, and seekers of truth. The Rite of Renewal approaches — a ceremony to replenish the world's DSP. We could use an outsider's perspective.", "effects": [{ "type": "startQuest", "questId": "coven_rite_of_renewal" }] },
+                { "id": "magic", "speaker": "veyla", "text": "The Sap holds all magic. During Blue Phase, spells cost less DSP. During Crimson, they grow fiercer but drain the world more. Learn this balance and you will thrive." },
+                { "id": "end", "speaker": "veyla", "text": "May the Sap guide your path." }
+            ]
+        },
+        {
+            "id": "yenna_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "yenna",
+                    "text": "The wild ones whisper of a stranger. That'd be you. I'm Yenna — the Wildkin Pact speaks through me.",
+                    "choices": [
+                        { "text": "What is the Wildkin Pact?", "next": "pact" },
+                        { "text": "The forest seems troubled.", "next": "troubled" },
+                        { "text": "Just passing through.", "next": "end" }
+                    ]
+                },
+                { "id": "pact", "speaker": "yenna", "text": "We guard the wild balance. Not civilization — nature itself. The beasts, the trees, the rivers. When corruption stains the land, they cry out, and we answer." },
+                { "id": "troubled", "speaker": "yenna", "text": "Aye. Timber wolves growing aggressive, spore creatures multiplying... something drives them mad. The Great Hunt will cull the worst of it.", "effects": [{ "type": "startQuest", "questId": "wildkin_great_hunt" }] },
+                { "id": "end", "speaker": "yenna", "text": "Watch your step. The forest doesn't forgive the careless." }
+            ]
+        },
+        {
+            "id": "althea_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "althea",
+                    "text": "I saw you coming. In dreams, the Veilkeepers showed me your arrival. I am Althea — I See what others cannot.",
+                    "choices": [
+                        { "text": "What do you See for me?", "next": "vision" },
+                        { "text": "Tell me about the Veilkeepers.", "next": "keepers" },
+                        { "text": "That's unsettling.", "next": "end" }
+                    ]
+                },
+                { "id": "vision", "speaker": "althea", "text": "Many paths branch before you. I see four endings — Domination, Harmony, Sacrifice, Collapse. Each choice you make narrows the possibilities. Choose wisely, for consequences echo across eras." },
+                { "id": "keepers", "speaker": "althea", "text": "Five spirits of ancient wisdom. They will answer your questions — but each consultation costs 10 DSP from the world. Ask too much, and they Hollow. Ask too little, and you may walk blind into ruin." },
+                { "id": "end", "speaker": "althea", "text": "Truth often is. Return when you're ready to hear more." }
+            ]
+        },
+        {
+            "id": "garon_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "garon",
+                    "text": "Hmph. Another one who thinks a sharp blade is all they need. I'm Garon — I forge the weapons that keep this Canopy standing.",
+                    "choices": [
+                        { "text": "Show me your wares.", "next": "shop" },
+                        { "text": "Can you repair my equipment?", "next": "repair" },
+                        { "text": "Maybe later.", "next": "end" }
+                    ]
+                },
+                { "id": "shop", "speaker": "garon", "text": "Here. Sap-tempered steel, ironbark shields, everything a Bloomguard or Thornbinder needs. Prices are fair — I don't gouge during Crimson Phase like some." },
+                { "id": "repair", "speaker": "garon", "text": "Bring it here. Maintenance costs half what a new piece would. I use the Bloomguard Forge — best facility in all Verdance." },
+                { "id": "end", "speaker": "garon", "text": "Don't wait too long. A dull blade won't save your life." }
+            ]
+        },
+        {
+            "id": "mycel_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "mycel",
+                    "text": "Don't look at me like that. The Sporecaller Syndicate isn't your enemy. Decay is merely... transformation.",
+                    "choices": [
+                        { "text": "What does the Syndicate want?", "next": "goals" },
+                        { "text": "Decay magic sounds dangerous.", "next": "danger" },
+                        { "text": "I'll be going.", "next": "end" }
+                    ]
+                },
+                { "id": "goals", "speaker": "mycel", "text": "We study the Hollowing — the corruption. Not to spread it, but to understand it. If we can harness decay, we can reverse it. The others fear what they don't understand.", "effects": [{ "type": "startQuest", "questId": "sporecaller_experiment" }] },
+                { "id": "danger", "speaker": "mycel", "text": "All magic is dangerous. The Coven draws from DSP recklessly. We at least acknowledge the cost. Come to our labs — see for yourself." },
+                { "id": "end", "speaker": "mycel", "text": "Remember: nature doesn't judge growth and decay differently. Only people do." }
+            ]
+        },
+        {
+            "id": "borsk_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "borsk",
+                    "text": "You looking to train? I'm Borsk. Been training Bloomguard recruits for twenty years. I can teach you a thing or two about staying alive.",
+                    "choices": [
+                        { "text": "Teach me about combat.", "next": "combat" },
+                        { "text": "I'm already skilled.", "next": "cocky" }
+                    ]
+                },
+                { "id": "combat", "speaker": "borsk", "text": "Good attitude. Remember: Action Points are everything. You get 2 per turn — 3 if you're quick enough. Positioning matters: flank your enemies for bonus damage, use cover to survive." },
+                { "id": "cocky", "speaker": "borsk", "text": "Ha! Every recruit says that right before a Hollow Knight puts them on their back. Come back when you've humbled up." }
+            ]
+        },
+        {
+            "id": "maren_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "maren",
+                    "text": "Welcome to the Roost! Best inn in the Canopy. Need a room, a meal, or just someone to listen?",
+                    "choices": [
+                        { "text": "I'd like to rest.", "next": "rest" },
+                        { "text": "Any news?", "next": "news" }
+                    ]
+                },
+                { "id": "rest", "speaker": "maren", "text": "A good rest will restore your health and recover 10 DSP for the world. The Sap heals while we sleep, you know.", "effects": [{ "type": "rewardXP", "amount": 10 }] },
+                { "id": "news", "speaker": "maren", "text": "Travelers say the Hollowroot Catacombs are stirring again. And the Sporecallers have been buying strange supplies. Something's brewing..." }
+            ]
+        },
+        {
+            "id": "reyla_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "reyla",
+                    "text": "Halt. Guard Captain Reyla. State your business in the Canopy.",
+                    "choices": [
+                        { "text": "I'm an adventurer.", "next": "adventurer" },
+                        { "text": "I want to report something.", "next": "report" }
+                    ]
+                },
+                { "id": "adventurer", "speaker": "reyla", "text": "Another one. Fine — keep your weapons sheathed inside city limits. If you cause trouble, the Bloomguard will handle it. If you want to help, speak to Commander Briara." },
+                { "id": "report", "speaker": "reyla", "text": "Go on. The guard takes all reports seriously. Corruption sightings, criminal activity, suspicious Sporecaller operations — anything helps." }
+            ]
+        },
+        {
+            "id": "merchant_greeting",
+            "startNode": "start",
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "merchant",
+                    "text": "Welcome, welcome! Merchant Lirel at your service. Finest goods from across Verdance. Potions, crystals, supplies — I have it all!",
+                    "choices": [
+                        { "text": "Show me your inventory.", "next": "shop" },
+                        { "text": "Any rare items?", "next": "rare" }
+                    ]
+                },
+                { "id": "shop", "speaker": "merchant", "text": "Of course! Prices vary with the Sap Cycle — during Crimson, everything costs 20% more. Blue Phase? Best deals you'll find anywhere." },
+                { "id": "rare", "speaker": "merchant", "text": "Ah, a connoisseur! Check back during Silver Phase — rare enemy spawns drop rare materials, and I buy and sell them." }
+            ]
         }
     ]
 }
+

@@ -96,6 +96,37 @@ export class AttributeSystem {
   }
 
   /**
+   * Set attributes from character creation (keyed by display name).
+   */
+  setAttributes(attrs) {
+    for (const [key, val] of Object.entries(attrs)) {
+      const k = key.toLowerCase();
+      if (this.attributes[k] !== undefined) {
+        this.attributes[k] = Math.min(this.absoluteCap, val);
+      }
+    }
+    this.eventBus.emit('attributes:changed', this.getAll());
+  }
+
+  /**
+   * Apply ancestry bonuses by ancestry ID (looks up from DataManager).
+   */
+  applyAncestryBonuses(ancestryId) {
+    const ancestry = dataManager.getAncestryById?.(ancestryId);
+    if (ancestry) {
+      this.applyAncestryModifiers(ancestry);
+    }
+  }
+
+  /**
+   * Add unallocated attribute points (on level up).
+   */
+  addAttributePoints(count) {
+    this.unallocatedPoints = (this.unallocatedPoints || 0) + count;
+    this.eventBus.emit('attributes:pointsAvailable', { points: this.unallocatedPoints });
+  }
+
+  /**
    * Award an attribute point (on level up).
    */
   investPoint(attribute) {
@@ -179,13 +210,18 @@ export class AttributeSystem {
    * Serialize for save.
    */
   serialize() {
-    return { attributes: { ...this.attributes }, ancestryMods: { ...this.ancestryMods } };
+    return { attributes: { ...this.attributes }, ancestryMods: { ...this.ancestryMods }, unallocatedPoints: this.unallocatedPoints || 0 };
   }
+
+  saveState() { return this.serialize(); }
 
   deserialize(data) {
     if (data?.attributes) this.attributes = { ...data.attributes };
     if (data?.ancestryMods) this.ancestryMods = { ...data.ancestryMods };
+    if (data?.unallocatedPoints) this.unallocatedPoints = data.unallocatedPoints;
   }
+
+  loadState(data) { this.deserialize(data); }
 }
 
 export default AttributeSystem;

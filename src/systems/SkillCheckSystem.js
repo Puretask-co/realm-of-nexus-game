@@ -185,6 +185,9 @@ export class SkillCheckSystem {
       }
     }
   }
+
+  saveState() { return this.serialize(); }
+  loadState(data) { this.deserialize(data); }
 }
 
 export default SkillCheckSystem;
