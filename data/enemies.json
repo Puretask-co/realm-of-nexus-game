@@ -1744,6 +1744,123 @@
                 "dspDrainPerTurn": 3,
                 "enrageThreshold": 0.1
             }
+        },
+        {
+            "id": "veil_wisp",
+            "name": "Veil Wisp",
+            "baseStats": { "hp": 45, "defense": 2, "speed": 6, "sapPool": 30, "might": 1, "agility": 4, "resilience": 1, "insight": 3 },
+            "aiPattern": "aggressive",
+            "spells": ["shadow_strike"],
+            "lootTable": { "goldMin": 8, "goldMax": 18, "items": [{ "itemId": "veil_dust", "dropChance": 0.2 }] },
+            "phaseSpawnWeights": { "blue": 0.5, "crimson": 0.8, "silver": 2 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 1,
+            "description": "Fragments of the Whispering Veil given weak form. They hunt during Silver Sap.",
+            "experienceReward": 35
+        },
+        {
+            "id": "rot_grub",
+            "name": "Rot Grub",
+            "baseStats": { "hp": 25, "defense": 0, "speed": 3, "sapPool": 0, "might": 2, "agility": 1, "resilience": 0, "insight": 0 },
+            "aiPattern": "aggressive",
+            "spells": [],
+            "lootTable": { "goldMin": 2, "goldMax": 8, "items": [] },
+            "phaseSpawnWeights": { "blue": 0.2, "crimson": 2, "silver": 0.5 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 1,
+            "description": "Blighted larvae that swarm in Crimson phase. Weak but numerous.",
+            "experienceReward": 15
+        },
+        {
+            "id": "canopy_stalker",
+            "name": "Canopy Stalker",
+            "baseStats": { "hp": 95, "defense": 5, "speed": 7, "sapPool": 45, "might": 2, "agility": 5, "resilience": 1, "insight": 2 },
+            "aiPattern": "tactical",
+            "spells": ["thorn_volley"],
+            "lootTable": { "goldMin": 22, "goldMax": 45, "items": [{ "itemId": "sap_crystal", "dropChance": 0.2 }] },
+            "phaseSpawnWeights": { "blue": 1.2, "crimson": 0.6, "silver": 1 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 2,
+            "description": "Predatory creature that hunts from the high canopy. Favors ambush.",
+            "experienceReward": 55
+        },
+        {
+            "id": "ember_sprite",
+            "name": "Ember Sprite",
+            "baseStats": { "hp": 40, "defense": 1, "speed": 8, "sapPool": 60, "might": 1, "agility": 4, "resilience": 0, "insight": 3 },
+            "aiPattern": "aggressive",
+            "spells": ["crimson_surge"],
+            "lootTable": { "goldMin": 12, "goldMax": 25, "items": [{ "itemId": "ember_ash", "dropChance": 0.35 }] },
+            "phaseSpawnWeights": { "blue": 0.2, "crimson": 2.5, "silver": 0.3 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 1,
+            "description": "Tiny Crimson Sap elementals. They explode when cornered.",
+            "experienceReward": 30
+        },
+        {
+            "id": "moss_golem",
+            "name": "Moss Golem",
+            "baseStats": { "hp": 180, "defense": 14, "speed": 2, "sapPool": 20, "might": 4, "agility": 0, "resilience": 5, "insight": 0 },
+            "aiPattern": "defensive",
+            "spells": [],
+            "lootTable": { "goldMin": 25, "goldMax": 50, "items": [{ "itemId": "moss_heart", "dropChance": 0.25 }] },
+            "phaseSpawnWeights": { "blue": 1.5, "crimson": 0.3, "silver": 0.8 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 3,
+            "description": "Living mound of moss and roots. Slow but nearly unbreakable.",
+            "experienceReward": 90
+        },
+        {
+            "id": "thorn_harrier",
+            "name": "Thorn Harrier",
+            "baseStats": { "hp": 65, "defense": 3, "speed": 9, "sapPool": 35, "might": 2, "agility": 5, "resilience": 1, "insight": 1 },
+            "aiPattern": "aggressive",
+            "spells": ["thorn_volley"],
+            "lootTable": { "goldMin": 15, "goldMax": 32, "items": [{ "itemId": "thorn_cluster", "dropChance": 0.2 }] },
+            "phaseSpawnWeights": { "blue": 1, "crimson": 1, "silver": 1 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 2,
+            "description": "Flying thorn-creature that harries travelers. Common in Spindlewood.",
+            "experienceReward": 48
+        },
+        {
+            "id": "sap_ghost",
+            "name": "Sap Ghost",
+            "baseStats": { "hp": 55, "defense": 0, "speed": 5, "sapPool": 80, "might": 1, "agility": 3, "resilience": 0, "insight": 4 },
+            "aiPattern": "support",
+            "spells": ["soul_drain", "whisper_of_guidance"],
+            "lootTable": { "goldMin": 18, "goldMax": 38, "items": [{ "itemId": "sap_crystal", "dropChance": 0.3 }] },
+            "phaseSpawnWeights": { "blue": 1.8, "crimson": 0.4, "silver": 1.2 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 2,
+            "description": "Spirit bound to spilled Sap. Drains the living to sustain itself.",
+            "experienceReward": 52
+        },
+        {
+            "id": "blight_hound",
+            "name": "Blight Hound",
+            "baseStats": { "hp": 85, "defense": 4, "speed": 6, "sapPool": 25, "might": 3, "agility": 4, "resilience": 2, "insight": 1 },
+            "aiPattern": "aggressive",
+            "spells": [],
+            "lootTable": { "goldMin": 20, "goldMax": 42, "items": [{ "itemId": "blight_gland", "dropChance": 0.22 }] },
+            "phaseSpawnWeights": { "blue": 0.2, "crimson": 1.5, "silver": 0.6 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 2,
+            "description": "Corrupted wolf-like beast. Hunts in packs near Blight zones.",
+            "experienceReward": 58
+        },
+        {
+            "id": "root_sentinel_mini",
+            "name": "Root Sentinel",
+            "baseStats": { "hp": 140, "defense": 10, "speed": 3, "sapPool": 40, "might": 3, "agility": 1, "resilience": 4, "insight": 2 },
+            "aiPattern": "defensive",
+            "spells": ["verdant_grasp", "root_barrier"],
+            "lootTable": { "goldMin": 35, "goldMax": 70, "items": [{ "itemId": "ancient_seed", "dropChance": 0.15 }] },
+            "phaseSpawnWeights": { "blue": 1.5, "crimson": 0.5, "silver": 1 },
+            "sprite": { "texture": "enemy_placeholder", "idleFrame": 0, "attackFrame": 4, "hurtFrame": 8 },
+            "tier": 3,
+            "description": "Smaller kin of the great Root Sentinels. Guards sacred groves.",
+            "experienceReward": 75
         }
     ]
 }

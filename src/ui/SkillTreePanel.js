@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
+import dataManager from '../systems/DataManager.js';
+import { ProgressionSystem } from '../systems/ProgressionSystem.js';
+import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 
 /**
- * SkillTreePanel - Skill tree UI for character progression.
- * Displays interconnected skill nodes organized by Sap phase branches,
- * with prerequisites, point costs, and visual connections.
+ * SkillTreePanel - Talent tree UI for character progression (GDD: 5 trees, 1 talent per level).
+ * Displays the 5 doc trees (Martial Prowess, Guardian's Oath, Soul Magic Mastery, Verdant Bond, Tactical Mind)
+ * with level-gating (unlockLevel per talent) and 1 talent point per level.
  */
 export class SkillTreePanel {
   constructor(scene, uiFramework) {
@@ -13,12 +16,18 @@ export class SkillTreePanel {
     this.ui = uiFramework;
     this.eventBus = EventBus.getInstance();
 
-    // Skill data
+    // GDD 5 talent trees (from data/skills.json talentTrees)
+    this.talentTrees = [];
+    this.talentsById = new Map(); // id -> { treeId, ...talent }
+
+    // ProgressionSystem for level, talent points, unlock
+    this.progression = null;
+    this.classSystem = null;
+
+    // Legacy skill branch support (optional)
     this.skills = new Map();
     this.unlockedSkills = new Set();
     this.availablePoints = 0;
-
-    // Skill branches (organized by Sap phase affinity)
     this.branches = {
       blue: { name: 'Temporal Arts', color: 0x4a9eff, skills: [] },
       crimson: { name: 'Crimson Fury', color: 0xff4a4a, skills: [] },
@@ -37,45 +46,80 @@ export class SkillTreePanel {
     this.build();
   }
 
+  _getProgression() {
+    if (!this.progression) this.progression = ProgressionSystem.getInstance();
+    return this.progression;
+  }
+
+  _getClassSystem() {
+    if (!this.classSystem) this.classSystem = PlayerClassSystem.getInstance();
+    return this.classSystem;
+  }
+
+  /** Load GDD 5 talent trees from DataManager (called after data load). */
+  loadTalentTrees(trees = null) {
+    this.talentTrees = trees && trees.length ? trees : (dataManager.getTalentTrees?.() || []);
+    this.talentsById.clear();
+    for (const tree of this.talentTrees) {
+      for (const t of tree.talents || []) {
+        this.talentsById.set(t.id, { ...t, treeId: tree.id });
+      }
+    }
+  }
+
   build() {
+    this.loadTalentTrees();
     const panelWidth = 700;
     const panelHeight = 500;
     const panelX = GameConfig.WIDTH / 2 - panelWidth / 2;
     const panelY = GameConfig.HEIGHT / 2 - panelHeight / 2;
 
     this.panel = this.ui.createPanel(panelX, panelY, panelWidth, panelHeight, {
-      title: 'Skill Tree',
+      title: this.talentTrees.length ? 'Talent Tree' : 'Skill Tree',
       closable: true,
       depth: 7000
     });
     this.panel.setVisible(false);
 
-    // Branch tabs
-    const branches = [
-      { key: 'core', label: 'Core', x: 100 },
-      { key: 'blue', label: 'Temporal', x: 220 },
-      { key: 'crimson', label: 'Crimson', x: 360 },
-      { key: 'silver', label: 'Silver', x: 500 }
-    ];
+    // Tabs: 5 GDD trees or legacy 4 branches
+    const treeColors = {
+      martial_prowess: 0xcc6644,
+      guardians_oath: 0x4488aa,
+      soul_magic_mastery: 0xaa44cc,
+      verdant_bond: 0x44aa66,
+      tactical_mind: 0x88aa44
+    };
+    const tabConfig = this.talentTrees.length
+      ? this.talentTrees.map((tree, i) => ({
+          key: tree.id,
+          label: tree.name.length > 12 ? tree.name.substring(0, 11) + '…' : tree.name,
+          x: 80 + i * 118
+        }))
+      : [
+          { key: 'core', label: 'Core', x: 100 },
+          { key: 'blue', label: 'Temporal', x: 220 },
+          { key: 'crimson', label: 'Crimson', x: 360 },
+          { key: 'silver', label: 'Silver', x: 500 }
+        ];
 
     this.branchTabs = {};
-    for (const branch of branches) {
-      const color = this.branches[branch.key].color;
-      const tab = this.scene.add.text(branch.x, 50, branch.label, {
-        fontSize: '13px',
+    for (const tab of tabConfig) {
+      const color = treeColors[tab.key] ?? this.branches[tab.key]?.color ?? 0xffaa00;
+      const tabEl = this.scene.add.text(tab.x, 50, tab.label, {
+        fontSize: '12px',
         fill: `#${color.toString(16).padStart(6, '0')}`,
         fontFamily: 'monospace',
         fontStyle: 'bold'
       }).setOrigin(0.5).setInteractive();
 
-      tab.on('pointerdown', () => this.showBranch(branch.key));
-      tab.on('pointerover', () => tab.setScale(1.1));
-      tab.on('pointerout', () => tab.setScale(1));
-      this.panel.add(tab);
-      this.branchTabs[branch.key] = tab;
+      tabEl.on('pointerdown', () => this.showBranch(tab.key));
+      tabEl.on('pointerover', () => tabEl.setScale(1.1));
+      tabEl.on('pointerout', () => tabEl.setScale(1));
+      this.panel.add(tabEl);
+      this.branchTabs[tab.key] = tabEl;
     }
 
-    // Available points display
+    // Talent points (from ProgressionSystem) or legacy points
     this.pointsText = this.scene.add.text(panelWidth - 20, 50, 'Points: 0', {
       fontSize: '14px', fill: '#ffaa00', fontFamily: 'monospace'
     }).setOrigin(1, 0.5);
@@ -142,30 +186,32 @@ export class SkillTreePanel {
     return skill;
   }
 
-  // ─── Skill Tree Display ───────────────────────────────────────────
+  // ─── Talent / Skill Tree Display ───────────────────────────────────
 
   showBranch(branchKey) {
-    // Clear existing nodes
     for (const [, node] of this.skillNodes) {
       node.destroy(true);
     }
     this.skillNodes.clear();
     this.connectionLines.clear();
 
-    // Highlight active tab
     for (const [key, tab] of Object.entries(this.branchTabs)) {
       tab.setAlpha(key === branchKey ? 1 : 0.5);
+    }
+
+    const tree = this.talentTrees.find(t => t.id === branchKey);
+    if (tree) {
+      this._showTalentTree(tree);
+      return;
     }
 
     const branch = this.branches[branchKey];
     if (!branch) return;
 
-    // Draw connections first
     for (const skillId of branch.skills) {
       const skill = this.skills.get(skillId);
       if (!skill) continue;
-
-      for (const connId of skill.connections) {
+      for (const connId of skill.connections || []) {
         const connSkill = this.skills.get(connId);
         if (connSkill) {
           const bothUnlocked = this.unlockedSkills.has(skillId) && this.unlockedSkills.has(connId);
@@ -177,13 +223,120 @@ export class SkillTreePanel {
         }
       }
     }
-
-    // Draw skill nodes
     for (const skillId of branch.skills) {
       const skill = this.skills.get(skillId);
-      if (!skill) continue;
-      this.createSkillNode(skill, branch.color);
+      if (skill) this.createSkillNode(skill, branch.color);
     }
+  }
+
+  _showTalentTree(tree) {
+    const prog = this._getProgression();
+    const level = prog.level;
+    const talentPoints = prog.talentPoints;
+    const color = {
+      martial_prowess: 0xcc6644,
+      guardians_oath: 0x4488aa,
+      soul_magic_mastery: 0xaa44cc,
+      verdant_bond: 0x44aa66,
+      tactical_mind: 0x88aa44
+    }[tree.id] || 0xffaa00;
+
+    const talents = tree.talents || [];
+    const nodeW = 320;
+    const nodeH = 52;
+    const startX = 30;
+    const startY = 85;
+
+    for (let i = 0; i < talents.length; i++) {
+      const talent = talents[i];
+      const y = startY + i * (nodeH + 8);
+      const x = startX;
+
+      if (i > 0) {
+        this.connectionLines.lineStyle(2, 0x444466, 0.5);
+        this.connectionLines.lineBetween(
+          startX + nodeW / 2, startY + (i - 1) * (nodeH + 8) + nodeH,
+          startX + nodeW / 2, y
+        );
+      }
+
+      const unlocked = prog.hasTalent(talent.id);
+      const prevUnlocked = i === 0 || prog.hasTalent(talents[i - 1].id);
+      const levelOk = level >= (talent.unlockLevel || 1);
+      const canUnlock = !unlocked && talentPoints >= 1 && prevUnlocked && levelOk;
+
+      const container = this.scene.add.container(x, y);
+      const bg = this.scene.add.graphics();
+      if (unlocked) {
+        bg.fillStyle(color, 0.4);
+        bg.lineStyle(2, color, 1);
+      } else if (canUnlock) {
+        bg.fillStyle(0x333355, 0.8);
+        bg.lineStyle(2, color, 0.7);
+      } else {
+        bg.fillStyle(0x222233, 0.5);
+        bg.lineStyle(1, 0x444466, 0.4);
+      }
+      bg.fillRoundedRect(0, 0, nodeW, nodeH, 6);
+      bg.strokeRoundedRect(0, 0, nodeW, nodeH, 6);
+      container.add(bg);
+
+      const nameText = this.scene.add.text(12, 8, talent.name, {
+        fontSize: '13px',
+        fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#666666'),
+        fontFamily: 'monospace',
+        fontStyle: 'bold'
+      });
+      container.add(nameText);
+
+      const levelLabel = this.scene.add.text(nodeW - 12, 8, `Lv.${talent.unlockLevel || 1}`, {
+        fontSize: '11px',
+        fill: levelOk ? '#88aacc' : '#664444',
+        fontFamily: 'monospace'
+      }).setOrigin(1, 0);
+      container.add(levelLabel);
+
+      const descText = this.scene.add.text(12, 28, (talent.description || '').substring(0, 48) + ((talent.description || '').length > 48 ? '…' : ''), {
+        fontSize: '10px',
+        fill: '#888899',
+        fontFamily: 'monospace'
+      });
+      container.add(descText);
+
+      container.setSize(nodeW, nodeH);
+      container.setInteractive();
+      container.on('pointerover', () => {
+        this.showTalentDetails(talent);
+      });
+      container.on('pointerdown', () => {
+        if (canUnlock) this.unlockTalentById(talent.id);
+      });
+
+      this.treeContainer.add(container);
+      this.skillNodes.set(talent.id, container);
+    }
+  }
+
+  showTalentDetails(talent) {
+    this.detailTitle.setText(talent.name);
+    this.detailCost.setText(`Requires level ${talent.unlockLevel || 1} • 1 talent point`);
+    let desc = talent.description || '';
+    if (talent.effects?.length) {
+      desc += '\n\nEffects: ';
+      desc += talent.effects.map(e => e.description || e.type).join('; ');
+    }
+    this.detailDesc.setText(desc);
+  }
+
+  unlockTalentById(talentId) {
+    const prog = this._getProgression();
+    if (!prog.unlockTalent(talentId)) return false;
+    this.updatePointsDisplay();
+    const treeId = this.talentsById.get(talentId)?.treeId;
+    if (treeId) this.showBranch(treeId);
+    this.eventBus.emit('skill:unlocked', { skillId: talentId, name: this.talentsById.get(talentId)?.name });
+    if (this.ui.notify) this.ui.notify(`Talent Unlocked: ${this.talentsById.get(talentId)?.name || talentId}`, { type: 'success' });
+    return true;
   }
 
   createSkillNode(skill, branchColor) {
@@ -371,7 +524,12 @@ export class SkillTreePanel {
   }
 
   updatePointsDisplay() {
-    this.pointsText.setText(`Points: ${this.availablePoints}`);
+    if (this.talentTrees.length) {
+      const prog = this._getProgression();
+      this.pointsText.setText(`Talent points: ${prog.talentPoints}`);
+    } else {
+      this.pointsText.setText(`Points: ${this.availablePoints}`);
+    }
   }
 
   setVisible(visible) {
@@ -381,14 +539,24 @@ export class SkillTreePanel {
 
   onShow() {
     this.updatePointsDisplay();
-    this.showBranch('core'); // Default to core branch
+    if (this.talentTrees.length) {
+      const classTree = this._getClassSystem().getTalentTree?.()?.id;
+      this.showBranch(classTree && this.talentTrees.some(t => t.id === classTree) ? classTree : this.talentTrees[0].id);
+    } else {
+      this.showBranch('core');
+    }
   }
 
   onHide() { }
 
   // ─── Save/Load ────────────────────────────────────────────────────
+  // With 5 talent trees, talent state lives in ProgressionSystem (saved separately).
+  // Legacy skill branch state is stored here when not using talent trees.
 
   saveState() {
+    if (this.talentTrees.length) {
+      return { talentTreeVersion: 1 };
+    }
     const skillStates = {};
     for (const [id, skill] of this.skills) {
       skillStates[id] = { currentRank: skill.currentRank };
@@ -401,6 +569,11 @@ export class SkillTreePanel {
   }
 
   loadState(state) {
+    if (!state) return;
+    if (state.talentTreeVersion) {
+      this.updatePointsDisplay();
+      return;
+    }
     if (state.unlockedSkills) this.unlockedSkills = new Set(state.unlockedSkills);
     if (state.availablePoints !== undefined) this.availablePoints = state.availablePoints;
     if (state.skillStates) {

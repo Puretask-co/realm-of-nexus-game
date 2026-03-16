@@ -1246,6 +1246,243 @@
             "dialogueOnAccept": "althea_companion_quest",
             "dialogueOnComplete": "althea_companion_complete",
             "tags": ["companion", "recruitment", "althea", "ritual", "escort"]
+        },
+        {
+            "id": "veil_dust_gathering",
+            "name": "Veil Dust Gathering",
+            "description": "The Emerald Coven needs Veil Dust for a purification ritual. Gather it from Veil Wisps in Silver Sap zones.",
+            "type": "side",
+            "category": "gathering",
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "collect_veil_dust", "type": "collect", "description": "Collect Veil Dust from Veil Wisps", "target": "veil_dust", "required": 5, "order": 1 },
+                { "id": "deliver_coven", "type": "talk", "description": "Deliver the dust to the Emerald Sanctum", "target": "archdruid_veyla", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 120, "items": [{ "id": "sap_crystal", "quantity": 2 }], "reputation": { "emerald_coven": 25 } },
+            "tags": ["side", "gathering", "emerald_coven"]
+        },
+        {
+            "id": "rot_grub_infestation",
+            "name": "Rot Grub Infestation",
+            "description": "Rot Grubs have overrun a storage cellar near the market. Clear them out before they spread.",
+            "type": "side",
+            "category": "combat",
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "kill_rot_grubs", "type": "kill", "description": "Defeat Rot Grubs in the cellar", "target": "rot_grub", "required": 10, "order": 1 },
+                { "id": "report_merchant", "type": "talk", "description": "Report to the merchant who posted the notice", "target": "merchant_lirel", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 80, "items": [{ "id": "minor_health_potion", "quantity": 2 }], "reputation": { "sapling_consortium": 20 } },
+            "tags": ["side", "combat", "canopy_of_life"]
+        },
+        {
+            "id": "canopy_stalker_menace",
+            "name": "Canopy Stalker Menace",
+            "description": "Hunters report Canopy Stalkers preying on travelers in Spindlewood. Thin their numbers.",
+            "type": "side",
+            "category": "combat",
+            "level": 3,
+            "prerequisites": [{ "type": "level", "level": 3 }],
+            "objectives": [
+                { "id": "kill_stalkers", "type": "kill", "description": "Defeat Canopy Stalkers in Spindlewood", "target": "canopy_stalker", "required": 4, "order": 1 }
+            ],
+            "rewards": { "experience": 200, "items": [{ "id": "sap_crystal", "quantity": 3 }], "reputation": { "wildkin_pact": 30 } },
+            "tags": ["side", "combat", "spindlewood_forest"]
+        },
+        {
+            "id": "moss_golem_heart",
+            "name": "A Moss Golem's Heart",
+            "description": "An alchemist needs a Moss Heart for a potent restorative. Moss Golems dwell in the deepest groves.",
+            "type": "side",
+            "category": "gathering",
+            "level": 5,
+            "prerequisites": [{ "type": "level", "level": 5 }],
+            "objectives": [
+                { "id": "obtain_moss_heart", "type": "collect", "description": "Obtain a Moss Heart from a Moss Golem", "target": "moss_heart", "required": 1, "order": 1 },
+                { "id": "deliver_alchemist", "type": "talk", "description": "Deliver the heart to the alchemist", "target": "alchemist_ferment", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 350, "items": [{ "id": "greater_health_potion", "quantity": 2 }], "reputation": { "sapling_consortium": 40 } },
+            "tags": ["side", "gathering", "combat"]
+        },
+        {
+            "id": "blight_hound_pack",
+            "name": "Blight Hound Pack",
+            "description": "A pack of Blight Hounds has been sighted near Hollowroot. Eliminate them before they grow bolder.",
+            "type": "side",
+            "category": "combat",
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "awakening" }],
+            "objectives": [
+                { "id": "kill_blight_hounds", "type": "kill", "description": "Defeat Blight Hounds", "target": "blight_hound", "required": 5, "order": 1 }
+            ],
+            "rewards": { "experience": 220, "items": [{ "id": "blight_gland", "quantity": 2 }], "reputation": { "bloomguard": 35 } },
+            "tags": ["side", "combat", "hollowroot_catacombs"]
+        },
+        {
+            "id": "sap_ghost_banishment",
+            "name": "Sap Ghost Banishment",
+            "description": "Sap Ghosts are draining travelers on the road to the Sanctum. The Coven requests their banishment.",
+            "type": "side",
+            "category": "combat",
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "defeat_sap_ghosts", "type": "kill", "description": "Defeat Sap Ghosts", "target": "sap_ghost", "required": 3, "order": 1 },
+                { "id": "report_veyla", "type": "talk", "description": "Report to Archdruid Veyla", "target": "archdruid_veyla", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 150, "items": [{ "id": "sap_crystal", "quantity": 2 }], "reputation": { "emerald_coven": 30 } },
+            "tags": ["side", "combat", "emerald_sanctum"]
+        },
+        {
+            "id": "thorn_harrier_clearance",
+            "name": "Thorn Harrier Clearance",
+            "description": "Thorn Harriers are blocking the path to the Wildkin hunting grounds. Clear a safe route.",
+            "type": "side",
+            "category": "combat",
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "kill_thorn_harriers", "type": "kill", "description": "Defeat Thorn Harriers", "target": "thorn_harrier", "required": 6, "order": 1 }
+            ],
+            "rewards": { "experience": 140, "reputation": { "wildkin_pact": 25 } },
+            "tags": ["side", "combat", "spindlewood_forest"]
+        },
+        {
+            "id": "root_sentinel_trial",
+            "name": "Trial of the Root Sentinel",
+            "description": "The Wildkin speak of a Root Sentinel that guards an ancient seed. Defeat it to prove your worth and claim the seed.",
+            "type": "side",
+            "category": "combat",
+            "level": 5,
+            "prerequisites": [{ "type": "level", "level": 5 }, { "type": "reputation", "faction": "wildkin_pact", "amount": 20 }],
+            "objectives": [
+                { "id": "defeat_root_sentinel", "type": "kill", "description": "Defeat the Root Sentinel", "target": "root_sentinel_mini", "required": 1, "order": 1 }
+            ],
+            "rewards": { "experience": 400, "items": [{ "id": "ancient_seed", "quantity": 1 }], "reputation": { "wildkin_pact": 50 } },
+            "tags": ["side", "combat", "wildkin_pact", "trial"]
+        },
+        {
+            "id": "veil_watcher_ritual",
+            "name": "Veil Watcher's Ritual",
+            "description": "A Veil Watcher asks you to gather ingredients for a calming ritual near a thin place.",
+            "type": "side",
+            "category": "story",
+            "level": 3,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "collect_veil_herbs", "type": "collect", "description": "Collect Veil-touched Herbs", "target": "veil_herb", "required": 4, "order": 1 },
+                { "id": "deliver_veil_watcher", "type": "talk", "description": "Deliver herbs to the Veil Watcher", "target": "veil_watcher", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 180, "items": [{ "id": "sap_crystal", "quantity": 2 }] },
+            "tags": ["side", "veil", "gathering"]
+        },
+        {
+            "id": "ironbark_smith_order",
+            "name": "Ironbark Smith's Order",
+            "description": "The Ironbark Smith needs rare ore to complete a commission.",
+            "type": "side",
+            "category": "gathering",
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "collect_iron_ore", "type": "collect", "description": "Collect Iron Ore", "target": "iron_ore", "required": 5, "order": 1 },
+                { "id": "deliver_smith", "type": "talk", "description": "Deliver ore to Ironbark Smith", "target": "ironbark_smith", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 100, "items": [{ "id": "iron_sword", "quantity": 1 }] },
+            "tags": ["side", "crafting", "smith"]
+        },
+        {
+            "id": "canopy_scout_recon",
+            "name": "Canopy Scout Recon",
+            "description": "Scout Brin needs someone to survey the eastern canopy for enemy movement.",
+            "type": "side",
+            "category": "exploration",
+            "level": 4,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "visit_eastern_canopy", "type": "visit", "description": "Reach the eastern canopy waypoint", "target": "eastern_canopy", "required": 1, "order": 1 },
+                { "id": "report_brin", "type": "talk", "description": "Report to Scout Brin", "target": "scout_brin", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 220, "items": [{ "id": "sap_crystal", "quantity": 3 }] },
+            "tags": ["side", "scout", "exploration"]
+        },
+        {
+            "id": "healer_mora_supplies",
+            "name": "Healer Mora's Supplies",
+            "description": "Healer Mora is low on healing herbs. Gather them from the grove.",
+            "type": "side",
+            "category": "gathering",
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "collect_healing_herb", "type": "collect", "description": "Collect Healing Herbs", "target": "healing_herb", "required": 8, "order": 1 },
+                { "id": "deliver_mora", "type": "talk", "description": "Deliver herbs to Healer Mora", "target": "healer_mora", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 80, "items": [{ "id": "minor_health_potion", "quantity": 4 }] },
+            "tags": ["side", "healing", "gathering"]
+        },
+        {
+            "id": "keeper_lynn_lore",
+            "name": "Keeper Lynn's Lore",
+            "description": "Keeper Lynn seeks a lost scroll from the Hollowroot catacombs.",
+            "type": "side",
+            "category": "story",
+            "level": 5,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "find_lost_scroll", "type": "collect", "description": "Find the Lost Scroll in Hollowroot", "target": "lost_scroll", "required": 1, "order": 1 },
+                { "id": "deliver_lynn", "type": "talk", "description": "Deliver scroll to Keeper Lynn", "target": "keeper_lynn", "required": 1, "order": 2 }
+            ],
+            "rewards": { "experience": 350, "items": [{ "id": "sap_crystal", "quantity": 5 }] },
+            "tags": ["side", "lore", "hollowroot"]
+        },
+        {
+            "id": "blight_hound_cleanup",
+            "name": "Blight Hound Cleanup",
+            "description": "Blight Hounds have been sighted near the Sapling Workshop. Clear them out.",
+            "type": "side",
+            "category": "combat",
+            "level": 3,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "kill_blight_near_workshop", "type": "kill", "description": "Defeat Blight Hounds near the workshop", "target": "blight_hound", "required": 4, "order": 1 }
+            ],
+            "rewards": { "experience": 150, "items": [{ "id": "blight_gland", "quantity": 1 }] },
+            "tags": ["side", "combat", "blight"]
+        },
+        {
+            "id": "sap_weaver_charm",
+            "name": "Sap Weaver's Charm",
+            "description": "The Sap Weaver will craft you a charm in exchange for crystals and moonpetals.",
+            "type": "side",
+            "category": "gathering",
+            "level": 4,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "collect_crystals", "type": "collect", "description": "Collect Sap Crystals", "target": "sap_crystal", "required": 3, "order": 1 },
+                { "id": "collect_moonpetals", "type": "collect", "description": "Collect Moonpetals", "target": "moonpetal", "required": 2, "order": 2 },
+                { "id": "deliver_weaver", "type": "talk", "description": "Deliver materials to Sap Weaver", "target": "sap_weaver", "required": 1, "order": 3 }
+            ],
+            "rewards": { "experience": 200, "items": [{ "id": "sap_charm", "quantity": 1 }] },
+            "tags": ["side", "crafting", "charm"]
+        },
+        {
+            "id": "watcher_cole_warning",
+            "name": "Watcher Cole's Warning",
+            "description": "Watcher Cole has spotted corrupted movement in the deep woods. Investigate and report.",
+            "type": "side",
+            "category": "combat",
+            "level": 6,
+            "prerequisites": [],
+            "objectives": [
+                { "id": "investigate_deep_woods", "type": "visit", "description": "Investigate the deep woods", "target": "deep_woods", "required": 1, "order": 1 },
+                { "id": "defeat_corrupted", "type": "kill", "description": "Defeat corrupted creatures", "target": "corrupted_treant", "required": 2, "order": 2 },
+                { "id": "report_cole", "type": "talk", "description": "Report to Watcher Cole", "target": "watcher_cole", "required": 1, "order": 3 }
+            ],
+            "rewards": { "experience": 400, "items": [{ "id": "sap_crystal", "quantity": 6 }], "reputation": { "bloomguard": 25 } },
+            "tags": ["side", "combat", "corruption"]
         }
     ]
 }

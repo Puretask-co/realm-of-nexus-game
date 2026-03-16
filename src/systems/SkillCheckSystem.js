@@ -70,7 +70,7 @@ export class SkillCheckSystem {
    * Perform a skill check.
    * @param {string} skillId - The skill to check
    * @param {number|string} dc - Difficulty class (number or name like 'moderate')
-   * @param {object} options - { bonuses: number, advantage: boolean }
+   * @param {object} options - { bonuses, advantage, sapCycleDiplomacyBonus (from SapCycleManager.getModifiers().diplomacyBonus for persuasion/deception) }
    * @returns {{ success: boolean, roll: number, total: number, dc: number, natural20: boolean }}
    */
   check(skillId, dc, options = {}) {
@@ -94,8 +94,11 @@ export class SkillCheckSystem {
     const attrs = AttributeSystem.getInstance();
     const attrBonus = attrs.get(def.attribute);
 
+    // Sap Cycle: diplomacyBonus applies to social skills (persuasion, deception)
+    const diplomacyBonus = (options.sapCycleDiplomacyBonus ?? 0) +
+      ((skillId === 'persuasion' || skillId === 'deception') ? (options.diplomacyBonus ?? 0) : 0);
     // Total = roll + attribute + skill rank + bonuses
-    const total = roll + attrBonus + skill.rank + (options.bonuses || 0);
+    const total = roll + attrBonus + skill.rank + (options.bonuses || 0) + diplomacyBonus;
     const natural20 = roll === 20;
     const success = natural20 || total >= dcValue;
 

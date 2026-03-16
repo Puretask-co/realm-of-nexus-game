@@ -97,6 +97,7 @@ export default class GameScene extends Phaser.Scene {
         ContentInitializer.registerFactions(this.factionSystem);
         ContentInitializer.registerNarrative(this.narrativeSystem);
         ContentInitializer.registerVeilkeepers(this.veilkeeperSystem);
+        ContentInitializer.registerCompanions(this.companionSystem);
 
         // ---- World ----
         this._buildWorld();
@@ -142,6 +143,7 @@ export default class GameScene extends Phaser.Scene {
         ContentInitializer.wireSaveSystem({
             questSystem: this.questSystem,
             dialogueSystem: this.dialogueSystem,
+            progressionSystem: this.progression,
             dspSystem: this.dspSystem,
             factionSystem: this.factionSystem,
             narrativeSystem: this.narrativeSystem,
@@ -169,6 +171,13 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('dm:narration', (data) => this._onDMNarration(data)),
             EventBus.on('dm:encounter', (data) => this._onDMEncounter(data))
         ];
+
+        // ---- Tactical combat (design: grid-based main combat) ----
+        this.inTacticalCombat = false;
+        this._tacticalOverworldEnemies = [];
+        this._unsubs.push(
+            EventBus.on('tactical:combatEnded', (data) => this._onTacticalCombatEnded(data))
+        );
 
         // ---- Track current location ----
         this.currentLocationId = 'canopy_of_life';
@@ -469,24 +478,124 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // Player-enemy collision
+        // Player-enemy overlap: start tactical encounter (design: tactical as main combat)
         this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
-            if (this.isDead) return;
-            if (!enemy.data._contactCooldown) {
-                const dmg = Math.max(1, 5 - this.player.stats.defense);
-                this.player.stats.hp = Math.max(0, this.player.stats.hp - dmg);
-                EventBus.emit('player-stats-updated', this.player.stats);
-                this.cameraSystem.shake('light');
-                this.damageNumbers.show(this.player.x, this.player.y - 20, dmg, 0xff4444);
-                enemy.data._contactCooldown = true;
-                this.time.delayedCall(500, () => { enemy.data._contactCooldown = false; });
+            if (this.isDead || this.inTacticalCombat) return;
+            if (enemy.data._encounterCooldown) return;
+            enemy.data._encounterCooldown = true;
+            this.time.delayedCall(2000, () => { if (enemy.active) enemy.data._encounterCooldown = false; });
 
-                // Check death
-                if (this.player.stats.hp <= 0) {
-                    this._onPlayerDeath();
-                }
-            }
+            const nearby = this.enemies.children.entries.filter(e =>
+                e.active && Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y) < 180
+            );
+            const encounterEnemies = nearby.slice(0, 4);
+            this._startTacticalEncounter(encounterEnemies);
         });
+    }
+
+    _startTacticalEncounter(overworldEnemies) {
+        if (this.inTacticalCombat || overworldEnemies.length === 0) return;
+        this._tacticalOverworldEnemies = overworldEnemies;
+
+        const defs = overworldEnemies.map(e => e.data.definition);
+        const isBoss = defs.some(d => (d.tier || 1) >= 4) || defs.length >= 4;
+        const gridWidth = isBoss ? 12 : (defs.length <= 2 ? 6 : 10);
+        const gridHeight = isBoss ? 8 : (defs.length <= 2 ? 6 : 7);
+
+        const allyStats = this.player.stats;
+        const allies = [{
+            id: 'player',
+            name: this.player.name || 'Hero',
+            stats: {
+                hp: allyStats.hp ?? 30,
+                maxHp: allyStats.maxHp ?? 30,
+                guard: allyStats.guard ?? 0,
+                maxGuard: allyStats.maxGuard ?? 10,
+                might: allyStats.might ?? allyStats.atk ?? 2,
+                agility: allyStats.agility ?? allyStats.agi ?? 2,
+                resilience: allyStats.resilience ?? 2,
+                insight: allyStats.insight ?? 2,
+                ap: allyStats.agility >= 4 ? 3 : 2,
+                maxAP: allyStats.agility >= 4 ? 3 : 2,
+                speed: 4
+            },
+            variant: this.registry.get('selectedVariant') || 'pure'
+        }];
+
+        const companions = this.companionSystem.getActiveParty?.() || [];
+        companions.slice(0, 2 - allies.length).forEach((c, i) => {
+            const ent = this.companionSystem.getCompanionCombatEntity?.(c.id);
+            if (ent) allies.push({ ...ent, variant: c.variant || 'pure' });
+        });
+
+        const enemies = defs.map((d, i) => ({
+            id: d.id + '_' + i,
+            name: d.name || 'Enemy',
+            stats: {
+                hp: d.baseStats?.hp || 40,
+                maxHp: d.baseStats?.hp || 40,
+                guard: d.baseStats?.guard ?? 0,
+                maxGuard: d.baseStats?.guard ?? 10,
+                might: d.baseStats?.might ?? 2,
+                agility: d.baseStats?.agility ?? 2,
+                speed: d.baseStats?.speed ?? 3
+            },
+            experienceReward: d.experienceReward || 30,
+            lootTable: d.lootTable
+        }));
+
+        this.inTacticalCombat = true;
+        this.player.setVisible(false);
+        this.player.setActive(false);
+        overworldEnemies.forEach(e => { e.setVisible(false); e.setActive(false); });
+
+        this.tacticalCombat.startCombat({
+            allies,
+            enemies,
+            gridWidth,
+            gridHeight
+        });
+
+        EventBus.emit('tactical:encounterStarted', { allyCount: allies.length, enemyCount: enemies.length });
+    }
+
+    _onTacticalCombatEnded(data) {
+        if (!this.inTacticalCombat) return;
+        const { result, rewards } = data;
+
+        this.player.setVisible(true);
+        this.player.setActive(true);
+
+        const state = this.tacticalCombat.getCombatState?.();
+        const playerAlly = state?.allies?.find(a => a.id === 'player');
+        if (playerAlly) {
+            this.player.stats.hp = playerAlly.hp;
+            this.player.stats.maxHp = playerAlly.maxHp ?? this.player.stats.maxHp;
+            this.player.stats.guard = playerAlly.guard ?? 0;
+            EventBus.emit('player-stats-updated', this.player.stats);
+        }
+
+        if (result === 'victory' && rewards) {
+            this.player.stats.experience += rewards.experience || 0;
+            (rewards.loot || []).forEach(drop => {
+                EventBus.emit('inventory:addItem', { itemId: drop.itemId, quantity: drop.quantity || 1, itemData: dataManager.getItem(drop.itemId) });
+            });
+            this._tacticalOverworldEnemies.forEach(e => {
+                if (e._hpBar) e._hpBar.destroy();
+                e.destroy();
+            });
+            EventBus.emit('combat:ended', { result: 'victory', rewards });
+        } else {
+            this._tacticalOverworldEnemies.forEach(e => {
+                e.setVisible(true);
+                e.setActive(true);
+            });
+            if (result === 'defeat') this._onPlayerDeath();
+        }
+
+        this._tacticalOverworldEnemies = [];
+        this.inTacticalCombat = false;
+        EventBus.emit('tactical:encounterEnded', { result });
     }
 
     _spawnSingleEnemy(def, x, y, zoneId) {
@@ -809,16 +918,19 @@ export default class GameScene extends Phaser.Scene {
         this.player.stats.experience += xpReward;
         this.damageNumbers.show(enemy.x, enemy.y - 30, `+${Math.round(xpReward)} XP`, 0x44ff88);
 
-        // Award gold
+        // Award gold (Sap Cycle: lootRateMultiplier affects economy)
         const lootTable = enemy.data.definition?.lootTable;
+        const sapMods = this.sapCycle.getModifiers();
         if (lootTable) {
-            const goldDrop = Phaser.Math.Between(lootTable.goldMin || 5, lootTable.goldMax || 15);
+            const rawGold = Phaser.Math.Between(lootTable.goldMin || 5, lootTable.goldMax || 15);
+            const goldDrop = Math.max(0, Math.round(rawGold * (sapMods.lootRateMultiplier ?? 1)));
             this.player.stats.gold += goldDrop;
 
-            // Drop items to inventory
+            // Drop items to inventory (phase affects drop rate)
             const items = lootTable.items || [];
             for (const drop of items) {
-                if (Math.random() < drop.dropChance) {
+                const chance = (drop.dropChance ?? 0.5) * (sapMods.lootRateMultiplier ?? 1);
+                if (Math.random() < Math.min(1, chance)) {
                     const itemData = dataManager.getItem(drop.itemId);
                     EventBus.emit('inventory:addItem', {
                         itemId: drop.itemId,

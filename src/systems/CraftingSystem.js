@@ -2,12 +2,13 @@ import { EventBus } from '../core/EventBus.js';
 import dataManager from './DataManager.js';
 
 /**
- * CraftingSystem — 3 crafting stations, recipe database, material gathering.
+ * CraftingSystem — 4 crafting stations, recipe database, material gathering.
  *
  * Stations:
- *   Bloomguard Forge     - Weapons and armor
- *   Emerald Coven Sanctum - Potions and enchantments
+ *   Bloomguard Forge       - Weapons and armor
+ *   Emerald Coven Sanctum  - Potions and enchantments
  *   Sapling Workshop      - Tools and consumables
+ *   Veilkeeper Atelier    - Scrolls and veil-touched items (4th station per GDD)
  *
  * Blue Sap phase gives +10% crafting success bonus.
  * Higher Crafting skill rank increases quality.
@@ -42,6 +43,12 @@ export class CraftingSystem {
         description: 'A practical workshop where tools, traps, and consumables are crafted with ingenuity.',
         recipeCategories: ['tool', 'trap', 'consumable', 'ammunition'],
         location: 'verdant_grove', unlocked: true
+      }],
+      ['veilkeeper_atelier', {
+        id: 'veilkeeper_atelier', name: 'Veilkeeper Atelier',
+        description: 'A secluded space where scrolls and veil-touched artifacts are inscribed and bound.',
+        recipeCategories: ['scroll', 'artifact', 'reagent'],
+        location: 'crystal_caverns', unlocked: false
       }]
     ]);
 
@@ -97,11 +104,18 @@ export class CraftingSystem {
         materials: [{ itemId: 'wood_shaft', quantity: 5 }, { itemId: 'sap_crystal', quantity: 1 }],
         result: { itemId: 'sap_arrows', quantity: 10 },
         craftingRank: 0, baseDifficulty: 8, craftTime: 3
+      }],
+      // Veilkeeper Atelier (4th station)
+      ['veil_scroll_minor', {
+        id: 'veil_scroll_minor', name: 'Minor Veil Scroll', station: 'veilkeeper_atelier', category: 'scroll',
+        materials: [{ itemId: 'parchment', quantity: 1 }, { itemId: 'sap_crystal', quantity: 1 }],
+        result: { itemId: 'veil_scroll_minor', quantity: 1 },
+        craftingRank: 0, baseDifficulty: 10, craftTime: 6
       }]
     ]);
 
-    // Known recipes
-    this.knownRecipes = new Set(['iron_sword', 'minor_health_potion', 'sap_arrows', 'thorn_trap']);
+    // Known recipes (veil_scroll_minor learned when atelier is unlocked or via quest)
+    this.knownRecipes = new Set(['iron_sword', 'minor_health_potion', 'sap_arrows', 'thorn_trap', 'veil_scroll_minor']);
 
     // Rarity tiers
     this.rarityTiers = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];

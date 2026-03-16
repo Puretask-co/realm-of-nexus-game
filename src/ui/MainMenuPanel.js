@@ -17,7 +17,7 @@ export class MainMenuPanel {
 
   build() {
     const panelWidth = 320;
-    const panelHeight = 400;
+    const panelHeight = 480;
     const panelX = GameConfig.WIDTH / 2 - panelWidth / 2;
     const panelY = GameConfig.HEIGHT / 2 - panelHeight / 2;
 
@@ -42,9 +42,10 @@ export class MainMenuPanel {
       { label: 'Inventory', y: 120, onClick: () => { this.hide(); this.ui.togglePanel('inventory'); } },
       { label: 'Skill Tree', y: 170, onClick: () => { this.hide(); this.ui.togglePanel('skillTree'); } },
       { label: 'Quest Log', y: 220, onClick: () => { this.hide(); this.ui.togglePanel('questLog'); } },
-      { label: 'Settings', y: 270, onClick: () => this.showSettings() },
-      { label: 'Save Game', y: 320, onClick: () => this.saveGame() },
-      { label: 'Quit to Title', y: 370, onClick: () => this.quitToTitle() }
+      { label: 'Ask DM', y: 270, onClick: () => this.askDM() },
+      { label: 'Settings', y: 320, onClick: () => this.showSettings() },
+      { label: 'Save Game', y: 370, onClick: () => this.saveGame() },
+      { label: 'Quit to Title', y: 420, onClick: () => this.quitToTitle() }
     ];
 
     for (const btn of buttons) {
@@ -53,6 +54,13 @@ export class MainMenuPanel {
       });
       this.panel.add(button);
     }
+
+    this.eventBus.on('dm:commandResponse', (data) => {
+      if (data?.success && data?.text) this.ui.notify(data.text.substring(0, 80) + (data.text.length > 80 ? '…' : ''), { type: 'info' });
+    });
+    this.eventBus.on('dm:requestUIControl', (data) => {
+      if (data?.action === 'openPanel' && data?.panelId) { this.hide(); this.ui.togglePanel(data.panelId); }
+    });
   }
 
   show() {
@@ -67,6 +75,15 @@ export class MainMenuPanel {
     this.overlay.setVisible(false);
     this.panel.setVisible(false);
     this.eventBus.emit('game:resumed');
+  }
+
+  askDM() {
+    if (typeof window === 'undefined' || !window.prompt) return;
+    const text = window.prompt('Ask the Dungeon Master (e.g. "Give me a side quest", "What lurks in the caverns?"):');
+    if (text != null && text.trim()) {
+      this.eventBus.emit('dm:playerCommand', { text: text.trim() });
+      this.ui.notify('The DM ponders your words...', { type: 'info' });
+    }
   }
 
   showSettings() {

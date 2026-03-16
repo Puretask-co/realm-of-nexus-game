@@ -153,6 +153,22 @@ export class AttributeSystem {
   }
 
   /**
+   * Shop price multiplier: Charisma 4+ = -10% prices (GDD).
+   * @returns {number} 0.9 if Charisma >= 4, else 1.0
+   */
+  getShopPriceMultiplier() {
+    return this.attributes.charisma >= 4 ? 0.9 : 1.0;
+  }
+
+  /**
+   * Insight 4+ = detect hidden (GDD). Use to gate hidden entities/secrets.
+   * @returns {boolean}
+   */
+  canDetectHidden() {
+    return (this.attributes.insight ?? 0) >= 4;
+  }
+
+  /**
    * Compute derived stats from current attributes + class.
    */
   computeDerivedStats(classDef) {

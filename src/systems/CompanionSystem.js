@@ -1,4 +1,5 @@
 import { EventBus } from '../core/EventBus.js';
+import dataManager from './DataManager.js';
 
 /**
  * CompanionSystem — Recruitable companions with AI and bond mechanics.
@@ -99,6 +100,48 @@ export class CompanionSystem {
     this.eventBus.on('combat:ended', (data) => this._onCombatEnded(data));
 
     CompanionSystem.instance = this;
+  }
+
+  /**
+   * Load companion definitions from data/companions.json (optional).
+   * Call after DataManager has loaded. Merges definitions while preserving runtime state (recruited, bondLevel, etc.).
+   */
+  loadFromData() {
+    const list = dataManager.getCompanions?.() || [];
+    const cfg = dataManager.getCompanionData?.() || {};
+    if (cfg.maxPartySize != null) this.maxPartyCompanions = cfg.maxPartySize;
+    if (Array.isArray(cfg.bondXPPerLevel) && cfg.bondXPPerLevel.length > 0) this.bondXPPerLevel = cfg.bondXPPerLevel;
+
+    for (const def of list) {
+      const existing = this.companions.get(def.id);
+      const base = {
+        id: def.id,
+        name: def.name,
+        title: def.title || '',
+        class: def.class,
+        role: def.role,
+        description: def.description || '',
+        personality: def.personality || '',
+        baseStats: def.baseStats || {},
+        abilities: def.abilities || [],
+        recruitLocation: def.recruitLocation,
+        recruitQuest: def.recruitQuest,
+        bondEvents: def.bondEvents || [],
+        personalQuest: def.personalQuest
+      };
+      if (existing) {
+        Object.assign(existing, base);
+      } else {
+        this.companions.set(def.id, {
+          ...base,
+          recruited: false,
+          bondLevel: 0,
+          bondXP: 0,
+          inParty: false,
+          alive: true
+        });
+      }
+    }
   }
 
   /**

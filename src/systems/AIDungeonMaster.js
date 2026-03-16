@@ -105,10 +105,97 @@ export class AIDungeonMaster {
     // ─── Narrative Templates ───────────────────────────────────────
     this._initTemplates();
 
+    // ─── Claude API (optional) ──────────────────────────────────────
+    this.claudeApiKey = this._getClaudeApiKey();
+    this.claudeModel = 'claude-3-5-haiku-20241022';
+    this.claudeMaxTokens = 120;
+
     // ─── Event Bindings ────────────────────────────────────────────
     this._bindEvents();
 
     AIDungeonMaster.instance = this;
+  }
+
+  _getClaudeApiKey() {
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ANTHROPIC_API_KEY) {
+      return import.meta.env.VITE_ANTHROPIC_API_KEY;
+    }
+    if (typeof process !== 'undefined' && process.env?.ANTHROPIC_API_KEY) {
+      return process.env.ANTHROPIC_API_KEY;
+    }
+    return null;
+  }
+
+  /**
+   * Call Anthropic Messages API via fetch. Returns a promise of the assistant text.
+   */
+  async _callClaudeAPI(systemPrompt, userMessage) {
+    const key = this.claudeApiKey || this._getClaudeApiKey();
+    if (!key) return null;
+
+    const body = {
+      model: this.claudeModel,
+      max_tokens: this.claudeMaxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    };
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.warn('[AIDungeonMaster] Claude API error:', res.status, err);
+        return null;
+      }
+      const data = await res.json();
+      const block = data.content?.find(c => c.type === 'text');
+      return block?.text?.trim() || null;
+    } catch (e) {
+      console.warn('[AIDungeonMaster] Claude API request failed:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Generate one short narration line using Claude (design doc: AI Dungeon Master).
+   * Falls back to null if API key is missing or request fails; caller should use template then.
+   */
+  async generateNarration(context) {
+    const key = this.claudeApiKey || this._getClaudeApiKey();
+    if (!key) return null;
+
+    const systemPrompt = `You are the Dungeon Master for "Realm of Nexus: Verdance", a tactical RPG. Respond with a single short, vivid narration line (1-2 sentences). No quotes or labels. Tone: atmospheric, slightly poetic, grounded in the world's Sap Cycle and forest setting.`;
+
+    let userMessage = '';
+    switch (context.type) {
+      case 'zone_enter':
+        userMessage = `The player just entered the zone: ${context.zone || 'unknown'}. Current Sap phase: ${this.currentPhase}. Write one evocative narration line for this moment.`;
+        break;
+      case 'combat_start':
+        userMessage = `Combat is starting. Zone: ${this.currentZone}. Phase: ${this.currentPhase}. Write one tense narration line.`;
+        break;
+      case 'combat_victory':
+        userMessage = `The player won the combat. Write one short relief or triumph line.`;
+        break;
+      case 'quest_complete':
+        userMessage = `A quest was just completed. Write one short reflection or milestone line.`;
+        break;
+      case 'phase_change':
+        userMessage = `The Sap phase just changed to ${context.phase || this.currentPhase}. Write one short atmospheric line about the shift.`;
+        break;
+      default:
+        userMessage = `Context: ${JSON.stringify(context)}. Write one short narration line.`;
+    }
+
+    return this._callClaudeAPI(systemPrompt, userMessage);
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -260,6 +347,36 @@ export class AIDungeonMaster {
     this.eventBus.on('narrative:eraStarted', (data) => this._onEraStarted(data));
     this.eventBus.on('narrative:eraCompleted', (data) => this._onEraCompleted(data));
     this.eventBus.on('narrative:choiceMade', (data) => this._onChoiceMade(data));
+    this.eventBus.on('dm:playerCommand', (data) => this.processPlayerCommand(data?.text || data?.command || ''));
+  }
+
+  /**
+   * Process a text command from the player (design: "Player inputs text commands interpreted by AI").
+   * Calls Claude to interpret, then emits dm:commandResponse and optionally dm:requestSideQuest / dm:requestUIControl.
+   */
+  async processPlayerCommand(text) {
+    if (!text || !text.trim()) {
+      this.eventBus.emit('dm:commandResponse', { text: '', success: false, error: 'empty' });
+      return;
+    }
+    const systemPrompt = `You are the Dungeon Master for "Realm of Nexus: Verdance". The player has sent a short in-world command or question. Respond in 1-2 sentences as the DM: atmospheric, in-character, and helpful. If they ask for a side quest or new task, say you will add one and keep the tone. No meta-commentary.`;
+    let response = null;
+    if (this.claudeApiKey) {
+      response = await this._callClaudeAPI(systemPrompt, text.trim());
+    }
+    if (!response) {
+      response = `The Sap stirs at your words, but the Veil keeps its silence. (Try again when the connection is strong.)`;
+    }
+    this.eventBus.emit('dm:commandResponse', { text: response, success: true });
+
+    const lower = text.toLowerCase();
+    if (/\b(quest|task|mission|side quest|something to do)\b/.test(lower)) {
+      this.eventBus.emit('dm:requestSideQuest', { playerRequest: text, dmResponse: response });
+    }
+    if (/\b(open|show|display)\b.*\b(inventory|map|quest|skill)\b/.test(lower)) {
+      const ui = lower.includes('inventory') ? 'inventory' : lower.includes('map') ? 'map' : lower.includes('quest') ? 'questLog' : lower.includes('skill') ? 'skillTree' : null;
+      if (ui) this.eventBus.emit('dm:requestUIControl', { action: 'openPanel', panelId: ui });
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -271,10 +388,16 @@ export class AIDungeonMaster {
     this.currentZone = zone;
     this.playerPerformance.zonesVisited.add(zone);
 
-    // Zone narration
     const zoneKey = this.templates.zoneEnter[zone] ? zone : 'default';
-    const text = this._pickTemplate(this.templates.zoneEnter[zoneKey]);
-    this._enqueue(text, 'zone', 'high');
+    const fallback = this._pickTemplate(this.templates.zoneEnter[zoneKey]);
+
+    if (this.claudeApiKey) {
+      this.generateNarration({ type: 'zone_enter', zone })
+        .then(ai => { if (ai) this._enqueue(ai, 'zone', 'high'); else this._enqueue(fallback, 'zone', 'high'); })
+        .catch(() => this._enqueue(fallback, 'zone', 'high'));
+    } else {
+      this._enqueue(fallback, 'zone', 'high');
+    }
 
     // Tutorial hint for first zone visit
     if (this.playerPerformance.zonesVisited.size <= 2 && !this.tutorialComplete) {
@@ -300,9 +423,14 @@ export class AIDungeonMaster {
 
   _onQuestCompleted(data) {
     this.playerPerformance.questsCompleted++;
-    const text = this._pickTemplate(this.templates.questMilestone.completed);
-    this._enqueue(text, 'quest', 'high');
-
+    const fallback = this._pickTemplate(this.templates.questMilestone.completed);
+    if (this.claudeApiKey) {
+      this.generateNarration({ type: 'quest_complete', questId: data?.questId })
+        .then(ai => { if (ai) this._enqueue(ai, 'quest', 'high'); else this._enqueue(fallback, 'quest', 'high'); })
+        .catch(() => this._enqueue(fallback, 'quest', 'high'));
+    } else {
+      this._enqueue(fallback, 'quest', 'high');
+    }
     this.pacing.timeSinceLastStoryBeat = 0;
     this.pacing.storyHunger = 0;
   }

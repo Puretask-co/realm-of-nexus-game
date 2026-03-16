@@ -1,5 +1,8 @@
 import { EventBus } from '../core/EventBus.js';
 import dataManager from './DataManager.js';
+import { MoralChoiceSystem } from './MoralChoiceSystem.js';
+import { FactionSystem } from './FactionSystem.js';
+import { CompanionSystem } from './CompanionSystem.js';
 
 /**
  * NarrativeSystem — Drives the 6-era campaign from story.json.
@@ -35,9 +38,20 @@ export class NarrativeSystem {
     this.choicesMade = new Map(); // choicePointId -> selectedOption
     this.discoveredTruths = new Set();
     this.availableEndings = new Set(['domination', 'harmony', 'sacrifice', 'collapse']);
+    this.storyFlags = new Set(); // e.g. void_architect_defeated, unbinding_truth_discovered
+
+    // Quest id -> story flags to set when quest is completed (for ending requirements)
+    this.questToStoryFlags = {
+      the_unbinding: ['void_architect_defeated', 'unbinding_truth_discovered'],
+      siege_of_hollowroot: ['soul_conduit_mastered'],
+      nexus_convergence: ['nexus_destabilized']
+    };
 
     // Listen for events
-    this.eventBus.on('quest:completed', (data) => this._checkEraProgression(data));
+    this.eventBus.on('quest:completed', (data) => {
+      this._checkEraProgression(data);
+      this._onQuestCompletedForEnding(data);
+    });
     this.eventBus.on('player:levelUp', (data) => this._checkEraProgression(data));
 
     NarrativeSystem.instance = this;
@@ -163,14 +177,26 @@ export class NarrativeSystem {
     const era = this.getCurrentEra();
     if (!era) return;
 
-    // Check if climax event quest is completed
     if (data?.questId && era.climaxEvent) {
-      // The climax event signals era completion
       const mainQuests = era.mainQuests || [];
       const lastQuest = mainQuests[mainQuests.length - 1];
       if (data.questId === lastQuest || data.questId === era.climaxEvent.id) {
         this.completeCurrentEra();
       }
+    }
+  }
+
+  _onQuestCompletedForEnding(data) {
+    const questId = data?.questId;
+    if (!questId) return;
+
+    const flags = this.questToStoryFlags[questId];
+    if (flags) {
+      for (const flag of flags) this.recordStoryFlag(flag);
+    }
+
+    if (questId === 'the_unbinding') {
+      this.triggerEnding();
     }
   }
 
@@ -221,6 +247,122 @@ export class NarrativeSystem {
     );
   }
 
+  /**
+   * Record a story flag (e.g. void_architect_defeated, unbinding_truth_discovered).
+   * Called by quest completion or climax events.
+   */
+  recordStoryFlag(flagId) {
+    this.storyFlags.add(flagId);
+    this.eventBus.emit('narrative:storyFlagRecorded', { flagId });
+  }
+
+  /**
+   * Check if a story flag has been set.
+   */
+  hasStoryFlag(flagId) {
+    return this.storyFlags.has(flagId);
+  }
+
+  /**
+   * Evaluate whether the player meets all requirements for a given ending.
+   */
+  evaluateEndingRequirements(endingId) {
+    const endings = this.storyData?.narrative?.majorEndings || [];
+    const ending = endings.find(e => e.id === endingId);
+    if (!ending || !ending.requirements || !Array.isArray(ending.requirements)) return false;
+
+    const moral = MoralChoiceSystem.getInstance();
+    const factions = FactionSystem.getInstance();
+    const companions = CompanionSystem.getInstance();
+
+    for (const req of ending.requirements) {
+      if (req === 'faction_alliance_authoritarian') {
+        if (moral.alignment.authority <= 20) return false;
+        continue;
+      }
+      if (req === 'void_architect_defeated') {
+        if (!this.storyFlags.has('void_architect_defeated')) return false;
+        continue;
+      }
+      if (req === 'faction_reputation_balanced') {
+        const reps = [...factions.factions.values()].map(f => f.reputation);
+        const anyHostile = reps.some(r => r <= -30);
+        const anyAllied = reps.some(r => r >= 30);
+        if (anyHostile || !reps.some(r => r >= 10)) return false; // need at least one friendly, none hostile
+        continue;
+      }
+      if (req === 'unbinding_truth_discovered') {
+        if (!this.storyFlags.has('unbinding_truth_discovered')) return false;
+        continue;
+      }
+      if (req === 'companion_bonds_strong') {
+        const recruited = companions.getRecruited?.() || [];
+        const bondStrong = recruited.some(c => (c.bondLevel || 0) >= 6);
+        if (recruited.length < 1 || !bondStrong) return false;
+        continue;
+      }
+      if (req === 'soul_conduit_mastered') {
+        if (!this.storyFlags.has('soul_conduit_mastered')) return false;
+        continue;
+      }
+      if (req === 'nexus_destabilized') {
+        if (!this.storyFlags.has('nexus_destabilized')) return false;
+        continue;
+      }
+      if (req === 'scar_fully_opened') {
+        if (!this.storyFlags.has('scar_fully_opened')) return false;
+        continue;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Determine which ending and variation to trigger based on current state.
+   * Call when the final climax is complete (e.g. after final quest).
+   * @returns {{ endingId: string, variation: number, ending: object } | null}
+   */
+  getTriggeredEnding() {
+    const endings = this.storyData?.narrative?.majorEndings || [];
+    const moral = MoralChoiceSystem.getInstance();
+
+    const candidates = endings.filter(e => this.availableEndings.has(e.id) && this.evaluateEndingRequirements(e.id));
+    if (candidates.length === 0) {
+      const fallback = moral.getAvailableEndings?.();
+      const first = fallback?.[0] || 'harmony';
+      const def = endings.find(e => e.id === first) || endings[0];
+      return def ? { endingId: def.id, variation: 0, ending: def } : null;
+    }
+
+    const preferred = candidates[0];
+    const variations = Math.min(preferred.variations || 3, 3);
+    let variation = 0;
+    if (variations > 1) {
+      if (preferred.id === 'domination') variation = moral.alignment.authority >= 40 ? 2 : moral.alignment.authority >= 30 ? 1 : 0;
+      else if (preferred.id === 'harmony') variation = moral.alignment.mercy >= 30 ? 2 : moral.alignment.truth >= 20 ? 1 : 0;
+      else if (preferred.id === 'sacrifice') variation = moral.alignment.sacrifice >= 40 ? 2 : moral.alignment.sacrifice >= 25 ? 1 : 0;
+      else variation = moral.alignment.truth <= -30 ? 2 : moral.alignment.authority <= -30 ? 1 : 0;
+      variation = Math.min(variation, variations - 1);
+    }
+
+    return { endingId: preferred.id, variation, ending: preferred };
+  }
+
+  /**
+   * Trigger the ending sequence. Call after final battle/quest.
+   * Emits narrative:endingTriggered and returns the ending payload.
+   */
+  triggerEnding() {
+    const result = this.getTriggeredEnding();
+    if (!result) return null;
+    this.eventBus.emit('narrative:endingTriggered', {
+      endingId: result.endingId,
+      variation: result.variation,
+      ending: result.ending
+    });
+    return result;
+  }
+
   // ─── Serialization ────────────────────────────────────────────
 
   serialize() {
@@ -230,7 +372,8 @@ export class NarrativeSystem {
       completedEras: [...this.completedEras],
       choicesMade: Object.fromEntries(this.choicesMade),
       discoveredTruths: [...this.discoveredTruths],
-      availableEndings: [...this.availableEndings]
+      availableEndings: [...this.availableEndings],
+      storyFlags: [...this.storyFlags]
     };
   }
 
@@ -242,6 +385,7 @@ export class NarrativeSystem {
     if (data.choicesMade) this.choicesMade = new Map(Object.entries(data.choicesMade));
     if (data.discoveredTruths) this.discoveredTruths = new Set(data.discoveredTruths);
     if (data.availableEndings) this.availableEndings = new Set(data.availableEndings);
+    if (data.storyFlags) this.storyFlags = new Set(data.storyFlags);
   }
 
   saveState() { return this.serialize(); }

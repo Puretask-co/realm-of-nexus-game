@@ -13,7 +13,8 @@ import { AttributeSystem } from '../systems/AttributeSystem.js';
  *   2. Class was already selected in ClassSelectionScene
  *   3. Attribute point allocation (8 points, max 4 each, cap 6)
  *   4. Pure/Blighted variant selection
- *   5. Backstory selection (8 backgrounds that affect dialogue/quests)
+ *   5. Appearance (body type, skin tone, 15 hair styles, Verdant Sigil placement)
+ *   6. Backstory selection (8 backgrounds that affect dialogue/quests)
  */
 export default class CharacterCreationScene extends Phaser.Scene {
     constructor() {
@@ -40,8 +41,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
         this.pointsRemaining = 8;
         this.maxPerAttr = 4;
         this.humanBonusAttr = null; // For Human's +1 choice
-        this.selectedVariant = 'pure'; // Pure or Blighted
+        this.selectedVariant = 'pure';
         this.selectedBackstoryIndex = 0;
+        this.selectedBodyType = 0;
+        this.selectedSkinTone = 0;
+        this.selectedHairStyle = 0;
+        this.selectedSigilPlacement = 0;
 
         // 8 backstory options
         this.backstories = [
@@ -93,8 +98,11 @@ export default class CharacterCreationScene extends Phaser.Scene {
         // ---- Middle-left: Pure/Blighted Variant ----
         this._buildVariantPanel(30, 300, 240, 90);
 
+        // ---- Middle: Appearance (design: body, skin, 15 hair, Verdant Sigil) ----
+        this._buildAppearancePanel(280, 300, 260, 90);
+
         // ---- Middle-right: Backstory Selection ----
-        this._buildBackstoryPanel(280, 300, 250, 90);
+        this._buildBackstoryPanel(550, 300, 250, 90);
 
         // ---- Bottom: Summary + Confirm ----
         this._buildSummaryPanel(width / 2, 400, 600, 200);
@@ -373,6 +381,70 @@ export default class CharacterCreationScene extends Phaser.Scene {
         }
     }
 
+    _buildAppearancePanel(x, y, w, h) {
+        this.add.text(x + w / 2, y, 'APPEARANCE', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5);
+
+        const optsY = y + 18;
+        const rowH = 20;
+        const bodyOpts = ['Slim', 'Heavy'];
+        const skinOpts = ['Light', 'Tan', 'Brown', 'Dark'];
+        this.hairStyles = Array.from({ length: 15 }, (_, i) => `Style ${i + 1}`);
+        const sigilOpts = ['Forehead', 'Cheek', 'Chest', 'Hand'];
+
+        this._appearanceOptionButtons = [];
+        [['Body', bodyOpts, () => this.selectedBodyType, (v) => { this.selectedBodyType = v; }],
+         ['Skin', skinOpts, () => this.selectedSkinTone, (v) => { this.selectedSkinTone = v; }],
+         ['Sigil', sigilOpts, () => this.selectedSigilPlacement, (v) => { this.selectedSigilPlacement = v; }]].forEach(([label, opts, get, set], i) => {
+            const ly = optsY + i * rowH;
+            this.add.text(x + 4, ly, label + ':', { fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc' });
+            const rowBtns = [];
+            opts.forEach((txt, j) => {
+                const btn = this.add.text(x + 40 + j * 52, ly + 6, txt, {
+                    fontFamily: 'monospace', fontSize: '8px',
+                    color: get() === j ? '#88ff88' : '#666688'
+                }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+                btn.on('pointerdown', () => { set(j); this._updateAppearanceButtons(); this._updateSummary(); });
+                rowBtns.push({ btn, get });
+            });
+            this._appearanceOptionButtons.push(rowBtns);
+        });
+
+        const hairY = optsY + 3 * rowH;
+        this.add.text(x + 4, hairY, 'Hair:', { fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc' });
+        this._hairLabel = this.add.text(x + 80, hairY + 6, this.hairStyles[0], {
+            fontFamily: 'monospace', fontSize: '9px', color: '#88aaff'
+        }).setOrigin(0, 0.5);
+        const leftH = this.add.text(x + 42, hairY + 6, '<', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#4488ff'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        leftH.on('pointerdown', () => {
+            this.selectedHairStyle = (this.selectedHairStyle - 1 + 15) % 15;
+            this._hairLabel.setText(this.hairStyles[this.selectedHairStyle]);
+            this._updateSummary();
+        });
+        const rightH = this.add.text(x + w - 20, hairY + 6, '>', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#4488ff'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        rightH.on('pointerdown', () => {
+            this.selectedHairStyle = (this.selectedHairStyle + 1) % 15;
+            this._hairLabel.setText(this.hairStyles[this.selectedHairStyle]);
+            this._updateSummary();
+        });
+    }
+
+    _updateAppearanceButtons() {
+        if (!this._appearanceOptionButtons) return;
+        this._appearanceOptionButtons.forEach((rowBtns) => {
+            const selected = rowBtns[0]?.get?.() ?? 0;
+            rowBtns.forEach(({ btn }, j) => {
+                btn.setColor(selected === j ? '#88ff88' : '#666688');
+            });
+        });
+    }
+
     _buildBackstoryPanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'BACKSTORY', {
             fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
@@ -484,10 +556,15 @@ export default class CharacterCreationScene extends Phaser.Scene {
         const hp = (cls?.startingHP || 30) + (this.attributes.Resilience * 5);
         const guard = cls?.startingGuard || 5;
 
+        const bodyLabels = ['Slim', 'Heavy'];
+        const skinLabels = ['Light', 'Tan', 'Brown', 'Dark'];
+        const sigilLabels = ['Forehead', 'Cheek', 'Chest', 'Hand'];
+        const appearanceLine = `Appearance: ${bodyLabels[this.selectedBodyType]}, ${skinLabels[this.selectedSkinTone]}, Hair ${this.selectedHairStyle + 1}, ${sigilLabels[this.selectedSigilPlacement]}`;
         const lines = [
             `${ancName} ${variantLabel} ${clsName}  —  ${backstory?.name || ''}`,
             `HP: ${hp}  |  Guard: ${guard}  |  AP: ${cls?.baseAP || 2}`,
             `MIG: ${this.attributes.Might}  AGI: ${this.attributes.Agility}  RES: ${this.attributes.Resilience}  INS: ${this.attributes.Insight}  CHA: ${this.attributes.Charisma}`,
+            appearanceLine,
             this.pointsRemaining > 0 ? `(${this.pointsRemaining} attribute points remaining)` : ''
         ].filter(Boolean);
 
@@ -518,6 +595,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
         this.registry.set('allocatedAttributes', { ...this.attributes });
         this.registry.set('selectedVariant', this.selectedVariant);
         this.registry.set('selectedBackstory', backstory?.id || 'orphan_of_the_grove');
+        this.registry.set('appearance', {
+            bodyType: this.selectedBodyType,
+            skinTone: this.selectedSkinTone,
+            hairStyle: this.selectedHairStyle,
+            sigilPlacement: this.selectedSigilPlacement
+        });
 
         // Apply to AttributeSystem
         this.attributeSystem.setAttributes(this.attributes);
@@ -544,6 +627,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
                     attributes: this.attributes,
                     classId: this.classSystem.getCurrentClass()?.id,
                     variant: this.selectedVariant,
+                    appearance: {
+                        bodyType: this.selectedBodyType,
+                        skinTone: this.selectedSkinTone,
+                        hairStyle: this.selectedHairStyle,
+                        sigilPlacement: this.selectedSigilPlacement
+                    },
                     backstory: backstory?.id,
                     backstoryBonusSkill: backstory?.bonusSkill,
                     backstoryBonusQuest: backstory?.bonusQuest

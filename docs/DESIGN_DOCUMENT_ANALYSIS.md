@@ -375,7 +375,6 @@ The codebase is now **substantially aligned** with the design documents. All cri
 - Expand NPC roster (15 → 50+)
 - Add more quests (24 → 40+)
 - Flesh out AI Dungeon Master integration with Claude API
-4. **Veilkeeper system** (unique selling point, no other game has this)
 
 The technical scaffolding is reusable — it's the content layer and mechanical rules that need reconciliation.
 
@@ -603,6 +602,110 @@ Based on the most recent and authoritative design decisions across all 7 documen
 - 5-6 factions with full reputation system
 - 5 Veilkeepers with permanent death mechanic
 - AI Dungeon Master via Claude API
+
+---
+
+## CONTENT SCOPE: HOW CLOSE ARE WE?
+
+Comparison of **current codebase + data** vs. the Content Scope above (as of 2026-03-15).
+
+| Content Scope Item | Target | Current | Status | Gap |
+|-------------------|--------|---------|--------|-----|
+| **Locations** | 25+ | 27 | Met | — |
+| **Items** | 100+ | 105 | Met | — |
+| **Spells** (Tier 1–3, DSP) | 30+ | 37 | Met | — |
+| **Enemy types** | 40+ | 31 | Short | +9 enemies |
+| **NPCs** (with dialogue/placement) | 50+ | ~14 dialogue chars; 30+ location refs | Short | ~20–36 more NPCs with dialogue |
+| **Quests** | 40+ | ~16–24 (main/side) | Short | +16–24 quests |
+| **Major endings** | 4 (12 variations) | 4 defined in story.json, 12 variations | Met | Implement outcome logic in NarrativeSystem |
+| **Classes + Pure/Blighted** | 5–7 with variants | 5 classes, Pure/Blighted abilities in data | Met | — |
+| **Historical eras** | 6 | 6 in story.json | Met | — |
+| **Factions + reputation** | 5–6 | 6 in ContentInitializer + FactionSystem | Met | — |
+| **Veilkeepers (permanent death)** | 5 | 5 in veilkeepers.json + VeilkeeperSystem | Met | — |
+| **AI Dungeon Master** | Claude API | AIDungeonMaster.js scaffold, NarrativeSystem/DifficultySystem wired | Partial | Flesh out Claude API calls and prompt/state |
+
+**Summary:**
+- **At or above target:** locations, items, spells, endings (data), classes, eras, factions, Veilkeepers.
+- **Below target:** enemy types (31 vs 40+), NPCs with dialogue (14 vs 50+), quest count (~16–24 vs 40+).
+- **Partial:** AI DM (scaffold present; needs real API integration and content generation).
+
+**Rough completion vs Content Scope:** ~75–80% — mechanics and data structure are largely aligned; the main gaps are **content volume** (more enemies, NPCs, quests) and **AI DM integration**.
+
+---
+
+## IMPLEMENTATION: DESIGN DOCUMENTS → CURRENT SYSTEMS
+
+How the design doc spec is implemented in the current codebase.
+
+| Design Doc Element | Current System(s) | Data / Config | Notes |
+|--------------------|-------------------|--------------|--------|
+| Shared DSP (no regen, thresholds) | `DSPSystem.js` | `spells.json` (resourceSystem, dspCost), `config.json` | World consequences and thresholds wired; spell costs use DSP. |
+| Grid tactical combat (AP, Guard, positioning) | `TacticalCombatSystem.js` | — | Uses `DifficultySystem`, `DSPSystem`; positioning (Entanglement, Shrouded Strike, etc.) may need full 4-pillar implementation. |
+| 5 attributes (MIG/AGI/RES/INS/CHA) | `AttributeSystem.js` | `CharacterCreationScene`, `classes.json` baseStats | Derived stats (Guard, AP, Evasion) in AttributeSystem. |
+| 5 Verdance classes + Pure/Blighted | `PlayerClassSystem.js`, `classes.json` | `classes.json` (abilities, variant talents) | Class selection in `ClassSelectionScene`; creation in `CharacterCreationScene`. |
+| 6 factions, reputation | `FactionSystem.js` | `ContentInitializer.registerFactions()` | 6 factions registered; save/load in ContentInitializer. |
+| 5 Veilkeepers, Hollowing, death | `VeilkeeperSystem.js` | `veilkeepers.json` | Loaded via DataManager; consultations cost DSP + Hollowing; permanent death. |
+| 6-era campaign | `NarrativeSystem.js` | `story.json` (eras, acts, majorEndings) | Eras/acts/endings in data; NarrativeSystem drives progression. |
+| Moral choices & consequences | `MoralChoiceSystem.js` | — | Tracks choices; wire to quest/dialogue outcomes and endings. |
+| Companions (bond, combat) | `CompanionSystem.js` | — | Scaffold present; add companion data (e.g. companions.json) and bond/combat logic. |
+| 12 use-based skills, 5 ranks | `SkillCheckSystem.js` | `skills.json` | Uses AttributeSystem for checks; improve-by-use and rank progression. |
+| Crafting (stations, recipes) | `CraftingSystem.js` | `items.json` (materials/recipes if present) | Station-based; add/expand recipe data and UI. |
+| Difficulty (Easy/Normal/Hard) | `DifficultySystem.js` | — | Multipliers for damage, HP, XP; used by TacticalCombatSystem. |
+| Sap Cycle (15-day calendar) | `SapCycleManager.js` | `config.json` (phase durations) | Confirm in-game “days” and calendar effects match 15-day design. |
+| Character creation (5-step) | `CharacterCreationScene.js` | `ancestries.json`, `classes.json` | Ancestry, class, attributes, variant, backstory. |
+| AI Dungeon Master | `AIDungeonMaster.js` | — | Uses NarrativeSystem + DifficultySystem; add Claude API calls and game-state → prompt flow. |
+
+**Next implementation steps (priority):** See **REMAINING IMPLEMENTATION** below.
+
+---
+
+## REMAINING IMPLEMENTATION (Spec → Code)
+
+What is still missing or incomplete when turning the design documents into actual code. Updated after the latest implementation pass.
+
+### High priority (core spec not yet in code)
+
+| # | Spec item | Current state | What’s left |
+|---|-----------|----------------|-------------|
+| 1 | **Tactical combat as main combat** | **Done.** GameScene starts tactical encounter on player–enemy overlap; `TacticalCombatSystem.startCombat()` used; TacticalCombatPanel shows; victory/defeat return to overworld. | — |
+| 2 | **Enemy intent telegraphed** | **Done.** `TacticalCombatSystem.getEnemyIntent()`, `tactical:enemyIntent`; intent shown in TacticalCombatPanel. | — |
+| 3 | **Variable grid sizes** | **Done.** Grid 6×6 / 10×7 / 12×8 by enemy count and boss in `_startTacticalEncounter`. | — |
+| 4 | **Appearance customization (character creation)** | **Done.** CharacterCreationScene has APPEARANCE step (body, skin, hair ×15, Verdant Sigil); persisted in registry and `character:created`. | — |
+| 5 | **5 talent trees (GDD)** | **Done.** SkillTreePanel uses 5 trees from data/skills.json (Martial Prowess, Guardian’s Oath, Soul Magic Mastery, Verdant Bond, Tactical Mind); level-gated via `unlockLevel`; ProgressionSystem talent points and save/load. | — |
+| 6 | **Verdant Ward: reflect & interact** | **Done.** Heavy Ward reflect 20%; Pure/Blighted strengthen/corrupt ward actions and `wardModifier` on tiles. | — |
+
+### Medium priority (partial or scaffold only)
+
+| # | Spec item | Current state | What’s left |
+|---|-----------|----------------|-------------|
+| 7 | **AI Dungeon Master (full)** | **Scaffold done.** `dm:playerCommand` → AIDungeonMaster.processPlayerCommand() calls Claude; emits `dm:commandResponse`, `dm:requestSideQuest`, `dm:requestUIControl`. Main menu "Ask DM" (prompt) + listeners for response and UI control. | Full stateful story state, AI-generated side quest creation from requestSideQuest. |
+| 8 | **Crafting: 4th station** | **Done.** CraftingSystem has 4th station **Veilkeeper Atelier** (scroll/artifact/reagent); recipe `veil_scroll_minor`. | — |
+| 9 | **Ending UI** | **Done.** UIScene listens for `narrative:endingTriggered` and shows ending screen (title, description, variation, Continue → ClassSelectionScene). | — |
+| 10 | **Sap Cycle → gameplay** | **Done.** GameScene loot uses getModifiers().lootRateMultiplier for gold and item drop chance. SkillCheckSystem accepts options.sapCycleDiplomacyBonus for persuasion/deception. | Phase modifiers in config; NPC behavior/music by phase optional. |
+
+### Content / data (design targets)
+
+| # | Spec item | Target | Current | What’s left |
+|---|-----------|--------|---------|-------------|
+| 11 | **NPCs with dialogue** | 50+ | **50** | 50 characters + dialogues (28 new with greetings). Met. |
+| 12 | **Quests** | 40+ | **40** | 40 quests (8 new side quests added). Met. |
+| 13 | **Enemy types** | 40+ | 40 | Met. |
+
+### Lower priority / optional (from docs)
+
+| # | Spec item | Current state | What’s left |
+|---|-----------|----------------|-------------|
+| 14 | **Prestige system** | Doc 2: “20 prestige perks across 4 tiers”. | No prestige or endgame system. Implement only if committing to post-campaign progression. |
+| 15 | **Hex grid / Zone of Control** | Doc 1 mentions hex-grid and Zone of Control. | Tactical grid is offset (effectively square). Hex and ZoC are optional. |
+| 16 | **Charisma 4+ = -10% shop prices** | **Done.** `AttributeSystem.getShopPriceMultiplier()` returns 0.9 when Charisma ≥ 4; NPC comment documents use for shop-open listeners. | Any shop UI should call getShopPriceMultiplier() when displaying/charging. |
+| 17 | **Insight 4+ = detect hidden** | **Done.** canDetectHidden + NPC config.hidden. | — |
+
+### Summary
+
+- **Must-do for “spec in code”:** (1)–(6) **Done:** tactical combat wired, enemy intent, variable grid, appearance customization, 5 talent trees + level-gate, Verdant Ward reflect and Pure/Blighted.
+- **Important next:** (7) AI DM scaffold **done** (text command, response, requestSideQuest, requestUIControl); (10) Sap Cycle **done** (loot + diplomacy bonus). (8)(9) **done.**
+- **Content:** **Done.** 50 characters with dialogue, 40 quests.
+- **Optional:** Prestige, hex/ZoC; (16) Charisma **done**; (17) Insight detect hidden **done** (NPC hidden + canDetectHidden).
 
 ### Unique Selling Points
 1. AI DM generates emergent narrative in real-time

@@ -1,4 +1,5 @@
 import EventBus from '../core/EventBus.js';
+import { TacticalCombatPanel } from '../ui/TacticalCombatPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -33,6 +34,9 @@ export default class UIScene extends Phaser.Scene {
         this._createFPSCounter();
         this._createQuestTracker();
         this._createLocationIndicator();
+
+        this.tacticalCombatPanel = new TacticalCombatPanel(this);
+        this.tacticalCombatPanel.create();
 
         // EventBus bindings
         this._unsubs = [
@@ -80,8 +84,59 @@ export default class UIScene extends Phaser.Scene {
             }),
             EventBus.on('spell:unlocked', (data) => {
                 this._showNotification(`Spell Unlocked: ${data.spell.name}`, 0xcc66ff);
+            }),
+            EventBus.on('narrative:endingTriggered', (data) => {
+                this._showEndingScreen(data);
             })
         ];
+    }
+
+    /**
+     * Ending screen: 4 endings, 12 variations (design doc). Shows title, description, variation, and Continue.
+     */
+    _showEndingScreen(payload) {
+        const { endingId, variation = 0, ending = {} } = payload || {};
+        const name = ending.name || endingId || 'The End';
+        const desc = ending.description || '';
+        const variations = Math.max(1, ending.variations || 3);
+        const variationText = variations > 1 ? `Variation ${variation + 1} of ${variations}` : '';
+
+        const { width, height } = this.scale;
+        const overlay = this.add.graphics().setDepth(20000).setScrollFactor(0);
+        overlay.fillStyle(0x0a0a1a, 0.95);
+        overlay.fillRect(0, 0, width, height);
+
+        const title = this.add.text(width / 2, 120, name, {
+            fontFamily: 'monospace', fontSize: '28px', color: '#ffcc88',
+            stroke: '#000', strokeThickness: 4
+        }).setOrigin(0.5).setDepth(20001);
+        const sub = this.add.text(width / 2, 165, variationText, {
+            fontFamily: 'monospace', fontSize: '14px', color: '#8888aa'
+        }).setOrigin(0.5).setDepth(20001);
+        const body = this.add.text(width / 2, 240, desc, {
+            fontFamily: 'monospace', fontSize: '16px', color: '#ccccdd',
+            wordWrap: { width: width - 120 }, align: 'center'
+        }).setOrigin(0.5, 0).setDepth(20001);
+
+        const btnY = height - 100;
+        const btnBg = this.add.graphics().setDepth(20001);
+        btnBg.fillStyle(0x3366aa, 0.9);
+        btnBg.fillRoundedRect(width / 2 - 100, btnY - 20, 200, 44, 8);
+        const btnText = this.add.text(width / 2, btnY + 2, 'Continue', {
+            fontFamily: 'monospace', fontSize: '18px', color: '#ffffff',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(20002);
+        const hitZone = this.add.zone(width / 2, btnY + 2, 200, 44).setInteractive({ useHandCursor: true }).setDepth(20002);
+        hitZone.on('pointerdown', () => {
+            overlay.destroy();
+            title.destroy();
+            sub.destroy();
+            body.destroy();
+            btnBg.destroy();
+            btnText.destroy();
+            hitZone.destroy();
+            this.scene.start('ClassSelectionScene');
+        });
     }
 
     // ----------------------------------------------------------------

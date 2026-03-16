@@ -1,4 +1,5 @@
 import EventBus from '../core/EventBus.js';
+import { AttributeSystem } from '../systems/AttributeSystem.js';
 
 /**
  * NPC component — non-player character with dialogue and interaction.
@@ -9,6 +10,7 @@ import EventBus from '../core/EventBus.js';
  *  - Quest giver / shop keeper / lore NPC roles
  *  - Idle animation: gentle bob or facing toward player
  *  - Interact key: E to talk
+ *  - Hidden (GDD): config.hidden === true; only revealed when Insight >= 4 (AttributeSystem.canDetectHidden())
  *
  * NPCs are placed by the level editor or spawned from location data.
  */
@@ -24,6 +26,7 @@ export default class NPC {
         this.sprite.owner = this;
 
         // NPC data
+        this.hidden = config.hidden === true;
         this.name = config.name || 'Stranger';
         this.role = config.role || 'lore'; // lore | quest | shop
         this.dialogueLines = config.dialogue || ['...'];
@@ -33,8 +36,8 @@ export default class NPC {
         // Interaction radius
         this.interactRadius = config.interactRadius || 60;
 
-        // Name label
-        this._nameTag = scene.add.text(x, y - 28, this.name, {
+        // Name label (hidden NPCs show "???" until Insight 4+)
+        this._nameTag = scene.add.text(x, y - 28, this._getDisplayName(), {
             fontFamily: 'monospace', fontSize: '9px', color: '#44ff44',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(10);
@@ -62,6 +65,11 @@ export default class NPC {
         });
 
         this._playerInRange = false;
+    }
+
+    _getDisplayName() {
+        if (!this.hidden) return this.name;
+        return AttributeSystem.getInstance().canDetectHidden() ? this.name : '???';
     }
 
     // ----------------------------------------------------------------
@@ -95,6 +103,8 @@ export default class NPC {
             const dx = playerSprite.x - this.sprite.x;
             this.sprite.setFlipX(dx < 0);
         }
+        // Update hidden name tag when Insight might have changed
+        if (this.hidden) this._nameTag.setText(this._getDisplayName());
     }
 
     // ----------------------------------------------------------------
@@ -106,6 +116,12 @@ export default class NPC {
         this.dialogueIndex = 0;
         this._prompt.setVisible(false);
 
+        if (this.hidden && !AttributeSystem.getInstance().canDetectHidden()) {
+            this._showHiddenBlurb();
+            return;
+        }
+
+        this._hiddenBlurb = false;
         // Create dialogue box
         const cam = this.scene.cameras.main;
         const boxW = 500;
@@ -159,7 +175,37 @@ export default class NPC {
         });
     }
 
+    _showHiddenBlurb() {
+        const cam = this.scene.cameras.main;
+        const boxW = 500;
+        const boxH = 80;
+        const boxX = (cam.width - boxW) / 2;
+        const boxY = cam.height - boxH - 20;
+        this._dialogueBox = this.scene.add.graphics().setDepth(20000).setScrollFactor(0);
+        this._dialogueBox.fillStyle(0x111122, 0.9);
+        this._dialogueBox.fillRect(boxX, boxY, boxW, boxH);
+        this._dialogueBox.lineStyle(2, 0x666644, 0.5);
+        this._dialogueBox.strokeRect(boxX, boxY, boxW, boxH);
+        this._dialogueName = this.scene.add.text(boxX + 12, boxY + 8, '???', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#888866', fontStyle: 'bold'
+        }).setDepth(20001).setScrollFactor(0);
+        this._dialogueText = this.scene.add.text(boxX + 12, boxY + 26,
+            'You sense something hidden here. Your insight is not yet sharp enough to perceive it.',
+            { fontFamily: 'monospace', fontSize: '11px', color: '#aaaa88', wordWrap: { width: boxW - 24 } }
+        ).setDepth(20001).setScrollFactor(0);
+        this._dialogueHint = this.scene.add.text(boxX + boxW - 12, boxY + boxH - 14, '[E] Continue', {
+            fontFamily: 'monospace', fontSize: '8px', color: '#667766'
+        }).setOrigin(1, 0.5).setDepth(20001).setScrollFactor(0);
+        this._hiddenBlurb = true;
+        this._wasHiddenBlurb = true;
+    }
+
     _advanceDialogue() {
+        if (this._hiddenBlurb) {
+            this._hiddenBlurb = false;
+            this._endDialogue();
+            return;
+        }
         this.dialogueIndex++;
         if (this.dialogueIndex >= this.dialogueLines.length) {
             this._endDialogue();
@@ -176,12 +222,18 @@ export default class NPC {
         if (this._dialogueText) { this._dialogueText.destroy(); this._dialogueText = null; }
         if (this._dialogueHint) { this._dialogueHint.destroy(); this._dialogueHint = null; }
 
+        if (this._wasHiddenBlurb) {
+            this._wasHiddenBlurb = false;
+            return;
+        }
+
         EventBus.emit('npc-dialogue-complete', { npc: this.name, role: this.role });
 
         // Role-specific follow-up
         if (this.role === 'quest') {
             EventBus.emit('quest-offer', { npc: this.name, questData: this.config.quest });
         } else if (this.role === 'shop') {
+            // Listeners should apply AttributeSystem.getShopPriceMultiplier() for Charisma 4+ = -10% prices (GDD)
             EventBus.emit('shop-open', { npc: this.name, inventory: this.config.shopInventory });
         }
     }

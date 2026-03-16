@@ -114,17 +114,19 @@ export default class ContentInitializer {
     }
 
     /**
-     * Register all skills from data/skills.json into a SkillTreePanel.
+     * Register talent trees (GDD 5 trees) and optional legacy skills into SkillTreePanel.
      */
     static registerSkills(skillTreePanel) {
         if (!skillTreePanel) return;
-        const skills = dataManager.getAllSkills();
-
-        for (const skill of skills) {
-            skillTreePanel.registerSkill(skill);
+        if (skillTreePanel.loadTalentTrees) {
+            skillTreePanel.loadTalentTrees(dataManager.getTalentTrees());
         }
-
-        console.log(`[ContentInit] Registered ${skills.length} skills`);
+        const skills = dataManager.getAllSkills();
+        for (const skill of skills) {
+            if (skillTreePanel.registerSkill) skillTreePanel.registerSkill(skill);
+        }
+        const treeCount = dataManager.getTalentTrees?.()?.length ?? 0;
+        console.log(`[ContentInit] Talent trees: ${treeCount}, legacy skills: ${skills.length}`);
     }
 
     /**
@@ -170,9 +172,15 @@ export default class ContentInitializer {
         if (!veilkeeperSystem) return;
 
         // VeilkeeperSystem self-loads from dataManager in constructor
-        // Just ensure it's initialized
         const count = veilkeeperSystem.getAliveCount ? veilkeeperSystem.getAliveCount() : 0;
         console.log(`[ContentInit] Veilkeeper system initialized (${count} alive)`);
+    }
+
+    static registerCompanions(companionSystem) {
+        if (!companionSystem) return;
+        if (companionSystem.loadFromData) companionSystem.loadFromData();
+        const count = companionSystem.getRecruited?.()?.length ?? 0;
+        console.log(`[ContentInit] Companion system initialized (${companionSystem.companions?.size ?? 0} definitions, ${count} recruited)`);
     }
 
     /**
@@ -180,7 +188,7 @@ export default class ContentInitializer {
      */
     static wireSaveSystem(systems) {
         const {
-            questSystem, dialogueSystem, inventoryPanel, skillTreePanel,
+            questSystem, dialogueSystem, progressionSystem, inventoryPanel, skillTreePanel,
             dspSystem, factionSystem, narrativeSystem, moralChoiceSystem,
             companionSystem, attributeSystem, veilkeeperSystem, skillCheckSystem
         } = systems;
@@ -189,6 +197,7 @@ export default class ContentInitializer {
         EventBus.on('save-collect', (saveData) => {
             if (questSystem) saveData.quests = questSystem.saveState();
             if (dialogueSystem) saveData.dialogues = dialogueSystem.saveState();
+            if (progressionSystem?.serialize) saveData.progression = progressionSystem.serialize();
             if (inventoryPanel) saveData.inventory = inventoryPanel.saveState();
             if (skillTreePanel) saveData.skills = skillTreePanel.saveState();
             saveData.playerClass = classSystem.serialize();
@@ -207,6 +216,7 @@ export default class ContentInitializer {
         EventBus.on('save-restore', (saveData) => {
             if (saveData.quests && questSystem) questSystem.loadState(saveData.quests);
             if (saveData.dialogues && dialogueSystem) dialogueSystem.loadState(saveData.dialogues);
+            if (saveData.progression && progressionSystem?.deserialize) progressionSystem.deserialize(saveData.progression);
             if (saveData.inventory && inventoryPanel) inventoryPanel.loadState(saveData.inventory);
             if (saveData.skills && skillTreePanel) skillTreePanel.loadState(saveData.skills);
             if (saveData.playerClass) classSystem.deserialize(saveData.playerClass);

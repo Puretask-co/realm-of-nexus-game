@@ -52,12 +52,29 @@ export class TacticalCombatSystem {
     this.undoStack = [];
     this.canUndo = false;
 
-    // Positioning bonuses
+    // Verdance 4-pillar positioning (design doc)
     this.positionBonuses = {
-      flanking: 0.25,   // +25% damage when attacking from side
-      rear: 0.50,       // +50% damage when attacking from behind
-      cover: -0.50,     // -50% damage when behind cover
-      elevation: 0.30   // +30% damage from high ground
+      // Legacy fallbacks (used if pillar logic doesn't apply)
+      flanking: 0.25,
+      rear: 0.50,
+      cover: -0.50,
+      elevation: 0.30,
+      // Pillar 1: Entanglement (allies adjacent to defender)
+      entanglementBase: 0.15,   // 2+ allies
+      entanglementDeep: 0.25,   // 3+ allies
+      entanglementRooted: 0.35, // 4+ allies
+      // Pillar 2: Shrouded Strike (rear/terrain shroud)
+      shroudPartial: 0.20,   // +20% damage, ignore 25% defense
+      shroudFull: 0.40,      // +40% damage, ignore 50% defense, crit
+      // Pillar 3: Canopy Advantage (elevation)
+      canopyTier1Ranged: 0.20,
+      canopyTier1Melee: 0.15,
+      canopyTier2Ranged: 0.35,
+      canopyTier2Melee: 0.25,
+      // Pillar 4: Verdant Ward (cover)
+      wardLight: -0.15,
+      wardMedium: -0.30,
+      wardHeavy: -0.50
     };
 
     TacticalCombatSystem.instance = this;
@@ -81,10 +98,11 @@ export class TacticalCombatSystem {
       this.grid[x] = [];
       for (let y = 0; y < h; y++) {
         this.grid[x][y] = {
-          terrain: 'open',     // 'open', 'wall', 'cover_low', 'cover_high', 'water', 'hazard'
-          occupant: null,       // Combatant reference
-          elevation: 0,         // 0 = ground, 1 = raised, 2 = high ground
-          effects: []           // Area effects (fire, poison cloud, etc.)
+          terrain: 'open',
+          occupant: null,
+          elevation: 0,
+          effects: [],
+          wardModifier: 'normal'  // 'normal' | 'strengthened' (Pure) | 'corrupted' (Blighted)
         };
       }
     }
@@ -400,6 +418,24 @@ export class TacticalCombatSystem {
   }
 
   /**
+   * Attack nearest enemy (for UI: single "Attack" button).
+   * Returns result of attackAction or { success: false, reason }.
+   */
+  attackNearestEnemy() {
+    if (!this.currentActor || this.currentActor.side !== 'ally') return { success: false, reason: 'Not your turn' };
+    const me = this.currentActor.entity;
+    const alive = this.enemies.filter(e => e.stats.hp > 0);
+    let nearest = null;
+    let nearestDist = Infinity;
+    for (const e of alive) {
+      const d = this.getDistance(me.gridX, me.gridY, e.gridX, e.gridY);
+      if (d < nearestDist && d <= 1) { nearestDist = d; nearest = e; }
+    }
+    if (!nearest) return { success: false, reason: 'No enemy in melee range' };
+    return this.attackAction(nearest);
+  }
+
+  /**
    * Attack a target.
    * Costs 1 AP for basic attack.
    */
@@ -439,9 +475,10 @@ export class TacticalCombatSystem {
 
     if (criticalHit) damage *= 2;
 
-    // Positioning bonuses
-    const posBonus = this._getPositionBonus(attacker, defender);
-    damage = Math.round(damage * (1 + posBonus));
+    // Verdance 4-pillar positioning
+    const posResult = this._getPositionBonus(attacker, defender);
+    if (posResult.guaranteedCrit) criticalHit = true;
+    damage = Math.round(damage * (1 + posResult.damageMultiplier));
 
     // Difficulty modifier
     const diff = DifficultySystem.getInstance();
@@ -451,8 +488,8 @@ export class TacticalCombatSystem {
       damage = Math.round(damage * diff.getModifier('playerDamageMultiplier'));
     }
 
-    // Apply damage (Guard absorbs first)
-    const result = this._applyDamage(defender, damage, attacker);
+    // Apply damage (Guard absorbs first; Shrouded Strike can ignore portion of Guard)
+    const result = this._applyDamage(defender, damage, attacker, { defenseIgnore: posResult.defenseIgnore || 0 });
 
     this._log(`${attacker.name} ${criticalHit ? 'CRITICALLY ' : ''}hit ${defender.name} for ${result.totalDamage} damage${result.guardAbsorbed > 0 ? ` (${result.guardAbsorbed} absorbed by Guard)` : ''}`);
 
@@ -460,7 +497,7 @@ export class TacticalCombatSystem {
       attacker: attacker.id, defender: defender.id,
       roll: attackRoll, total, evasion, hit: true, criticalHit,
       damage: result.totalDamage, guardAbsorbed: result.guardAbsorbed,
-      positionBonus: posBonus, defenderHP: defender.stats.hp
+      positionBonus: posResult.damageMultiplier, defenderHP: defender.stats.hp
     });
 
     // Check death
@@ -541,6 +578,40 @@ export class TacticalCombatSystem {
   }
 
   /**
+   * Strengthen Verdant Ward (Pure variant). Costs 1 AP. Improves ward at current tile.
+   */
+  strengthenWardAction() {
+    if (!this.currentActor || this.currentAP < 1) return { success: false, reason: 'No AP' };
+    const entity = this.currentActor.entity;
+    if (entity.variant !== 'pure') return { success: false, reason: 'Pure only' };
+    const tile = this.getTile(entity.gridX, entity.gridY);
+    if (!tile || !['ward_light', 'ward_medium', 'ward_heavy'].includes(tile.terrain)) return { success: false, reason: 'Not on ward' };
+    this.currentAP--;
+    entity.stats.ap = this.currentAP;
+    tile.wardModifier = 'strengthened';
+    this._log(`${entity.name} strengthened the Verdant Ward.`);
+    this.eventBus.emit('tactical:wardStrengthened', { x: entity.gridX, y: entity.gridY });
+    return { success: true };
+  }
+
+  /**
+   * Corrupt Verdant Ward (Blighted variant). Costs 1 AP. Weakens ward at current tile.
+   */
+  corruptWardAction() {
+    if (!this.currentActor || this.currentAP < 1) return { success: false, reason: 'No AP' };
+    const entity = this.currentActor.entity;
+    if (entity.variant !== 'blighted') return { success: false, reason: 'Blighted only' };
+    const tile = this.getTile(entity.gridX, entity.gridY);
+    if (!tile || !['ward_light', 'ward_medium', 'ward_heavy'].includes(tile.terrain)) return { success: false, reason: 'Not on ward' };
+    this.currentAP--;
+    entity.stats.ap = this.currentAP;
+    tile.wardModifier = 'corrupted';
+    this._log(`${entity.name} corrupted the Verdant Ward.`);
+    this.eventBus.emit('tactical:wardCorrupted', { x: entity.gridX, y: entity.gridY });
+    return { success: true };
+  }
+
+  /**
    * Defend action — doubles Guard regen this turn.
    * Costs 1 AP.
    */
@@ -613,27 +684,42 @@ export class TacticalCombatSystem {
 
   /**
    * Apply damage to a combatant (Guard absorbs first).
+   * @param {object} options - { defenseIgnore: 0..1 } from Shrouded Strike (reduces Guard effectiveness)
    */
-  _applyDamage(target, rawDamage, source) {
+  _applyDamage(target, rawDamage, source, options = {}) {
     let remaining = Math.max(1, rawDamage);
-    let guardAbsorbed = 0;
+    const defenseIgnore = options.defenseIgnore || 0;
+    const targetTile = this.getTile(target.gridX, target.gridY);
+    const terrain = targetTile?.terrain || 'open';
 
-    // Guard absorbs first
+    let guardAbsorbed = 0;
     if (target.stats.guard > 0) {
-      guardAbsorbed = Math.min(target.stats.guard, remaining);
-      target.stats.guard -= guardAbsorbed;
+      const absorbable = remaining * (1 - defenseIgnore);
+      guardAbsorbed = Math.min(target.stats.guard, absorbable);
+      target.stats.guard = Math.max(0, target.stats.guard - guardAbsorbed);
       remaining -= guardAbsorbed;
     }
 
-    // Remaining hits HP
     target.stats.hp = Math.max(0, target.stats.hp - remaining);
+
+    // Verdant Ward Heavy: reflect 20% of raw damage back to source
+    let reflectedDamage = 0;
+    if (terrain === 'ward_heavy' && source && source.stats && remaining > 0) {
+      reflectedDamage = Math.round(rawDamage * 0.2);
+      if (reflectedDamage > 0) {
+        source.stats.hp = Math.max(0, source.stats.hp - reflectedDamage);
+        this._log(`${source.name} takes ${reflectedDamage} reflected damage from Verdant Ward!`);
+        this.eventBus.emit('tactical:reflectedDamage', { source: source.id, amount: reflectedDamage });
+      }
+    }
 
     return {
       totalDamage: rawDamage,
       guardAbsorbed,
       hpDamage: remaining,
       remainingHP: target.stats.hp,
-      remainingGuard: target.stats.guard
+      remainingGuard: target.stats.guard,
+      reflectedDamage
     };
   }
 
@@ -642,32 +728,73 @@ export class TacticalCombatSystem {
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * Calculate positioning bonus for an attack.
+   * Calculate positioning bonus for an attack (Verdance 4-pillar system).
+   * Returns { damageMultiplier, defenseIgnore, guaranteedCrit } for the attack.
    */
   _getPositionBonus(attacker, defender) {
     let bonus = 0;
+    let defenseIgnore = 0;
+    let guaranteedCrit = false;
 
-    // Flanking: attacker is to the side
     const dx = attacker.gridX - defender.gridX;
     const dy = attacker.gridY - defender.gridY;
-
-    // Rear attack: attacking from behind (based on facing)
-    if (defender.facing === 'right' && dx < 0) bonus += this.positionBonuses.rear;
-    else if (defender.facing === 'left' && dx > 0) bonus += this.positionBonuses.rear;
-    else if (Math.abs(dy) > 0 && Math.abs(dx) === 0) bonus += this.positionBonuses.flanking;
-
-    // Elevation bonus
     const attackerTile = this.getTile(attacker.gridX, attacker.gridY);
     const defenderTile = this.getTile(defender.gridX, defender.gridY);
-    if (attackerTile && defenderTile && attackerTile.elevation > defenderTile.elevation) {
-      bonus += this.positionBonuses.elevation;
+
+    // ─── Pillar 1: Entanglement (allies adjacent to defender) ───
+    const adjacentAllies = this._countAlliesAdjacentTo(defender);
+    if (adjacentAllies >= 4) bonus += this.positionBonuses.entanglementRooted;
+    else if (adjacentAllies >= 3) bonus += this.positionBonuses.entanglementDeep;
+    else if (adjacentAllies >= 2) bonus += this.positionBonuses.entanglementBase;
+
+    // ─── Pillar 2: Shrouded Strike (rear / terrain shroud) ───
+    const isRear = (defender.facing === 'right' && dx < 0) || (defender.facing === 'left' && dx > 0);
+    const isFlank = !isRear && (Math.abs(dy) > 0 || Math.abs(dx) > 0);
+    const terrainShroud = defenderTile?.terrain === 'forest' || defenderTile?.terrain === 'spore_cloud' || defenderTile?.terrain === 'shadow_veil' || defenderTile?.terrain === 'blight_zone';
+    if (isRear && terrainShroud) {
+      bonus += this.positionBonuses.shroudFull;
+      defenseIgnore = 0.50;
+      guaranteedCrit = true;
+    } else if (isRear || terrainShroud) {
+      bonus += this.positionBonuses.shroudPartial;
+      defenseIgnore = 0.25;
+    } else if (isFlank) {
+      bonus += this.positionBonuses.flanking;
     }
 
-    // Cover reduction
-    if (defenderTile?.terrain === 'cover_low') bonus -= 0.25;
-    if (defenderTile?.terrain === 'cover_high') bonus -= this.positionBonuses.cover;
+    // ─── Pillar 3: Canopy Advantage (elevation) ───
+    const elevationDiff = (attackerTile?.elevation ?? 0) - (defenderTile?.elevation ?? 0);
+    if (elevationDiff >= 2) {
+      bonus += this.positionBonuses.canopyTier2Ranged; // melee uses same for simplicity
+    } else if (elevationDiff >= 1) {
+      bonus += this.positionBonuses.canopyTier1Ranged;
+    } else if (elevationDiff > 0) {
+      bonus += this.positionBonuses.elevation; // legacy single tier
+    }
 
-    return bonus;
+    // ─── Pillar 4: Verdant Ward (cover); Pure can strengthen, Blighted can corrupt ───
+    const terrain = defenderTile?.terrain || 'open';
+    const wardMod = defenderTile?.wardModifier || 'normal';
+    if (terrain === 'ward_heavy') {
+      bonus += (wardMod === 'strengthened') ? -0.60 : (wardMod === 'corrupted') ? -0.40 : this.positionBonuses.wardHeavy;
+    } else if (terrain === 'ward_medium') {
+      bonus += (wardMod === 'strengthened') ? -0.40 : (wardMod === 'corrupted') ? -0.20 : this.positionBonuses.wardMedium;
+    } else if (terrain === 'ward_light') {
+      bonus += (wardMod === 'strengthened') ? -0.25 : (wardMod === 'corrupted') ? -0.10 : this.positionBonuses.wardLight;
+    } else if (terrain === 'cover_high') bonus += this.positionBonuses.cover;
+    else if (terrain === 'cover_low') bonus -= 0.25;
+
+    return { damageMultiplier: bonus, defenseIgnore, guaranteedCrit };
+  }
+
+  _countAlliesAdjacentTo(defender) {
+    let count = 0;
+    const adj = this.getAdjacentTiles(defender.gridX, defender.gridY);
+    for (const t of adj) {
+      const occ = this.grid[t.x][t.y]?.occupant;
+      if (occ && occ.side === defender.side && occ.stats?.hp > 0) count++;
+    }
+    return count;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -675,10 +802,34 @@ export class TacticalCombatSystem {
   // ═══════════════════════════════════════════════════════════════
 
   /**
+   * Get intent for an enemy (for telegraphing). Returns { action: 'attack'|'move'|'defend', targetId?: string }.
+   */
+  getEnemyIntent(enemy) {
+    if (!enemy || enemy.side !== 'enemy' || enemy.stats?.hp <= 0) return null;
+    const targets = this.allies.filter(a => a.stats.hp > 0);
+    if (targets.length === 0) return { action: 'defend' };
+
+    let nearest = targets[0];
+    let nearestDist = Infinity;
+    for (const t of targets) {
+      const d = this.getDistance(enemy.gridX, enemy.gridY, t.gridX, t.gridY);
+      if (d < nearestDist) { nearestDist = d; nearest = t; }
+    }
+
+    const dist = this.getDistance(enemy.gridX, enemy.gridY, nearest.gridX, nearest.gridY);
+    if (dist <= 1 && this.currentAP >= 1) return { action: 'attack', targetId: nearest.id, targetName: nearest.name };
+    if (this.currentAP >= 1) return { action: 'move', targetId: nearest.id };
+    return { action: 'defend' };
+  }
+
+  /**
    * Simple enemy AI.
    */
   _runEnemyAI(enemy) {
-    // Find nearest alive ally
+    // Telegraph intent (design: enemy intent telegraphed)
+    enemy.nextIntent = this.getEnemyIntent(enemy);
+    this.eventBus.emit('tactical:enemyIntent', { entityId: enemy.id, intent: enemy.nextIntent });
+
     const targets = this.allies.filter(a => a.stats.hp > 0);
     if (targets.length === 0) { this.endTurn(); return; }
 
@@ -844,7 +995,8 @@ export class TacticalCombatSystem {
       enemies: this.enemies.map(e => ({
         id: e.id, name: e.name, hp: e.stats.hp, maxHp: e.stats.maxHp,
         guard: e.stats.guard, maxGuard: e.stats.maxGuard,
-        gridX: e.gridX, gridY: e.gridY, alive: e.stats.hp > 0
+        gridX: e.gridX, gridY: e.gridY, alive: e.stats.hp > 0,
+        intent: e.nextIntent || null
       })),
       grid: this._serializeGrid(),
       canUndo: this.canUndo,
