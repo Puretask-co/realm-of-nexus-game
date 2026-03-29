@@ -1247,8 +1247,6 @@
             "soundEffects": { "cast": "spell_cast_nature", "impact": "spell_summon_earth" }
         },
 
-        // ── BLOOMGUARD UNIQUE SPELLS ─────────────────────────────────────────
-
         {
             "id": "bg_thorn_reflect",
             "name": "Thorn Reflect",
@@ -1595,8 +1593,6 @@
             "soundEffects": { "cast": "spell_cast_buff", "impact": "spell_buff_apply" }
         },
 
-        // ── THORNBINDER UNIQUE SPELLS ─────────────────────────────────────────
-
         {
             "id": "tb_nettle_trap",
             "name": "Nettle Trap",
@@ -1902,8 +1898,6 @@
             "vfx": { "effect": "void_tendril", "color": "0x442266", "castParticle": "shadow_cast" },
             "soundEffects": { "cast": "spell_cast_shadow", "impact": "spell_hit_stun" }
         },
-
-        // ── EMERALD MYSTIC UNIQUE SPELLS ──────────────────────────────────────
 
         {
             "id": "em_crystal_lance",
@@ -2251,8 +2245,6 @@
             "soundEffects": { "cast": "spell_cast_arcane", "impact": "spell_hit_shadow" }
         },
 
-        // ── WILDKIN RANGER UNIQUE SPELLS ──────────────────────────────────────
-
         {
             "id": "wr_wind_dash",
             "name": "Wind Dash",
@@ -2560,8 +2552,6 @@
             "vfx": { "projectile": "crip_arrow_sprite", "color": "0xaa8844", "trailEffect": true, "castParticle": "physical_cast" },
             "soundEffects": { "cast": "spell_cast_physical", "impact": "spell_hit_pierce" }
         },
-
-        // ── SPORECALLER UNIQUE SPELLS ─────────────────────────────────────────
 
         {
             "id": "sc_mushroom_ring",
