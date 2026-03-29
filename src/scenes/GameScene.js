@@ -208,7 +208,7 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // ---- Minimap binding ----
-        this.minimap.bind(this.player, this.enemies, null, this.cameras.main);
+        this.minimap.bind(this.player, this.enemies, this.npcs, this.cameras.main);
 
         // ---- Auto-save ----
         this.saveManager.enableAutoSave(60000);
@@ -352,6 +352,14 @@ export default class GameScene extends Phaser.Scene {
         // ---- Death state ----
         this.isDead = false;
 
+        // ---- Frame counter (used for throttled per-frame work) ----
+        this._frameCount = 0;
+
+        // ---- DSP visual state ----
+        this._dspTween = null;
+        this._dspOverlay = null;
+        this._applyDSPVisuals('stable', 0);
+
         // ---- Tutorial: fire on new game ----
         if (this.registry.get('isNewGame')) {
             this.registry.set('isNewGame', false); // prevent re-trigger on reload
@@ -413,8 +421,8 @@ export default class GameScene extends Phaser.Scene {
 
             // Zone name label
             const label = this.add.text(zoneX + zoneW / 2, zoneY + 20, loc.name.toUpperCase(), {
-                fontFamily: 'monospace',
-                fontSize: '14px',
+                fontFamily: 'Open Sans',
+                fontSize: '20px',
                 color: `#${color.toString(16).padStart(6, '0')}`,
                 stroke: '#000000',
                 strokeThickness: 3
@@ -423,8 +431,8 @@ export default class GameScene extends Phaser.Scene {
 
             // Level indicator
             this.add.text(zoneX + zoneW / 2, zoneY + 38, `Lv.${loc.level} — ${loc.type}`, {
-                fontFamily: 'monospace',
-                fontSize: '10px',
+                fontFamily: 'Open Sans',
+                fontSize: '14px',
                 color: '#888888',
                 stroke: '#000000',
                 strokeThickness: 2
@@ -976,13 +984,65 @@ export default class GameScene extends Phaser.Scene {
         // for the full DialogueSystem
         EventBus.on('npc-dialogue-complete', (data) => {
             const npc = this.npcs.find(n => n.name === data.npc);
-            if (npc && npc.config.dialogueId) {
+            if (!npc) return;
+
+            // Wire shop:open for merchant/shop NPCs
+            if (npc.role === 'merchant' || npc.role === 'shop' || npc.isShopkeeper) {
+                EventBus.emit('shop:open', {
+                    shopId: npc.id || npc.name.toLowerCase().replace(/\s+/g, '_'),
+                    shopName: npc.name + "'s Wares",
+                    inventory: npc.config.shopInventory || this._getDefaultShopInventory(
+                        npc.id || npc.name.toLowerCase().replace(/\s+/g, '_')
+                    )
+                });
+            }
+
+            if (npc.config.dialogueId) {
                 const dialogue = dataManager.getDialogue(npc.config.dialogueId);
                 if (dialogue) {
                     this.dialogueSystem.startDialogue(npc.config.dialogueId);
                 }
             }
         });
+    }
+
+    _getDefaultShopInventory(shopId) {
+        const SHOPS = {
+            smith_garon: [
+                { itemId: 'iron_sword', quantity: 1, price: 120 },
+                { itemId: 'hunting_knife', quantity: 2, price: 80 },
+                { itemId: 'leather_tunic', quantity: 1, price: 90 },
+            ],
+            merchant_lirel: [
+                { itemId: 'health_potion', quantity: 5, price: 30 },
+                { itemId: 'minor_health_potion', quantity: 10, price: 10 },
+                { itemId: 'antidote', quantity: 3, price: 15 },
+                { itemId: 'speed_elixir', quantity: 2, price: 45 },
+            ],
+            innkeeper_maren: [
+                { itemId: 'minor_health_potion', quantity: 5, price: 12 },
+                { itemId: 'healing_herb', quantity: 5, price: 5 },
+                { itemId: 'spring_water', quantity: 10, price: 3 },
+                { itemId: 'trail_rations', quantity: 5, price: 5 },
+            ],
+            merchant_vale: [
+                { itemId: 'health_potion', quantity: 5, price: 30 },
+                { itemId: 'minor_health_potion', quantity: 10, price: 10 },
+                { itemId: 'antidote', quantity: 3, price: 15 },
+                { itemId: 'speed_elixir', quantity: 2, price: 45 },
+            ],
+            blacksmith_bram: [
+                { itemId: 'iron_sword', quantity: 1, price: 120 },
+                { itemId: 'hunting_knife', quantity: 2, price: 80 },
+                { itemId: 'leather_tunic', quantity: 1, price: 90 },
+            ],
+            default: [
+                { itemId: 'minor_health_potion', quantity: 5, price: 10 },
+                { itemId: 'health_potion', quantity: 3, price: 30 },
+                { itemId: 'trail_rations', quantity: 5, price: 5 },
+            ]
+        };
+        return SHOPS[shopId] || SHOPS.default;
     }
 
     // ----------------------------------------------------------------
@@ -1151,6 +1211,13 @@ export default class GameScene extends Phaser.Scene {
             const finalDmg = Math.max(1, damage + atk);
             targetEnemy.data.hp -= finalDmg;
 
+            // Hit flash + knockback
+            this._flashEnemyHit(targetEnemy);
+            this._knockbackEnemy(targetEnemy, this.player.x, this.player.y);
+
+            // Apply status effects declared by the spell
+            this._applySpellEffects(targetEnemy, spell);
+
             // SpellVFXIntegration: impact burst + flash (if vfx.impactParticle, etc.)
             EventBus.emit('spell-impact', { spell, caster: this.player, target: targetEnemy, damage: finalDmg });
 
@@ -1173,6 +1240,42 @@ export default class GameScene extends Phaser.Scene {
 
         EventBus.emit('player-stats-updated', this.player.stats);
         this._broadcastCooldown(spell);
+    }
+
+    // ----------------------------------------------------------------
+    // Hit feedback — flash & knockback
+    // ----------------------------------------------------------------
+
+    /**
+     * Brief red-white flash on an enemy sprite when it takes damage.
+     * @param {Phaser.GameObjects.Sprite} enemySprite
+     */
+    _flashEnemyHit(enemySprite) {
+        if (!enemySprite?.active) return;
+        enemySprite.setTint(0xff4444);
+        this.time.delayedCall(80, () => {
+            if (enemySprite?.active) enemySprite.setTint(0xff8888);
+            this.time.delayedCall(80, () => {
+                if (enemySprite?.active) enemySprite.clearTint();
+            });
+        });
+    }
+
+    /**
+     * Apply a short knockback impulse away from the damage source.
+     * @param {Phaser.GameObjects.Sprite} enemySprite
+     * @param {number} sourceX
+     * @param {number} sourceY
+     */
+    _knockbackEnemy(enemySprite, sourceX, sourceY) {
+        if (!enemySprite?.body) return;
+        const angle = Phaser.Math.Angle.Between(sourceX, sourceY, enemySprite.x, enemySprite.y);
+        enemySprite.body.setVelocity(Math.cos(angle) * 120, Math.sin(angle) * 120);
+        this.time.delayedCall(200, () => {
+            if (enemySprite?.body?.velocity) {
+                enemySprite.body.setVelocity(0, 0);
+            }
+        });
     }
 
     _broadcastCooldown(spell) {
@@ -1381,6 +1484,168 @@ export default class GameScene extends Phaser.Scene {
         } else {
             this.cameras.main.setAlpha(1);
         }
+
+        // Camera / overlay VFX keyed to named thresholds
+        this._applyDSPVisuals(threshold, value);
+    }
+
+    // ----------------------------------------------------------------
+    // DSP Visual Overload Effects
+    // ----------------------------------------------------------------
+
+    _applyDSPVisuals(threshold, value) {
+        const cam = this.cameras.main;
+
+        // Clear previous DSP effects
+        if (this._dspTween) { this._dspTween.stop(); this._dspTween = null; }
+        if (this._dspOverlay) { this._dspOverlay.destroy(); this._dspOverlay = null; }
+
+        if (threshold === 'stable') {
+            cam.clearRenderToTexture();
+            return;
+        }
+
+        if (threshold === 'strained') {
+            // Subtle chromatic aberration hint: slight periodic camera offset tween
+            this._dspTween = this.tweens.add({
+                targets: cam,
+                scrollX: `+=${Math.random() > 0.5 ? 2 : -2}`,
+                scrollY: `+=${Math.random() > 0.5 ? 1 : -1}`,
+                duration: 3000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+
+        if (threshold === 'critical') {
+            // Stronger shake + red vignette overlay
+            cam.shake(500, 0.003);
+            this._dspTween = this.tweens.add({
+                targets: cam,
+                scrollX: `+=${Math.random() > 0.5 ? 4 : -4}`,
+                scrollY: `+=${Math.random() > 0.5 ? 2 : -2}`,
+                duration: 1500,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            // Red vignette overlay
+            const { width, height } = this.scale;
+            this._dspOverlay = this.add.graphics().setScrollFactor(0).setDepth(18000);
+            this._dspOverlay.fillStyle(0xff0000, 0.08);
+            this._dspOverlay.fillRect(0, 0, width, height);
+            // Pulsing alpha
+            this.tweens.add({
+                targets: this._dspOverlay,
+                alpha: { from: 0.08, to: 0.18 },
+                duration: 800,
+                yoyo: true,
+                repeat: -1
+            });
+        }
+
+        if (threshold === 'overload') {
+            // Intense screen flash + heavy shake + full red overlay
+            cam.flash(400, 255, 50, 50);
+            cam.shake(800, 0.012);
+            const { width, height } = this.scale;
+            this._dspOverlay = this.add.graphics().setScrollFactor(0).setDepth(18000);
+            this._dspOverlay.fillStyle(0x880000, 0.25);
+            this._dspOverlay.fillRect(0, 0, width, height);
+            // Fast pulse
+            this.tweens.add({
+                targets: this._dspOverlay,
+                alpha: { from: 0.25, to: 0.5 },
+                duration: 300,
+                yoyo: true,
+                repeat: -1
+            });
+            // Scanline effect: horizontal bands
+            for (let y = 0; y < height; y += 6) {
+                this._dspOverlay.fillStyle(0x000000, 0.06);
+                this._dspOverlay.fillRect(0, y, width, 2);
+            }
+
+            // Emit overload event for ProceduralAudio
+            EventBus.emit('dsp:overload');
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Status Effect Visuals on Enemies
+    // ----------------------------------------------------------------
+
+    _updateStatusEffectVisuals() {
+        if (!this.enemies) return;
+        this.enemies.getChildren?.().forEach(enemy => {
+            if (!enemy?.active) return;
+
+            // Ensure per-enemy graphics object exists
+            if (!enemy._statusGfx) {
+                enemy._statusGfx = this.add.graphics().setDepth(enemy.depth + 1);
+            }
+            enemy._statusGfx.clear();
+
+            const effects = enemy.statusEffects || {};
+            const icons = [];
+
+            if (effects.poison   || effects.poisoned)  icons.push({ color: 0x44cc44, char: '\u2620' });
+            if (effects.stun     || effects.stunned)   icons.push({ color: 0xffff44, char: '\u2605' });
+            if (effects.slow     || effects.slowed)    icons.push({ color: 0x4499ff, char: '\u2744' });
+            if (effects.bleed    || effects.bleeding)  icons.push({ color: 0xff3333, char: '\u2665' });
+            if (effects.burn     || effects.burning)   icons.push({ color: 0xff7722, char: '\uD83D\uDD25' });
+            if (effects.silence  || effects.silenced)  icons.push({ color: 0xaa44aa, char: '\u2298' });
+
+            icons.forEach((icon, i) => {
+                const ix = enemy.x - (icons.length - 1) * 8 + i * 16;
+                const iy = enemy.y - (enemy.height || 32) - 14;
+                enemy._statusGfx.fillStyle(icon.color, 0.9);
+                enemy._statusGfx.fillCircle(ix, iy, 6);
+            });
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Spell Status-Effect Application
+    // ----------------------------------------------------------------
+
+    _applySpellEffects(enemy, spell) {
+        if (!enemy || !spell?.effects) return;
+        if (!enemy.statusEffects) enemy.statusEffects = {};
+
+        spell.effects.forEach(effectStr => {
+            if (effectStr.includes('poison')) {
+                enemy.statusEffects.poison = true;
+                this.time.delayedCall((parseInt(effectStr.split(':')[1]) || 3) * 1000, () => {
+                    if (enemy?.statusEffects) delete enemy.statusEffects.poison;
+                });
+            }
+            if (effectStr.includes('stun')) {
+                enemy.statusEffects.stun = true;
+                this.time.delayedCall((parseInt(effectStr.split(':')[1]) || 2) * 1000, () => {
+                    if (enemy?.statusEffects) delete enemy.statusEffects.stun;
+                });
+            }
+            if (effectStr.includes('slow')) {
+                enemy.statusEffects.slow = true;
+                this.time.delayedCall((parseInt(effectStr.split(':')[1]) || 3) * 1000, () => {
+                    if (enemy?.statusEffects) delete enemy.statusEffects.slow;
+                });
+            }
+            if (effectStr.includes('bleed')) {
+                enemy.statusEffects.bleed = true;
+                this.time.delayedCall((parseInt(effectStr.split(':')[1]) || 4) * 1000, () => {
+                    if (enemy?.statusEffects) delete enemy.statusEffects.bleed;
+                });
+            }
+            if (effectStr.includes('silence')) {
+                enemy.statusEffects.silence = true;
+                this.time.delayedCall((parseInt(effectStr.split(':')[1]) || 3) * 1000, () => {
+                    if (enemy?.statusEffects) delete enemy.statusEffects.silence;
+                });
+            }
+        });
     }
 
     _onFactionRepChanged(data) {
@@ -1564,7 +1829,7 @@ export default class GameScene extends Phaser.Scene {
             this.cameras.main.scrollX + 640,
             this.cameras.main.scrollY + 200,
             eraName.toUpperCase(),
-            { fontFamily: 'monospace', fontSize: '28px', color: '#88aaff', stroke: '#000', strokeThickness: 4 }
+            { fontFamily: 'Open Sans', fontSize: '39px', color: '#88aaff', stroke: '#000', strokeThickness: 4 }
         ).setOrigin(0.5).setDepth(10000).setScrollFactor(0).setAlpha(0);
 
         this.tweens.add({
@@ -1598,7 +1863,7 @@ export default class GameScene extends Phaser.Scene {
             this.cameras.main.scrollX + 640,
             this.cameras.main.scrollY + 250,
             `${name} has been lost to the Hollowing...`,
-            { fontFamily: 'monospace', fontSize: '18px', color: '#ff4444', stroke: '#000', strokeThickness: 3 }
+            { fontFamily: 'Open Sans', fontSize: '25px', color: '#ff4444', stroke: '#000', strokeThickness: 3 }
         ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
 
         this.tweens.add({
@@ -1697,14 +1962,14 @@ export default class GameScene extends Phaser.Scene {
             this.cameras.main.scrollX + 640,
             this.cameras.main.scrollY + 300,
             'YOU HAVE FALLEN',
-            { fontFamily: 'monospace', fontSize: '32px', color: '#ff4444', stroke: '#000', strokeThickness: 4 }
+            { fontFamily: 'Open Sans', fontSize: '45px', color: '#ff4444', stroke: '#000', strokeThickness: 4 }
         ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
 
         const respawnText = this.add.text(
             this.cameras.main.scrollX + 640,
             this.cameras.main.scrollY + 350,
             'Respawning...',
-            { fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa', stroke: '#000', strokeThickness: 2 }
+            { fontFamily: 'Open Sans', fontSize: '20px', color: '#aaaaaa', stroke: '#000', strokeThickness: 2 }
         ).setOrigin(0.5).setDepth(10000).setScrollFactor(0);
 
         // Respawn after 3 seconds
@@ -1826,6 +2091,7 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     update(time, delta) {
+        this._frameCount++;
         this.profiler.begin('total');
 
         // Player movement (skip if dead or in dialogue)
@@ -1910,6 +2176,9 @@ export default class GameScene extends Phaser.Scene {
         if (!this.isDead) {
             this._regenSap(delta);
         }
+
+        // Status effect visuals on enemies (throttled to every 8th frame)
+        if (this._frameCount % 8 === 0) this._updateStatusEffectVisuals();
 
         // Fog of War
         this._updateFog();

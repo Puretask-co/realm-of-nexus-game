@@ -49,7 +49,7 @@ export default class PauseMenuScene extends Phaser.Scene {
 
         // Title
         this.add.text(width / 2, panelY + 30, 'PAUSED', {
-            fontFamily: 'monospace', fontSize: '22px', color: '#aaccff',
+            fontFamily: 'Open Sans', fontSize: '31px', color: '#aaccff',
             stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0.5).setDepth(19002);
 
@@ -99,7 +99,7 @@ export default class PauseMenuScene extends Phaser.Scene {
 
         // Feedback text (shows "Saved!" etc.)
         this._feedbackText = this.add.text(width / 2, panelY + panelH - 16, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#66ffaa',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#66ffaa',
         }).setOrigin(0.5).setDepth(19003);
 
         // Escape to resume
@@ -125,7 +125,7 @@ export default class PauseMenuScene extends Phaser.Scene {
         draw(def.color, 0.5);
 
         const lbl = this.add.text(cx, cy, def.label, {
-            fontFamily: 'monospace', fontSize: '15px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '21px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5).setDepth(19003);
 
@@ -224,7 +224,7 @@ export default class PauseMenuScene extends Phaser.Scene {
 
         // Header
         const hdrTxt = this.add.text(pickerX + PANEL_W / 2, pickerY + HEADER_H / 2, 'Load Game', {
-            fontFamily: 'monospace', fontSize: '17px', color: '#aaccff',
+            fontFamily: 'Open Sans', fontSize: '24px', color: '#aaccff',
             stroke: '#000', strokeThickness: 3,
         }).setOrigin(0.5);
         container.add(hdrTxt);
@@ -283,7 +283,7 @@ export default class PauseMenuScene extends Phaser.Scene {
 
         // Slot number
         const numTxt = this.add.text(x + 12, y + h / 2, `${slot + 1}`, {
-            fontFamily: 'monospace', fontSize: '18px',
+            fontFamily: 'Open Sans', fontSize: '25px',
             color: isEmpty ? '#445566' : '#88bbff',
             stroke: '#000', strokeThickness: 2,
         }).setOrigin(0, 0.5);
@@ -291,7 +291,7 @@ export default class PauseMenuScene extends Phaser.Scene {
 
         if (isEmpty) {
             const emptyTxt = this.add.text(x + w / 2 + 10, y + h / 2, '— Empty —', {
-                fontFamily: 'monospace', fontSize: '13px', color: '#445566',
+                fontFamily: 'Open Sans', fontSize: '18px', color: '#445566',
             }).setOrigin(0.5);
             container.add(emptyTxt);
         } else {
@@ -303,16 +303,16 @@ export default class PauseMenuScene extends Phaser.Scene {
             const zoneLabel = currentZone.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
             container.add(this.add.text(x + 36, y + 12, playerName, {
-                fontFamily: 'monospace', fontSize: '14px', color: '#ddeeff', stroke: '#000', strokeThickness: 2,
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#ddeeff', stroke: '#000', strokeThickness: 2,
             }));
             container.add(this.add.text(x + 36, y + 30, `${className}  Lv.${level}`, {
-                fontFamily: 'monospace', fontSize: '12px', color: '#88bbcc',
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#88bbcc',
             }));
             container.add(this.add.text(x + 36, y + 48, zoneLabel, {
-                fontFamily: 'monospace', fontSize: '11px', color: '#55aa77',
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#55aa77',
             }));
             container.add(this.add.text(x + w - 90, y + 12, timeStr, {
-                fontFamily: 'monospace', fontSize: '11px', color: '#778899',
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#778899',
             }));
 
             // Load zone
@@ -368,7 +368,7 @@ export default class PauseMenuScene extends Phaser.Scene {
         draw(def.color, 0.6);
 
         const lbl = this.add.text(cx, cy, def.label, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffffff',
             stroke: '#000', strokeThickness: 2,
         }).setOrigin(0.5);
 

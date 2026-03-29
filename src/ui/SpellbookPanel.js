@@ -69,8 +69,8 @@ export class SpellbookPanel {
 
         // ── Title bar ────────────────────────────────────────────────────
         this._titleText = s.add.text(PX + PW / 2, PY + 14, 'SPELLBOOK', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '18px',
+            fontFamily: 'Open Sans',
+            fontSize: '25px',
             color: '#ffcc44',
             stroke: '#000',
             strokeThickness: 3,
@@ -109,8 +109,8 @@ export class SpellbookPanel {
         const listStartY = PY + 64;
 
         this._leftHeader = s.add.text(LX, PY + 52, 'SPELLS', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '9px',
+            fontFamily: 'Open Sans',
+            fontSize: '13px',
             color: '#7788aa',
             letterSpacing: 1,
         }).setDepth(DEPTH + 2).setScrollFactor(0);
@@ -132,14 +132,14 @@ export class SpellbookPanel {
             const rowBg  = s.add.graphics().setDepth(DEPTH + 1).setScrollFactor(0);
             const rowDot = s.add.graphics().setDepth(DEPTH + 2).setScrollFactor(0);
             const rowTxt = s.add.text(LX + 14, rowY + 4, '', {
-                fontFamily: 'Georgia, serif',
-                fontSize: '11px',
+                fontFamily: 'Open Sans',
+                fontSize: '15px',
                 color: '#ccccdd',
                 wordWrap: { width: 190 },
             }).setDepth(DEPTH + 2).setScrollFactor(0);
             const rowSub = s.add.text(LX + 14, rowY + 15, '', {
-                fontFamily: 'Georgia, serif',
-                fontSize: '9px',
+                fontFamily: 'Open Sans',
+                fontSize: '13px',
                 color: '#667788',
             }).setDepth(DEPTH + 2).setScrollFactor(0);
             const rowHit = s.add.zone(LX, rowY, 215, 26)
@@ -158,8 +158,8 @@ export class SpellbookPanel {
         this._detailGfx = s.add.graphics().setDepth(DEPTH + 1).setScrollFactor(0);
 
         this._detailName = s.add.text(CX, CY, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '17px',
+            fontFamily: 'Open Sans',
+            fontSize: '24px',
             color: '#ffffff',
             stroke: '#000',
             strokeThickness: 3,
@@ -167,8 +167,8 @@ export class SpellbookPanel {
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
         this._detailBadges = s.add.text(CX, CY + 26, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#aaddff',
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
@@ -185,10 +185,10 @@ export class SpellbookPanel {
             const bx  = gridX + col * (boxW + bGapX);
             const by  = gridY + row * (boxH + bGapY);
             const lbl = s.add.text(bx + boxW / 2, by + 4, STAT_DEFS[i], {
-                fontFamily: 'Georgia, serif', fontSize: '8px', color: '#7788aa',
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#7788aa',
             }).setOrigin(0.5, 0).setDepth(DEPTH + 3).setScrollFactor(0);
             const val = s.add.text(bx + boxW / 2, by + 14, '—', {
-                fontFamily: 'Georgia, serif', fontSize: '13px', color: '#ffdd88',
+                fontFamily: 'Open Sans', fontSize: '18px', color: '#ffdd88',
                 stroke: '#000', strokeThickness: 2,
             }).setOrigin(0.5, 0).setDepth(DEPTH + 3).setScrollFactor(0);
             this._statLabels.push(lbl);
@@ -197,19 +197,19 @@ export class SpellbookPanel {
 
         // Effects list
         this._effectsHeader = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 2, 'EFFECTS', {
-            fontFamily: 'Georgia, serif', fontSize: '9px', color: '#7788aa', letterSpacing: 1,
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#7788aa', letterSpacing: 1,
         }).setDepth(DEPTH + 2).setScrollFactor(0);
         this._effectsText = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 14, '', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#aaffcc',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaffcc',
             wordWrap: { width: 310 },
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
         // Requirements
         this._reqHeader = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 42, 'REQUIREMENTS', {
-            fontFamily: 'Georgia, serif', fontSize: '9px', color: '#7788aa', letterSpacing: 1,
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#7788aa', letterSpacing: 1,
         }).setDepth(DEPTH + 2).setScrollFactor(0);
         this._reqText = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 54, '', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#ccddff',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#ccddff',
             wordWrap: { width: 310 },
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
@@ -221,13 +221,13 @@ export class SpellbookPanel {
 
         // Description
         this._descText = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 82, '', {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#ccccdd',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ccccdd',
             wordWrap: { width: 310 },
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
         // Lore
         this._loreText = s.add.text(CX, gridY + 2 * (boxH + bGapY) + 148, '', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cc9944',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#cc9944',
             fontStyle: 'italic', wordWrap: { width: 310 },
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
@@ -243,7 +243,7 @@ export class SpellbookPanel {
 
         this._slotsGfx = s.add.graphics().setDepth(DEPTH + 1).setScrollFactor(0);
         this._slotsHeader = s.add.text(RX + 4, RY - 14, 'EQUIPPED SPELLS', {
-            fontFamily: 'Georgia, serif', fontSize: '9px', color: '#7788aa', letterSpacing: 1,
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#7788aa', letterSpacing: 1,
         }).setDepth(DEPTH + 2).setScrollFactor(0);
 
         this._slotObjects = [];
@@ -251,15 +251,15 @@ export class SpellbookPanel {
             const sy  = RY + i * 70;
             const slotBg  = s.add.graphics().setDepth(DEPTH + 1).setScrollFactor(0);
             const slotNum = s.add.text(RX + 8, sy + 6, String(i + 1), {
-                fontFamily: 'Georgia, serif', fontSize: '13px', color: '#7788aa',
+                fontFamily: 'Open Sans', fontSize: '18px', color: '#7788aa',
                 stroke: '#000', strokeThickness: 2,
             }).setDepth(DEPTH + 2).setScrollFactor(0);
             const slotName = s.add.text(RX + 26, sy + 6, '— empty —', {
-                fontFamily: 'Georgia, serif', fontSize: '11px', color: '#444455',
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#444455',
                 wordWrap: { width: 160 },
             }).setDepth(DEPTH + 2).setScrollFactor(0);
             const slotSap = s.add.text(RX + 26, sy + 22, '', {
-                fontFamily: 'Georgia, serif', fontSize: '10px', color: '#ffdd66',
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#ffdd66',
             }).setDepth(DEPTH + 2).setScrollFactor(0);
             const slotUnequip = this._makeButton(
                 RX + 172, sy + 14, 22, 18, 'X',
@@ -276,7 +276,7 @@ export class SpellbookPanel {
 
         // Hint text
         this._hintText = s.add.text(PX + PW - 12, PY + PH - 8, 'K or ESC to close', {
-            fontFamily: 'Georgia, serif', fontSize: '9px', color: '#445566',
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#445566',
         }).setOrigin(1, 1).setDepth(DEPTH + 2).setScrollFactor(0);
 
         // ── Collect all elements ─────────────────────────────────────────
@@ -841,7 +841,7 @@ export class SpellbookPanel {
         };
         draw(color);
         const txt = s.add.text(cx, cy, label, {
-            fontFamily: 'Georgia, serif', fontSize, color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize, color: '#ffffff',
             stroke: '#000', strokeThickness: 1,
         }).setOrigin(0.5).setDepth(depth + 1).setScrollFactor(0);
         const hit = s.add.zone(cx, cy, bw, bh)

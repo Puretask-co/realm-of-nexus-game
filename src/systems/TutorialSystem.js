@@ -247,33 +247,33 @@ class TutorialSystem {
 
     // Step counter (top-left of card)
     this._stepLabel = scene.add.text(-CW / 2 + 14, -CH + 12, '', {
-      fontFamily: 'monospace', fontSize: '11px', color: '#8b949e',
+      fontFamily: 'Open Sans', fontSize: '15px', color: '#8b949e',
     });
     this._overlay.add(this._stepLabel);
 
     // Title
     this._titleText = scene.add.text(-CW / 2 + 14, -CH + 30, '', {
-      fontFamily: 'monospace', fontSize: '15px', color: '#4ade80', fontStyle: 'bold',
+      fontFamily: 'Open Sans', fontSize: '21px', color: '#4ade80', fontStyle: 'bold',
     });
     this._overlay.add(this._titleText);
 
     // Body text
     this._bodyText = scene.add.text(-CW / 2 + 14, -CH + 52, '', {
-      fontFamily: 'monospace', fontSize: '12px', color: '#e6edf3',
+      fontFamily: 'Open Sans', fontSize: '17px', color: '#e6edf3',
       wordWrap: { width: CW - 28 }, lineSpacing: 3,
     });
     this._overlay.add(this._bodyText);
 
     // Key hint badge (conditionally visible)
     this._keyBadge = scene.add.text(CW / 2 - 14, -CH + 14, '', {
-      fontFamily: 'monospace', fontSize: '12px', color: '#0d1117',
+      fontFamily: 'Open Sans', fontSize: '17px', color: '#0d1117',
       backgroundColor: '#60a5fa', padding: { x: 8, y: 4 },
     }).setOrigin(1, 0);
     this._overlay.add(this._keyBadge);
 
     // NEXT button
     this._nextBtn = scene.add.text(CW / 2 - 14, -16, 'NEXT  →', {
-      fontFamily: 'monospace', fontSize: '13px', color: '#0d1117',
+      fontFamily: 'Open Sans', fontSize: '18px', color: '#0d1117',
       backgroundColor: '#4ade80', padding: { x: 14, y: 7 },
     }).setOrigin(1, 1).setInteractive({ useHandCursor: true });
 
@@ -284,7 +284,7 @@ class TutorialSystem {
 
     // SKIP button
     this._skipBtn = scene.add.text(-CW / 2 + 14, -16, 'SKIP TUTORIAL', {
-      fontFamily: 'monospace', fontSize: '11px', color: '#8b949e',
+      fontFamily: 'Open Sans', fontSize: '15px', color: '#8b949e',
       padding: { x: 0, y: 7 },
     }).setOrigin(0, 1).setInteractive({ useHandCursor: true });
 

@@ -70,7 +70,7 @@ export class CraftingPanel {
 
         // ── Panel title ──
         this._titleText = s.add.text(ox + this.PW / 2, oy + 18, 'CRAFTING', {
-            fontFamily: 'monospace', fontSize: '17px', color: '#88ffaa',
+            fontFamily: 'Open Sans', fontSize: '24px', color: '#88ffaa',
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(this.DEPTH + 2);
 
@@ -125,7 +125,7 @@ export class CraftingPanel {
 
         // ── Center section header ──
         this._centerTitle = s.add.text(ox + this.LEFT_W + this.CENTER_W / 2, oy + 20, 'Select a Recipe', {
-            fontFamily: 'monospace', fontSize: '13px', color: '#88ffaa'
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#88ffaa'
         }).setOrigin(0.5).setDepth(this.DEPTH + 2);
 
         // ── Right section sub-tabs ──
@@ -152,7 +152,7 @@ export class CraftingPanel {
 
         // ── Feedback text ──
         this._feedbackText = s.add.text(ox + this.LEFT_W + this.CENTER_W / 2, oy + this.PH - 14, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#66ffaa',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#66ffaa',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(this.DEPTH + 6);
 
@@ -332,7 +332,7 @@ export class CraftingPanel {
             if (!rec.discovered) {
                 // Undiscovered — greyed locked entry
                 const lockedTxt = s.add.text(ox + 12, rowY + rowH / 2 - 6, '??? (locked)', {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#445544'
+                    fontFamily: 'Open Sans', fontSize: '14px', color: '#445544'
                 }).setDepth(this.DEPTH + 5);
                 this._dynamicElements.push(rowBg, lockedTxt);
 
@@ -350,7 +350,7 @@ export class CraftingPanel {
 
             // Level badge
             const lvlBadge = s.add.text(ox + this.LEFT_W - 10, rowY + 4, `Lv${rec.requiredLevel}`, {
-                fontFamily: 'monospace', fontSize: '9px',
+                fontFamily: 'Open Sans', fontSize: '13px',
                 color: canCraft ? '#66ff88' : '#ff6644',
                 backgroundColor: '#111a11', padding: { x: 2, y: 1 }
             }).setOrigin(1, 0).setDepth(this.DEPTH + 5);
@@ -358,13 +358,13 @@ export class CraftingPanel {
             // Recipe name
             const nameColor = canCraft ? '#aaffaa' : (isSelected ? '#88ddaa' : '#88aa88');
             const nameTxt = s.add.text(ox + 22, rowY + 4, rec.name, {
-                fontFamily: 'monospace', fontSize: '11px', color: nameColor,
+                fontFamily: 'Open Sans', fontSize: '15px', color: nameColor,
                 wordWrap: { width: listW - 44 }
             }).setDepth(this.DEPTH + 5);
 
             // Materials count hint
             const matHint = s.add.text(ox + 22, rowY + rowH - 12, `${rec.materials.length} mat(s) · ${rec.requiredStation}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#556655'
+                fontFamily: 'Open Sans', fontSize: '13px', color: '#556655'
             }).setDepth(this.DEPTH + 5);
 
             // Craft-ready indicator
@@ -403,7 +403,7 @@ export class CraftingPanel {
         // Empty state
         if (this._filteredRecipes.length === 0) {
             const emptyTxt = s.add.text(ox + this.LEFT_W / 2, oy + 200, 'No recipes\nin this category', {
-                fontFamily: 'monospace', fontSize: '11px', color: '#445544', align: 'center'
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#445544', align: 'center'
             }).setOrigin(0.5).setDepth(this.DEPTH + 5);
             this._dynamicElements.push(emptyTxt);
         }
@@ -423,7 +423,7 @@ export class CraftingPanel {
 
         if (!this._selectedRecipe) {
             const hint = s.add.text(ox + cw / 2, oy + this.PH / 2, 'Select a recipe\nfrom the left panel', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#445544', align: 'center'
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#445544', align: 'center'
             }).setOrigin(0.5).setDepth(this.DEPTH + 5);
             this._centerTitle.setText('Select a Recipe').setColor('#667766');
             this._centerDynamic = [hint];
@@ -440,7 +440,7 @@ export class CraftingPanel {
 
         // Description
         const descTxt = s.add.text(ox, curY, rec.description, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#778877',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#778877',
             wordWrap: { width: cw }
         }).setDepth(this.DEPTH + 5);
         elems.push(descTxt);
@@ -455,7 +455,7 @@ export class CraftingPanel {
 
         // Materials header
         const matHeader = s.add.text(ox, curY, 'MATERIALS REQUIRED:', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#66aa66'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#66aa66'
         }).setDepth(this.DEPTH + 5);
         elems.push(matHeader);
         curY += 16;
@@ -475,13 +475,13 @@ export class CraftingPanel {
             // Item name
             const itemName = this._getItemName(mat.itemId);
             const matLine = s.add.text(ox + 18, curY, itemName, {
-                fontFamily: 'monospace', fontSize: '11px', color: ok ? '#88cc88' : '#cc6644'
+                fontFamily: 'Open Sans', fontSize: '15px', color: ok ? '#88cc88' : '#cc6644'
             }).setDepth(this.DEPTH + 5);
             elems.push(matLine);
 
             // have/need counter
             const countTxt = s.add.text(ox + cw, curY, `${have}/${mat.quantity}`, {
-                fontFamily: 'monospace', fontSize: '11px',
+                fontFamily: 'Open Sans', fontSize: '15px',
                 color: ok ? '#44ff66' : '#ff4422'
             }).setOrigin(1, 0).setDepth(this.DEPTH + 5);
             elems.push(countTxt);
@@ -489,7 +489,7 @@ export class CraftingPanel {
             // MISSING badge
             if (!ok) {
                 const missBadge = s.add.text(ox + cw - 46, curY, 'MISSING', {
-                    fontFamily: 'monospace', fontSize: '9px', color: '#ff4422',
+                    fontFamily: 'Open Sans', fontSize: '13px', color: '#ff4422',
                     backgroundColor: '#2a0808', padding: { x: 2, y: 1 }
                 }).setDepth(this.DEPTH + 6);
                 elems.push(missBadge);
@@ -517,13 +517,13 @@ export class CraftingPanel {
         elems.push(stationBg);
 
         const stationTxt = s.add.text(ox + 6, curY + 3, `${this._stationIcon(rec.requiredStation)} ${this._stationLabel(rec.requiredStation)}`, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#aaffaa'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaffaa'
         }).setDepth(this.DEPTH + 6);
         elems.push(stationTxt);
 
         // Crafting time indicator
         const timeTxt = s.add.text(ox + 130, curY + 3, `⏱ ${rec.craftingTime}s`, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#888888'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#888888'
         }).setDepth(this.DEPTH + 5);
         elems.push(timeTxt);
         curY += 26;
@@ -531,7 +531,7 @@ export class CraftingPanel {
         // Discover unlock note
         if (rec.unlockMethod === 'discover') {
             const discoverNote = s.add.text(ox, curY, '✦ Crafting this may unlock new recipes!', {
-                fontFamily: 'monospace', fontSize: '9px', color: '#aaaaff'
+                fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaaff'
             }).setDepth(this.DEPTH + 5);
             elems.push(discoverNote);
             curY += 16;
@@ -574,7 +574,7 @@ export class CraftingPanel {
         sepG.lineBetween(ox, oy, ox + cw, oy);
 
         const hdr = s.add.text(ox, oy + 6, 'COMBINE — try two items to discover recipes:', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#66aa66'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#66aa66'
         }).setDepth(this.DEPTH + 5);
 
         // Slot 1
@@ -590,7 +590,7 @@ export class CraftingPanel {
 
         // Plus sign
         const plusTxt = s.add.text(ox + 83, oy + 26, '+', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#668866'
+            fontFamily: 'Open Sans', fontSize: '22px', color: '#668866'
         }).setDepth(this.DEPTH + 5);
 
         // Slot 2
@@ -644,7 +644,7 @@ export class CraftingPanel {
         const elems = [];
         const addText = (y, text, opts = {}) => {
             const t = s.add.text(ox, y, text, {
-                fontFamily: 'monospace',
+                fontFamily: 'Open Sans',
                 fontSize: opts.size || '10px',
                 color: opts.color || '#88aa88',
                 wordWrap: { width: rw },
@@ -898,7 +898,7 @@ export class CraftingPanel {
         };
         draw(color);
         const txt = s.add.text(cx, cy, label, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#cceecc',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#cceecc',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(this.DEPTH + 3);
         const hit = s.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true }).setDepth(this.DEPTH + 4);

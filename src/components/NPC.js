@@ -38,13 +38,13 @@ export default class NPC {
 
         // Name label (hidden NPCs show "???" until Insight 4+)
         this._nameTag = scene.add.text(x, y - 28, this._getDisplayName(), {
-            fontFamily: 'monospace', fontSize: '9px', color: '#44ff44',
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#44ff44',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(10);
 
         // Prompt (hidden by default)
         this._prompt = scene.add.text(x, y - 40, '[E] Talk', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#aaddaa',
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#aaddaa',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(10).setVisible(false);
 
@@ -137,19 +137,19 @@ export default class NPC {
 
         // Speaker name
         this._dialogueName = this.scene.add.text(boxX + 12, boxY + 8, this.name, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#44ff44',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#44ff44',
             fontStyle: 'bold'
         }).setDepth(20001).setScrollFactor(0);
 
         // Text content
         this._dialogueText = this.scene.add.text(boxX + 12, boxY + 26, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ccddcc',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ccddcc',
             wordWrap: { width: boxW - 24 }
         }).setDepth(20001).setScrollFactor(0);
 
         // Advance hint
         this._dialogueHint = this.scene.add.text(boxX + boxW - 12, boxY + boxH - 14, '[E] Continue', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#667766'
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#667766'
         }).setOrigin(1, 0.5).setDepth(20001).setScrollFactor(0);
 
         this._showLine();
@@ -187,14 +187,14 @@ export default class NPC {
         this._dialogueBox.lineStyle(2, 0x666644, 0.5);
         this._dialogueBox.strokeRect(boxX, boxY, boxW, boxH);
         this._dialogueName = this.scene.add.text(boxX + 12, boxY + 8, '???', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#888866', fontStyle: 'bold'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#888866', fontStyle: 'bold'
         }).setDepth(20001).setScrollFactor(0);
         this._dialogueText = this.scene.add.text(boxX + 12, boxY + 26,
             'You sense something hidden here. Your insight is not yet sharp enough to perceive it.',
-            { fontFamily: 'monospace', fontSize: '11px', color: '#aaaa88', wordWrap: { width: boxW - 24 } }
+            { fontFamily: 'Open Sans', fontSize: '15px', color: '#aaaa88', wordWrap: { width: boxW - 24 } }
         ).setDepth(20001).setScrollFactor(0);
         this._dialogueHint = this.scene.add.text(boxX + boxW - 12, boxY + boxH - 14, '[E] Continue', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#667766'
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#667766'
         }).setOrigin(1, 0.5).setDepth(20001).setScrollFactor(0);
         this._hiddenBlurb = true;
         this._wasHiddenBlurb = true;

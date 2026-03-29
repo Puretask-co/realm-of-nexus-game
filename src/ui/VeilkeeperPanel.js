@@ -45,13 +45,13 @@ export class VeilkeeperPanel {
 
         // Title
         this._titleText = s.add.text(width / 2, py + 24, 'Seek the Veil\'s Counsel', {
-            fontFamily: 'Georgia, serif', fontSize: '20px', color: '#cc99ff',
+            fontFamily: 'Open Sans', fontSize: '28px', color: '#cc99ff',
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
         // Subtitle / flavour
         this._subtitleText = s.add.text(width / 2, py + 50, 'Knowledge costs lives. Choose with care.', {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#886699',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#886699',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
@@ -80,17 +80,17 @@ export class VeilkeeperPanel {
 
         // ---- Selected keeper display ----
         this._selectedLabel = s.add.text(px + 16, py + 178, 'Selected Keeper:', {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#886699'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#886699'
         }).setDepth(201).setScrollFactor(0);
 
         this._selectedName = s.add.text(px + 130, py + 178, '—', {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#cc99ff',
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#cc99ff',
             fontStyle: 'bold'
         }).setDepth(201).setScrollFactor(0);
 
         this._hollowingBar = s.add.graphics().setDepth(201).setScrollFactor(0);
         this._hollowingLabel = s.add.text(px + 16, py + 198, 'Hollowing: —', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#aa6688'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aa6688'
         }).setDepth(201).setScrollFactor(0);
 
         // ---- Preset questions ----
@@ -101,7 +101,7 @@ export class VeilkeeperPanel {
         this._elements.push(questionsDivGfx);
 
         this._questionLabel = s.add.text(px + 16, questDivY + 6, 'Choose your question:', {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#886699'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#886699'
         }).setDepth(201).setScrollFactor(0);
 
         const presetQuestions = [
@@ -117,11 +117,11 @@ export class VeilkeeperPanel {
 
         // ---- Cost display ----
         this._costText = s.add.text(px + 16, py + ph - 90, 'Cost: 10 Sap (DSP)', {
-            fontFamily: 'Georgia, serif', fontSize: '12px', color: '#88aacc'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#88aacc'
         }).setDepth(201).setScrollFactor(0);
 
         this._warningText = s.add.text(px + 16, py + ph - 72, '', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#ff8844',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#ff8844',
             wordWrap: { width: pw - 32 }
         }).setDepth(201).setScrollFactor(0);
 
@@ -149,7 +149,7 @@ export class VeilkeeperPanel {
 
         // Response text (distinct from warning, replaces it when a response arrives)
         this._responseText = s.add.text(px + 16, py + ph - 72, '', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#cc99ff',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#cc99ff',
             wordWrap: { width: pw - 32 }, fontStyle: 'italic'
         }).setDepth(202).setScrollFactor(0);
 
@@ -206,16 +206,16 @@ export class VeilkeeperPanel {
         drawBg(false, false);
 
         const nameTxt = s.add.text(sx + sw / 2, sy + 16, keeperData.name, {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#cc99ff',
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#cc99ff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(202).setScrollFactor(0);
 
         const specialtyTxt = s.add.text(sx + sw / 2, sy + 36, keeperData.specialty, {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#886699'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#886699'
         }).setOrigin(0.5).setDepth(202).setScrollFactor(0);
 
         const deadLabel = s.add.text(sx + sw / 2, sy + 54, '', {
-            fontFamily: 'Georgia, serif', fontSize: '9px', color: '#666666', fontStyle: 'italic'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#666666', fontStyle: 'italic'
         }).setOrigin(0.5).setDepth(202).setScrollFactor(0);
 
         const hit = s.add.zone(sx + sw / 2, sy + sh / 2, sw, sh)
@@ -273,7 +273,7 @@ export class VeilkeeperPanel {
         draw(normalColor, 0x553377);
 
         const txt = s.add.text(bx + 12, cy, question, {
-            fontFamily: 'Georgia, serif', fontSize: '12px', color: '#ddccff'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ddccff'
         }).setOrigin(0, 0.5).setDepth(202).setScrollFactor(0);
 
         const hit = s.add.zone(cx, cy, bw, bh)
@@ -309,7 +309,7 @@ export class VeilkeeperPanel {
         draw(color);
 
         const txt = s.add.text(cx, cy, label, {
-            fontFamily: 'Georgia, serif', fontSize: '12px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffffff',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(202).setScrollFactor(0);
 

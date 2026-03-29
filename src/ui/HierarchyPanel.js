@@ -59,7 +59,7 @@ export class HierarchyPanel {
     this.titleText = this.scene.add.text(
       this.panelX + 8, this.panelY + 6,
       'HIERARCHY',
-      { fontSize: '10px', color: '#6688aa', fontFamily: 'monospace', fontStyle: 'bold' }
+      { fontSize: '14px', color: '#6688aa', fontFamily: 'Open Sans', fontStyle: 'bold' }
     ).setScrollFactor(0);
     this.container.add(this.titleText);
 
@@ -67,7 +67,7 @@ export class HierarchyPanel {
     this.countText = this.scene.add.text(
       this.panelX + this.panelWidth - 8, this.panelY + 6,
       '0',
-      { fontSize: '10px', color: '#445566', fontFamily: 'monospace' }
+      { fontSize: '14px', color: '#445566', fontFamily: 'Open Sans' }
     ).setOrigin(1, 0).setScrollFactor(0);
     this.container.add(this.countText);
 
@@ -78,7 +78,7 @@ export class HierarchyPanel {
     this.searchLabel = this.scene.add.text(
       this.panelX + 8, this.panelY + 22,
       'Search...',
-      { fontSize: '9px', color: '#445566', fontFamily: 'monospace' }
+      { fontSize: '13px', color: '#445566', fontFamily: 'Open Sans' }
     ).setScrollFactor(0).setInteractive({ useHandCursor: true });
     this.container.add(this.searchLabel);
 
@@ -197,7 +197,7 @@ export class HierarchyPanel {
     // Expand/collapse arrow
     if (hasChildren) {
       const arrow = this.scene.add.text(x - 10, y, isExpanded ? 'v' : '>', {
-        fontSize: '9px', color: '#667788', fontFamily: 'monospace'
+        fontSize: '13px', color: '#667788', fontFamily: 'Open Sans'
       }).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
       arrow.on('pointerdown', () => {
@@ -226,7 +226,7 @@ export class HierarchyPanel {
     const iconColor = iconColors[entityType] || '#667788';
 
     const icon = this.scene.add.text(x, y, this._getEntityIcon(entityType), {
-      fontSize: '9px', color: iconColor, fontFamily: 'monospace'
+      fontSize: '13px', color: iconColor, fontFamily: 'Open Sans'
     }).setScrollFactor(0);
     this.rowContainer.add(icon);
 
@@ -239,7 +239,7 @@ export class HierarchyPanel {
     }
 
     const nameText = this.scene.add.text(x + 14, y, displayName, {
-      fontSize: '9px', color: nameColor, fontFamily: 'monospace'
+      fontSize: '13px', color: nameColor, fontFamily: 'Open Sans'
     }).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
     nameText.on('pointerdown', () => {
@@ -260,7 +260,7 @@ export class HierarchyPanel {
     const visIcon = this.scene.add.text(
       this.panelX + this.panelWidth - 18, y,
       entity.visible ? 'o' : '-',
-      { fontSize: '9px', color: entity.visible ? '#44ff44' : '#444444', fontFamily: 'monospace' }
+      { fontSize: '13px', color: entity.visible ? '#44ff44' : '#444444', fontFamily: 'Open Sans' }
     ).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
     visIcon.on('pointerdown', () => {

@@ -106,8 +106,8 @@ export default class EndingScene extends Phaser.Scene {
 
         // ── Title ────────────────────────────────────────────────────────
         this._titleText = this.add.text(cx, cy - 160, this._title, {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize:   '38px',
+            fontFamily: 'Open Sans',
+            fontSize: '53px',
             color:      sc.titleColor,
             stroke:     '#000000',
             strokeThickness: 3,
@@ -127,8 +127,8 @@ export default class EndingScene extends Phaser.Scene {
 
         // ── Description ──────────────────────────────────────────────────
         this._descText = this.add.text(cx, cy - 50, this._description, {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize:   '17px',
+            fontFamily: 'Open Sans',
+            fontSize: '24px',
             color:      sc.descColor,
             align:      'center',
             wordWrap:   { width: Math.min(700, width - 120) },
@@ -142,7 +142,7 @@ export default class EndingScene extends Phaser.Scene {
         // Phaser doesn't have native italic text — approximate with smaller size + lighter colour
         this._epilogueText = this.add.text(cx, cy + 100, this._epilogue, {
             fontFamily: '"Times New Roman", Georgia, serif',
-            fontSize:   '14px',
+            fontSize: '20px',
             fontStyle:  'italic',
             color:      sc.epilogueColor,
             align:      'center',
@@ -155,8 +155,8 @@ export default class EndingScene extends Phaser.Scene {
 
         // ── Footer ───────────────────────────────────────────────────────
         this._footerText = this.add.text(cx, height - 40, 'The Verdance Remembers Your Path', {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize:   '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color:      sc.footerColor,
             letterSpacing: 3
         })
@@ -242,8 +242,8 @@ export default class EndingScene extends Phaser.Scene {
             .setDepth(20);
 
         this._btnText = this.add.text(cx, y, 'Play Again', {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize:   '18px',
+            fontFamily: 'Open Sans',
+            fontSize: '25px',
             color:      sc.titleColor
         })
             .setOrigin(0.5, 0.5)

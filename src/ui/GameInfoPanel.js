@@ -2,8 +2,8 @@ import EventBus from '../core/EventBus.js';
 import dataManager from '../systems/DataManager.js';
 
 /**
- * GameInfoPanel — TAB-key overlay panel with 6 tabs:
- *   QUESTS | LOCATIONS | SAP CYCLE | AI DM | DSP POOL | CHARACTER
+ * GameInfoPanel — TAB-key overlay panel with 7 tabs:
+ *   QUESTS | LOCATIONS | SAP CYCLE | AI DM | DSP POOL | CHARACTER | FACTIONS
  *
  * All data comes from EventBus events — zero direct coupling to GameScene.
  */
@@ -75,7 +75,7 @@ export default class GameInfoPanel {
 
         // Header
         const hdr = s.add.text(PW / 2, 20, 'GAME INFO', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#8899cc',
+            fontFamily: 'Open Sans', fontSize: '22px', color: '#8899cc',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
         this._container.add(hdr);
@@ -84,12 +84,12 @@ export default class GameInfoPanel {
         const closeZone = s.add.zone(PW - 22, 20, 28, 28).setInteractive({ useHandCursor: true });
         closeZone.on('pointerdown', () => this.hide());
         const closeX = s.add.text(PW - 22, 20, '✕', {
-            fontFamily: 'monospace', fontSize: '15px', color: '#aa5555'
+            fontFamily: 'Open Sans', fontSize: '21px', color: '#aa5555'
         }).setOrigin(0.5);
         this._container.add([closeZone, closeX]);
 
         // Tab bar
-        const TABS = ['QUESTS', 'LOCATIONS', 'SAP CYCLE', 'AI DM', 'DSP POOL', 'CHARACTER'];
+        const TABS = ['QUESTS', 'LOCATIONS', 'SAP CYCLE', 'AI DM', 'DSP POOL', 'CHARACTER', 'FACTIONS'];
         const TAB_W = Math.floor(PW / TABS.length);
         this._tabBgs = [];
         this._tabLabels = [];
@@ -99,7 +99,7 @@ export default class GameInfoPanel {
             const tabBg = s.add.graphics();
             this._drawTabBg(tabBg, tx, 44, TAB_W - 2, 34, i === 0);
             const tabTxt = s.add.text(tx + TAB_W / 2, 61, label, {
-                fontFamily: 'monospace', fontSize: '11px', color: i === 0 ? '#ffffff' : '#888899'
+                fontFamily: 'Open Sans', fontSize: '15px', color: i === 0 ? '#ffffff' : '#888899'
             }).setOrigin(0.5);
             const tabZone = s.add.zone(tx + TAB_W / 2, 61, TAB_W - 2, 34).setInteractive({ useHandCursor: true });
             tabZone.on('pointerdown', () => this._selectTab(i));
@@ -138,7 +138,7 @@ export default class GameInfoPanel {
 
     _selectTab(index) {
         this._activeTab = index;
-        const TABS = ['QUESTS', 'LOCATIONS', 'SAP CYCLE', 'AI DM', 'DSP POOL', 'CHARACTER'];
+        const TABS = ['QUESTS', 'LOCATIONS', 'SAP CYCLE', 'AI DM', 'DSP POOL', 'CHARACTER', 'FACTIONS'];
         const TAB_W = Math.floor(920 / TABS.length);
         this._tabBgs.forEach((bg, i) => {
             this._drawTabBg(bg, i * TAB_W, 44, TAB_W - 2, 34, i === index);
@@ -160,6 +160,7 @@ export default class GameInfoPanel {
             case 3: this._buildDMTab(); break;
             case 4: this._buildDSPTab(); break;
             case 5: this._buildCharacterTab(); break;
+            case 6: this._buildFactionsTab(); break;
         }
     }
 
@@ -176,7 +177,7 @@ export default class GameInfoPanel {
         let y = 0;
 
         const addLabel = (text, color = '#aaccff', size = '13px') => {
-            const t = s.add.text(0, y, text, { fontFamily: 'monospace', fontSize: size, color });
+            const t = s.add.text(0, y, text, { fontFamily: 'Open Sans', fontSize: size, color });
             this._contentArea.add(t);
             y += parseInt(size) + 8;
         };
@@ -195,7 +196,7 @@ export default class GameInfoPanel {
                 this._contentArea.add(bg);
 
                 const title = s.add.text(8, y + 6, q.title || q.id, {
-                    fontFamily: 'monospace', fontSize: '13px', color: '#cceeff'
+                    fontFamily: 'Open Sans', fontSize: '18px', color: '#cceeff'
                 });
                 this._contentArea.add(title);
 
@@ -209,7 +210,7 @@ export default class GameInfoPanel {
                     barBg.fillStyle(pct >= 1 ? 0x44cc44 : 0x4477cc, 0.9);
                     barBg.fillRect(8, barY, Math.round(barW * pct), 8);
                     const objTxt = s.add.text(barW + 16, barY, `${obj.description || obj.type || 'Objective'} ${obj.current || 0}/${obj.required || obj.count || 1}`, {
-                        fontFamily: 'monospace', fontSize: '10px', color: '#778899'
+                        fontFamily: 'Open Sans', fontSize: '14px', color: '#778899'
                     }).setOrigin(0, 0);
                     this._contentArea.add([barBg, objTxt]);
                 });
@@ -223,7 +224,7 @@ export default class GameInfoPanel {
             addLabel(`COMPLETED (${done.length})`, '#558855', '11px');
             done.slice(-5).forEach(q => {
                 if (y > CH - 16) return;
-                const t = s.add.text(8, y, `✓ ${q.title || q.id}`, { fontFamily: 'monospace', fontSize: '11px', color: '#447744' });
+                const t = s.add.text(8, y, `✓ ${q.title || q.id}`, { fontFamily: 'Open Sans', fontSize: '15px', color: '#447744' });
                 this._contentArea.add(t);
                 y += 18;
             });
@@ -262,20 +263,20 @@ export default class GameInfoPanel {
 
             const nameColor = isCurrent ? '#ffcc88' : (discovered ? '#99bbcc' : '#334455');
             const name = s.add.text(cx + 8, cy + 8, discovered ? (loc.name || loc.id) : '???', {
-                fontFamily: 'monospace', fontSize: '11px', color: nameColor
+                fontFamily: 'Open Sans', fontSize: '15px', color: nameColor
             });
             this._contentArea.add(name);
 
             if (discovered) {
                 const typeTxt = s.add.text(cx + 8, cy + 26, loc.type || '', {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#556677',
+                    fontFamily: 'Open Sans', fontSize: '14px', color: '#556677',
                     backgroundColor: '#111122', padding: { x: 4, y: 2 }
                 });
                 this._contentArea.add(typeTxt);
 
                 if (isCurrent) {
                     const curTxt = s.add.text(cx + CARD_W - 8, cy + 8, '★ HERE', {
-                        fontFamily: 'monospace', fontSize: '9px', color: '#ffcc44'
+                        fontFamily: 'Open Sans', fontSize: '13px', color: '#ffcc44'
                     }).setOrigin(1, 0);
                     this._contentArea.add(curTxt);
                 } else {
@@ -312,7 +313,7 @@ export default class GameInfoPanel {
 
         // Phase name
         const phaseLabel = s.add.text(cx, 20, pd.label, {
-            fontFamily: 'monospace', fontSize: '28px', color: pd.textColor,
+            fontFamily: 'Open Sans', fontSize: '39px', color: pd.textColor,
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5);
         this._contentArea.add(phaseLabel);
@@ -332,19 +333,19 @@ export default class GameInfoPanel {
         const dur = DURATIONS[this._sapPhase] || 45;
         const remaining = Math.round(dur * (1 - this._sapProgress));
         const timeText = s.add.text(ringX, ringY, `${remaining}s`, {
-            fontFamily: 'monospace', fontSize: '22px', color: '#ffffff'
+            fontFamily: 'Open Sans', fontSize: '31px', color: '#ffffff'
         }).setOrigin(0.5);
         this._contentArea.add(timeText);
 
         const descText = s.add.text(cx, 210, pd.desc, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#aabbcc',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#aabbcc',
             wordWrap: { width: CW - 40 }, align: 'center'
         }).setOrigin(0.5, 0);
         this._contentArea.add(descText);
 
         // Phase timeline
         const tlY = 270;
-        const tlLabel = s.add.text(16, tlY, 'PHASE HISTORY', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const tlLabel = s.add.text(16, tlY, 'PHASE HISTORY', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(tlLabel);
 
         const recent = [...this._phaseHistory].slice(-5);
@@ -354,7 +355,7 @@ export default class GameInfoPanel {
             dot.fillStyle(phData.color, 0.8);
             dot.fillCircle(24 + i * 100, tlY + 28, 8);
             const lbl = s.add.text(24 + i * 100, tlY + 44, phData.label.split(' ')[0], {
-                fontFamily: 'monospace', fontSize: '9px', color: phData.textColor
+                fontFamily: 'Open Sans', fontSize: '13px', color: phData.textColor
             }).setOrigin(0.5, 0);
             this._contentArea.add([dot, lbl]);
 
@@ -382,10 +383,10 @@ export default class GameInfoPanel {
             phBg.lineStyle(2, isActive ? phD.color : 0x222233, isActive ? 0.8 : 0.4);
             phBg.strokeRoundedRect(cx2, cy2, cardW, cardH, 6);
             const phName = s.add.text(cx2 + cardW / 2, cy2 + 14, phD.label, {
-                fontFamily: 'monospace', fontSize: '11px', color: phD.textColor
+                fontFamily: 'Open Sans', fontSize: '15px', color: phD.textColor
             }).setOrigin(0.5);
             const phDur = s.add.text(cx2 + cardW / 2, cy2 + 34, DURATIONS2[ph], {
-                fontFamily: 'monospace', fontSize: '14px', color: '#aaaacc'
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#aaaacc'
             }).setOrigin(0.5);
             this._contentArea.add([phBg, phName, phDur]);
         });
@@ -400,7 +401,7 @@ export default class GameInfoPanel {
         const CW = this._contentW, CH = this._contentH;
 
         const header = s.add.text(CW / 2, 8, 'AI DUNGEON MASTER', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#ccaaff'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#ccaaff'
         }).setOrigin(0.5);
         this._contentArea.add(header);
 
@@ -409,7 +410,7 @@ export default class GameInfoPanel {
         statusBg.fillStyle(this._dmMessages.length > 0 ? 0x223322 : 0x221122, 0.9);
         statusBg.fillRoundedRect(CW - 110, 2, 100, 24, 4);
         const statusTxt = s.add.text(CW - 60, 14, this._dmMessages.length > 0 ? '● ACTIVE' : '○ IDLE', {
-            fontFamily: 'monospace', fontSize: '11px', color: this._dmMessages.length > 0 ? '#44ff88' : '#884488'
+            fontFamily: 'Open Sans', fontSize: '15px', color: this._dmMessages.length > 0 ? '#44ff88' : '#884488'
         }).setOrigin(0.5);
         this._contentArea.add([statusBg, statusTxt]);
 
@@ -424,14 +425,14 @@ export default class GameInfoPanel {
         const msgs = this._dmMessages.slice(-8);
         if (msgs.length === 0) {
             const emptyTxt = s.add.text(CW / 2, logY + logH / 2, 'No narrations yet.\nExplore the world to hear from the AI Dungeon Master.', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#333355', align: 'center'
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#333355', align: 'center'
             }).setOrigin(0.5);
             this._contentArea.add(emptyTxt);
         } else {
             let msgY = logY + 8;
             msgs.forEach((msg) => {
                 const bubble = s.add.text(8, msgY, msg, {
-                    fontFamily: 'monospace', fontSize: '11px', color: '#aabbcc',
+                    fontFamily: 'Open Sans', fontSize: '15px', color: '#aabbcc',
                     wordWrap: { width: CW - 20 }
                 });
                 this._contentArea.add(bubble);
@@ -445,7 +446,7 @@ export default class GameInfoPanel {
         reqBg.fillStyle(0x332244, 0.9);
         reqBg.fillRoundedRect(CW / 2 - 110, btnY, 220, 34, 6);
         const reqTxt = s.add.text(CW / 2, btnY + 17, '⚡ Request Narration', {
-            fontFamily: 'monospace', fontSize: '13px', color: '#cc88ff'
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#cc88ff'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         reqTxt.on('pointerdown', () => { EventBus.emit('dm:requestNarration', { context: 'player_request' }); });
         reqTxt.on('pointerover', () => { reqBg.clear(); reqBg.fillStyle(0x4433aa, 0.9); reqBg.fillRoundedRect(CW / 2 - 110, btnY, 220, 34, 6); });
@@ -503,39 +504,39 @@ export default class GameInfoPanel {
 
         // Center value
         const valTxt = s.add.text(gX, gY, `${Math.round(dsp)}`, {
-            fontFamily: 'monospace', fontSize: '32px', color: tier.textColor,
+            fontFamily: 'Open Sans', fontSize: '45px', color: tier.textColor,
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5);
         this._contentArea.add(valTxt);
 
         const tierTxt = s.add.text(gX, gY + 30, tier.label, {
-            fontFamily: 'monospace', fontSize: '13px', color: tier.textColor
+            fontFamily: 'Open Sans', fontSize: '18px', color: tier.textColor
         }).setOrigin(0.5);
         this._contentArea.add(tierTxt);
 
         // Description
         const descTxt = s.add.text(gX, 218, tier.desc, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#aaaacc',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#aaaacc',
             wordWrap: { width: CW - 60 }, align: 'center'
         }).setOrigin(0.5, 0);
         this._contentArea.add(descTxt);
 
         // Threshold table
         const tblY = 270;
-        const tblLabel = s.add.text(16, tblY, 'THRESHOLDS', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const tblLabel = s.add.text(16, tblY, 'THRESHOLDS', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(tblLabel);
         THRESHOLDS.forEach((t, i) => {
             const prevMax = i > 0 ? THRESHOLDS[i - 1].max : 0;
             const row = s.add.text(16, tblY + 20 + i * 22,
                 `${prevMax}–${t.max}  ${t.label}  —  ${t.desc}`, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#' + t.color.toString(16).padStart(6, '0')
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#' + t.color.toString(16).padStart(6, '0')
             });
             this._contentArea.add(row);
         });
 
         // Sparkline history
         const sparkY = 380;
-        const sparkLabel = s.add.text(16, sparkY, 'HISTORY', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const sparkLabel = s.add.text(16, sparkY, 'HISTORY', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(sparkLabel);
         if (this._dspHistory.length > 1) {
             const sparkGfx = s.add.graphics();
@@ -572,19 +573,19 @@ export default class GameInfoPanel {
         ];
         let y = 8;
         bars.forEach(b => {
-            const barLabel = s.add.text(8, y, b.label, { fontFamily: 'monospace', fontSize: '12px', color: '#aaaacc' });
+            const barLabel = s.add.text(8, y, b.label, { fontFamily: 'Open Sans', fontSize: '17px', color: '#aaaacc' });
             const barBg = s.add.graphics();
             const barW = CW - 120;
             barBg.fillStyle(0x111122, 0.9); barBg.fillRoundedRect(60, y - 1, barW, 18, 3);
             barBg.fillStyle(b.color, 0.85); barBg.fillRoundedRect(60, y - 1, Math.round(barW * Math.min(1, (b.val / Math.max(1, b.max)))), 18, 3);
-            const barVal = s.add.text(CW - 50, y + 8, `${Math.round(b.val)}/${Math.round(b.max)}`, { fontFamily: 'monospace', fontSize: '11px', color: '#888899' }).setOrigin(0, 0.5);
+            const barVal = s.add.text(CW - 50, y + 8, `${Math.round(b.val)}/${Math.round(b.max)}`, { fontFamily: 'Open Sans', fontSize: '15px', color: '#888899' }).setOrigin(0, 0.5);
             this._contentArea.add([barLabel, barBg, barVal]);
             y += 26;
         });
 
         // Attributes
         y += 8;
-        const attrLabel = s.add.text(8, y, 'ATTRIBUTES', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const attrLabel = s.add.text(8, y, 'ATTRIBUTES', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(attrLabel);
         y += 18;
 
@@ -595,31 +596,142 @@ export default class GameInfoPanel {
             const rowY = y + Math.floor(i / 2 < 1 ? i * 22 : (i % 3) * 22);
             const val = stats[attr] || stats[`equip${attr.charAt(0).toUpperCase() + attr.slice(1)}`] || 0;
             const txt = s.add.text(col === 0 ? 8 : col, rowY, `${attr.toUpperCase()}: ${val}`, {
-                fontFamily: 'monospace', fontSize: '12px', color: attrColors[attr]
+                fontFamily: 'Open Sans', fontSize: '17px', color: attrColors[attr]
             });
             this._contentArea.add(txt);
         });
         y += 3 * 22 + 12;
 
         // Equipment summary
-        const eqLabel = s.add.text(8, y, 'EQUIPMENT', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const eqLabel = s.add.text(8, y, 'EQUIPMENT', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(eqLabel);
         y += 18;
 
         const eqSlots = Object.entries(this._equipmentSlots || {});
         eqSlots.slice(0, 8).forEach(([slotName, item]) => {
             const slotTxt = s.add.text(8, y, `${slotName.toUpperCase().padEnd(8)} ${item ? (item.name || item.id) : '—'}`, {
-                fontFamily: 'monospace', fontSize: '11px', color: item ? '#99bbcc' : '#333344'
+                fontFamily: 'Open Sans', fontSize: '15px', color: item ? '#99bbcc' : '#333344'
             });
             this._contentArea.add(slotTxt);
             y += 18;
         });
 
         // Active effects (placeholder)
-        const effectLabel = s.add.text(CW / 2 + 8, 100, 'ACTIVE EFFECTS', { fontFamily: 'monospace', fontSize: '11px', color: '#556677' });
+        const effectLabel = s.add.text(CW / 2 + 8, 100, 'ACTIVE EFFECTS', { fontFamily: 'Open Sans', fontSize: '15px', color: '#556677' });
         this._contentArea.add(effectLabel);
-        const noEffects = s.add.text(CW / 2 + 8, 120, 'None', { fontFamily: 'monospace', fontSize: '11px', color: '#333344' });
+        const noEffects = s.add.text(CW / 2 + 8, 120, 'None', { fontFamily: 'Open Sans', fontSize: '15px', color: '#333344' });
         this._contentArea.add(noEffects);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Tab 6 — FACTIONS
+    // ─────────────────────────────────────────────────────────────────
+
+    _buildFactionsTab() {
+        const s = this.scene;
+        const CW = this._contentW;
+
+        const FACTIONS = [
+            { id: 'bloomguard',    name: 'Bloomguard',    role: 'Peacekeepers',    color: 0x44aa66 },
+            { id: 'thornbinders',  name: 'Thornbinders',  role: 'Nature Wardens',  color: 0x886633 },
+            { id: 'emerald_coven', name: 'Emerald Coven', role: 'Arcane Scholars', color: 0x44aaaa },
+            { id: 'wildkin_pact',  name: 'Wildkin Pact',  role: 'Beast Speakers',  color: 0xaa7733 },
+            { id: 'veilkeepers',   name: 'Veilkeepers',   role: 'Mystic Guardians',color: 0x8844aa },
+            { id: 'hollow_court',  name: 'Hollow Court',  role: 'Shadow Brokers',  color: 0x444466 },
+        ];
+
+        const getRepTier = (rep) => {
+            if (rep <= -26) return { label: 'HOSTILE',    color: 0xff3333, textColor: '#ff4444' };
+            if (rep <= -6)  return { label: 'UNFRIENDLY', color: 0xff8844, textColor: '#ff9955' };
+            if (rep <= 5)   return { label: 'NEUTRAL',    color: 0x888899, textColor: '#9999aa' };
+            if (rep <= 25)  return { label: 'FRIENDLY',   color: 0x44cc88, textColor: '#44dd99' };
+            if (rep <= 49)  return { label: 'HONORED',    color: 0x44aaff, textColor: '#55bbff' };
+            return             { label: 'REVERED',    color: 0xffcc44, textColor: '#ffdd55' };
+        };
+
+        const CARD_W = Math.floor((CW - 12) / 2);
+        const CARD_H = 80;
+        const COLS = 2;
+
+        FACTIONS.forEach((faction, i) => {
+            const col = i % COLS;
+            const row = Math.floor(i / COLS);
+            const cx = col * (CARD_W + 12);
+            const cy = row * (CARD_H + 8);
+
+            const rep = globalThis.__factionSystem?.getReputation?.(faction.id) ?? 0;
+            const tier = getRepTier(rep);
+
+            // Card background
+            const cardBg = s.add.graphics();
+            cardBg.fillStyle(0x0d1020, 0.92);
+            cardBg.fillRoundedRect(cx, cy, CARD_W, CARD_H, 6);
+            cardBg.lineStyle(2, faction.color, 0.35);
+            cardBg.strokeRoundedRect(cx, cy, CARD_W, CARD_H, 6);
+            this._contentArea.add(cardBg);
+
+            // Color accent strip on left edge
+            const accentGfx = s.add.graphics();
+            accentGfx.fillStyle(faction.color, 0.7);
+            accentGfx.fillRoundedRect(cx, cy, 4, CARD_H, { tl: 6, tr: 0, bl: 6, br: 0 });
+            this._contentArea.add(accentGfx);
+
+            // Faction name
+            const nameTxt = s.add.text(cx + 12, cy + 8, faction.name, {
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#ddeeff',
+            });
+            this._contentArea.add(nameTxt);
+
+            // Role
+            const roleTxt = s.add.text(cx + 12, cy + 24, faction.role, {
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#556677',
+            });
+            this._contentArea.add(roleTxt);
+
+            // Reputation bar: range -50 to +50 mapped to full bar width
+            const BAR_X = cx + 12;
+            const BAR_Y = cy + 44;
+            const BAR_W = CARD_W - 24;
+            const BAR_H = 10;
+
+            const barBg = s.add.graphics();
+            barBg.fillStyle(0x111122, 0.9);
+            barBg.fillRoundedRect(BAR_X, BAR_Y, BAR_W, BAR_H, 3);
+
+            // Center line at neutral
+            const centerX = BAR_X + Math.floor(BAR_W / 2);
+            barBg.lineStyle(1, 0x334455, 0.8);
+            barBg.lineBetween(centerX, BAR_Y, centerX, BAR_Y + BAR_H);
+            this._contentArea.add(barBg);
+
+            // Fill from center
+            const fillGfx = s.add.graphics();
+            const repClamped = Math.max(-50, Math.min(50, rep));
+            if (repClamped !== 0) {
+                const fillLen = Math.round((Math.abs(repClamped) / 50) * (BAR_W / 2));
+                if (repClamped > 0) {
+                    fillGfx.fillStyle(tier.color, 0.85);
+                    fillGfx.fillRoundedRect(centerX, BAR_Y, fillLen, BAR_H, { tl: 0, tr: 3, bl: 0, br: 3 });
+                } else {
+                    fillGfx.fillStyle(tier.color, 0.85);
+                    fillGfx.fillRoundedRect(centerX - fillLen, BAR_Y, fillLen, BAR_H, { tl: 3, tr: 0, bl: 3, br: 0 });
+                }
+            }
+            this._contentArea.add(fillGfx);
+
+            // Rep tier label
+            const tierTxt = s.add.text(cx + 12, cy + 58, tier.label, {
+                fontFamily: 'Open Sans', fontSize: '13px', color: tier.textColor,
+            });
+            this._contentArea.add(tierTxt);
+
+            // Rep numeric value
+            const repSign = rep > 0 ? '+' : '';
+            const repValTxt = s.add.text(cx + CARD_W - 8, cy + 58, `${repSign}${rep}`, {
+                fontFamily: 'Open Sans', fontSize: '13px', color: tier.textColor,
+            }).setOrigin(1, 0);
+            this._contentArea.add(repValTxt);
+        });
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -695,6 +807,9 @@ export default class GameInfoPanel {
             EventBus.on('equipment:changed', (data) => {
                 this._equipmentSlots = data?.slots || {};
                 if (this.visible && this._activeTab === 5) this._refreshTab(5);
+            }),
+            EventBus.on('faction:reputationChanged', () => {
+                if (this.visible && this._activeTab === 6) this._refreshTab(6);
             }),
         ];
 

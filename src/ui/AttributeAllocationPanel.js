@@ -50,14 +50,14 @@ export class AttributeAllocationPanel {
 
         // Title
         const title = this.scene.add.text(panelW / 2, 14, 'LEVEL UP!', {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#ffd700',
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#ffd700',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
         container.add(title);
 
         // Points remaining label
         this._pointsLabel = this.scene.add.text(panelW / 2, 32, '', {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#88ddff'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#88ddff'
         }).setOrigin(0.5);
         container.add(this._pointsLabel);
 
@@ -68,10 +68,10 @@ export class AttributeAllocationPanel {
             const rowY = 56 + i * 34;
 
             const label = this.scene.add.text(8, rowY, icons[attr], {
-                fontFamily: 'monospace', fontSize: '11px', color: '#aaaacc'
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#aaaacc'
             });
             const val = this.scene.add.text(50, rowY, '0', {
-                fontFamily: 'monospace', fontSize: '13px', color: '#ffffff'
+                fontFamily: 'Open Sans', fontSize: '18px', color: '#ffffff'
             });
 
             // + button
@@ -80,7 +80,7 @@ export class AttributeAllocationPanel {
             btnBg.fillRoundedRect(panelW - 36, rowY - 2, 28, 22, 4);
 
             const btnLabel = this.scene.add.text(panelW - 22, rowY + 9, '+', {
-                fontFamily: 'monospace', fontSize: '14px', color: '#44ff88'
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#44ff88'
             }).setOrigin(0.5);
 
             const hitZone = this.scene.add.zone(panelW - 22, rowY + 9, 28, 22)
@@ -107,7 +107,7 @@ export class AttributeAllocationPanel {
         skipBg.fillStyle(0x332211, 0.8);
         skipBg.fillRoundedRect(4, 224, panelW - 8, 12, 3);
         const skipText = this.scene.add.text(panelW / 2, 230, 'Save for later', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#888877'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#888877'
         }).setOrigin(0.5);
         const skipZone = this.scene.add.zone(panelW / 2, 230, panelW - 8, 12)
             .setInteractive({ useHandCursor: true });

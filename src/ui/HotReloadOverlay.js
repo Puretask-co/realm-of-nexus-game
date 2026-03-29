@@ -77,13 +77,13 @@ export class HotReloadOverlay {
     // Icon
     const icon = type === 'success' ? '\u2713' : type === 'error' ? '\u2717' : '\u2022';
     const iconText = this.scene.add.text(x + 8, y - 7, icon, {
-      fontSize: '12px', fill: style.text, fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '17px', fill: style.text, fontFamily: 'Open Sans', fontStyle: 'bold'
     });
     this.container.add(iconText);
 
     // Message
     const msgText = this.scene.add.text(x + 22, y - 7, message, {
-      fontSize: '11px', fill: style.text, fontFamily: 'monospace'
+      fontSize: '15px', fill: style.text, fontFamily: 'Open Sans'
     });
     this.container.add(msgText);
 

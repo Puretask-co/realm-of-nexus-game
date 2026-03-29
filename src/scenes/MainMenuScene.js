@@ -157,8 +157,8 @@ export default class MainMenuScene extends Phaser.Scene {
     _buildTitle(width, height) {
         // Glow layer (blurred look via multiple overlapping texts)
         const glowStyle = {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '58px',
+            fontFamily: 'Open Sans',
+            fontSize: '81px',
             color: '#224466',
             stroke: '#224466',
             strokeThickness: 18,
@@ -170,8 +170,8 @@ export default class MainMenuScene extends Phaser.Scene {
 
         // Main title
         const titleText = this.add.text(width / 2, height * 0.22, 'REALM OF NEXUS', {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '58px',
+            fontFamily: 'Open Sans',
+            fontSize: '81px',
             color: '#ddeeff',
             stroke: '#0a2244',
             strokeThickness: 6,
@@ -180,8 +180,8 @@ export default class MainMenuScene extends Phaser.Scene {
 
         // Subtitle
         const subtitleText = this.add.text(width / 2, height * 0.22 + 64, 'Verdance', {
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: '26px',
+            fontFamily: 'Open Sans',
+            fontSize: '36px',
             color: '#88ffcc',
             stroke: '#062210',
             strokeThickness: 3,
@@ -271,8 +271,8 @@ export default class MainMenuScene extends Phaser.Scene {
         draw(def.color, def.border, 0.5);
 
         const label = this.add.text(cx, cy, def.label, {
-            fontFamily: 'monospace',
-            fontSize: '17px',
+            fontFamily: 'Open Sans',
+            fontSize: '24px',
             color: '#e8eeff',
             stroke: '#000000',
             strokeThickness: 2,
@@ -367,7 +367,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
         // Title
         const titleTxt = this.add.text(width / 2, PANEL_Y + HEADER_H / 2, 'Load Game', {
-            fontFamily: 'monospace', fontSize: '20px', color: '#aaccff',
+            fontFamily: 'Open Sans', fontSize: '28px', color: '#aaccff',
             stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0.5);
         container.add(titleTxt);
@@ -425,7 +425,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
         // Slot number badge
         const badgeTxt = this.add.text(x + 14, y + h / 2, `${slot + 1}`, {
-            fontFamily: 'monospace', fontSize: '20px',
+            fontFamily: 'Open Sans', fontSize: '28px',
             color: isEmpty ? '#445566' : '#88bbff',
             stroke: '#000', strokeThickness: 2,
         }).setOrigin(0, 0.5);
@@ -433,7 +433,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
         if (isEmpty) {
             const emptyTxt = this.add.text(x + w / 2 + 10, y + h / 2, '— Empty —', {
-                fontFamily: 'monospace', fontSize: '14px', color: '#445566',
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#445566',
             }).setOrigin(0.5);
             container.add(emptyTxt);
 
@@ -458,23 +458,23 @@ export default class MainMenuScene extends Phaser.Scene {
             const zoneLabel = currentZone.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
             const nameText = this.add.text(x + 38, y + 14, playerName, {
-                fontFamily: 'monospace', fontSize: '15px', color: '#ddeeff',
+                fontFamily: 'Open Sans', fontSize: '21px', color: '#ddeeff',
                 stroke: '#000', strokeThickness: 2,
             });
             container.add(nameText);
 
             const classText = this.add.text(x + 38, y + 32, `${className}  Lv.${level}`, {
-                fontFamily: 'monospace', fontSize: '12px', color: '#88bbcc',
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#88bbcc',
             });
             container.add(classText);
 
             const zoneText = this.add.text(x + 38, y + 50, zoneLabel, {
-                fontFamily: 'monospace', fontSize: '11px', color: '#55aa77',
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#55aa77',
             });
             container.add(zoneText);
 
             const timeText = this.add.text(x + w - 100, y + 14, timeStr, {
-                fontFamily: 'monospace', fontSize: '12px', color: '#778899',
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#778899',
             });
             container.add(timeText);
 
@@ -564,13 +564,13 @@ export default class MainMenuScene extends Phaser.Scene {
 
         // Message
         const msg = this.add.text(width / 2, DY + 52, 'Quit the game?', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#ffcccc',
+            fontFamily: 'Open Sans', fontSize: '25px', color: '#ffcccc',
             stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0.5);
         container.add(msg);
 
         const sub = this.add.text(width / 2, DY + 82, 'Any unsaved progress will be lost.', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#887777',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#887777',
         }).setOrigin(0.5);
         container.add(sub);
 
@@ -585,7 +585,7 @@ export default class MainMenuScene extends Phaser.Scene {
                 window.close();
                 // Fallback for browsers that block window.close()
                 this.add.text(width / 2, height / 2, 'You may now close this tab.', {
-                    fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
+                    fontFamily: 'Open Sans', fontSize: '20px', color: '#aaaaaa',
                 }).setOrigin(0.5);
             },
         }, container);
@@ -619,7 +619,7 @@ export default class MainMenuScene extends Phaser.Scene {
         draw(def.color, 0.6);
 
         const lbl = this.add.text(cx, cy, def.label, {
-            fontFamily: 'monospace', fontSize: '13px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
 

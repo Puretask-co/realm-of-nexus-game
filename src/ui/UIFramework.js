@@ -34,8 +34,8 @@ export class UIFramework {
       textSecondary: '#aaaacc',
       textHighlight: '#4a9eff',
       border: 0x4a4a6e,
-      fontFamily: 'monospace',
-      fontSize: '14px',
+      fontFamily: 'Open Sans',
+      fontSize: '20px',
       padding: 12,
       borderRadius: 6,
       // Sap phase color overrides
@@ -243,7 +243,7 @@ export class UIFramework {
 
     // Text
     const text = this.scene.add.text(width / 2, height / 2, '', {
-      fontSize: '11px',
+      fontSize: '15px',
       fill: this.theme.text,
       fontFamily: this.theme.fontFamily
     }).setOrigin(0.5);
@@ -252,7 +252,7 @@ export class UIFramework {
     // Label
     if (label) {
       const labelText = this.scene.add.text(0, -16, label, {
-        fontSize: '11px',
+        fontSize: '15px',
         fill: this.theme.textSecondary,
         fontFamily: this.theme.fontFamily
       });
@@ -353,7 +353,7 @@ export class UIFramework {
             .setDisplaySize(size - 8, size - 8);
         } else {
           itemIcon = this.scene.add.text(size / 2, size / 2, newItem.name?.charAt(0) || '?', {
-            fontSize: '20px', fill: '#ffffff', fontFamily: this.theme.fontFamily
+            fontSize: '28px', fill: '#ffffff', fontFamily: this.theme.fontFamily
           }).setOrigin(0.5);
         }
         container.add(itemIcon);
@@ -361,7 +361,7 @@ export class UIFramework {
         // Quantity
         if (showQuantity && newItem.quantity > 1) {
           quantityText = this.scene.add.text(size - 4, size - 4, `${newItem.quantity}`, {
-            fontSize: '10px', fill: '#ffffff', fontFamily: this.theme.fontFamily,
+            fontSize: '14px', fill: '#ffffff', fontFamily: this.theme.fontFamily,
             backgroundColor: '#000000'
           }).setOrigin(1, 1);
           container.add(quantityText);
@@ -399,7 +399,7 @@ export class UIFramework {
       container.add(titleBar);
 
       const titleText = this.scene.add.text(this.theme.padding, 10, title, {
-        fontSize: '16px',
+        fontSize: '22px',
         fill: this.theme.textHighlight,
         fontFamily: this.theme.fontFamily,
         fontStyle: 'bold'
@@ -409,7 +409,7 @@ export class UIFramework {
       // Close button
       if (closable) {
         const closeBtn = this.scene.add.text(width - 28, 8, 'X', {
-          fontSize: '16px',
+          fontSize: '22px',
           fill: '#888888',
           fontFamily: this.theme.fontFamily
         }).setInteractive();
@@ -448,7 +448,7 @@ export class UIFramework {
 
       // Measure text
       const titleText = this.scene.add.text(padding, padding, title, {
-        fontSize: '13px',
+        fontSize: '18px',
         fill: this.theme.textHighlight,
         fontFamily: this.theme.fontFamily,
         fontStyle: 'bold',
@@ -460,7 +460,7 @@ export class UIFramework {
 
       if (description) {
         descText = this.scene.add.text(padding, titleText.height + padding + 4, description, {
-          fontSize: '12px',
+          fontSize: '17px',
           fill: this.theme.textSecondary,
           fontFamily: this.theme.fontFamily,
           wordWrap: { width: maxWidth - padding * 2 }
@@ -546,7 +546,7 @@ export class UIFramework {
 
     // Type label
     const typeLabel = this.scene.add.text(-notifWidth + 14, 6, type.toUpperCase(), {
-      fontSize: '10px',
+      fontSize: '14px',
       fill: `#${color.toString(16).padStart(6, '0')}`,
       fontFamily: this.theme.fontFamily,
       fontStyle: 'bold'
@@ -555,7 +555,7 @@ export class UIFramework {
 
     // Message
     const msgText = this.scene.add.text(-notifWidth + 14, 24, message, {
-      fontSize: '12px',
+      fontSize: '17px',
       fill: this.theme.text,
       fontFamily: this.theme.fontFamily,
       wordWrap: { width: notifWidth - 28 }
@@ -629,7 +629,7 @@ export class UIFramework {
     );
 
     const msgText = this.scene.add.text(160, 60, message, {
-      fontSize: '14px',
+      fontSize: '20px',
       fill: this.theme.text,
       fontFamily: this.theme.fontFamily,
       wordWrap: { width: 280 },

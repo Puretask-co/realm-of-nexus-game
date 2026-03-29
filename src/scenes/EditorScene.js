@@ -171,11 +171,11 @@ export default class EditorScene extends Phaser.Scene {
         this.gameTabBg = this.add.graphics().setDepth(10000).setScrollFactor(0);
 
         this.sceneTabText = this.add.text(tabX + 40, tabY + 10, 'Scene', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ffffff'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ffffff'
         }).setOrigin(0.5).setDepth(10001).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
         this.gameTabText = this.add.text(tabX + 120, tabY + 10, 'Game', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#888888'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#888888'
         }).setOrigin(0.5).setDepth(10001).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
         this.sceneTabText.on('pointerdown', () => this._setViewMode('scene'));
@@ -250,7 +250,7 @@ export default class EditorScene extends Phaser.Scene {
             bg.strokeRect(x, y, 42, 24);
 
             const label = this.add.text(x + 21, y + 12, tool.label, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#88aadd'
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#88aadd'
             }).setOrigin(0.5).setDepth(10001).setScrollFactor(0);
 
             bg.setInteractive(new Phaser.Geom.Rectangle(x, y, 42, 24), Phaser.Geom.Rectangle.Contains);
@@ -314,7 +314,7 @@ export default class EditorScene extends Phaser.Scene {
         this.paletteBg.strokeRect(panelX, panelY, panelW, panelH);
 
         this.add.text(panelX + 8, panelY + 4, 'PALETTE', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#6688aa', fontStyle: 'bold'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#6688aa', fontStyle: 'bold'
         }).setDepth(10001).setScrollFactor(0);
 
         const paletteItems = [
@@ -339,7 +339,7 @@ export default class EditorScene extends Phaser.Scene {
             swatch.fillRect(ix, iy + 2, 10, 10);
 
             const text = this.add.text(ix + 14, iy, item.label, {
-                fontFamily: 'monospace', fontSize: '10px',
+                fontFamily: 'Open Sans', fontSize: '14px',
                 color: this.currentPalette === item.key ? '#ffffff' : item.color
             }).setDepth(10001).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
@@ -465,13 +465,13 @@ export default class EditorScene extends Phaser.Scene {
         // Bottom-left engine info bar
         const barY = 720 - this.layout.consoleH - 16;
         this.statusText = this.add.text(this.layout.hierarchyW + 4, barY, '', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#556677'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#556677'
         }).setDepth(10001).setScrollFactor(0);
         this._updateStatusBar();
 
         // Engine label (top right)
         this.add.text(1280 - 8, 4, 'WEngine5 / Verdance', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#334455'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#334455'
         }).setOrigin(1, 0).setDepth(10001).setScrollFactor(0);
     }
 
@@ -687,7 +687,7 @@ export default class EditorScene extends Phaser.Scene {
         }
 
         const label = this.add.text(x, y - 18, type.toUpperCase(), {
-            fontFamily: 'monospace', fontSize: '8px', color: '#aaaacc'
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#aaaacc'
         }).setOrigin(0.5).setDepth(6);
 
         const obj = this.add.container(x, y, []).setDepth(5);

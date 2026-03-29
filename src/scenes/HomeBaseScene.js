@@ -42,16 +42,16 @@ export default class HomeBaseScene extends Phaser.Scene {
 
         // ── Title ────────────────────────────────────────────────────
         this.add.text(width / 2, 28, 'The Verdant Hearth', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '26px',
+            fontFamily: 'Open Sans',
+            fontSize: '36px',
             color: '#aaffaa',
             stroke: '#000000',
             strokeThickness: 4
         }).setOrigin(0.5, 0).setDepth(10).setScrollFactor(0);
 
         this.add.text(width / 2, 60, '— Your sanctuary —', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#66aa66',
             stroke: '#000000',
             strokeThickness: 2
@@ -120,8 +120,8 @@ export default class HomeBaseScene extends Phaser.Scene {
 
         // ── Ambient hints ─────────────────────────────────────────────
         this.add.text(width / 2, height - 22, 'Press H to return to the world', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '12px',
+            fontFamily: 'Open Sans',
+            fontSize: '17px',
             color: '#446644',
             stroke: '#000',
             strokeThickness: 2
@@ -138,8 +138,8 @@ export default class HomeBaseScene extends Phaser.Scene {
         });
 
         this._feedbackText = this.add.text(width / 2, height - 44, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#aaffaa',
             stroke: '#000',
             strokeThickness: 2
@@ -331,8 +331,8 @@ export default class HomeBaseScene extends Phaser.Scene {
 
         // Label
         this.add.text(x, by + 52, label, {
-            fontFamily: 'Georgia, serif',
-            fontSize: '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color: '#aaddaa',
             stroke: '#000',
             strokeThickness: 2
@@ -340,8 +340,8 @@ export default class HomeBaseScene extends Phaser.Scene {
 
         // Sub-label
         this.add.text(x, by + 65, sub, {
-            fontFamily: 'monospace',
-            fontSize: '9px',
+            fontFamily: 'Open Sans',
+            fontSize: '13px',
             color: '#668866'
         }).setOrigin(0.5, 0).setDepth(5).setScrollFactor(0);
 
@@ -380,8 +380,8 @@ export default class HomeBaseScene extends Phaser.Scene {
 
         // Label
         this.add.text(cx, cy - H / 2 - 14, 'EXIT', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#88ff88',
             stroke: '#000',
             strokeThickness: 2
@@ -445,8 +445,8 @@ export default class HomeBaseScene extends Phaser.Scene {
         };
         draw(color);
         const txt = this.add.text(cx, cy, label, {
-            fontFamily: 'monospace',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#ffffff',
             stroke: '#000',
             strokeThickness: 1

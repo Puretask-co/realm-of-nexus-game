@@ -29,8 +29,8 @@ export default class DamageNumberRenderer {
         // Pre-create pool
         for (let i = 0; i < this.poolSize; i++) {
             const text = scene.add.text(0, 0, '', {
-                fontFamily: 'monospace',
-                fontSize: '14px',
+                fontFamily: 'Open Sans',
+                fontSize: '20px',
                 color: '#ffffff',
                 stroke: '#000000',
                 strokeThickness: 3,

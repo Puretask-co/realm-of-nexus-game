@@ -88,7 +88,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
 
         // Title
         this.add.text(PX + PW / 2, PY + 13, 'CHARACTER SHEET', {
-            fontFamily: 'Georgia, serif', fontSize: '20px',
+            fontFamily: 'Open Sans', fontSize: '28px',
             color: '#ffcc44', stroke: '#000', strokeThickness: 3,
         }).setOrigin(0.5, 0).setDepth(D + 2).setScrollFactor(0);
 
@@ -98,7 +98,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         closeBg.fillStyle(0x661111, 0.9);
         closeBg.fillRoundedRect(cBx, cBy, 28, 22, 4);
         this.add.text(cBx + 14, cBy + 11, 'X', {
-            fontFamily: 'Georgia, serif', fontSize: '12px',
+            fontFamily: 'Open Sans', fontSize: '17px',
             color: '#ffffff', stroke: '#000', strokeThickness: 1,
         }).setOrigin(0.5).setDepth(D + 4).setScrollFactor(0);
         this.add.zone(cBx + 14, cBy + 11, 28, 22)
@@ -108,7 +108,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
 
         // Hint
         this.add.text(PX + PW - 14, PY + PH - 10, 'ESC or C to close', {
-            fontFamily: 'Georgia, serif', fontSize: '10px', color: '#445566',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#445566',
         }).setOrigin(1, 1).setDepth(D + 2).setScrollFactor(0);
 
         // Tab bar (4 tabs)
@@ -120,7 +120,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
             const tx = tabStartX + i * (tabW + tabGap);
             const tbg = this.add.graphics().setDepth(D + 2).setScrollFactor(0);
             const ttxt = this.add.text(tx + tabW / 2, tabY + tabH / 2, TAB_LABELS[i], {
-                fontFamily: 'Georgia, serif', fontSize: '12px',
+                fontFamily: 'Open Sans', fontSize: '17px',
                 color: '#7788aa', stroke: '#000', strokeThickness: 1,
             }).setOrigin(0.5).setDepth(D + 3).setScrollFactor(0);
             const thit = this.add.zone(tx + tabW / 2, tabY + tabH / 2, tabW, tabH)
@@ -214,20 +214,20 @@ export default class CharacterSheetScene extends Phaser.Scene {
         this._contentGfx.lineStyle(2, 0xffcc44, 0.7);
         this._contentGfx.strokeRect(portX, portY, portW, portH);
         this._addText(portX + portW / 2, portY + portH / 2, classData?.name || '?', {
-            fontSize: '10px', color: '#ffffff', stroke: '#000', strokeThickness: 2,
+            fontSize: '14px', color: '#ffffff', stroke: '#000', strokeThickness: 2,
         }, D).setOrigin(0.5);
 
         // Identity
         const iX = portX + portW + 18;
-        this._addText(iX, portY,      stats.name     || 'Adventurer',              { fontSize: '18px', color: '#ffdd88', stroke: '#000', strokeThickness: 3 }, D);
-        this._addText(iX, portY + 24, `Class: ${classData?.name || '—'}`,          { fontSize: '12px', color: '#aabbcc' }, D);
-        this._addText(iX, portY + 40, `Ancestry: ${stats.ancestry || '—'}`,        { fontSize: '12px', color: '#aabbcc' }, D);
-        this._addText(iX, portY + 56, `Variant: ${stats.variant || '—'}`,          { fontSize: '12px', color: '#aabbcc' }, D);
-        this._addText(iX, portY + 72, `Level: ${stats.level || 1}  XP: ${stats.xp || 0}`, { fontSize: '12px', color: '#ffcc44' }, D);
+        this._addText(iX, portY,      stats.name     || 'Adventurer',              { fontSize: '25px', color: '#ffdd88', stroke: '#000', strokeThickness: 3 }, D);
+        this._addText(iX, portY + 24, `Class: ${classData?.name || '—'}`,          { fontSize: '17px', color: '#aabbcc' }, D);
+        this._addText(iX, portY + 40, `Ancestry: ${stats.ancestry || '—'}`,        { fontSize: '17px', color: '#aabbcc' }, D);
+        this._addText(iX, portY + 56, `Variant: ${stats.variant || '—'}`,          { fontSize: '17px', color: '#aabbcc' }, D);
+        this._addText(iX, portY + 72, `Level: ${stats.level || 1}  XP: ${stats.xp || 0}`, { fontSize: '17px', color: '#ffcc44' }, D);
 
         // ── Core Attributes ───────────────────────────────────────────────
         const attrX = PX + 20, attrY = cY + 108;
-        this._addText(attrX, attrY - 14, 'CORE ATTRIBUTES', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(attrX, attrY - 14, 'CORE ATTRIBUTES', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
 
         const ATTRS = ['might', 'agility', 'resilience', 'insight', 'charisma'];
         const ATTR_HEX = { might: 0xff6644, agility: 0x88ddff, resilience: 0x44cc66, insight: 0xaaccff, charisma: 0xffcc44 };
@@ -242,7 +242,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
             const label = attr.charAt(0).toUpperCase() + attr.slice(1);
             const bonus = equip > 0 ? `  (+${equip} equip)` : '';
 
-            this._addText(attrX, ay, `${label}: ${total}${bonus}`, { fontSize: '12px', color: '#ccddee' }, D);
+            this._addText(attrX, ay, `${label}: ${total}${bonus}`, { fontSize: '17px', color: '#ccddee' }, D);
 
             const barX = attrX + 190;
             this._contentGfx.fillStyle(0x0d1a2a, 0.7);
@@ -257,7 +257,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         // ── Derived Stats ─────────────────────────────────────────────────
         const drvX = PX + Math.floor(PW / 2) + 20;
         const drvY = cY;
-        this._addText(drvX, drvY - 4, 'DERIVED STATS', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(drvX, drvY - 4, 'DERIVED STATS', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
 
         const DERIVED = [
             ['Max HP',       stats.maxHP       ?? (classData?.startingHP    ?? '—')],
@@ -273,8 +273,8 @@ export default class CharacterSheetScene extends Phaser.Scene {
         for (let i = 0; i < DERIVED.length; i++) {
             const [label, value] = DERIVED[i];
             const dy = drvY + 14 + i * 26;
-            this._addText(drvX,       dy, `${label}:`,   { fontSize: '11px', color: '#7788aa' }, D);
-            this._addText(drvX + 140, dy, String(value), { fontSize: '11px', color: '#ffdd88' }, D);
+            this._addText(drvX,       dy, `${label}:`,   { fontSize: '15px', color: '#7788aa' }, D);
+            this._addText(drvX + 140, dy, String(value), { fontSize: '15px', color: '#ffdd88' }, D);
             this._contentGfx.lineStyle(1, 0x1a2a3a, 0.4);
             this._contentGfx.lineBetween(drvX, dy + 22, drvX + 220, dy + 22);
         }
@@ -284,7 +284,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         const hpMax  = Number(stats.maxHP ?? classData?.startingHP ?? 100);
         const hpCur  = Number(stats.hp   ?? hpMax);
         const hBarW  = 220;
-        this._addText(drvX, hpBarY, `HP: ${hpCur} / ${hpMax}`, { fontSize: '11px', color: '#44ff88' }, D);
+        this._addText(drvX, hpBarY, `HP: ${hpCur} / ${hpMax}`, { fontSize: '15px', color: '#44ff88' }, D);
         this._contentGfx.fillStyle(0x0d1a2a, 0.7);
         this._contentGfx.fillRect(drvX, hpBarY + 16, hBarW, 10);
         this._contentGfx.fillStyle(0x33cc66, 0.85);
@@ -304,7 +304,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         const classData = classId ? (dataManager.getClassById?.(classId) || null) : null;
 
         if (!classData) {
-            this._addText(PX + PW / 2, cY + 60, 'No class selected.', { fontSize: '14px', color: '#667788' }, D).setOrigin(0.5);
+            this._addText(PX + PW / 2, cY + 60, 'No class selected.', { fontSize: '20px', color: '#667788' }, D).setOrigin(0.5);
             return;
         }
 
@@ -321,8 +321,8 @@ export default class CharacterSheetScene extends Phaser.Scene {
         const leftX = PX + 20;
         const rightX = PX + Math.floor(PW / 2) + 14;
 
-        this._addText(leftX,  cY - 2, 'CLASS ABILITIES', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
-        this._addText(rightX, cY - 2, 'TALENT TREE',     { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(leftX,  cY - 2, 'CLASS ABILITIES', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(rightX, cY - 2, 'TALENT TREE',     { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
 
         const maxY = this._PY + this._PH - 30;
         let yL = cY + 14;
@@ -333,11 +333,11 @@ export default class CharacterSheetScene extends Phaser.Scene {
             const typeLabel  = isPassive ? '[PASSIVE]' : `[ACTIVE · ${ab.apCost ?? '?'}AP · CD:${ab.cooldown ?? '—'}]`;
             const typeColor  = isPassive ? '#aaddaa' : '#ffcc44';
 
-            this._addText(leftX, yL, ab.name, { fontSize: '13px', color: '#ffffff', stroke: '#000', strokeThickness: 2 }, D);
+            this._addText(leftX, yL, ab.name, { fontSize: '18px', color: '#ffffff', stroke: '#000', strokeThickness: 2 }, D);
             yL += 16;
-            this._addText(leftX + 4, yL, typeLabel, { fontSize: '9px', color: typeColor }, D);
+            this._addText(leftX + 4, yL, typeLabel, { fontSize: '13px', color: typeColor }, D);
             yL += 12;
-            this._addText(leftX + 4, yL, ab.description || '', { fontSize: '10px', color: '#aabbcc', wordWrap: { width: colW } }, D);
+            this._addText(leftX + 4, yL, ab.description || '', { fontSize: '14px', color: '#aabbcc', wordWrap: { width: colW } }, D);
             yL += this._estHeight(ab.description || '', colW, 10) + 6;
             this._contentGfx.lineStyle(1, 0x223344, 0.35);
             this._contentGfx.lineBetween(leftX, yL, leftX + colW, yL);
@@ -347,11 +347,11 @@ export default class CharacterSheetScene extends Phaser.Scene {
         let yR = cY + 14;
         for (const tal of talents) {
             if (yR >= maxY) break;
-            this._addText(rightX, yR, `${tal.name}  (Lv${tal.level})`, { fontSize: '12px', color: '#ccddff', stroke: '#000', strokeThickness: 2 }, D);
+            this._addText(rightX, yR, `${tal.name}  (Lv${tal.level})`, { fontSize: '17px', color: '#ccddff', stroke: '#000', strokeThickness: 2 }, D);
             yR += 15;
-            this._addText(rightX + 4, yR, tal.type === 'passive' ? '[PASSIVE]' : '[ACTIVE]', { fontSize: '9px', color: '#aaddaa' }, D);
+            this._addText(rightX + 4, yR, tal.type === 'passive' ? '[PASSIVE]' : '[ACTIVE]', { fontSize: '13px', color: '#aaddaa' }, D);
             yR += 12;
-            this._addText(rightX + 4, yR, tal.description || '', { fontSize: '10px', color: '#aabbcc', wordWrap: { width: colW } }, D);
+            this._addText(rightX + 4, yR, tal.description || '', { fontSize: '14px', color: '#aabbcc', wordWrap: { width: colW } }, D);
             yR += this._estHeight(tal.description || '', colW, 10) + 8;
             this._contentGfx.lineStyle(1, 0x223344, 0.35);
             this._contentGfx.lineBetween(rightX, yR, rightX + colW, yR);
@@ -388,7 +388,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         this._contentGfx.fillRect(PX + 8, headerY, PW - 16, 20);
 
         for (let c = 0; c < COL_H.length; c++) {
-            this._addText(COL_X[c], headerY + 3, COL_H[c], { fontSize: '10px', color: '#7788aa', letterSpacing: 1 }, D);
+            this._addText(COL_X[c], headerY + 3, COL_H[c], { fontSize: '14px', color: '#7788aa', letterSpacing: 1 }, D);
         }
 
         this._contentGfx.lineStyle(1, 0x334455, 0.6);
@@ -431,7 +431,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
             ];
 
             for (let c = 0; c < cells.length; c++) {
-                this._addText(COL_X[c], rowY + 4, cells[c], { fontSize: '10px', color: cellColors[c] }, D);
+                this._addText(COL_X[c], rowY + 4, cells[c], { fontSize: '14px', color: cellColors[c] }, D);
             }
 
             // Row click zone (expand)
@@ -479,11 +479,11 @@ export default class CharacterSheetScene extends Phaser.Scene {
                 this._contentGfx.lineStyle(1, this._elementColorHex(sp.element), 0.3);
                 this._contentGfx.strokeRect(PX + 20, rowY, PW - 36, expH);
                 this._addText(PX + 28, rowY + 4, sp.description || '—', {
-                    fontSize: '10px', color: '#ccddee', wordWrap: { width: PW - 100 },
+                    fontSize: '14px', color: '#ccddee', wordWrap: { width: PW - 100 },
                 }, D);
                 if (sp.lore) {
                     this._addText(PX + 28, rowY + 30, `"${sp.lore}"`, {
-                        fontSize: '10px', color: '#cc9944', fontStyle: 'italic', wordWrap: { width: PW - 100 },
+                        fontSize: '14px', color: '#cc9944', fontStyle: 'italic', wordWrap: { width: PW - 100 },
                     }, D);
                 }
                 rowY += expH + 2;
@@ -511,22 +511,22 @@ export default class CharacterSheetScene extends Phaser.Scene {
         let y = cY;
 
         // Section: active buffs / debuffs
-        this._addText(PX + 16, y, 'ACTIVE STATUS EFFECTS', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(PX + 16, y, 'ACTIVE STATUS EFFECTS', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
         y += 18;
 
         const effects = stats.activeEffects || [];
         if (effects.length === 0) {
-            this._addText(PX + 16, y, 'No active effects.', { fontSize: '12px', color: '#445566' }, D);
+            this._addText(PX + 16, y, 'No active effects.', { fontSize: '17px', color: '#445566' }, D);
             y += 22;
         } else {
             for (const ef of effects) {
                 if (y >= maxY) break;
                 const col = ef.isDebuff ? '#ff6644' : '#44ff88';
                 this._addText(PX + 16, y, `${ef.name || '?'} — ${ef.description || ''}`, {
-                    fontSize: '11px', color: col, wordWrap: { width: PW - 100 },
+                    fontSize: '15px', color: col, wordWrap: { width: PW - 100 },
                 }, D);
                 if (ef.duration != null) {
-                    this._addText(PX + PW - 80, y, `${ef.duration}t left`, { fontSize: '10px', color: '#7788aa' }, D);
+                    this._addText(PX + PW - 80, y, `${ef.duration}t left`, { fontSize: '14px', color: '#7788aa' }, D);
                 }
                 y += 22;
             }
@@ -538,17 +538,17 @@ export default class CharacterSheetScene extends Phaser.Scene {
         y += 14;
 
         // Section: permanent / variant bonuses
-        this._addText(PX + 16, y, 'PERMANENT BONUSES', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(PX + 16, y, 'PERMANENT BONUSES', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
         y += 16;
 
         if (classData?.variants) {
             const vKey  = stats.variant === 'Blighted' ? 'blighted' : 'pure';
             const vData = classData.variants[vKey];
             if (vData) {
-                this._addText(PX + 16, y, `${vData.name}: ${vData.bonusAbility?.name || ''}`, { fontSize: '12px', color: '#aaddff' }, D);
+                this._addText(PX + 16, y, `${vData.name}: ${vData.bonusAbility?.name || ''}`, { fontSize: '17px', color: '#aaddff' }, D);
                 y += 16;
                 this._addText(PX + 24, y, vData.bonusAbility?.description || '', {
-                    fontSize: '10px', color: '#aabbcc', wordWrap: { width: PW - 80 },
+                    fontSize: '14px', color: '#aabbcc', wordWrap: { width: PW - 80 },
                 }, D);
                 y += this._estHeight(vData.bonusAbility?.description || '', PW - 80, 10) + 10;
             }
@@ -556,7 +556,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
             for (const [stat, val] of Object.entries(mods)) {
                 if (y >= maxY) break;
                 this._addText(PX + 24, y, `${stat.charAt(0).toUpperCase() + stat.slice(1)} +${val} (variant bonus)`, {
-                    fontSize: '11px', color: '#aaffcc',
+                    fontSize: '15px', color: '#aaffcc',
                 }, D);
                 y += 18;
             }
@@ -568,18 +568,18 @@ export default class CharacterSheetScene extends Phaser.Scene {
         y += 14;
 
         // Section: equipment special abilities
-        this._addText(PX + 16, y, 'EQUIPMENT ABILITIES', { fontSize: '9px', color: '#7788aa', letterSpacing: 1 }, D);
+        this._addText(PX + 16, y, 'EQUIPMENT ABILITIES', { fontSize: '13px', color: '#7788aa', letterSpacing: 1 }, D);
         y += 16;
 
         const equipped = Object.values(equip).filter(Boolean);
         if (equipped.length === 0) {
-            this._addText(PX + 16, y, 'No equipment equipped.', { fontSize: '12px', color: '#445566' }, D);
+            this._addText(PX + 16, y, 'No equipment equipped.', { fontSize: '17px', color: '#445566' }, D);
         } else {
             for (const item of equipped) {
                 if (y >= maxY) break;
                 if (!item.specialAbility) continue;
                 this._addText(PX + 16, y, `${item.name}: ${item.specialAbility}`, {
-                    fontSize: '11px', color: '#ffdd88', wordWrap: { width: PW - 80 },
+                    fontSize: '15px', color: '#ffdd88', wordWrap: { width: PW - 80 },
                 }, D);
                 y += 20;
             }
@@ -592,7 +592,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
 
     _addText(x, y, text, style, depth) {
         const t = this.add.text(x, y, String(text), {
-            fontFamily: 'Georgia, serif', ...style,
+            fontFamily: 'Open Sans', ...style,
         }).setDepth(depth).setScrollFactor(0);
         this._contentTexts.push(t);
         return t;
@@ -608,7 +608,7 @@ export default class CharacterSheetScene extends Phaser.Scene {
         };
         draw(color);
         const txt = this.add.text(cx, cy, label, {
-            fontFamily: 'Georgia, serif', fontSize, color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize, color: '#ffffff',
             stroke: '#000', strokeThickness: 1,
         }).setOrigin(0.5).setDepth(depth + 1).setScrollFactor(0);
         const hit = this.add.zone(cx, cy, bw, bh)

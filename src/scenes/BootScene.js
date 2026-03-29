@@ -99,11 +99,11 @@ export default class BootScene extends Phaser.Scene {
         const fill = this.add.graphics();
 
         this.add.text(width / 2, y - 40, 'REALM OF NEXUS', {
-            fontFamily: 'monospace', fontSize: '24px', color: '#88aaff'
+            fontFamily: 'Open Sans', fontSize: '34px', color: '#88aaff'
         }).setOrigin(0.5);
 
         this.add.text(width / 2, y - 16, 'Loading...', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#aaaacc'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#aaaacc'
         }).setOrigin(0.5);
 
         this.load.on('progress', (value) => {

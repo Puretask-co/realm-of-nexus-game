@@ -48,7 +48,7 @@ export default class Enemy {
 
         // Name tag
         this._nameTag = scene.add.text(x, y - 26, definition.name || 'Enemy', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#cc6666',
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#cc6666',
             stroke: '#000000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(10);
 

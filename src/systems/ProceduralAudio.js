@@ -112,6 +112,79 @@ export class ProceduralAudio {
         this.eb.on('settings:volumeChanged', (data) => {
             this.setVolume(data.master, data.music, data.sfx);
         });
+
+        // ── Equipment ──────────────────────────────────────────────
+        this.eb.on('equipment:slotChanged', () => this.sfx('uiClick'));
+
+        // ── Companions ─────────────────────────────────────────────
+        this.eb.on('companion:recruited',   () => this.sfx('levelUp'));
+        this.eb.on('companion:bondChanged', () => this.sfx('questComplete'));
+
+        // ── Portal ─────────────────────────────────────────────────
+        this.eb.on('portal:enter', () => this.sfx('zoneDiscover'));
+
+        // ── Crafting ───────────────────────────────────────────────
+        this.eb.on('crafting:success',          () => this.sfx('levelUp'));
+        this.eb.on('crafting:recipeDiscovered', () => this.sfx('questComplete'));
+
+        // ── DSP overload ───────────────────────────────────────────
+        this.eb.on('dsp:overload', () => {
+            this.sfx('dspWarning');
+            this._playBoom();
+        });
+
+        // ── Tutorial / new game ────────────────────────────────────
+        this.eb.on('game:newGameStarted', () => this.sfx('zoneDiscover'));
+
+        // ── Home base ──────────────────────────────────────────────
+        this.eb.on('homebase:exit', () => this.sfx('zoneDiscover'));
+        this.eb.on('homebase:playerRested', () => {
+            this.sfx('levelUp');
+            this._playRestChime();
+        });
+    }
+
+    // ── Boom SFX (deep resonant, used for DSP overload) ───────────
+
+    _playBoom() {
+        try {
+            const ctx = this._ctx;
+            if (!ctx) return;
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(80, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 1.5);
+            gain.gain.setValueAtTime(0.6 * this.masterVolume, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+            osc.start();
+            osc.stop(ctx.currentTime + 1.5);
+        } catch {}
+    }
+
+    // ── Soft rest chime (home base rest) ──────────────────────────
+
+    _playRestChime() {
+        try {
+            const ctx = this._ctx;
+            if (!ctx) return;
+            const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+            notes.forEach((freq, i) => {
+                const osc  = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const s = ctx.currentTime + i * 0.18;
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.12 * this.masterVolume, s);
+                gain.gain.exponentialRampToValueAtTime(0.001, s + 1.2);
+                osc.connect(gain);
+                gain.connect(this._sfxGain);
+                osc.start(s);
+                osc.stop(s + 1.2);
+            });
+        } catch {}
     }
 
     // ── Volume control ────────────────────────────────────────────────

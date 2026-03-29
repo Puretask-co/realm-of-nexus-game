@@ -119,8 +119,8 @@ export class PortalSystem {
 
         // ── Label ──
         const label = scene.add.text(x, y - RADIUS - 14, `⬡ ${loc.name}`, {
-            fontFamily: 'Georgia, serif',
-            fontSize: '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color: '#ddeeff',
             stroke: '#000000',
             strokeThickness: 2

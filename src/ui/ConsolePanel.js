@@ -76,7 +76,7 @@ export class ConsolePanel {
     this.titleText = this.scene.add.text(
       this.panelX + 8, this.panelY + 4,
       'CONSOLE',
-      { fontSize: '10px', color: '#6688aa', fontFamily: 'monospace', fontStyle: 'bold' }
+      { fontSize: '14px', color: '#6688aa', fontFamily: 'Open Sans', fontStyle: 'bold' }
     ).setScrollFactor(0);
     this.container.add(this.titleText);
 
@@ -87,7 +87,7 @@ export class ConsolePanel {
     this.clearBtn = this.scene.add.text(
       this.panelX + this.panelWidth - 80, this.panelY + 4,
       '[CLEAR]',
-      { fontSize: '9px', color: '#667788', fontFamily: 'monospace' }
+      { fontSize: '13px', color: '#667788', fontFamily: 'Open Sans' }
     ).setScrollFactor(0).setInteractive({ useHandCursor: true });
     this.clearBtn.on('pointerdown', () => this.clear());
     this.clearBtn.on('pointerover', () => this.clearBtn.setColor('#aabbcc'));
@@ -98,7 +98,7 @@ export class ConsolePanel {
     this.pauseBtn = this.scene.add.text(
       this.panelX + this.panelWidth - 130, this.panelY + 4,
       '[PAUSE]',
-      { fontSize: '9px', color: '#667788', fontFamily: 'monospace' }
+      { fontSize: '13px', color: '#667788', fontFamily: 'Open Sans' }
     ).setScrollFactor(0).setInteractive({ useHandCursor: true });
     this.pauseBtn.on('pointerdown', () => this.togglePause());
     this.container.add(this.pauseBtn);
@@ -115,7 +115,7 @@ export class ConsolePanel {
     this.promptText = this.scene.add.text(
       this.panelX + 8, this.panelY + this.panelHeight - 16,
       '> _',
-      { fontSize: '10px', color: '#44ff44', fontFamily: 'monospace' }
+      { fontSize: '14px', color: '#44ff44', fontFamily: 'Open Sans' }
     ).setScrollFactor(0);
     this.container.add(this.promptText);
 
@@ -123,7 +123,7 @@ export class ConsolePanel {
     this.footerText = this.scene.add.text(
       this.panelX + this.panelWidth - 8, this.panelY + this.panelHeight - 16,
       '',
-      { fontSize: '9px', color: '#445566', fontFamily: 'monospace' }
+      { fontSize: '13px', color: '#445566', fontFamily: 'Open Sans' }
     ).setOrigin(1, 0).setScrollFactor(0);
     this.container.add(this.footerText);
 
@@ -190,10 +190,10 @@ export class ConsolePanel {
 
     for (const level of levels) {
       const btn = this.scene.add.text(bx, this.panelY + 4, level, {
-        fontSize: '9px',
+        fontSize: '13px',
         color: this.minLevel === level || (level === 'ALL' && this.minLevel === 'TRACE')
           ? '#ffffff' : colors[level],
-        fontFamily: 'monospace'
+        fontFamily: 'Open Sans'
       }).setScrollFactor(0).setInteractive({ useHandCursor: true });
 
       btn.on('pointerdown', () => {
@@ -278,7 +278,7 @@ export class ConsolePanel {
     const timeText = this.scene.add.text(
       this.panelX + 4, y,
       entry.time,
-      { fontSize: '9px', color: '#445566', fontFamily: 'monospace' }
+      { fontSize: '13px', color: '#445566', fontFamily: 'Open Sans' }
     ).setScrollFactor(0);
     this.logContainer.add(timeText);
 
@@ -286,7 +286,7 @@ export class ConsolePanel {
     const levelText = this.scene.add.text(
       this.panelX + 80, y,
       `[${entry.level.padEnd(5)}]`,
-      { fontSize: '9px', color, fontFamily: 'monospace' }
+      { fontSize: '13px', color, fontFamily: 'Open Sans' }
     ).setScrollFactor(0);
     this.logContainer.add(levelText);
 
@@ -295,7 +295,7 @@ export class ConsolePanel {
       const catText = this.scene.add.text(
         this.panelX + 136, y,
         `[${entry.category}]`,
-        { fontSize: '9px', color: '#6688aa', fontFamily: 'monospace' }
+        { fontSize: '13px', color: '#6688aa', fontFamily: 'Open Sans' }
       ).setScrollFactor(0);
       this.logContainer.add(catText);
     }
@@ -311,7 +311,7 @@ export class ConsolePanel {
 
     const msgText = this.scene.add.text(
       msgX, y, msg,
-      { fontSize: '9px', color: entry.level === 'ERROR' || entry.level === 'FATAL' ? color : '#ccccdd', fontFamily: 'monospace' }
+      { fontSize: '13px', color: entry.level === 'ERROR' || entry.level === 'FATAL' ? color : '#ccccdd', fontFamily: 'Open Sans' }
     ).setScrollFactor(0);
     this.logContainer.add(msgText);
 

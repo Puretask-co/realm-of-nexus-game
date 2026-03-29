@@ -36,8 +36,8 @@ export default class WorldMapScene extends Phaser.Scene {
 
         // ── Title ─────────────────────────────────────────────────────────
         this.add.text(W / 2, 32, 'THE VERDANCE', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '32px',
+            fontFamily: 'Open Sans',
+            fontSize: '45px',
             color: '#d4a843',
             stroke: '#000000',
             strokeThickness: 4,
@@ -45,8 +45,8 @@ export default class WorldMapScene extends Phaser.Scene {
         }).setOrigin(0.5, 0).setDepth(510).setScrollFactor(0);
 
         this.add.text(W / 2, 72, 'WORLD MAP', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '14px',
+            fontFamily: 'Open Sans',
+            fontSize: '20px',
             color: '#7aaccf',
             letterSpacing: 6
         }).setOrigin(0.5, 0).setDepth(510).setScrollFactor(0);
@@ -77,8 +77,8 @@ export default class WorldMapScene extends Phaser.Scene {
         // ── Tooltip container (built once, hidden by default) ─────────────
         this._tooltipBg = this.add.graphics().setDepth(530).setScrollFactor(0);
         this._tooltip = this.add.text(0, 0, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#e0e8f0',
             wordWrap: { width: 240 },
             lineSpacing: 4
@@ -309,7 +309,7 @@ export default class WorldMapScene extends Phaser.Scene {
 
         // Zone name label
         const labelStyle = {
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'Open Sans',
             fontSize: isEndgame ? '10px' : '11px',
             color: isCurrent ? '#ffd700' : '#c8d8e8',
             stroke: '#050510',
@@ -322,8 +322,8 @@ export default class WorldMapScene extends Phaser.Scene {
         // "YOU ARE HERE" indicator
         if (isCurrent) {
             this.add.text(loc.x, loc.y - RADIUS - 16, '▼ HERE', {
-                fontFamily: 'monospace',
-                fontSize: '9px',
+                fontFamily: 'Open Sans',
+                fontSize: '13px',
                 color: '#ffd700',
                 stroke: '#000000',
                 strokeThickness: 2,
@@ -450,8 +450,8 @@ export default class WorldMapScene extends Phaser.Scene {
         const LY = H - 16 - entries.length * 20 - 14;
 
         this.add.text(LX, LY, 'LEGEND', {
-            fontFamily: 'monospace',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#d4a843',
             letterSpacing: 2
         }).setDepth(510).setScrollFactor(0);
@@ -464,16 +464,16 @@ export default class WorldMapScene extends Phaser.Scene {
             legendGfx.lineStyle(1, 0x6688aa, 0.6);
             legendGfx.strokeRect(LX, ey + 2, 12, 12);
             this.add.text(LX + 18, ey + 2, entry.label, {
-                fontFamily: 'monospace',
-                fontSize: '10px',
+                fontFamily: 'Open Sans',
+                fontSize: '14px',
                 color: '#99aabb',
             }).setDepth(511).setScrollFactor(0);
         });
 
         // Current zone indicator in legend footer
         this.add.text(LX, H - 14, `Current zone: ${this._currentZone.replace(/_/g, ' ')}`, {
-            fontFamily: 'monospace',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#ffd700',
         }).setDepth(511).setScrollFactor(0);
     }
@@ -495,8 +495,8 @@ export default class WorldMapScene extends Phaser.Scene {
         drawBtn(false);
 
         this.add.text(bx + BTN_W / 2, by + BTN_H / 2, '✕  CLOSE', {
-            fontFamily: 'monospace',
-            fontSize: '12px',
+            fontFamily: 'Open Sans',
+            fontSize: '17px',
             color: '#ffaaaa',
         }).setOrigin(0.5).setDepth(521).setScrollFactor(0);
 
@@ -510,8 +510,8 @@ export default class WorldMapScene extends Phaser.Scene {
 
         // Hint text
         this.add.text(W - 16, by + BTN_H + 8, 'M / ESC to close', {
-            fontFamily: 'monospace',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#445566',
         }).setOrigin(1, 0).setDepth(510).setScrollFactor(0);
     }

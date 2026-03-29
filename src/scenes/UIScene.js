@@ -8,6 +8,7 @@ import { SpellbookPanel } from '../ui/SpellbookPanel.js';
 import { StashPanel } from '../ui/StashPanel.js';
 import { InventoryPanel } from '../ui/InventoryPanel.js';
 import GameInfoPanel from '../ui/GameInfoPanel.js';
+import CompanionPanel from '../ui/CompanionPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -56,9 +57,11 @@ export default class UIScene extends Phaser.Scene {
         this.stashPanel = new StashPanel(this);
         this.inventoryPanel = new InventoryPanel(this, this._makeMinimalUI());
         this.gameInfoPanel = new GameInfoPanel(this);
+        this.companionPanel = new CompanionPanel(this);
 
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
         this.input.keyboard.on('keydown-TAB', () => this.gameInfoPanel.toggle());
+        this.input.keyboard.on('keydown-P', () => this.companionPanel.toggle());
         this.input.keyboard.on('keydown-I', () => this._toggleInventory());
         this.input.keyboard.on('keydown-C', () => {
             if (this.scene.isActive('CharacterSheetScene')) {
@@ -153,14 +156,14 @@ export default class UIScene extends Phaser.Scene {
         overlay.fillRect(0, 0, width, height);
 
         const title = this.add.text(width / 2, 120, name, {
-            fontFamily: 'monospace', fontSize: '28px', color: '#ffcc88',
+            fontFamily: 'Open Sans', fontSize: '39px', color: '#ffcc88',
             stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5).setDepth(20001);
         const sub = this.add.text(width / 2, 165, variationText, {
-            fontFamily: 'monospace', fontSize: '14px', color: '#8888aa'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#8888aa'
         }).setOrigin(0.5).setDepth(20001);
         const body = this.add.text(width / 2, 240, desc, {
-            fontFamily: 'monospace', fontSize: '16px', color: '#ccccdd',
+            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccccdd',
             wordWrap: { width: width - 120 }, align: 'center'
         }).setOrigin(0.5, 0).setDepth(20001);
 
@@ -169,7 +172,7 @@ export default class UIScene extends Phaser.Scene {
         btnBg.fillStyle(0x3366aa, 0.9);
         btnBg.fillRoundedRect(width / 2 - 100, btnY - 20, 200, 44, 8);
         const btnText = this.add.text(width / 2, btnY + 2, 'Continue', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '25px', color: '#ffffff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(20002);
         const hitZone = this.add.zone(width / 2, btnY + 2, 200, 44).setInteractive({ useHandCursor: true }).setDepth(20002);
@@ -193,7 +196,7 @@ export default class UIScene extends Phaser.Scene {
         const PHASE_COLORS = { blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd' };
 
         this.uiElements.phaseLabel = this.add.text(640, 16, 'BLUE PHASE', {
-            fontFamily: 'monospace', fontSize: '16px', color: PHASE_COLORS.blue,
+            fontFamily: 'Open Sans', fontSize: '22px', color: PHASE_COLORS.blue,
             stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5, 0).setDepth(10000);
 
@@ -231,7 +234,7 @@ export default class UIScene extends Phaser.Scene {
 
         // HP bar
         this.uiElements.hpLabel = this.add.text(x, y, 'HP', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ff6666'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ff6666'
         }).setDepth(10000);
 
         this.uiElements.hpBarBg = this.add.graphics().setDepth(10000);
@@ -243,12 +246,12 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.hpBarFill.fillRect(x + 25, y + 2, 148, 10);
 
         this.uiElements.hpText = this.add.text(x + 99, y + 7, '100/100', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#ffaaaa'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#ffaaaa'
         }).setOrigin(0.5).setDepth(10001);
 
         // Sap bar
         this.uiElements.sapLabel = this.add.text(x, y + 18, 'SAP', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#66aaff'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#66aaff'
         }).setDepth(10000);
 
         this.uiElements.sapBarBg = this.add.graphics().setDepth(10000);
@@ -261,23 +264,23 @@ export default class UIScene extends Phaser.Scene {
 
         // Class name
         this.uiElements.classText = this.add.text(x, y + 38, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#88aaff',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#88aaff',
             stroke: '#000', strokeThickness: 1
         }).setDepth(10000);
 
         // Level & XP
         this.uiElements.levelText = this.add.text(x, y + 52, 'Lv.1', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ffaa44',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
         this.uiElements.xpText = this.add.text(x + 40, y + 53, 'XP: 0', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaaaa'
         }).setDepth(10000);
 
         // Gold
         this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#ffcc44'
         }).setDepth(10000);
     }
 
@@ -367,12 +370,12 @@ export default class UIScene extends Phaser.Scene {
             bg.strokeRect(x, y, slotSize, slotSize);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#6688aa'
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#6688aa'
             }).setDepth(10001);
 
             // Spell name label (updated dynamically)
             const nameLabel = this.add.text(x + slotSize / 2, y + slotSize - 4, this._spellNames[i], {
-                fontFamily: 'monospace', fontSize: '8px', color: '#888888'
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#888888'
             }).setOrigin(0.5, 1).setDepth(10001);
 
             const cooldownOverlay = this.add.graphics().setDepth(10001);
@@ -410,14 +413,14 @@ export default class UIScene extends Phaser.Scene {
         const y = 160;
 
         this.uiElements.questTitle = this.add.text(x, y, '', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ffaa44',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
         this.uiElements.questObjectives = [];
         for (let i = 0; i < 4; i++) {
             const obj = this.add.text(x + 8, y + 18 + i * 16, '', {
-                fontFamily: 'monospace', fontSize: '10px', color: '#aaaaaa',
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaaaa',
                 stroke: '#000', strokeThickness: 1
             }).setDepth(10000);
             this.uiElements.questObjectives.push(obj);
@@ -478,7 +481,7 @@ export default class UIScene extends Phaser.Scene {
         const y = 80; // below HP + SAP bars
 
         this.uiElements.dspLabel = this.add.text(x, y, 'DSP', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#88ddff'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#88ddff'
         }).setDepth(10000);
 
         this.uiElements.dspBarBg = this.add.graphics().setDepth(10000);
@@ -488,11 +491,11 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.dspBarFill = this.add.graphics().setDepth(10000);
 
         this.uiElements.dspValueText = this.add.text(x + 105, y + 7, '100/100', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#88ddff'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#88ddff'
         }).setOrigin(0.5).setDepth(10001);
 
         this.uiElements.dspWarning = this.add.text(x + 185, y + 7, '', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#ff4444',
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#ff4444',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0, 0.5).setDepth(10001);
 
@@ -550,7 +553,7 @@ export default class UIScene extends Phaser.Scene {
         this._journalBg.strokeRoundedRect(jx, jy, jw, jh, 10);
 
         this._journalTitle = this.add.text(width / 2, jy + 22, 'QUEST JOURNAL  [J] close', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#ffaa44',
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(15001);
 
@@ -559,25 +562,25 @@ export default class UIScene extends Phaser.Scene {
         this._journalDivGfx.lineBetween(jx + 16, jy + 42, jx + jw - 16, jy + 42);
 
         this._journalActiveLabel = this.add.text(jx + 16, jy + 52, 'Active Quest', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#888888'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#888888'
         }).setDepth(15001);
 
         this._journalQuestName = this.add.text(jx + 16, jy + 68, '—', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#ffcc66',
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#ffcc66',
             stroke: '#000', strokeThickness: 1
         }).setDepth(15001);
 
         this._journalObjectiveLines = [];
         for (let i = 0; i < 6; i++) {
             const line = this.add.text(jx + 24, jy + 90 + i * 18, '', {
-                fontFamily: 'monospace', fontSize: '11px', color: '#aaaaaa',
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#aaaaaa',
                 stroke: '#000', strokeThickness: 1
             }).setDepth(15001);
             this._journalObjectiveLines.push(line);
         }
 
         this._journalHint = this.add.text(width / 2, jy + jh - 18, 'Press J to toggle journal', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#445566'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#445566'
         }).setOrigin(0.5).setDepth(15001);
 
         this._journalElements = [
@@ -624,7 +627,7 @@ export default class UIScene extends Phaser.Scene {
 
     _createLocationIndicator() {
         this.uiElements.locationText = this.add.text(640, 700, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#888888',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#888888',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5, 1).setDepth(10000).setAlpha(0);
     }
@@ -651,7 +654,7 @@ export default class UIScene extends Phaser.Scene {
         const colorStr = `#${color.toString(16).padStart(6, '0')}`;
 
         const notification = this.add.text(640, isLarge ? 360 : y, text, {
-            fontFamily: 'monospace',
+            fontFamily: 'Open Sans',
             fontSize: isLarge ? '20px' : '12px',
             color: colorStr,
             stroke: '#000000',
@@ -700,7 +703,7 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.minimapBg.strokeRect(x, y, size, size);
 
         this.add.text(x + size / 2, y + size / 2, 'MAP', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#334466'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#334466'
         }).setOrigin(0.5).setDepth(10001);
     }
 
@@ -710,7 +713,7 @@ export default class UIScene extends Phaser.Scene {
 
     _createFPSCounter() {
         this.uiElements.fpsText = this.add.text(1260, 708, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#446644'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#446644'
         }).setOrigin(1, 1).setDepth(10002);
     }
 
@@ -757,7 +760,7 @@ export default class UIScene extends Phaser.Scene {
                 container.add(bg);
                 if (opts.title) {
                     const title = scene.add.text(w / 2, 16, opts.title, {
-                        fontFamily: 'monospace', fontSize: '14px', color: '#aaccff'
+                        fontFamily: 'Open Sans', fontSize: '20px', color: '#aaccff'
                     }).setOrigin(0.5);
                     container.add(title);
                 }
@@ -781,7 +784,7 @@ export default class UIScene extends Phaser.Scene {
                 bg.fillStyle(0x224466, 0.9);
                 bg.fillRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 4);
                 const txt = scene.add.text(x, y, label, {
-                    fontFamily: 'monospace', fontSize: opts.fontSize || '11px', color: '#ffffff'
+                    fontFamily: 'Open Sans', fontSize: opts.fontSize || '11px', color: '#ffffff'
                 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
                 if (opts.onClick) txt.on('pointerdown', opts.onClick);
                 return txt;

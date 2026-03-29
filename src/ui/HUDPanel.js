@@ -47,7 +47,7 @@ export class HUDPanel {
 
     // Level display
     this.levelText = this.scene.add.text(240, 58, 'Lv.1', {
-      fontSize: '12px', fill: '#ffaa00', fontFamily: 'monospace'
+      fontSize: '17px', fill: '#ffaa00', fontFamily: 'Open Sans'
     });
     this.container.add(this.levelText);
 
@@ -80,7 +80,7 @@ export class HUDPanel {
     this.setActiveSapPhase('blue');
 
     this.sapPhaseText = this.scene.add.text(0, 20, 'Blue Phase', {
-      fontSize: '10px', fill: '#4a9eff', fontFamily: 'monospace'
+      fontSize: '14px', fill: '#4a9eff', fontFamily: 'Open Sans'
     }).setOrigin(0.5);
     this.sapPhaseContainer.add(this.sapPhaseText);
 
@@ -99,7 +99,7 @@ export class HUDPanel {
 
       // Key label
       const keyLabel = this.scene.add.text(slotStartX + i * 54 + 24, slotY - 8, `${i + 1}`, {
-        fontSize: '10px', fill: '#888888', fontFamily: 'monospace'
+        fontSize: '14px', fill: '#888888', fontFamily: 'Open Sans'
       }).setOrigin(0.5);
       this.container.add(keyLabel);
     }
@@ -114,12 +114,12 @@ export class HUDPanel {
     this.questTrackerContainer.add(this.questTrackerBg);
 
     this.questTrackerTitle = this.scene.add.text(-248, 8, 'Active Quest', {
-      fontSize: '12px', fill: '#ffaa00', fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '17px', fill: '#ffaa00', fontFamily: 'Open Sans', fontStyle: 'bold'
     });
     this.questTrackerContainer.add(this.questTrackerTitle);
 
     this.questTrackerText = this.scene.add.text(-248, 26, 'No active quests', {
-      fontSize: '11px', fill: '#aaaaaa', fontFamily: 'monospace',
+      fontSize: '15px', fill: '#aaaaaa', fontFamily: 'Open Sans',
       wordWrap: { width: 240 }
     });
     this.questTrackerContainer.add(this.questTrackerText);
@@ -136,7 +136,7 @@ export class HUDPanel {
     this.minimapContainer.add(minimapBg);
 
     const minimapLabel = this.scene.add.text(0, 145, 'Minimap', {
-      fontSize: '10px', fill: '#666666', fontFamily: 'monospace'
+      fontSize: '14px', fill: '#666666', fontFamily: 'Open Sans'
     }).setOrigin(0.5);
     this.minimapContainer.add(minimapLabel);
   }

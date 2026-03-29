@@ -59,7 +59,7 @@ export class InspectorPanel {
       this.panelX + this.panelPadding,
       this.panelY + 6,
       'Inspector',
-      { fontSize: '13px', fill: this.headerColor, fontFamily: 'monospace', fontStyle: 'bold' }
+      { fontSize: '18px', fill: this.headerColor, fontFamily: 'Open Sans', fontStyle: 'bold' }
     );
     this.container.add(this.titleText);
 
@@ -233,7 +233,7 @@ export class InspectorPanel {
     this.fieldContainer.add(sectionBg);
 
     const text = this.scene.add.text(x + 2, y, label, {
-      fontSize: '11px', fill: this.headerColor, fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '15px', fill: this.headerColor, fontFamily: 'Open Sans', fontStyle: 'bold'
     });
     this.fieldContainer.add(text);
   }
@@ -241,7 +241,7 @@ export class InspectorPanel {
   addFieldRow(x, y, label, value, type, onChange) {
     // Label
     const labelText = this.scene.add.text(x, y, label, {
-      fontSize: '11px', fill: this.labelColor, fontFamily: 'monospace'
+      fontSize: '15px', fill: this.labelColor, fontFamily: 'Open Sans'
     });
     this.fieldContainer.add(labelText);
 
@@ -257,7 +257,7 @@ export class InspectorPanel {
 
     // Value text
     const valueText = this.scene.add.text(valueX + 4, y, String(value), {
-      fontSize: '11px', fill: this.valueColor, fontFamily: 'monospace'
+      fontSize: '15px', fill: this.valueColor, fontFamily: 'Open Sans'
     });
     this.fieldContainer.add(valueText);
 

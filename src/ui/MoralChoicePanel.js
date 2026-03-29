@@ -57,8 +57,8 @@ export class MoralChoicePanel {
 
         // Title text
         this._titleText = s.add.text(cx, cy - ph / 2 + 28, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '20px',
+            fontFamily: 'Open Sans',
+            fontSize: '28px',
             color: '#ffd700',
             stroke: '#000000',
             strokeThickness: 3
@@ -66,8 +66,8 @@ export class MoralChoicePanel {
 
         // Description text (wraps inside panel)
         this._descText = s.add.text(cx, cy - ph / 2 + 80, '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#e0e0e0',
             wordWrap: { width: pw - 60 },
             align: 'center'
@@ -264,8 +264,8 @@ class ChoiceButton {
 
         // Label text (left-aligned)
         this._labelText = scene.add.text(bx + 16, cy - 9, choiceData.label || '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '14px',
+            fontFamily: 'Open Sans',
+            fontSize: '20px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2
@@ -273,8 +273,8 @@ class ChoiceButton {
 
         // Consequence text (smaller, italic-ish — right side, dimmed by default)
         this._consequenceText = scene.add.text(bx + 16, cy + 8, choiceData.consequence || '', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '10px',
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
             color: '#aaaaaa',
             wordWrap: { width: bw - 230 }
         }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(204).setAlpha(0.7);
@@ -283,8 +283,8 @@ class ChoiceButton {
         const impact = choiceData.impact || {};
         const impactLines = this._buildImpactLines(impact);
         this._impactText = scene.add.text(bx + bw - 16, cy, impactLines.text, {
-            fontFamily: 'monospace',
-            fontSize: '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color: impactLines.color,
             align: 'right'
         }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(204);

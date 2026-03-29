@@ -106,9 +106,9 @@ export class SkillTreePanel {
     for (const tab of tabConfig) {
       const color = treeColors[tab.key] ?? this.branches[tab.key]?.color ?? 0xffaa00;
       const tabEl = this.scene.add.text(tab.x, 50, tab.label, {
-        fontSize: '12px',
+        fontSize: '17px',
         fill: `#${color.toString(16).padStart(6, '0')}`,
-        fontFamily: 'monospace',
+        fontFamily: 'Open Sans',
         fontStyle: 'bold'
       }).setOrigin(0.5).setInteractive();
 
@@ -121,7 +121,7 @@ export class SkillTreePanel {
 
     // Talent points (from ProgressionSystem) or legacy points
     this.pointsText = this.scene.add.text(panelWidth - 20, 50, 'Points: 0', {
-      fontSize: '14px', fill: '#ffaa00', fontFamily: 'monospace'
+      fontSize: '20px', fill: '#ffaa00', fontFamily: 'Open Sans'
     }).setOrigin(1, 0.5);
     this.panel.add(this.pointsText);
 
@@ -140,18 +140,18 @@ export class SkillTreePanel {
     this.panel.add(this.detailBg);
 
     this.detailTitle = this.scene.add.text(20, panelHeight - 92, '', {
-      fontSize: '14px', fill: '#ffffff', fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '20px', fill: '#ffffff', fontFamily: 'Open Sans', fontStyle: 'bold'
     });
     this.panel.add(this.detailTitle);
 
     this.detailDesc = this.scene.add.text(20, panelHeight - 72, '', {
-      fontSize: '11px', fill: '#aaaaaa', fontFamily: 'monospace',
+      fontSize: '15px', fill: '#aaaaaa', fontFamily: 'Open Sans',
       wordWrap: { width: panelWidth - 50 }
     });
     this.panel.add(this.detailDesc);
 
     this.detailCost = this.scene.add.text(panelWidth - 25, panelHeight - 92, '', {
-      fontSize: '12px', fill: '#ffaa00', fontFamily: 'monospace'
+      fontSize: '17px', fill: '#ffaa00', fontFamily: 'Open Sans'
     }).setOrigin(1, 0);
     this.panel.add(this.detailCost);
   }
@@ -282,24 +282,24 @@ export class SkillTreePanel {
       container.add(bg);
 
       const nameText = this.scene.add.text(12, 8, talent.name, {
-        fontSize: '13px',
+        fontSize: '18px',
         fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#666666'),
-        fontFamily: 'monospace',
+        fontFamily: 'Open Sans',
         fontStyle: 'bold'
       });
       container.add(nameText);
 
       const levelLabel = this.scene.add.text(nodeW - 12, 8, `Lv.${talent.unlockLevel || 1}`, {
-        fontSize: '11px',
+        fontSize: '15px',
         fill: levelOk ? '#88aacc' : '#664444',
-        fontFamily: 'monospace'
+        fontFamily: 'Open Sans'
       }).setOrigin(1, 0);
       container.add(levelLabel);
 
       const descText = this.scene.add.text(12, 28, (talent.description || '').substring(0, 48) + ((talent.description || '').length > 48 ? '…' : ''), {
-        fontSize: '10px',
+        fontSize: '14px',
         fill: '#888899',
-        fontFamily: 'monospace'
+        fontFamily: 'Open Sans'
       });
       container.add(descText);
 
@@ -381,9 +381,9 @@ export class SkillTreePanel {
 
     // Skill icon or initial
     const iconText = this.scene.add.text(0, -2, skill.name.charAt(0), {
-      fontSize: '18px',
+      fontSize: '25px',
       fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#555555'),
-      fontFamily: 'monospace',
+      fontFamily: 'Open Sans',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     container.add(iconText);
@@ -392,16 +392,16 @@ export class SkillTreePanel {
     if (skill.maxRank > 1) {
       const rankText = this.scene.add.text(size / 2 - 2, size / 2 - 2,
         `${skill.currentRank}/${skill.maxRank}`, {
-          fontSize: '8px', fill: '#aaaaaa', fontFamily: 'monospace'
+          fontSize: '11px', fill: '#aaaaaa', fontFamily: 'Open Sans'
         }).setOrigin(1, 1);
       container.add(rankText);
     }
 
     // Skill name below node
     const nameText = this.scene.add.text(0, size / 2 + 6, skill.name, {
-      fontSize: '9px',
+      fontSize: '13px',
       fill: unlocked ? '#ffffff' : '#888888',
-      fontFamily: 'monospace'
+      fontFamily: 'Open Sans'
     }).setOrigin(0.5, 0);
     container.add(nameText);
 

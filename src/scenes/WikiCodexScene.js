@@ -1223,15 +1223,15 @@ export default class WikiCodexScene extends Phaser.Scene {
     g.lineBetween(0, this.TITLE_BAR_H, width, this.TITLE_BAR_H);
 
     this.add.text(this.PAD, this.TITLE_BAR_H / 2, 'VERDANCE CODEX', {
-      fontFamily: 'monospace',
-      fontSize: '18px',
+      fontFamily: 'Open Sans',
+      fontSize: '25px',
       color: this.ACCENT_HEX,
       fontStyle: 'bold',
     }).setOrigin(0, 0.5).setDepth(2);
 
     this.add.text(width - this.PAD, this.TITLE_BAR_H / 2, '[W] or [ESC] to close', {
-      fontFamily: 'monospace',
-      fontSize: '12px',
+      fontFamily: 'Open Sans',
+      fontSize: '17px',
       color: this.TEXT_MUTED,
     }).setOrigin(1, 0.5).setDepth(2);
   }
@@ -1269,8 +1269,8 @@ export default class WikiCodexScene extends Phaser.Scene {
       }
 
       const catLabel = this.add.text(this.PAD, yOff + this.CAT_ITEM_H / 2, cat, {
-        fontFamily: 'monospace',
-        fontSize: '13px',
+        fontFamily: 'Open Sans',
+        fontSize: '18px',
         color: isCat ? catHex : this.TEXT_MUTED,
         fontStyle: isCat ? 'bold' : 'normal',
       }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
@@ -1307,8 +1307,8 @@ export default class WikiCodexScene extends Phaser.Scene {
           }
 
           const sub = this.add.text(this.PAD + 12, yOff + this.SUBITEM_H / 2, labelText, {
-            fontFamily: 'monospace',
-            fontSize: '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color: textColor,
           }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
 
@@ -1368,17 +1368,17 @@ export default class WikiCodexScene extends Phaser.Scene {
     );
     this._contentContainer.add(
       this.add.text(w / 2, h / 2 - 48, '?', {
-        fontFamily: 'monospace', fontSize: '64px', color: this.TEXT_MUTED,
+        fontFamily: 'Open Sans', fontSize: '90px', color: this.TEXT_MUTED,
       }).setOrigin(0.5)
     );
     this._contentContainer.add(
       this.add.text(w / 2, h / 2 + 16, entry.title, {
-        fontFamily: 'monospace', fontSize: '20px', color: this.TEXT_MUTED,
+        fontFamily: 'Open Sans', fontSize: '28px', color: this.TEXT_MUTED,
       }).setOrigin(0.5)
     );
     this._contentContainer.add(
       this.add.text(w / 2, h / 2 + 56, 'Discover this in-game to unlock', {
-        fontFamily: 'monospace', fontSize: '13px', color: '#555',
+        fontFamily: 'Open Sans', fontSize: '18px', color: '#555',
       }).setOrigin(0.5)
     );
   }
@@ -1395,7 +1395,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
         case 'heading': {
           const t = this.add.text(CPAD, y, block.text, {
-            fontFamily: 'monospace', fontSize: '22px',
+            fontFamily: 'Open Sans', fontSize: '31px',
             color: catHex, fontStyle: 'bold',
             wordWrap: { width: CWIDTH },
           });
@@ -1412,7 +1412,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
         case 'badge': {
           const b = this.add.text(CPAD, y, block.text, {
-            fontFamily: 'monospace', fontSize: '11px',
+            fontFamily: 'Open Sans', fontSize: '15px',
             color: '#0d1117', backgroundColor: catHex,
             padding: { x: 8, y: 4 },
           });
@@ -1423,7 +1423,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
         case 'subheading': {
           const t = this.add.text(CPAD, y, block.text, {
-            fontFamily: 'monospace', fontSize: '14px',
+            fontFamily: 'Open Sans', fontSize: '20px',
             color: catHex, fontStyle: 'bold',
             wordWrap: { width: CWIDTH },
           });
@@ -1434,7 +1434,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
         case 'body': {
           const t = this.add.text(CPAD, y, block.text, {
-            fontFamily: 'monospace', fontSize: '12px',
+            fontFamily: 'Open Sans', fontSize: '17px',
             color: this.TEXT_WHITE,
             wordWrap: { width: CWIDTH },
             lineSpacing: 4,
@@ -1446,7 +1446,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
         case 'tip': {
           const label = this.add.text(CPAD, y, ' TIP ', {
-            fontFamily: 'monospace', fontSize: '10px',
+            fontFamily: 'Open Sans', fontSize: '14px',
             color: '#0d1117', backgroundColor: this.ACCENT_HEX,
             padding: { x: 4, y: 3 },
           });
@@ -1454,7 +1454,7 @@ export default class WikiCodexScene extends Phaser.Scene {
 
           const tipW = CWIDTH - label.width - 10;
           const text = this.add.text(CPAD + label.width + 8, y, block.text, {
-            fontFamily: 'monospace', fontSize: '11px',
+            fontFamily: 'Open Sans', fontSize: '15px',
             color: this.ACCENT_HEX, fontStyle: 'italic',
             wordWrap: { width: Math.max(tipW, 100) },
             lineSpacing: 3,

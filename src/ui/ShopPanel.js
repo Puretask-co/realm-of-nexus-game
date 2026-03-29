@@ -28,28 +28,28 @@ export class ShopPanel {
 
         this._bg = s.add.graphics().setDepth(16000);
         this._title = s.add.text(width / 2, py + 22, 'SHOP', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#ffcc44',
+            fontFamily: 'Open Sans', fontSize: '25px', color: '#ffcc44',
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(16001);
 
         this._goldText = s.add.text(px + 16, py + 46, 'Gold: 0', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffcc44'
         }).setDepth(16001);
 
         this._closeBtn = this._makeButton(px + pw - 30, py + 14, 24, 22, 'X', 0x661111, 0xaa2222, () => this.hide());
 
         this._feedbackText = s.add.text(width / 2, py + ph - 20, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#66ffaa'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#66ffaa'
         }).setOrigin(0.5).setDepth(16002);
 
         this._itemRows = [];
         for (let i = 0; i < 8; i++) {
             const ry = py + 72 + i * 48;
             const nameTxt = s.add.text(px + 16, ry + 4, '', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#dddddd'
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#dddddd'
             }).setDepth(16001);
             const priceTxt = s.add.text(px + pw - 110, ry + 4, '', {
-                fontFamily: 'monospace', fontSize: '11px', color: '#ffcc44'
+                fontFamily: 'Open Sans', fontSize: '15px', color: '#ffcc44'
             }).setDepth(16001);
             const buyBtn = this._makeButton(px + pw - 60, ry + 12, 50, 26, 'BUY', 0x224466, 0x3366aa, () => this._buyItem(i));
             this._itemRows.push({ nameTxt, priceTxt, buyBtn });
@@ -70,7 +70,7 @@ export class ShopPanel {
         const draw = (c) => { bg.clear(); bg.fillStyle(c, 0.9); bg.fillRoundedRect(bx, by, bw, bh, 4); };
         draw(color);
         const txt = s.add.text(cx, cy, label, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ffffff',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(16002);
         const hit = s.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true }).setDepth(16002);

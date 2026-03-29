@@ -60,8 +60,8 @@ export class StashPanel {
 
         // ── Title ──
         this._titleText = s.add.text(px + pw / 2, py + 18, 'VAULT', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '20px',
+            fontFamily: 'Open Sans',
+            fontSize: '28px',
             color: '#ffcc44',
             stroke: '#000000',
             strokeThickness: 3
@@ -69,8 +69,8 @@ export class StashPanel {
 
         // ── Subtitle ──
         this._subText = s.add.text(px + pw / 2, py + 40, '0 / 60 items stored', {
-            fontFamily: 'Georgia, serif',
-            fontSize: '11px',
+            fontFamily: 'Open Sans',
+            fontSize: '15px',
             color: '#888866'
         }).setOrigin(0.5, 0).setDepth(DEPTH + 2);
 
@@ -101,8 +101,8 @@ export class StashPanel {
 
                 // Item label (truncated, initially empty)
                 const lbl = s.add.text(sx + SLOT / 2, sy + SLOT / 2, '', {
-                    fontFamily: 'monospace',
-                    fontSize: '8px',
+                    fontFamily: 'Open Sans',
+                    fontSize: '11px',
                     color: '#cccccc',
                     wordWrap: { width: SLOT - 4 }
                 }).setOrigin(0.5).setDepth(DEPTH + 3);
@@ -268,7 +268,7 @@ export class StashPanel {
         const draw = (c) => { bg.clear(); bg.fillStyle(c, 0.9); bg.fillRoundedRect(bx, by, bw, bh, 4); };
         draw(color);
         const txt = s.add.text(cx, cy, label, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ffffff',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ffffff',
             stroke: '#000', strokeThickness: 1
         }).setOrigin(0.5).setDepth(DEPTH + 1);
         const hit = s.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true }).setDepth(DEPTH + 1);

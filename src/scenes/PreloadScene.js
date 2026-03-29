@@ -20,15 +20,15 @@ export class PreloadScene extends Phaser.Scene {
     progressBox.fillRect(width / 2 - 160, height / 2 - 15, 320, 30);
 
     const loadingText = this.add.text(width / 2, height / 2 - 40, 'Loading Verdance...', {
-      fontSize: '18px',
+      fontSize: '25px',
       fill: '#e0e0e0',
-      fontFamily: 'monospace'
+      fontFamily: 'Open Sans'
     }).setOrigin(0.5);
 
     const percentText = this.add.text(width / 2, height / 2, '0%', {
-      fontSize: '14px',
+      fontSize: '20px',
       fill: '#ffffff',
-      fontFamily: 'monospace'
+      fontFamily: 'Open Sans'
     }).setOrigin(0.5);
 
     this.load.on('progress', (value) => {

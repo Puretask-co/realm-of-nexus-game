@@ -33,7 +33,7 @@ export default class SettingsScene extends Phaser.Scene {
 
         // Title
         this.add.text(cx, py + 28, 'SETTINGS', {
-            fontFamily: 'Georgia, serif', fontSize: '20px',
+            fontFamily: 'Open Sans', fontSize: '28px',
             color: '#ccaaff', stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(20002);
 
@@ -60,7 +60,7 @@ export default class SettingsScene extends Phaser.Scene {
 
         // ── Difficulty toggle ─────────────────────────────────────────
         this.add.text(px + 30, rowY, 'Difficulty', {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#aaaacc'
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#aaaacc'
         }).setDepth(20002);
 
         const difficulties = ['Easy', 'Normal', 'Hard'];
@@ -75,7 +75,7 @@ export default class SettingsScene extends Phaser.Scene {
             };
             draw(isActive);
             const label = this.add.text(bx + 39, rowY + 10, d, {
-                fontFamily: 'monospace', fontSize: '12px', color: '#ffffff'
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#ffffff'
             }).setOrigin(0.5).setDepth(20003);
             const zone = this.add.zone(bx + 39, rowY + 10, 78, 28)
                 .setInteractive({ useHandCursor: true }).setDepth(20003);
@@ -96,7 +96,7 @@ export default class SettingsScene extends Phaser.Scene {
 
         // ── Fullscreen toggle ─────────────────────────────────────────
         this.add.text(px + 30, rowY, 'Fullscreen', {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#aaaacc'
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#aaaacc'
         }).setDepth(20002);
 
         const fsBox = this.add.graphics().setDepth(20002);
@@ -108,7 +108,7 @@ export default class SettingsScene extends Phaser.Scene {
         drawFs(this._prefs.fullscreen);
         this._fsLabel = this.add.text(px + pw - 60, rowY + 10,
             this._prefs.fullscreen ? 'ON' : 'OFF', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#ffffff'
+                fontFamily: 'Open Sans', fontSize: '17px', color: '#ffffff'
             }).setOrigin(0.5).setDepth(20003);
 
         const fsZone = this.add.zone(px + pw - 60, rowY + 10, 60, 28)
@@ -138,7 +138,7 @@ export default class SettingsScene extends Phaser.Scene {
         const depth = 20002;
 
         this.add.text(px, y, label, {
-            fontFamily: 'Georgia, serif', fontSize: '13px', color: '#aaaacc'
+            fontFamily: 'Open Sans', fontSize: '18px', color: '#aaaacc'
         }).setDepth(depth);
 
         const val = this._prefs[key] ?? 0.8;
@@ -162,7 +162,7 @@ export default class SettingsScene extends Phaser.Scene {
 
         // Value label
         const valText = this.add.text(cx + trackW / 2 + 18, trackY, `${Math.round(val * 100)}%`, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#888899'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#888899'
         }).setOrigin(0, 0.5).setDepth(depth + 1);
 
         // Thumb
@@ -206,7 +206,7 @@ export default class SettingsScene extends Phaser.Scene {
         const draw = (c) => { bg.clear(); bg.fillStyle(c, 0.9); bg.fillRoundedRect(bx, by, bw, bh, 6); };
         draw(color);
         this.add.text(cx, cy, label, {
-            fontFamily: 'monospace', fontSize: '14px', color: '#ffffff'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#ffffff'
         }).setOrigin(0.5).setDepth(20003);
         const zone = this.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true }).setDepth(20003);
         zone.on('pointerover', () => draw(hover));

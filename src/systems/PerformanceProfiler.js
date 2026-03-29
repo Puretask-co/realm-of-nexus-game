@@ -215,7 +215,7 @@ export default class PerformanceProfiler {
         let y = panelY + 8;
         const addLine = (text, color = '#44ff44') => {
             const t = this.scene.add.text(panelX + 8, y, text, {
-                fontFamily: 'monospace', fontSize: '11px', color,
+                fontFamily: 'Open Sans', fontSize: '15px', color,
                 stroke: '#000', strokeThickness: 1
             }).setDepth(100000).setScrollFactor(0);
             this._overlayTexts.push(t);

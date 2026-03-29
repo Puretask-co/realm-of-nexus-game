@@ -62,9 +62,9 @@ export class DialogueSystem {
       bgAlpha: 0.92,
       borderColor: 0x4a4a6e,
       portraitSize: 96,
-      fontSize: '16px',
+      fontSize: '22px',
       nameFontSize: '18px',
-      fontFamily: 'monospace'
+      fontFamily: 'Open Sans'
     };
 
     DialogueSystem.instance = this;
@@ -531,7 +531,7 @@ export class DialogueSystem {
       cfg.boxX + cfg.boxWidth - cfg.padding,
       cfg.boxY + cfg.boxHeight - cfg.padding,
       '[ Press Space ]',
-      { fontSize: '12px', fill: '#888888', fontFamily: cfg.fontFamily }
+      { fontSize: '17px', fill: '#888888', fontFamily: cfg.fontFamily }
     ).setOrigin(1, 1);
     this.continueIndicator.setVisible(false);
     this.container.add(this.continueIndicator);
@@ -636,7 +636,7 @@ export class DialogueSystem {
         cfg.boxX + 50, y,
         `${i + 1}. ${choice.text}`,
         {
-          fontSize: '14px',
+          fontSize: '20px',
           fill: cfg.choiceColor,
           fontFamily: cfg.fontFamily
         }

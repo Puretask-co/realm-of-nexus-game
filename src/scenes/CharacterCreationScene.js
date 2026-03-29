@@ -81,12 +81,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
         // Title
         const clsName = cls?.name || 'Adventurer';
         this.add.text(width / 2, 25, 'CHARACTER CREATION', {
-            fontFamily: 'monospace', fontSize: '24px', color: '#88aaff',
+            fontFamily: 'Open Sans', fontSize: '34px', color: '#88aaff',
             stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5);
 
         this.add.text(width / 2, 50, `Class: ${clsName}`, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#66aa88'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#66aa88'
         }).setOrigin(0.5);
 
         // ---- Left panel: Ancestry Selection ----
@@ -114,7 +114,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _buildAncestryPanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'CHOOSE ANCESTRY', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#ccaa88',
+            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccaa88',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
@@ -148,21 +148,21 @@ export default class CharacterCreationScene extends Phaser.Scene {
         const colorStr = `#${color.toString(16).padStart(6, '0')}`;
 
         container.add(this.add.text(w / 2, 15, ancestry.name, {
-            fontFamily: 'monospace', fontSize: '13px', color: colorStr,
+            fontFamily: 'Open Sans', fontSize: '18px', color: colorStr,
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5));
 
         // Description
         const desc = (ancestry.description || '').substring(0, 100) + '...';
         container.add(this.add.text(w / 2, 35, desc, {
-            fontFamily: 'monospace', fontSize: '7px', color: '#8888aa',
+            fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
             wordWrap: { width: w - 10 }, align: 'center', lineSpacing: 2
         }).setOrigin(0.5, 0));
 
         // Attribute modifiers
         const modY = 100;
         container.add(this.add.text(5, modY, 'Modifiers:', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaa88'
         }));
 
         const mods = ancestry.attributeModifiers || [];
@@ -171,7 +171,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
                 ? `+${mod.value} to any attribute`
                 : `+${mod.value} ${mod.attribute}`;
             container.add(this.add.text(10, modY + 14 + mi * 12, label, {
-                fontFamily: 'monospace', fontSize: '9px', color: colorStr
+                fontFamily: 'Open Sans', fontSize: '13px', color: colorStr
             }));
         });
 
@@ -179,11 +179,11 @@ export default class CharacterCreationScene extends Phaser.Scene {
         if (ancestry.specialAbility) {
             const abilY = modY + 14 + mods.length * 12 + 10;
             container.add(this.add.text(5, abilY, `Ability: ${ancestry.specialAbility.name}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#ffcc44'
+                fontFamily: 'Open Sans', fontSize: '13px', color: '#ffcc44'
             }));
             const abilDesc = (ancestry.specialAbility.description || '').substring(0, 80);
             container.add(this.add.text(5, abilY + 14, abilDesc, {
-                fontFamily: 'monospace', fontSize: '7px', color: '#8888aa',
+                fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
                 wordWrap: { width: w - 10 }, lineSpacing: 1
             }));
         }
@@ -220,12 +220,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _buildAttributePanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'ALLOCATE ATTRIBUTES', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#ccaa88',
+            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccaa88',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
         this._pointsText = this.add.text(x + w / 2, y + 22, `Points: ${this.pointsRemaining}`, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#88ff88'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#88ff88'
         }).setOrigin(0.5);
 
         const attrNames = ['Might', 'Agility', 'Resilience', 'Insight', 'Charisma'];
@@ -249,16 +249,16 @@ export default class CharacterCreationScene extends Phaser.Scene {
             const ay = y + 45 + i * 44;
 
             this.add.text(x + 10, ay, attr, {
-                fontFamily: 'monospace', fontSize: '12px', color: attrColors[attr]
+                fontFamily: 'Open Sans', fontSize: '17px', color: attrColors[attr]
             });
 
             this.add.text(x + 10, ay + 14, attrDescs[attr], {
-                fontFamily: 'monospace', fontSize: '7px', color: '#666688'
+                fontFamily: 'Open Sans', fontSize: '10px', color: '#666688'
             });
 
             // Value text
             this._attrTexts[attr] = this.add.text(x + w / 2, ay + 2, `${this.attributes[attr]}`, {
-                fontFamily: 'monospace', fontSize: '14px', color: '#ffffff'
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#ffffff'
             }).setOrigin(0.5);
 
             // Bar (store layout — Phaser Graphics has no reliable getBounds for redraw)
@@ -272,13 +272,13 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
             // - button
             const minusBtn = this.add.text(x + w - 60, ay + 2, '[-]', {
-                fontFamily: 'monospace', fontSize: '14px', color: '#ff6666'
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#ff6666'
             }).setInteractive({ useHandCursor: true });
             minusBtn.on('pointerdown', () => this._adjustAttribute(attr, -1));
 
             // + button
             const plusBtn = this.add.text(x + w - 25, ay + 2, '[+]', {
-                fontFamily: 'monospace', fontSize: '14px', color: '#66ff66'
+                fontFamily: 'Open Sans', fontSize: '20px', color: '#66ff66'
             }).setInteractive({ useHandCursor: true });
             plusBtn.on('pointerdown', () => this._adjustAttribute(attr, 1));
         });
@@ -336,7 +336,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _buildVariantPanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'PATH', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
@@ -360,10 +360,10 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
             const colorStr = `#${v.color.toString(16).padStart(6, '0')}`;
             this.add.text(vx + 8, vy + 4, v.name, {
-                fontFamily: 'monospace', fontSize: '10px', color: colorStr
+                fontFamily: 'Open Sans', fontSize: '14px', color: colorStr
             });
             this.add.text(vx + 8, vy + 17, v.desc, {
-                fontFamily: 'monospace', fontSize: '7px', color: '#8888aa'
+                fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa'
             });
 
             const hitZone = this.add.zone(vx + vw / 2, vy + 15, vw, 30).setInteractive({ useHandCursor: true });
@@ -388,7 +388,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _buildAppearancePanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'APPEARANCE', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
@@ -404,11 +404,11 @@ export default class CharacterCreationScene extends Phaser.Scene {
          ['Skin', skinOpts, () => this.selectedSkinTone, (v) => { this.selectedSkinTone = v; }],
          ['Sigil', sigilOpts, () => this.selectedSigilPlacement, (v) => { this.selectedSigilPlacement = v; }]].forEach(([label, opts, get, set], i) => {
             const ly = optsY + i * rowH;
-            this.add.text(x + 4, ly, label + ':', { fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc' });
+            this.add.text(x + 4, ly, label + ':', { fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaacc' });
             const rowBtns = [];
             opts.forEach((txt, j) => {
                 const btn = this.add.text(x + 40 + j * 52, ly + 6, txt, {
-                    fontFamily: 'monospace', fontSize: '8px',
+                    fontFamily: 'Open Sans', fontSize: '11px',
                     color: get() === j ? '#88ff88' : '#666688'
                 }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
                 btn.on('pointerdown', () => { set(j); this._updateAppearanceButtons(); this._updateSummary(); });
@@ -418,12 +418,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
         });
 
         const hairY = optsY + 3 * rowH;
-        this.add.text(x + 4, hairY, 'Hair:', { fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc' });
+        this.add.text(x + 4, hairY, 'Hair:', { fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaacc' });
         this._hairLabel = this.add.text(x + 80, hairY + 6, this.hairStyles[0], {
-            fontFamily: 'monospace', fontSize: '9px', color: '#88aaff'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#88aaff'
         }).setOrigin(0, 0.5);
         const leftH = this.add.text(x + 42, hairY + 6, '<', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#4488ff'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#4488ff'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         leftH.on('pointerdown', () => {
             this.selectedHairStyle = (this.selectedHairStyle - 1 + 15) % 15;
@@ -431,7 +431,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
             this._updateSummary();
         });
         const rightH = this.add.text(x + w - 20, hairY + 6, '>', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#4488ff'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#4488ff'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         rightH.on('pointerdown', () => {
             this.selectedHairStyle = (this.selectedHairStyle + 1) % 15;
@@ -452,7 +452,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _buildBackstoryPanel(x, y, w, h) {
         this.add.text(x + w / 2, y, 'BACKSTORY', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ccaa88',
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
@@ -461,26 +461,26 @@ export default class CharacterCreationScene extends Phaser.Scene {
         const listW = w - 40;
 
         this._backstoryNameText = this.add.text(x + w / 2, listY + 8, this.backstories[0].name, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#88aaff'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#88aaff'
         }).setOrigin(0.5);
 
         this._backstoryDescText = this.add.text(x + w / 2, listY + 24, this.backstories[0].description, {
-            fontFamily: 'monospace', fontSize: '7px', color: '#8888aa',
+            fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
             wordWrap: { width: listW }, align: 'center', lineSpacing: 1
         }).setOrigin(0.5, 0);
 
         this._backstoryBonusText = this.add.text(x + w / 2, listY + 56, `Bonus: +1 ${this.backstories[0].bonusSkill}`, {
-            fontFamily: 'monospace', fontSize: '8px', color: '#ffcc44'
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#ffcc44'
         }).setOrigin(0.5);
 
         // Arrow buttons
         const leftBtn = this.add.text(x + 5, listY + 8, '<', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#4488ff'
+            fontFamily: 'Open Sans', fontSize: '25px', color: '#4488ff'
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
         leftBtn.on('pointerdown', () => this._navigateBackstory(-1));
 
         const rightBtn = this.add.text(x + w - 5, listY + 8, '>', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#4488ff'
+            fontFamily: 'Open Sans', fontSize: '25px', color: '#4488ff'
         }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
         rightBtn.on('pointerdown', () => this._navigateBackstory(1));
     }
@@ -504,12 +504,12 @@ export default class CharacterCreationScene extends Phaser.Scene {
         bg.strokeRoundedRect(x, y, w, h, 8);
 
         this.add.text(cx, y + 10, 'CHARACTER SUMMARY', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#88aaff',
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#88aaff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 
         this._summaryText = this.add.text(cx, y + 30, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#aaaacc',
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaacc',
             wordWrap: { width: w - 30 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0);
 
@@ -528,7 +528,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
         btnBg.strokeRoundedRect(btnX, btnY, btnW, btnH, 6);
 
         this.add.text(cx, btnY + btnH / 2, 'BEGIN ADVENTURE', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#88bbff',
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#88bbff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
 

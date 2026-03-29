@@ -99,6 +99,20 @@ export class CompanionSystem {
 
     this.eventBus.on('combat:ended', (data) => this._onCombatEnded(data));
 
+    // ── Bond XP listeners ───────────────────────────────────────
+    this.eventBus.on('enemy-defeated', (data) => {
+      this._awardBondXP(data?.enemyLevel || 1, 'combat');
+    });
+    this.eventBus.on('quest:completed', (data) => {
+      this._awardBondXP(15, 'quest');
+    });
+    this.eventBus.on('dialogue:start', () => {
+      this._awardBondXP(2, 'dialogue');
+    });
+    this.eventBus.on('companion:playerRested', () => {
+      this._awardBondXP(5, 'rest');
+    });
+
     CompanionSystem.instance = this;
   }
 
@@ -228,6 +242,99 @@ export class CompanionSystem {
       abilities: c.abilities,
       bondLevel: c.bondLevel
     };
+  }
+
+  // ─── Bond Growth ──────────────────────────────────────────────
+
+  /**
+   * Award bond XP to every companion currently in the active party.
+   * @param {number} amount  - XP to award
+   * @param {string} source  - descriptive label for the event source
+   */
+  _awardBondXP(amount, source) {
+    const party = this.getActiveParty();
+    party.forEach(companion => {
+      if (!companion) return;
+      companion.bondXP = (companion.bondXP || 0) + amount;
+      const newLevel = this._calcBondLevel(companion.bondXP);
+      if (newLevel > (companion.bondLevel || 0)) {
+        companion.bondLevel = newLevel;
+        this._onBondLevelUp(companion, newLevel);
+      }
+    });
+  }
+
+  /**
+   * Derive bond level from accumulated XP.
+   * Thresholds: 0,10,25,50,90,150,230,340,500,700,1000
+   * @param {number} xp
+   * @returns {number} level 0–10
+   */
+  _calcBondLevel(xp) {
+    const thresholds = [0, 10, 25, 50, 90, 150, 230, 340, 500, 700, 1000];
+    let level = 0;
+    for (let i = 1; i < thresholds.length; i++) {
+      if (xp >= thresholds[i]) level = i;
+    }
+    return Math.min(10, level);
+  }
+
+  /**
+   * Handle a bond level-up: emit events, show notification, unlock abilities.
+   * @param {object} companion
+   * @param {number} newLevel
+   */
+  _onBondLevelUp(companion, newLevel) {
+    const NAMES = [
+      'Stranger', 'Acquaintance', 'Friend', 'Trusted', 'Friend',
+      'Trusted', 'Bonded', 'Bonded', 'Soulbound', 'Soulbound', 'Soulbound'
+    ];
+    const bondName = NAMES[newLevel] || 'Bonded';
+
+    this.eventBus.emit('companion:bondChanged', {
+      companionId: companion.id,
+      bondLevel: newLevel,
+      bondName,
+      companion
+    });
+    this.eventBus.emit('ui:notification', {
+      message: `Bond with ${companion.name} grew: ${bondName}`,
+      color: '#ffcc88',
+      duration: 3000
+    });
+
+    // Unlock ability at bond level 5
+    if (newLevel === 5 && companion.abilities?.[1]) {
+      this.eventBus.emit('companion:abilityUnlocked', {
+        companionId: companion.id,
+        ability: companion.abilities[1]
+      });
+    }
+    // Unlock ability at bond level 8
+    if (newLevel === 8 && companion.abilities?.[2]) {
+      this.eventBus.emit('companion:abilityUnlocked', {
+        companionId: companion.id,
+        ability: companion.abilities[2]
+      });
+    }
+  }
+
+  /**
+   * Get the current bond level for a companion by ID.
+   * @param {string} companionId
+   * @returns {number} bond level 0–10, or 0 if not found
+   */
+  getBondLevel(companionId) {
+    return this.companions.get(companionId)?.bondLevel ?? 0;
+  }
+
+  /**
+   * Get accumulated bond XP for a companion by ID.
+   * @param {string} companionId
+   * @returns {number} bond XP, or 0 if not found
+   */
+  getBondXP(companionId) {
+    return this.companions.get(companionId)?.bondXP ?? 0;
   }
 
   _onCombatEnded(data) {

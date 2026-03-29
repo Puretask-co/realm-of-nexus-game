@@ -57,17 +57,17 @@ export class TacticalCombatPanel {
         this.container.add(bg);
 
         this.turnText = this.scene.add.text(W / 2, panelY + 16, '—', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#aaccff'
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#aaccff'
         }).setOrigin(0.5, 0);
         this.container.add(this.turnText);
 
         this.apText = this.scene.add.text(W / 2, panelY + 34, 'AP: 0/0', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#88ff88'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#88ff88'
         }).setOrigin(0.5, 0);
         this.container.add(this.apText);
 
         this.intentText = this.scene.add.text(40, panelY + 58, 'Enemy intent: —', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#ffaa88',
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#ffaa88',
             wordWrap: { width: W - 80 }
         });
         this.container.add(this.intentText);
@@ -139,8 +139,8 @@ export class TacticalCombatPanel {
 
         // Boss intent label text (centered vertically in the strip)
         this._bossIntentText = this.scene.add.text(W / 2, barY + barH / 2, '', {
-            fontFamily: 'monospace',
-            fontSize: '13px',
+            fontFamily: 'Open Sans',
+            fontSize: '18px',
             color: '#ff5555'
         }).setOrigin(0.5, 0.5);
         this._bossIntentBar.add(this._bossIntentText);
@@ -192,7 +192,7 @@ export class TacticalCombatPanel {
         bg.lineStyle(1, 0xffffff, 0.3);
         bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 4);
         const text = this.scene.add.text(0, 0, label, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ffffff'
+            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffffff'
         }).setOrigin(0.5);
         const zone = this.scene.add.zone(-w / 2, -h / 2, w, h).setOrigin(0, 0).setInteractive();
         zone.on('pointerdown', callback);

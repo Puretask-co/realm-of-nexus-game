@@ -291,40 +291,46 @@ export class CraftingSystem {
    * @returns {{ success: boolean, reason?: string, resultItemId?: string, quantity?: number }}
    */
   craftFromInventory(recipeId, inventoryItems = {}) {
-    const { canCraft, missingMaterials } = this.canCraft(recipeId, inventoryItems);
+    // Ensure recipes are loaded
+    if (this.recipes.size === 0) this.loadRecipes();
+
     const recipe = this.recipes.get(recipeId);
 
     if (!recipe) {
-      const result = { success: false, reason: 'Unknown recipe' };
-      EventBusDefault.emit('crafting:failed', { recipeId, reason: result.reason });
-      return result;
+      const reason = 'Unknown recipe';
+      this.eventBus.emit('crafting:failed', { recipeId, reason });
+      return { success: false, reason };
     }
     if (!this.knownRecipes.has(recipeId)) {
-      const result = { success: false, reason: 'Recipe not learned' };
-      EventBusDefault.emit('crafting:failed', { recipeId, reason: result.reason });
-      return result;
+      const reason = 'Recipe not learned';
+      this.eventBus.emit('crafting:failed', { recipeId, reason });
+      return { success: false, reason };
     }
+
+    const { canCraft, missingMaterials } = this.canCraft(recipeId, inventoryItems);
     if (!canCraft) {
       const reason = `Missing: ${missingMaterials.map(m => `${m.need - m.have}x ${m.itemId}`).join(', ')}`;
-      EventBusDefault.emit('crafting:failed', { recipeId, reason, missingMaterials });
+      this.eventBus.emit('crafting:failed', { recipeId, reason, missingMaterials });
       return { success: false, reason, missingMaterials };
     }
 
-    // Deduct materials
+    // Deduct materials from plain object AND emit inventory events
     for (const mat of recipe.materials) {
       inventoryItems[mat.itemId] = (inventoryItems[mat.itemId] || 0) - mat.quantity;
+      this.eventBus.emit('inventory:removeItem', { itemId: mat.itemId, quantity: mat.quantity });
     }
 
     // Add result
     const resultId = recipe.result.itemId;
     const resultQty = recipe.result.quantity || 1;
     inventoryItems[resultId] = (inventoryItems[resultId] || 0) + resultQty;
+    this.eventBus.emit('inventory:addItem', { itemId: resultId, quantity: resultQty });
 
-    EventBusDefault.emit('crafting:success', {
+    this.eventBus.emit('crafting:success', {
       recipeId,
       recipeName: recipe.name,
       resultItemId: resultId,
-      quantity: resultQty
+      resultQuantity: resultQty
     });
 
     return { success: true, resultItemId: resultId, quantity: resultQty };
@@ -338,6 +344,9 @@ export class CraftingSystem {
    * @returns {object|null}  The discovered recipe, or null.
    */
   tryDiscover(itemId1, itemId2) {
+    // Ensure recipes are loaded before searching
+    if (this.recipes.size === 0) this.loadRecipes();
+
     for (const [id, recipe] of this.recipes) {
       if (recipe.unlockMethod !== 'discover') continue;
       if (this.knownRecipes.has(id)) continue;
@@ -349,12 +358,17 @@ export class CraftingSystem {
 
       if (matchesBoth) {
         this.knownRecipes.add(id);
-        EventBusDefault.emit('crafting:recipeDiscovered', { recipeId: id, recipeName: recipe.name });
+        this.eventBus.emit('crafting:recipeDiscovered', { recipe });
         console.log(`[CraftingSystem] Discovered recipe: ${recipe.name}`);
-        return recipe;
+        return { found: true, recipe };
       }
     }
-    return null;
+
+    this.eventBus.emit('ui:notification', {
+      message: 'No recipe discovered...',
+      color: '#886644'
+    });
+    return { found: false };
   }
 
   /**

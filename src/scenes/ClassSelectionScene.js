@@ -41,12 +41,12 @@ export default class ClassSelectionScene extends Phaser.Scene {
 
         // Title
         this.add.text(width / 2, 30, 'CHOOSE YOUR CLASS', {
-            fontFamily: 'monospace', fontSize: '28px', color: '#88aaff',
+            fontFamily: 'Open Sans', fontSize: '39px', color: '#88aaff',
             stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5);
 
         this.add.text(width / 2, 62, 'Each class has unique abilities and a role in the Verdance', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#666688'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#666688'
         }).setOrigin(0.5);
 
         // Class cards — 5 classes, narrower cards
@@ -64,11 +64,11 @@ export default class ClassSelectionScene extends Phaser.Scene {
 
         // Controls hint
         this.add.text(width / 2, height - 50, 'Click a class to select  |  ENTER or SPACE to confirm', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#555577'
+            fontFamily: 'Open Sans', fontSize: '15px', color: '#555577'
         }).setOrigin(0.5);
 
         this.add.text(width / 2, height - 30, 'Arrow keys to browse', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#444466'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#444466'
         }).setOrigin(0.5);
 
         // Confirm button
@@ -109,20 +109,20 @@ export default class ClassSelectionScene extends Phaser.Scene {
         // Class name
         const colorStr = `#${color.toString(16).padStart(6, '0')}`;
         const nameText = this.add.text(w / 2, 80, cls.name, {
-            fontFamily: 'monospace', fontSize: '14px', color: colorStr,
+            fontFamily: 'Open Sans', fontSize: '20px', color: colorStr,
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5);
         container.add(nameText);
 
         // Role
         container.add(this.add.text(w / 2, 98, cls.role, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#8888aa'
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#8888aa'
         }).setOrigin(0.5));
 
         // Description (truncated)
         const descText = (cls.description || '').substring(0, 120) + (cls.description?.length > 120 ? '...' : '');
         const desc = this.add.text(w / 2, 114, descText, {
-            fontFamily: 'monospace', fontSize: '8px', color: '#7777aa',
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#7777aa',
             wordWrap: { width: w - 16 }, align: 'center', lineSpacing: 2
         }).setOrigin(0.5, 0);
         container.add(desc);
@@ -130,7 +130,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
         // Verdance Attributes
         const statsY = 185;
         container.add(this.add.text(10, statsY - 14, 'Attributes:', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaa88'
         }));
 
         const attrs = cls.baseStats || {};
@@ -145,7 +145,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
         attrEntries.forEach((attr, si) => {
             const sy = statsY + si * 16;
             container.add(this.add.text(10, sy, attr.label, {
-                fontFamily: 'monospace', fontSize: '9px', color: attr.color
+                fontFamily: 'Open Sans', fontSize: '13px', color: attr.color
             }));
 
             // Bar
@@ -159,7 +159,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
             container.add(barGfx);
 
             container.add(this.add.text(178, sy, `${attr.value}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#aaaacc'
+                fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaacc'
             }));
         });
 
@@ -169,20 +169,20 @@ export default class ClassSelectionScene extends Phaser.Scene {
         const guard = cls.startingGuard || 0;
         const ap = cls.baseAP || 2;
         container.add(this.add.text(10, combatY, `HP: ${hp}  Guard: ${guard}  AP: ${ap}`, {
-            fontFamily: 'monospace', fontSize: '9px', color: '#88aa88'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#88aa88'
         }));
 
         // Starting spells
         const spellY = combatY + 18;
         container.add(this.add.text(10, spellY, 'Starting Spells:', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaa88'
         }));
 
         const startSpells = cls.startingSpells || [];
         startSpells.forEach((spellId, si) => {
             const spellName = spellId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             container.add(this.add.text(15, spellY + 14 + si * 12, `- ${spellName}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: colorStr
+                fontFamily: 'Open Sans', fontSize: '13px', color: colorStr
             }));
         });
 
@@ -191,12 +191,12 @@ export default class ClassSelectionScene extends Phaser.Scene {
         const lvl1Abilities = cls.classAbilities?.level1 || [];
         if (lvl1Abilities.length > 0) {
             container.add(this.add.text(10, abilityY, 'Abilities:', {
-                fontFamily: 'monospace', fontSize: '9px', color: '#aaaa88'
+                fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaa88'
             }));
 
             lvl1Abilities.slice(0, 3).forEach((ability, ai) => {
                 container.add(this.add.text(15, abilityY + 14 + ai * 12, `- ${ability.name}`, {
-                    fontFamily: 'monospace', fontSize: '9px', color: '#8888aa'
+                    fontFamily: 'Open Sans', fontSize: '13px', color: '#8888aa'
                 }));
             });
         }
@@ -206,7 +206,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
         if (ultAbility) {
             const ultY = abilityY + 14 + Math.min(lvl1Abilities.length, 3) * 12 + 8;
             container.add(this.add.text(10, ultY, `Ultimate: ${ultAbility.name}`, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#ffcc44',
+                fontFamily: 'Open Sans', fontSize: '14px', color: '#ffcc44',
                 stroke: '#000', strokeThickness: 1
             }));
         }
@@ -215,7 +215,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
         const gearY = h - 40;
         const armorStr = (cls.preferredArmor || 'light').charAt(0).toUpperCase() + (cls.preferredArmor || 'light').slice(1);
         container.add(this.add.text(w / 2, gearY, `${armorStr} Armor`, {
-            fontFamily: 'monospace', fontSize: '8px', color: '#666688'
+            fontFamily: 'Open Sans', fontSize: '11px', color: '#666688'
         }).setOrigin(0.5));
 
         // Click interaction
@@ -260,7 +260,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
         container.add(bg);
 
         const text = this.add.text(w / 2, h / 2, 'CONFIRM', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#88bbff',
+            fontFamily: 'Open Sans', fontSize: '20px', color: '#88bbff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5);
         container.add(text);
@@ -354,7 +354,7 @@ export default class ClassSelectionScene extends Phaser.Scene {
 
         // Confirm text
         this.add.text(width / 2, height / 2, cls.name.toUpperCase(), {
-            fontFamily: 'monospace', fontSize: '36px',
+            fontFamily: 'Open Sans', fontSize: '50px',
             color: `#${color.toString(16).padStart(6, '0')}`,
             stroke: '#000', strokeThickness: 5
         }).setOrigin(0.5).setDepth(101).setAlpha(0).setScale(0.5);
