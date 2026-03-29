@@ -7,6 +7,7 @@ import { VeilkeeperPanel } from '../ui/VeilkeeperPanel.js';
 import { SpellbookPanel } from '../ui/SpellbookPanel.js';
 import { StashPanel } from '../ui/StashPanel.js';
 import { InventoryPanel } from '../ui/InventoryPanel.js';
+import GameInfoPanel from '../ui/GameInfoPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -54,9 +55,25 @@ export default class UIScene extends Phaser.Scene {
         this.spellbookPanel = new SpellbookPanel(this);
         this.stashPanel = new StashPanel(this);
         this.inventoryPanel = new InventoryPanel(this, this._makeMinimalUI());
+        this.gameInfoPanel = new GameInfoPanel(this);
 
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
+        this.input.keyboard.on('keydown-TAB', () => this.gameInfoPanel.toggle());
         this.input.keyboard.on('keydown-I', () => this._toggleInventory());
+        this.input.keyboard.on('keydown-C', () => {
+            if (this.scene.isActive('CharacterSheetScene')) {
+                this.scene.stop('CharacterSheetScene');
+            } else {
+                this.scene.launch('CharacterSheetScene');
+            }
+        });
+        this.input.keyboard.on('keydown-W', () => {
+            if (this.scene.isActive('WikiCodexScene')) {
+                this.scene.stop('WikiCodexScene');
+            } else {
+                this.scene.launch('WikiCodexScene');
+            }
+        });
 
         // EventBus bindings
         this._unsubs = [

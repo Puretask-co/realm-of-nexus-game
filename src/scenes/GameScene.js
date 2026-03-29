@@ -41,6 +41,7 @@ import { PortalSystem } from '../systems/PortalSystem.js';
 import StashSystem from '../systems/StashSystem.js';
 import ZoneContentManager from '../systems/ZoneContentManager.js';
 import { EquipmentSystem } from '../systems/EquipmentSystem.js';
+import TutorialSystem from '../systems/TutorialSystem.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -100,6 +101,7 @@ export default class GameScene extends Phaser.Scene {
         this.difficultySystem = DifficultySystem.getInstance();
         this.dungeonMaster = AIDungeonMaster.getInstance();
         this.equipmentSystem = EquipmentSystem.getInstance();
+        this.tutorialSystem = TutorialSystem.getInstance();
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -349,6 +351,14 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Death state ----
         this.isDead = false;
+
+        // ---- Tutorial: fire on new game ----
+        if (this.registry.get('isNewGame')) {
+            this.registry.set('isNewGame', false); // prevent re-trigger on reload
+            this.time.delayedCall(1500, () => {
+                EventBus.emit('game:newGameStarted', this);
+            });
+        }
 
         console.log('[GameScene] Created — all content wired');
     }

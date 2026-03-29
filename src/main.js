@@ -10,6 +10,9 @@ import SettingsScene from './scenes/SettingsScene.js';
 import WorldMapScene from './scenes/WorldMapScene.js';
 import EndingScene from './scenes/EndingScene.js';
 import HomeBaseScene from './scenes/HomeBaseScene.js';
+import MainMenuScene from './scenes/MainMenuScene.js';
+import CharacterSheetScene from './scenes/CharacterSheetScene.js';
+import WikiCodexScene from './scenes/WikiCodexScene.js';
 import ProceduralAudio from './systems/ProceduralAudio.js';
 import NormalMapPipeline from './pipelines/NormalMapPipeline.js';
 import PostProcessingPipeline from './pipelines/PostProcessingPipeline.js';
@@ -55,7 +58,7 @@ const config = {
         PostProcessing: PostProcessingPipeline
     },
 
-    scene: [BootScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene, PauseMenuScene, SettingsScene, WorldMapScene, EndingScene, HomeBaseScene]
+    scene: [BootScene, MainMenuScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene, PauseMenuScene, SettingsScene, WorldMapScene, EndingScene, HomeBaseScene, CharacterSheetScene, WikiCodexScene]
 };
 
 function showBootError(message) {

@@ -1,5 +1,6 @@
 import dataManager from '../systems/DataManager.js';
 import EventBus from '../core/EventBus.js';
+import MainMenuScene from './MainMenuScene.js';
 
 /**
  * BootScene — First scene loaded.
@@ -55,13 +56,29 @@ export default class BootScene extends Phaser.Scene {
                 this.registry.set('characterAttributes', { might: 2, agility: 2, resilience: 2, insight: 2, presence: 2 });
                 this.scene.start('GameScene');
             } else {
-                console.log('[BootScene] Boot complete, starting game...');
-                this.scene.start('ClassSelectionScene');
+                console.log('[BootScene] Boot complete, starting main menu...');
+                this._ensureMainMenu();
+                this.scene.start('MainMenuScene');
             }
         }).catch((err) => {
             console.error('[BootScene] Data load failed, using fallbacks:', err);
-            this.scene.start('ClassSelectionScene');
+            this._ensureMainMenu();
+            this.scene.start('MainMenuScene');
         });
+    }
+
+    // ----------------------------------------------------------------
+    // Dynamic scene registration
+    // ----------------------------------------------------------------
+
+    /**
+     * Registers MainMenuScene with Phaser's SceneManager at runtime so it
+     * doesn't need to be listed in main.js. Safe to call multiple times.
+     */
+    _ensureMainMenu() {
+        if (!this.scene.get('MainMenuScene')) {
+            this.scene.add('MainMenuScene', MainMenuScene, false);
+        }
     }
 
     // ----------------------------------------------------------------

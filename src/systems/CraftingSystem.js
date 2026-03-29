@@ -220,6 +220,155 @@ export class CraftingSystem {
     return [...this.stations.values()];
   }
 
+  // ─── Recipe loading from DataManager ─────────────────────────
+
+  /**
+   * Load recipes from DataManager (data/recipes.json) and merge them
+   * into the in-memory recipe map. Known recipes (discovered: true) are
+   * automatically added to knownRecipes.
+   */
+  loadRecipes() {
+    const recipes = dataManager.getRecipes ? dataManager.getRecipes() : [];
+    for (const rec of recipes) {
+      if (!rec || !rec.id || rec._comment) continue;
+
+      // Map recipes.json station strings to internal station IDs
+      const stationMap = {
+        forge: 'bloomguard_forge',
+        alchemy_table: 'emerald_sanctum',
+        workbench: 'sapling_workshop',
+        loom: 'veilkeeper_atelier'
+      };
+      const mappedStation = stationMap[rec.requiredStation] || rec.requiredStation;
+
+      this.recipes.set(rec.id, {
+        id: rec.id,
+        name: rec.name,
+        station: mappedStation,
+        category: rec.category,
+        materials: rec.materials || [],
+        result: { itemId: rec.resultItemId, quantity: rec.resultQuantity || 1 },
+        craftingRank: Math.max(0, (rec.requiredLevel || 1) - 1),
+        baseDifficulty: 10 + (rec.requiredLevel || 1),
+        craftTime: rec.craftingTime || 3,
+        unlockMethod: rec.unlockMethod || 'start',
+        description: rec.description || ''
+      });
+
+      if (rec.discovered) {
+        this.knownRecipes.add(rec.id);
+      }
+    }
+    console.log(`[CraftingSystem] Loaded ${recipes.length} recipes from DataManager`);
+  }
+
+  /**
+   * Check whether a recipe can be crafted with the given inventory items.
+   * @param {string} recipeId
+   * @param {Object} inventoryItems  - plain object: { itemId: quantity, ... }
+   * @returns {{ canCraft: boolean, missingMaterials: Array<{itemId, need, have}> }}
+   */
+  canCraft(recipeId, inventoryItems = {}) {
+    const recipe = this.recipes.get(recipeId);
+    if (!recipe) return { canCraft: false, missingMaterials: [{ itemId: recipeId, need: 1, have: 0, reason: 'Unknown recipe' }] };
+    if (!this.knownRecipes.has(recipeId)) return { canCraft: false, missingMaterials: [{ reason: 'Recipe not learned' }] };
+
+    const missingMaterials = [];
+    for (const mat of recipe.materials) {
+      const have = inventoryItems[mat.itemId] || 0;
+      if (have < mat.quantity) {
+        missingMaterials.push({ itemId: mat.itemId, need: mat.quantity, have });
+      }
+    }
+    return { canCraft: missingMaterials.length === 0, missingMaterials };
+  }
+
+  /**
+   * Craft a recipe using a plain inventory object (not the adapter pattern).
+   * Validates, deducts materials, adds result, emits crafting:success or crafting:failed.
+   * @param {string} recipeId
+   * @param {Object} inventoryItems  - mutable plain object: { itemId: quantity }
+   * @returns {{ success: boolean, reason?: string, resultItemId?: string, quantity?: number }}
+   */
+  craftFromInventory(recipeId, inventoryItems = {}) {
+    const { canCraft, missingMaterials } = this.canCraft(recipeId, inventoryItems);
+    const recipe = this.recipes.get(recipeId);
+
+    if (!recipe) {
+      const result = { success: false, reason: 'Unknown recipe' };
+      EventBusDefault.emit('crafting:failed', { recipeId, reason: result.reason });
+      return result;
+    }
+    if (!this.knownRecipes.has(recipeId)) {
+      const result = { success: false, reason: 'Recipe not learned' };
+      EventBusDefault.emit('crafting:failed', { recipeId, reason: result.reason });
+      return result;
+    }
+    if (!canCraft) {
+      const reason = `Missing: ${missingMaterials.map(m => `${m.need - m.have}x ${m.itemId}`).join(', ')}`;
+      EventBusDefault.emit('crafting:failed', { recipeId, reason, missingMaterials });
+      return { success: false, reason, missingMaterials };
+    }
+
+    // Deduct materials
+    for (const mat of recipe.materials) {
+      inventoryItems[mat.itemId] = (inventoryItems[mat.itemId] || 0) - mat.quantity;
+    }
+
+    // Add result
+    const resultId = recipe.result.itemId;
+    const resultQty = recipe.result.quantity || 1;
+    inventoryItems[resultId] = (inventoryItems[resultId] || 0) + resultQty;
+
+    EventBusDefault.emit('crafting:success', {
+      recipeId,
+      recipeName: recipe.name,
+      resultItemId: resultId,
+      quantity: resultQty
+    });
+
+    return { success: true, resultItemId: resultId, quantity: resultQty };
+  }
+
+  /**
+   * Check if combining two items reveals any undiscovered "discover" recipe.
+   * If found, marks it discovered and emits crafting:recipeDiscovered.
+   * @param {string} itemId1
+   * @param {string} itemId2
+   * @returns {object|null}  The discovered recipe, or null.
+   */
+  tryDiscover(itemId1, itemId2) {
+    for (const [id, recipe] of this.recipes) {
+      if (recipe.unlockMethod !== 'discover') continue;
+      if (this.knownRecipes.has(id)) continue;
+
+      const mats = recipe.materials.map(m => m.itemId);
+      const matchesBoth =
+        (mats.includes(itemId1) && mats.includes(itemId2)) ||
+        (itemId1 === itemId2 && mats.filter(m => m === itemId1).length >= 2);
+
+      if (matchesBoth) {
+        this.knownRecipes.add(id);
+        EventBusDefault.emit('crafting:recipeDiscovered', { recipeId: id, recipeName: recipe.name });
+        console.log(`[CraftingSystem] Discovered recipe: ${recipe.name}`);
+        return recipe;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Return only recipes that have been discovered/learned.
+   * @returns {Array}
+   */
+  getDiscoveredRecipes() {
+    const result = [];
+    for (const [id, recipe] of this.recipes) {
+      if (this.knownRecipes.has(id)) result.push(recipe);
+    }
+    return result;
+  }
+
   // ─── Serialization ────────────────────────────────────────────
 
   serialize() {

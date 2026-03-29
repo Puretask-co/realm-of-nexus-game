@@ -29,7 +29,8 @@ class DataManager {
             ancestries: { ancestries: [] },
             story: { eras: [], acts: [] },
             veilkeepers: { veilkeepers: [] },
-            companions: { companions: [] }
+            companions: { companions: [] },
+            recipes: []
         };
 
         this.schemas = {
@@ -70,7 +71,7 @@ class DataManager {
         console.log('[DataManager] Loading game data...');
 
         try {
-            const [spellsData, enemiesData, itemsData, locationsData, configData, questsData, dialoguesData, skillsData, classesData, ancestriesData, storyData, veilkeepersData, companionsData] =
+            const [spellsData, enemiesData, itemsData, locationsData, configData, questsData, dialoguesData, skillsData, classesData, ancestriesData, storyData, veilkeepersData, companionsData, recipesData] =
                 await Promise.all([
                     this._loadJSON('./data/spells.json'),
                     this._loadJSON('./data/enemies.json'),
@@ -84,7 +85,8 @@ class DataManager {
                     this._loadJSON('./data/ancestries.json').catch(() => ({ ancestries: [] })),
                     this._loadJSON('./data/story.json').catch(() => ({ eras: [], acts: [] })),
                     this._loadJSON('./data/veilkeepers.json').catch(() => ({ veilkeepers: [] })),
-                    this._loadJSON('./data/companions.json').catch(() => ({ companions: [] }))
+                    this._loadJSON('./data/companions.json').catch(() => ({ companions: [] })),
+                    this._loadJSON('./data/recipes.json').catch(() => ({ recipes: [] }))
                 ]);
 
             this.data.spells = spellsData.spells || [];
@@ -104,6 +106,9 @@ class DataManager {
             this.data.story = storyData;
             this.data.veilkeepers = veilkeepersData;
             this.data.companions = companionsData;
+            this.data.recipes = (recipesData.recipes || []).filter(
+                (r) => r && typeof r.id === 'string' && r.id.length > 0
+            );
 
             this.validateAllData();
             this.buildCaches();
@@ -123,6 +128,7 @@ class DataManager {
             console.log(`  - ${(this.data.ancestries.ancestries || []).length} ancestries`);
             console.log(`  - ${(this.data.story.eras || []).length} story eras`);
             console.log(`  - ${(this.data.veilkeepers.veilkeepers || []).length} veilkeepers`);
+            console.log(`  - ${this.data.recipes.length} recipes`);
 
             if (this.watchForChanges) {
                 this.startWatching();
@@ -355,6 +361,12 @@ class DataManager {
     getCompanionData() { return this.data.companions; }
     getCompanions() { return (this.data.companions?.companions || []); }
     getCompanionById(id) { return (this.data.companions?.companions || []).find(c => c.id === id) || null; }
+
+    // ---- Recipes ----
+    getRecipes() { return [...this.data.recipes]; }
+    getRecipe(id) { return this.data.recipes.find(r => r.id === id) || null; }
+    getRecipesByCategory(category) { return this.data.recipes.filter(r => r.category === category); }
+    getDiscoveredRecipes() { return this.data.recipes.filter(r => r.discovered === true); }
 
     // ----------------------------------------------------------------
     // Hot-reload
