@@ -668,7 +668,7 @@ export default class CompanionPanel {
             EventBus.on('companion:recruited', () => {
                 if (this.visible) this._refresh();
             }),
-            EventBus.on('companion:dismissed', () => {
+            EventBus.on('companion:leftParty', () => {
                 if (this.visible) this._refresh();
             }),
             EventBus.on('companion:bondChanged', () => {

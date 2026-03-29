@@ -39,7 +39,7 @@ export class CompanionSystem {
         personality: 'Stoic, protective, quietly humorous. Values honor and keeping promises.',
         baseStats: { might: 4, agility: 1, resilience: 4, insight: 1, charisma: 2, hp: 45, guard: 12 },
         abilities: ['shield_wall', 'taunt', 'guardians_strike'],
-        recruitLocation: 'verdant_grove', recruitQuest: 'vaeril_recruitment',
+        recruitLocation: 'canopy_of_life', recruitQuest: 'vaeril_recruitment',
         bondEvents: ['shared_battle', 'saved_ally', 'camp_conversation', 'personal_quest'],
         personalQuest: 'oath_of_the_grove',
         recruited: false, bondLevel: 0, bondXP: 0, inParty: false, alive: true
@@ -75,7 +75,7 @@ export class CompanionSystem {
         personality: 'Detached, cryptic, surprisingly empathetic. Speaks of "we" instead of "I" sometimes.',
         baseStats: { might: 1, agility: 1, resilience: 3, insight: 3, charisma: 2, hp: 32, guard: 5 },
         abilities: ['fungal_network', 'spore_detonation', 'decay_aura'],
-        recruitLocation: 'sporecaller_depths', recruitQuest: 'mycon_recruitment',
+        recruitLocation: 'mycelium_nexus', recruitQuest: 'mycon_recruitment',
         bondEvents: ['fungal_communion', 'corruption_resistance', 'shared_vision', 'personal_quest'],
         personalQuest: 'the_network_calls',
         recruited: false, bondLevel: 0, bondXP: 0, inParty: false, alive: true
@@ -87,7 +87,7 @@ export class CompanionSystem {
         personality: 'Quiet, observant, deeply connected to nature. Speaks more to animals than people.',
         baseStats: { might: 2, agility: 4, resilience: 1, insight: 2, charisma: 1, hp: 34, guard: 4 },
         abilities: ['eagle_eye', 'thorn_barrage', 'terrain_mastery'],
-        recruitLocation: 'moonpetal_marsh', recruitQuest: 'kaelen_recruitment',
+        recruitLocation: 'spindlewood_forest', recruitQuest: 'kaelen_recruitment',
         bondEvents: ['nature_communion', 'tracking_success', 'animal_rescue', 'personal_quest'],
         personalQuest: 'call_of_the_wild',
         recruited: false, bondLevel: 0, bondXP: 0, inParty: false, alive: true
@@ -113,7 +113,12 @@ export class CompanionSystem {
       this._awardBondXP(5, 'rest');
     });
 
+    // UI → system wiring: CompanionPanel emits these when player clicks recruit/dismiss
+    this.eventBus.on('companion:recruit', (data) => this.recruit(data?.companionId));
+    this.eventBus.on('companion:dismiss', (data) => this.removeFromParty(data?.companionId));
+
     CompanionSystem.instance = this;
+    globalThis.__companionSystem = this;
   }
 
   /**
