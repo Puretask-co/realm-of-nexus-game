@@ -24,6 +24,8 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
+        document.getElementById('boot-message')?.setAttribute('hidden', '');
+
         // Generate placeholder textures for dev
         this._generatePlaceholders();
 
@@ -39,8 +41,23 @@ export default class BootScene extends Phaser.Scene {
             this._generatePlaceholderAudio();
 
             EventBus.emit('boot-complete');
-            console.log('[BootScene] Boot complete, starting game...');
-            this.scene.start('ClassSelectionScene');
+
+            // Dev-only: ?skipToGame=true jumps straight to GameScene with defaults
+            const params = new URLSearchParams(window.location.search);
+            if (import.meta.env.DEV && params.get('skipToGame') === 'true') {
+                console.log('[BootScene] DEV: skipToGame active — jumping to GameScene');
+                const classes = dataManager.getAllClasses?.() || [];
+                const firstClass = classes[0] || { id: 'verdant_guardian', name: 'Verdant Guardian' };
+                this.registry.set('selectedClass', firstClass.id || firstClass.name || 'verdant_guardian');
+                this.registry.set('selectedAncestry', 'heartwood');
+                this.registry.set('selectedVariant', 'pure');
+                this.registry.set('playerName', 'TestHero');
+                this.registry.set('characterAttributes', { might: 2, agility: 2, resilience: 2, insight: 2, presence: 2 });
+                this.scene.start('GameScene');
+            } else {
+                console.log('[BootScene] Boot complete, starting game...');
+                this.scene.start('ClassSelectionScene');
+            }
         }).catch((err) => {
             console.error('[BootScene] Data load failed, using fallbacks:', err);
             this.scene.start('ClassSelectionScene');
@@ -331,11 +348,21 @@ export default class BootScene extends Phaser.Scene {
             gfx.destroy();
         }
 
-        // Loot sparkle
+        // Loot sparkle (Phaser Graphics has no fillStar — use circles + triangles)
         if (!this.textures.exists('loot_sparkle')) {
             const gfx = this.add.graphics();
+            const cx = 8;
+            const cy = 8;
             gfx.fillStyle(0xffdd44, 1);
-            gfx.fillStar(8, 8, 4, 8, 3, 4);
+            gfx.fillCircle(cx, cy, 5);
+            gfx.fillStyle(0xffffaa, 1);
+            gfx.fillCircle(cx - 2, cy - 2, 2);
+            // small cross glint
+            gfx.fillStyle(0xffffff, 0.9);
+            gfx.fillTriangle(cx, cy - 7, cx - 2, cy - 1, cx + 2, cy - 1);
+            gfx.fillTriangle(cx, cy + 7, cx - 2, cy + 1, cx + 2, cy + 1);
+            gfx.fillTriangle(cx - 7, cy, cx - 1, cy - 2, cx - 1, cy + 2);
+            gfx.fillTriangle(cx + 7, cy, cx + 1, cy - 2, cx + 1, cy + 2);
             gfx.generateTexture('loot_sparkle', 16, 16);
             gfx.destroy();
         }

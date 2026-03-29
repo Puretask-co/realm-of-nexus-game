@@ -35,7 +35,6 @@
                 ]
             },
             "chainQuest": "shadow_threat",
-            "dialogueOnAccept": "elder_awakening",
             "dialogueOnComplete": "elder_awakening_complete",
             "tags": ["main_story", "act_1", "chapter_1"]
         },

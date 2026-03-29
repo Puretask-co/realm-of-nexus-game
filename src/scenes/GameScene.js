@@ -32,6 +32,9 @@ import { CraftingSystem } from '../systems/CraftingSystem.js';
 import { SkillCheckSystem } from '../systems/SkillCheckSystem.js';
 import { DifficultySystem } from '../systems/DifficultySystem.js';
 import { AIDungeonMaster } from '../systems/AIDungeonMaster.js';
+import SpellVFXIntegration from '../integration/SpellVFXIntegration.js';
+import { SapCycleLightingIntegration } from '../integration/SapCycleLightingIntegration.js';
+import TacticalCombatCameraBridge from '../integration/TacticalCombatCameraBridge.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -57,6 +60,13 @@ export default class GameScene extends Phaser.Scene {
         this.particles = new AdvancedParticleSystem(this);
         this.cameraSystem = new AdvancedCameraSystem(this);
         this.profiler = new PerformanceProfiler(this);
+
+        // Integration layer: spell VFX, sap-phase lighting, tactical combat camera feedback
+        this.spellVfxIntegration = new SpellVFXIntegration();
+        this.spellVfxIntegration.bind(this.particles, this.lighting, this.cameraSystem);
+        this.sapCycleLightingIntegration = new SapCycleLightingIntegration(this.lighting);
+        this.sapCycleLightingIntegration.syncInitialPhase(this.sapCycle.currentPhase);
+        this.tacticalCombatCameraBridge = new TacticalCombatCameraBridge(this.cameraSystem);
 
         // ---- Gameplay Systems (singletons) ----
         this.combatSystem = CombatSystem.getInstance();
@@ -128,6 +138,48 @@ export default class GameScene extends Phaser.Scene {
         // ---- Launch UI overlay ----
         this.scene.launch('UIScene');
 
+        // Dev: expose debug API for automated testing (Playwright / manual testing)
+        if (import.meta.env.DEV) {
+            window.__gameDebug = {
+                dealDamageToPlayer: (amount) => {
+                    if (this.player?.stats) {
+                        this.player.stats.hp = Math.max(0, this.player.stats.hp - amount);
+                        EventBus.emit('player-stats-updated', this.player.stats);
+                        if (this.player.stats.hp <= 0) this._onPlayerDeath();
+                    }
+                },
+                killPlayer: () => {
+                    if (this.player?.stats) {
+                        this.player.stats.hp = 0;
+                        EventBus.emit('player-stats-updated', this.player.stats);
+                        this._onPlayerDeath();
+                    }
+                },
+                teleportPlayer: (x, y) => {
+                    if (this.player) this.player.setPosition(x, y);
+                },
+                addGold: (amount) => {
+                    if (this.player?.stats) {
+                        this.player.stats.gold = (this.player.stats.gold || 0) + amount;
+                        EventBus.emit('player-stats-updated', this.player.stats);
+                    }
+                },
+                addItem: (itemId, quantity = 1) => {
+                    const itemData = window.__dataManager?.getItem?.(itemId) || { id: itemId, name: itemId };
+                    EventBus.emit('inventory:addItem', { itemId, quantity, itemData });
+                },
+                setDSP: (value) => {
+                    if (this.dspSystem) {
+                        this.dspSystem.current = Math.max(0, Math.min(this.dspSystem.max, value));
+                        EventBus.emit('dsp:changed', this.dspSystem.getStatus());
+                    }
+                },
+                getState: () => window.__gameState
+            };
+            // Also expose dataManager for debug convenience
+            window.__dataManager = window.__dataManager || {};
+        }
+
         // ---- Hotkeys ----
         this.input.keyboard.on('keydown-F2', () => {
             this.scene.switch('EditorScene');
@@ -154,22 +206,50 @@ export default class GameScene extends Phaser.Scene {
             skillCheckSystem: this.skillCheckSystem
         });
 
+        // ---- Inventory cache (used by CraftingPanel for material checks) ----
+        this._inventoryCache = {};
+
         // ---- EventBus listeners ----
         this._unsubs = [
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
+            EventBus.on('shop:deductGold', (data) => {
+                if (this.player?.stats) {
+                    this.player.stats.gold = Math.max(0, (this.player.stats.gold || 0) - (data.amount || 0));
+                    EventBus.emit('player-stats-updated', this.player.stats);
+                }
+            }),
+            EventBus.on('inventory:addItem', (data) => {
+                const id = data.itemId;
+                if (id) this._inventoryCache[id] = (this._inventoryCache[id] || 0) + (data.quantity || 1);
+            }),
+            EventBus.on('inventory:removeItem', (data) => {
+                const id = data.itemId;
+                if (id) this._inventoryCache[id] = Math.max(0, (this._inventoryCache[id] || 0) - (data.quantity || 1));
+            }),
+            EventBus.on('crafting-open', () => {
+                // Send current inventory snapshot so CraftingPanel can check materials accurately
+                EventBus.emit('crafting:inventorySnapshot', { items: { ...this._inventoryCache } });
+            }),
             EventBus.on('dialogue:start', (data) => this._onDialogueStart(data)),
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
+            EventBus.on('quest:started', (data) => this._onQuestStarted(data)),
             EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
             EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
+            EventBus.on('moral-choice-made', (data) => this._onMoralChoiceMade(data)),
             EventBus.on('narrative:eraChanged', (data) => this._onEraChanged(data)),
             EventBus.on('companion:recruited', (data) => this._onCompanionRecruited(data)),
             EventBus.on('veilkeeper:consulted', (data) => this._onVeilkeeperConsulted(data)),
             EventBus.on('veilkeeper:died', (data) => this._onVeilkeeperDied(data)),
+            EventBus.on('veilkeeper-consult', (data) => this._onVeilkeeperConsultRequest(data)),
+            EventBus.on('veilkeeper-query-state', (data) => this._onVeilkeeperQueryState(data)),
             EventBus.on('dm:narration', (data) => this._onDMNarration(data)),
-            EventBus.on('dm:encounter', (data) => this._onDMEncounter(data))
+            EventBus.on('dm:encounter', (data) => this._onDMEncounter(data)),
+            // ---- Moral choice overlay: world pause / resume ----
+            EventBus.on('pause-world', () => this._onPauseWorld()),
+            EventBus.on('resume-world', () => this._onResumeWorld())
         ];
 
         // ---- Tactical combat (design: grid-based main combat) ----
@@ -186,6 +266,13 @@ export default class GameScene extends Phaser.Scene {
         // ---- Start first quest automatically ----
         this.time.delayedCall(2000, () => {
             this.dialogueSystem.startDialogue('elder_awakening');
+        });
+
+        // ---- Demo moral choice: present 3s after game load ----
+        // Also triggers on quest:started for any veil/prologue quest.
+        this._veilChoiceShown = false;
+        this.time.delayedCall(3000, () => {
+            if (!this._veilChoiceShown) this._presentVeilChoice();
         });
 
         // ---- Death state ----
@@ -614,7 +701,8 @@ export default class GameScene extends Phaser.Scene {
             aiState: 'idle',
             aiTimer: 0,
             patrolOrigin: { x, y },
-            zoneId
+            zoneId,
+            attackCooldown: 0
         };
 
         // HP bar above enemy
@@ -671,7 +759,7 @@ export default class GameScene extends Phaser.Scene {
               shopInventory: [{ itemId: 'iron_sword', price: 50 }, { itemId: 'leather_armor', price: 40 }] },
             { name: 'Merchant Lirel', role: 'shop', x: 450, y: 600, zoneId: 'canopy_of_life',
               dialogue: ['Welcome! Browse my wares.', 'Best potions this side of the Nexus!', 'Come back anytime!'],
-              dialogueId: 'merchant_greeting', interactRadius: 60,
+              dialogueId: 'merchant_lirel_greeting', interactRadius: 60,
               shopInventory: [{ itemId: 'minor_health_potion', price: 10 }, { itemId: 'sap_crystal', price: 20 }] },
             { name: 'Herbalist Tansy', role: 'quest', x: 550, y: 300, zoneId: 'canopy_of_life',
               dialogue: ['Need more herbs... always more herbs.', 'The forest creatures carry useful ingredients.', 'Bring me potions and I\'ll reward you well!'],
@@ -681,7 +769,20 @@ export default class GameScene extends Phaser.Scene {
               dialogueId: 'borsk_greeting', interactRadius: 60 },
             { name: 'Innkeeper Maren', role: 'shop', x: 400, y: 500, zoneId: 'canopy_of_life',
               dialogue: ['Need a room? Meal?', 'Rest here to recover your strength.', 'The inn is always open.'],
-              dialogueId: 'maren_greeting', interactRadius: 60 },
+              dialogueId: 'maren_greeting', interactRadius: 60,
+              shopInventory: [
+                { itemId: 'minor_health_potion', price: 12 },
+                { itemId: 'healing_herb', price: 5 },
+                { itemId: 'spring_water', price: 3 }
+              ] },
+            { name: 'Sapling Workshop', role: 'crafting', x: 750, y: 300, zoneId: 'canopy_of_life',
+              dialogue: ['The workshop is open. Bring materials and craft what you need.'],
+              dialogueId: null, interactRadius: 70,
+              stationId: 'sapling_workshop' },
+            { name: 'Bloomguard Forge', role: 'crafting', x: 750, y: 420, zoneId: 'canopy_of_life',
+              dialogue: ['The forge burns hot. Bring iron and leather.'],
+              dialogueId: null, interactRadius: 70,
+              stationId: 'bloomguard_forge' },
             { name: 'Guard Captain Reyla', role: 'quest', x: 100, y: 350, zoneId: 'canopy_of_life',
               dialogue: ['Keep your weapons ready.', 'Report any suspicious activity.', 'The Canopy must be protected.'],
               dialogueId: 'reyla_greeting', interactRadius: 60 },
@@ -707,7 +808,11 @@ export default class GameScene extends Phaser.Scene {
             // ---- Mycelium Nexus ----
             { name: 'Corrupted Scholar', role: 'quest', x: 900, y: 1350, zoneId: 'mycelium_nexus',
               dialogue: ['I came to study the corruption...', 'It\'s beautiful, in its own terrible way.', 'Help me gather samples before it spreads further.'],
-              interactRadius: 60 }
+              interactRadius: 60 },
+            // ---- Veilkeeper — near world center ----
+            { name: 'Sylara', role: 'veilkeeper', x: 800, y: 500, zoneId: 'canopy_of_life',
+              dialogue: ['The Veil whispers your name. What do you seek to know?'],
+              dialogueId: 'sylara_greeting', keeperId: 'sylthara', interactRadius: 70 }
         ];
 
         for (const def of npcDefs) {
@@ -717,7 +822,9 @@ export default class GameScene extends Phaser.Scene {
                 dialogue: def.dialogue || [],
                 interactRadius: def.interactRadius || 60,
                 dialogueId: def.dialogueId,
-                shopInventory: def.shopInventory
+                shopInventory: def.shopInventory,
+                keeperId: def.keeperId,
+                stationId: def.stationId
             });
             this.npcs.push(npc);
         }
@@ -789,6 +896,17 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-THREE', () => this._castSpell(2));
         this.input.keyboard.on('keydown-FOUR', () => this._castSpell(3));
         this.input.keyboard.on('keydown-FIVE', () => this._castSpell(4));
+
+        // Escape → pause menu
+        this.input.keyboard.on('keydown-ESC', () => {
+            if (this.scene.isActive('PauseMenuScene')) return;
+            this.scene.launch('PauseMenuScene');
+        });
+
+        // J → toggle quest journal in UIScene
+        this.input.keyboard.on('keydown-J', () => {
+            EventBus.emit('ui:toggleQuestJournal');
+        });
     }
 
     _castSpell(index) {
@@ -808,7 +926,8 @@ export default class GameScene extends Phaser.Scene {
 
         // Apply phase modifier
         const modifier = this.sapCycle.getBlendedModifier(spell);
-        const damage = Math.round(spell.baseDamage * modifier);
+        const baseDmg = spell.baseDamage ?? spell.damage ?? 0;
+        const damage = Math.round(baseDmg * modifier);
 
         // Consume sap (personal) and DSP (world resource)
         this.player.stats.sap -= spell.sapCost;
@@ -818,16 +937,11 @@ export default class GameScene extends Phaser.Scene {
         // Set cooldown
         this.player.stats.cooldowns[spell.id] = now + spell.cooldown * 1000;
 
-        // Camera shake for the spell
-        this.cameraSystem.shake('spell');
+        // SpellVFXIntegration: cast burst, cast flash, tier-based shake
+        EventBus.emit('spell-cast', { spell, damage: 0, modifier, caster: this.player });
 
-        // VFX
         const pointer = this.input.activePointer;
         const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-
-        if (spell.vfx?.castParticle) {
-            this.particles.burst(this.player.x, this.player.y, spell.vfx.castParticle, { count: 15 });
-        }
 
         // Healing spell
         if (spell.healAmount) {
@@ -836,7 +950,6 @@ export default class GameScene extends Phaser.Scene {
             this.player.stats.hp = Math.min(this.player.stats.maxHp, this.player.stats.hp + healAmt);
             this.damageNumbers.show(this.player.x, this.player.y - 20, healAmt, 0x44ff88);
             EventBus.emit('player-stats-updated', this.player.stats);
-            EventBus.emit('spell-cast', { spell, damage: 0, modifier });
             this._broadcastCooldown(spell);
             return;
         }
@@ -854,11 +967,12 @@ export default class GameScene extends Phaser.Scene {
         });
 
         if (targetEnemy) {
-            const finalDmg = Math.max(1, damage + this.player.stats.attack);
+            const atk = this.player.stats.attack ?? this.player.stats.might ?? 0;
+            const finalDmg = Math.max(1, damage + atk);
             targetEnemy.data.hp -= finalDmg;
 
-            // Hit particles
-            this.particles.burst(targetEnemy.x, targetEnemy.y, 'hit_sparks', { count: 10 });
+            // SpellVFXIntegration: impact burst + flash (if vfx.impactParticle, etc.)
+            EventBus.emit('spell-impact', { spell, caster: this.player, target: targetEnemy, damage: finalDmg });
 
             // Damage number
             this.damageNumbers.show(targetEnemy.x, targetEnemy.y - 20, finalDmg, 0xffaa44);
@@ -876,9 +990,7 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
-        // Update UI
         EventBus.emit('player-stats-updated', this.player.stats);
-        EventBus.emit('spell-cast', { spell, damage, modifier });
         this._broadcastCooldown(spell);
     }
 
@@ -946,6 +1058,15 @@ export default class GameScene extends Phaser.Scene {
         const enemyId = enemy.data.definition?.id;
         if (enemyId) {
             EventBus.emit('enemy:defeated', { enemyId });
+        }
+
+        // Broadcast loot summary
+        if (lootTable) {
+            EventBus.emit('loot-dropped', {
+                enemyId: enemyId || 'unknown',
+                gold: this.player.stats.gold,
+                items: (lootTable.items || []).map(d => d.itemId)
+            });
         }
 
         // Remove enemy
@@ -1059,7 +1180,8 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _onDSPThresholdChanged(data) {
-        const { threshold, value } = data;
+        const threshold = data.threshold ?? data.current;
+        const value = data.value ?? data.dsp;
         console.log(`[DSP] World state: ${threshold} (${value}/100)`);
 
         // Visual feedback for DSP state
@@ -1083,6 +1205,91 @@ export default class GameScene extends Phaser.Scene {
         const { choiceId, alignment } = data;
         console.log(`[Moral] Choice made: ${choiceId} (${alignment})`);
         this.cameraSystem.shake('light');
+    }
+
+    /**
+     * Called when the MoralChoicePanel resolves a player choice.
+     * Applies DSP delta and faction reputation changes from the selected option.
+     */
+    _onMoralChoiceMade(data) {
+        const { choiceId, selectedChoice } = data;
+        if (!selectedChoice) return;
+
+        const impact = selectedChoice.impact || {};
+
+        // Apply DSP delta
+        if (impact.dsp !== undefined && impact.dsp !== 0) {
+            if (impact.dsp > 0) {
+                this.dspSystem?.recover(Math.abs(impact.dsp), `moral:${choiceId}`);
+            } else {
+                this.dspSystem?.drain(Math.abs(impact.dsp), `moral:${choiceId}`);
+            }
+        }
+
+        // Apply faction reputation delta
+        if (impact.faction && impact.factionDelta !== 0) {
+            this.factionSystem?.modifyReputation(impact.faction, impact.factionDelta);
+        }
+
+        // Record in MoralChoiceSystem for alignment tracking
+        this.moralChoiceSystem?.makeChoice(choiceId, selectedChoice.id);
+
+        console.log(`[Moral] Overlay choice resolved: ${choiceId} → ${selectedChoice.id}`);
+        this.cameraSystem.shake('light');
+    }
+
+    /** Pause overworld physics when moral choice panel opens. */
+    _onPauseWorld() {
+        this.physics.pause();
+        console.log('[GameScene] World paused for moral choice');
+    }
+
+    /** Resume overworld physics after moral choice panel closes. */
+    _onResumeWorld() {
+        this.physics.resume();
+        console.log('[GameScene] World resumed after moral choice');
+    }
+
+    /**
+     * Listen for quest:started — if a veil/prologue quest fires, show the
+     * Veil Shard moral choice (once only).
+     */
+    _onQuestStarted(data) {
+        const qid = (data?.questId || data?.id || '').toLowerCase();
+        if (!this._veilChoiceShown && (qid.startsWith('quest_veil') || qid.startsWith('prologue'))) {
+            this._veilChoiceShown = true;
+            this.time.delayedCall(1500, () => this._presentVeilChoice());
+        }
+    }
+
+    /** Emit the demo Veil Shard moral choice. */
+    _presentVeilChoice() {
+        this._veilChoiceShown = true;
+        EventBus.emit('moral-choice-present', {
+            id: 'choice_veil_approach',
+            title: 'The Veil Beckons',
+            description: 'A trembling shard of the Veil lies before you. You can feel its power — corruptive or restorative depending on how it is used.',
+            choices: [
+                {
+                    id: 'purify',
+                    label: 'Purify the Shard',
+                    consequence: 'The DSP stabilizes, but the Verdant Circle grows suspicious of your motives.',
+                    impact: { dsp: 10, faction: 'verdant_circle', factionDelta: -5 }
+                },
+                {
+                    id: 'absorb',
+                    label: 'Absorb its Power',
+                    consequence: 'You gain strength, but the DSP drops sharply. The Veilkeepers take notice.',
+                    impact: { dsp: -20, faction: 'veilkeepers', factionDelta: 10 }
+                },
+                {
+                    id: 'destroy',
+                    label: 'Destroy the Shard',
+                    consequence: 'The shard is gone. No gain, no loss — but you sense the Veil watching.',
+                    impact: { dsp: 0, faction: null, factionDelta: 0 }
+                }
+            ]
+        });
     }
 
     _onEraChanged(data) {
@@ -1136,6 +1343,61 @@ export default class GameScene extends Phaser.Scene {
             alpha: { from: 1, to: 0 },
             duration: 4000,
             onComplete: () => text.destroy()
+        });
+    }
+
+    /**
+     * Handle consultation request from VeilkeeperPanel.
+     * Calls VeilkeeperSystem.consult(), then emits a response back to the panel.
+     */
+    _onVeilkeeperConsultRequest(data) {
+        const { keeperId, question } = data || {};
+        if (!keeperId) return;
+
+        const sapPhase = this.sapCycleSystem?.currentPhase || 'blue';
+        const result = this.veilkeeperSystem.consult(keeperId, sapPhase);
+
+        if (!result.success) {
+            EventBus.emit('veilkeeper-response', {
+                keeperId,
+                message: null,
+                warning: result.reason || 'The Veil does not answer.'
+            });
+            return;
+        }
+
+        // Contextual fallback responses keyed by preset question text
+        const responses = {
+            'What fate awaits me?': 'The strands of your fate are tangled with the Sap itself. What you do with that power determines what unravels.',
+            'How do I restore the DSP?': 'The Dynamic Sap Potential can be restored only by tending to the world — completing its tasks, healing its wounds, and preserving its keepers.',
+            'What does my ancestry mean?': 'Your lineage carries echoes of those who shaped the Veil. Look to your ancestry traits — they are not limits, they are keys.'
+        };
+        const message = responses[question] || 'The Veil has shown me a glimpse of what you seek. Proceed with clarity, and it will reveal more.';
+
+        const warning = result.died
+            ? `${keeperId} has succumbed to the Hollowing. Their domain is sealed forever.`
+            : (result.warning || null);
+
+        EventBus.emit('veilkeeper-response', { keeperId, message, warning });
+    }
+
+    /**
+     * Reply with live Veilkeeper state for the hollowing display in VeilkeeperPanel.
+     */
+    _onVeilkeeperQueryState(data) {
+        const { keeperId, replyEvent } = data || {};
+        if (!keeperId || !replyEvent) return;
+
+        const vk = this.veilkeeperSystem.getVeilkeeper(keeperId);
+        if (!vk) {
+            EventBus.emit(replyEvent, { keeperId, alive: false });
+            return;
+        }
+        EventBus.emit(replyEvent, {
+            keeperId,
+            alive: vk.alive,
+            currentHollowing: vk.currentHollowing,
+            hollowingThreshold: vk.hollowingThreshold
         });
     }
 
@@ -1270,7 +1532,21 @@ export default class GameScene extends Phaser.Scene {
                 case 'chase': {
                     const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
                     const speed = d.definition?.baseStats?.speed || 80;
-                    enemy.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+                    if (distToPlayer <= 32) {
+                        enemy.setVelocity(0, 0);
+                        d.attackCooldown -= dt;
+                        if (d.attackCooldown <= 0) {
+                            const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
+                            this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
+                            EventBus.emit('enemy-attack', { enemy, player: this.player, damage });
+                            EventBus.emit('player-stats-updated', this.player.stats);
+                            d.attackCooldown = 1.5;
+                            if (this.player.stats.hp <= 0) this._onPlayerDeath?.();
+                        }
+                    } else {
+                        enemy.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+                    }
 
                     if (distToPlayer > 400) {
                         d.aiState = 'idle';
@@ -1299,18 +1575,27 @@ export default class GameScene extends Phaser.Scene {
         // Sap cycle
         this.profiler.begin('sapCycle');
         this.sapCycle.update(delta);
+        if (this.sapCycleLightingIntegration) {
+            this.sapCycleLightingIntegration.update(time, delta);
+        }
         this.profiler.end('sapCycle');
 
-        // Enemy AI
+        // Enemy AI (pause during dialogue so foes don't rush past the player)
         this.profiler.begin('enemyAI');
-        if (!this.isDead) {
+        if (!this.isDead && !this.dialogueSystem.isActive()) {
             this._updateEnemyAI(delta);
+        } else if (!this.isDead && this.dialogueSystem.isActive()) {
+            this.enemies.children.entries.forEach((enemy) => {
+                if (enemy?.active && enemy.body) enemy.setVelocity(0, 0);
+            });
         }
         this.profiler.end('enemyAI');
 
         // NPCs
-        for (const npc of this.npcs) {
-            npc.update(delta, this.player);
+        if (!this.dialogueSystem.isActive()) {
+            for (const npc of this.npcs) {
+                npc.update(delta, this.player);
+            }
         }
 
         // Lighting
@@ -1367,6 +1652,30 @@ export default class GameScene extends Phaser.Scene {
         this.profiler.stats.lightsActive = this.lighting.lights.length;
         this.profiler.stats.particlesActive = this.particles.getActiveCount?.() || 0;
         this.profiler.update(delta);
+
+        // Dev: expose game state for automated testing (Playwright)
+        if (import.meta.env.DEV && this.player) {
+            window.__gameState = {
+                scene: 'GameScene',
+                playerX: Math.round(this.player.x),
+                playerY: Math.round(this.player.y),
+                playerHP: this.player.stats?.hp ?? 0,
+                playerMaxHP: this.player.stats?.maxHp ?? 100,
+                playerSap: this.player.stats?.sap ?? 0,
+                playerMaxSap: this.player.stats?.maxSap ?? 100,
+                playerGold: this.player.stats?.gold ?? 0,
+                playerLevel: this.player.stats?.level ?? 1,
+                dsp: this.dspSystem?.current ?? 100,
+                dspMax: this.dspSystem?.max ?? 100,
+                sapPhase: this.sapCycle?.currentPhase ?? 'blue',
+                isPaused: this.scene.isActive('PauseMenuScene'),
+                isInDialogue: this.dialogueSystem?.isActive?.() ?? false,
+                isDead: this.isDead ?? false,
+                inTacticalCombat: this.inTacticalCombat ?? false,
+                activeEnemyCount: this.enemies?.children?.size ?? 0,
+                activeQuestName: null // filled by QuestSystem if wired
+            };
+        }
     }
 
     _handleMovement() {
@@ -1404,6 +1713,9 @@ export default class GameScene extends Phaser.Scene {
 
     shutdown() {
         if (this._unsubs) this._unsubs.forEach((fn) => fn());
+        if (this.spellVfxIntegration) this.spellVfxIntegration.shutdown();
+        if (this.sapCycleLightingIntegration) this.sapCycleLightingIntegration.destroy();
+        if (this.tacticalCombatCameraBridge) this.tacticalCombatCameraBridge.destroy();
         this.lighting.shutdown();
         this.particles.shutdown();
         this.cameraSystem.shutdown();

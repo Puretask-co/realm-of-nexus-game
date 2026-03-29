@@ -8,19 +8,46 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a0a;
-            overflow: hidden;
+            overflow: auto;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         #game-container {
             position: relative;
         }
+        #boot-message {
+            color: #aac;
+            padding: 12px 16px;
+            font-family: system-ui, sans-serif;
+            font-size: 14px;
+            text-align: center;
+            max-width: 640px;
+        }
+        #boot-message[hidden] {
+            display: none !important;
+        }
+        #game-boot-error {
+            color: #f88;
+            padding: 12px 16px;
+            max-width: 640px;
+            font-family: system-ui, sans-serif;
+            font-size: 14px;
+        }
+        #game-boot-error[hidden] {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
+    <p id="boot-message">
+        Loading Realm of Nexus… If the game does not appear, press <strong>F12</strong>, open the <strong>Console</strong> tab, and look for red errors.
+        Also check the terminal: if port 3000 is busy, Vite may use <strong>3001</strong> or another port — use the URL it prints.
+    </p>
     <div id="game-container"></div>
+    <p id="game-boot-error" hidden></p>
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>

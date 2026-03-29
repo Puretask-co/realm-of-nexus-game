@@ -208,10 +208,12 @@ export class DSPSystem {
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
 
-  drain(amount, source) {
-    this.currentDSP = Math.max(this.min, this.currentDSP - amount);
-    this.eventBus.emit('dsp:drained', { amount, source, current: this.currentDSP });
-    this._checkThreshold();
+  drain(amount, source = 'spell') {
+    if (amount <= 0) return;
+    this.current = Math.max(this.min, this.current - amount);
+    this._checkThresholdChange();
+    this.eventBus.emit('dsp:changed', this.getStatus());
+    this.eventBus.emit('dsp:drained', { amount, source, current: this.current });
   }
 }
 

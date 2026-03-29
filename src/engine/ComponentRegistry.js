@@ -300,7 +300,16 @@ export class ComponentRegistry {
     const children = scene.children?.list || [];
     for (const obj of children) {
       if (!obj.active) continue;
-      const name = obj.name || obj.getData?.('objectName') || obj.type || 'GameObject';
+      // Some objects have `data` without Phaser's DataManager plugin — getData() then throws.
+      let objectName;
+      if (obj.data && typeof obj.data.get === 'function') {
+        try {
+          objectName = obj.data.get('objectName');
+        } catch (_) {
+          objectName = undefined;
+        }
+      }
+      const name = obj.name || objectName || obj.type || 'GameObject';
       const entity = this.createEntity(name);
       entity.gameObject = obj;
       entity.depth = obj.depth || 0;

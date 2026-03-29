@@ -347,3 +347,20 @@ npm run preview    # Preview production build
 - **Vanilla JS (ES modules)** — No framework overhead
 - **JSON data files** — Designer-editable game content
 - **localStorage** — Save system (3 slots + auto-save)
+
+---
+
+## Related documentation
+
+- **`AGENTS.md`** (repo root) — Entry point for humans and AI agents; links to all guides.
+- **`docs/ONBOARDING.md`** — Master documentation index.
+- **`BUILD_PLAYBOOK_AND_ROADMAP.md`** — Product vision, phased roadmap (what to build in what order), release criteria.
+- **`IMPLEMENTATION_AND_PATHS_GUIDE.md`** — Current systems status, vertical slices, player paths.
+- **`FEATURE_CHECKLIST.md`** — Feature backlog with checkboxes.
+- **`CLAUDE_AGENT_GUIDE.md`** — Coding-agent handbook: repository map, architectural rules, copy-paste system prompt, pitfalls, verification checklist.
+- **`CONTRIBUTING.md`** — PR and verification expectations.
+- **`SECURITY.md`** — Secrets and reporting.
+- **`docs/DEVELOPMENT.md`** — Dev workflow, commands, CI parity.
+- **`docs/TROUBLESHOOTING.md`** — Common failures (build, data, port).
+- **`CHANGELOG.md`** — Release history.
+- **`LICENSE`** — Copyright / proprietary notice.

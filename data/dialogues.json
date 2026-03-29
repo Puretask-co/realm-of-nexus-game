@@ -134,7 +134,8 @@
         { "id": "forger_del", "name": "Forger Del", "nameColor": "#bb7744", "voicePitch": 0.75, "textSpeed": 1.0 },
         { "id": "trapper_vek", "name": "Trapper Vek", "nameColor": "#668855", "voicePitch": 0.8, "textSpeed": 1.0 },
         { "id": "singer_aria", "name": "Singer Aria", "nameColor": "#cc88aa", "voicePitch": 1.3, "textSpeed": 0.9 },
-        { "id": "watcher_cole", "name": "Watcher Cole", "nameColor": "#4488aa", "voicePitch": 0.85, "textSpeed": 1.0 }
+        { "id": "watcher_cole", "name": "Watcher Cole", "nameColor": "#4488aa", "voicePitch": 0.85, "textSpeed": 1.0 },
+        { "id": "sylara", "name": "Sylara", "nameColor": "#cc99ff", "voicePitch": 0.85, "textSpeed": 0.8 }
     ],
     "dialogues": [
         {
@@ -672,7 +673,7 @@
             ]
         },
         {
-            "id": "merchant_greeting",
+            "id": "merchant_lirel_greeting",
             "startNode": "start",
             "nodes": [
                 {
@@ -714,7 +715,121 @@
         { "id": "forger_del_greeting", "startNode": "start", "nodes": [{ "id": "start", "speaker": "forger_del", "text": "Del. I forge. Bring materials and I'll make you something that lasts." }] },
         { "id": "trapper_vek_greeting", "startNode": "start", "nodes": [{ "id": "start", "speaker": "trapper_vek", "text": "Traps and tricks. I know the wilds. Don't wander into my lines." }] },
         { "id": "singer_aria_greeting", "startNode": "start", "nodes": [{ "id": "start", "speaker": "singer_aria", "text": "I sing the old ballads. The Sap Cycle, the Unbinding — all in verse." }] },
-        { "id": "watcher_cole_greeting", "startNode": "start", "nodes": [{ "id": "start", "speaker": "watcher_cole", "text": "I watch the borders. Something's stirring in the deep woods." }] }
+        { "id": "watcher_cole_greeting", "startNode": "start", "nodes": [{ "id": "start", "speaker": "watcher_cole", "text": "I watch the borders. Something's stirring in the deep woods." }] },
+
+        { "_comment": "=== QUEST DIALOGUES — ACT 2 / FACTION ARCS ===" },
+
+        { "id": "althea_veil_unraveling", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "The Veil is fraying in places I have never seen before. Something ancient is pulling at its seams. Will you help me investigate?" }
+        ]},
+        { "id": "althea_veil_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "You have done what I feared was impossible. The Veil holds — for now. I am in your debt, and more than that, I am grateful." }
+        ]},
+        { "id": "briara_siege_briefing", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "Hollowroot is under siege. The corrupted forces are organized — this isn't random aggression. Someone is directing them. I need you at the walls." }
+        ]},
+        { "id": "briara_siege_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "The siege is broken. Hollowroot stands. I won't forget what you did here — and neither will the Bloomguard." }
+        ]},
+        { "id": "veyla_fractured_alliance", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The Coven and the Wildkin Pact are at each other's throats. If this breaks into open conflict, the Sap Cycle will destabilize. I need a mediator. I need you." }
+        ]},
+        { "id": "veyla_fractured_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "A fragile peace, but peace nonetheless. The forest breathes easier. You showed both sides what cooperation looks like." }
+        ]},
+        { "id": "althea_unbinding", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "The Unbinding is coming — the final phase of the Silver Sap. We have one chance to channel it correctly and restore the world's balance. Will you stand with me?" }
+        ]},
+        { "id": "elder_unbinding_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "elder_thalos", "text": "The Sap has spoken. The Unbinding was channeled with wisdom. The realm owes you a debt that cannot be measured in gold." }
+        ]},
+        { "id": "briara_patrol_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "Three patrol routes went dark last night. I need someone to scout them and report back. Can you do it without starting a war?" }
+        ]},
+        { "id": "briara_patrol_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "All three routes confirmed. Good work. The Bloomguard will know where to focus their attention." }
+        ]},
+        { "id": "briara_corruption_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "Something is corrupting the patrol animals — the wolves, the elk, even the bark hounds. Track down the source and eliminate it before it spreads." }
+        ]},
+        { "id": "briara_corruption_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "The corruption source has been destroyed. The animals are already calming. You've saved more lives than you know." }
+        ]},
+        { "id": "veyla_rite_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The Rite of Renewal hasn't been performed in three Sap Cycles. The Coven needs rare moonpetals gathered during the Silver Phase. Will you gather them?" }
+        ]},
+        { "id": "veyla_rite_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The Rite is complete. I can feel the Sap responding. The Emerald Coven is in your debt. Take this — you've earned it." }
+        ]},
+        { "id": "yenna_hunt_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "The Great Hunt is a Wildkin tradition — we don't kill for sport, we hunt what has gone wrong. The Titan Elk in the northern grove has become corrupted. I need a hunter at my side." }
+        ]},
+        { "id": "yenna_hunt_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "The Titan Elk is at rest. We gave it a clean death — that is the Wildkin way. The forest is safer, and you've proven yourself to the Pact." }
+        ]},
+        { "id": "mycel_experiment_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycel", "text": "I require a field test. The spore compound I have developed theoretically accelerates natural decay in corrupted tissue. All I need is a willing subject to carry the payload into the Warrens." }
+        ]},
+        { "id": "mycel_experiment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycel", "text": "Remarkable. The decay rate exceeded my projections. You have advanced Sporecaller science considerably — whether you meant to or not." }
+        ]},
+        { "id": "reyla_lost_expedition", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "reyla", "text": "A Bloomguard scouting party went into the Hollowroot Catacombs three days ago. No word since. I can't commit a full squad — but I can send one capable person. You." }
+        ]},
+        { "id": "reyla_expedition_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "reyla", "text": "They made it out because of you. The Guard won't forget this. Whatever you need from us — ask." }
+        ]},
+        { "id": "kael_artifact_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "A Veilkeeper artifact was taken from the Sanctum. Whoever took it knows how to use it — that makes them dangerous. Recover it before they do something irreversible." }
+        ]},
+        { "id": "kael_artifact_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "The artifact is secured. You've prevented something I don't want to think about too hard. Well done." }
+        ]},
+        { "id": "maren_lost_child", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "maren", "text": "Please — my daughter wandered into Spindlewood at dusk and hasn't come back. She chases the glow-spores and forgets herself. Will you find her?" }
+        ]},
+        { "id": "maren_child_found", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "maren", "text": "She's safe. She's safe — thank you. I don't know what I would have done. The inn is yours whenever you need it, no coin required." }
+        ]},
+        { "id": "veyla_cascade_spirit", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The Emerald Cascade has a guardian spirit — ancient, wounded, and very angry. It is lashing out at anyone who approaches the springs. We need it calmed, not killed." }
+        ]},
+        { "id": "veyla_cascade_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The spirit is at peace. The cascade flows clean again. You have a gift for this kind of work — listening before striking." }
+        ]},
+        { "id": "garon_crystal_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "garon", "text": "I need Crystalline Sap from the Glinting Groves — only grows during Blue Phase, only survives if harvested right. Bring me three samples and I'll make you something extraordinary." }
+        ]},
+        { "id": "garon_crystal_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "garon", "text": "Perfect. Three samples, not a drop spilled. This is what I needed. Give me some time at the forge and you won't be disappointed." }
+        ]},
+        { "id": "mycel_spore_lord_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycel", "text": "The Spore Lord has awakened in the Mycelium network beneath the Warrens. It should not exist — something fed it too much corrupted Sap. Deal with it before it decides to expand." }
+        ]},
+        { "id": "mycel_spore_lord_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycel", "text": "The network is stabilizing. You've done the Syndicate a service, whether or not you intended to. I won't forget that." }
+        ]},
+        { "id": "kael_companion_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "I've been watching you. You move through danger and come out the other side. I have a task that requires that quality — and I would come with you, if you'll have me." }
+        ]},
+        { "id": "kael_companion_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "We did it. I won't say I doubted you, but I'll admit the odds were against us. I'd like to keep travelling with you, if you're willing." }
+        ]},
+        { "id": "yenna_companion_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "The Wildkin Pact sends lone scouts sometimes — to learn what cannot be learned in a pack. I think my time is now. Let me walk with you a while." }
+        ]},
+        { "id": "yenna_companion_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "The forest speaks differently when you're moving through it with purpose. I see what the elders meant now. Thank you for letting me run with you." }
+        ]},
+        { "id": "althea_companion_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "Every path I have foreseen eventually leads to you. It seems I cannot avoid it — nor do I want to. Let me join you. My sight may save us both." }
+        ]},
+        { "id": "althea_companion_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "I saw this moment too. I am glad it came to pass exactly as I hoped. Whatever comes next — I am with you." }
+        ]},
+        { "id": "sylara_greeting", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sylara", "text": "The Veil whispers your name. What do you seek to know?" }
+        ]}
     ]
 }
 

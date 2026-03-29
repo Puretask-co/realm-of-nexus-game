@@ -127,12 +127,11 @@ export class AIDungeonMaster {
   }
 
   /**
-   * Call Anthropic Messages API via fetch. Returns a promise of the assistant text.
+   * Call Claude via the local proxy server (http://localhost:3001/api/claude).
+   * The proxy forwards to api.anthropic.com and keeps the API key server-side.
+   * Falls back gracefully if proxy is not running.
    */
   async _callClaudeAPI(systemPrompt, userMessage) {
-    const key = this.claudeApiKey || this._getClaudeApiKey();
-    if (!key) return null;
-
     const body = {
       model: this.claudeModel,
       max_tokens: this.claudeMaxTokens,
@@ -141,25 +140,21 @@ export class AIDungeonMaster {
     };
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('http://localhost:3001/api/claude', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': '2023-06-01'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       if (!res.ok) {
         const err = await res.text();
-        console.warn('[AIDungeonMaster] Claude API error:', res.status, err);
+        console.warn('[AIDungeonMaster] Proxy error:', res.status, err);
         return null;
       }
       const data = await res.json();
       const block = data.content?.find(c => c.type === 'text');
       return block?.text?.trim() || null;
     } catch (e) {
-      console.warn('[AIDungeonMaster] Claude API request failed:', e);
+      // Proxy not running — silent fallback to static responses
       return null;
     }
   }
@@ -169,9 +164,6 @@ export class AIDungeonMaster {
    * Falls back to null if API key is missing or request fails; caller should use template then.
    */
   async generateNarration(context) {
-    const key = this.claudeApiKey || this._getClaudeApiKey();
-    if (!key) return null;
-
     const systemPrompt = `You are the Dungeon Master for "Realm of Nexus: Verdance", a tactical RPG. Respond with a single short, vivid narration line (1-2 sentences). No quotes or labels. Tone: atmospheric, slightly poetic, grounded in the world's Sap Cycle and forest setting.`;
 
     let userMessage = '';

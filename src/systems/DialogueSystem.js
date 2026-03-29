@@ -134,6 +134,10 @@ export class DialogueSystem {
       return false;
     }
 
+    if (this.active) {
+      this.endDialogue();
+    }
+
     this.currentDialogue = dialogue;
     this.active = true;
     this.onDialogueEnd = options.onEnd || null;
@@ -476,6 +480,12 @@ export class DialogueSystem {
       GameConfig.WIDTH, GameConfig.HEIGHT,
       0x000000, 0.3
     );
+    this.overlay.setInteractive();
+    this.overlay.on('pointerdown', (_pointer, _lx, _ly, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (this.currentNode?.choices?.length > 0) return;
+      this.advanceDialogue();
+    });
     this.container.add(this.overlay);
 
     // Dialogue box background
@@ -535,8 +545,7 @@ export class DialogueSystem {
       repeat: -1
     });
 
-    // Input handling
-    this.scene.input.on('pointerdown', () => this.advanceDialogue());
+    // Click-to-continue uses overlay only (avoids firing alongside choice buttons).
     this.spaceKey = this.scene.input.keyboard.addKey('SPACE');
     this.spaceKey.on('down', () => this.advanceDialogue());
 
@@ -600,6 +609,7 @@ export class DialogueSystem {
 
   showChoices(choices) {
     this.clearChoices();
+    if (this.overlay) this.overlay.disableInteractive();
 
     const cfg = this.uiConfig;
     const startY = cfg.boxY - 10;
@@ -634,7 +644,10 @@ export class DialogueSystem {
 
       text.on('pointerover', () => text.setColor(cfg.choiceHoverColor));
       text.on('pointerout', () => text.setColor(cfg.choiceColor));
-      text.on('pointerdown', () => this.selectChoice(i));
+      text.on('pointerdown', (_pointer, _lx, _ly, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        this.selectChoice(i);
+      });
       this.container.add(text);
 
       this.choiceButtons.push({ bg, text, index: i });
@@ -647,19 +660,26 @@ export class DialogueSystem {
       choice.text.destroy();
     }
     this.choiceButtons = [];
+    if (this.overlay && this.active) this.overlay.setInteractive();
   }
 
   destroyDialogueUI() {
     this.stopTypewriter();
     this.clearChoices();
 
+    if (this.overlay) {
+      this.overlay.removeAllListeners();
+      this.overlay.disableInteractive();
+    }
+
     if (this.container) {
       this.container.destroy(true);
       this.container = null;
     }
 
+    this.overlay = null;
+
     // Remove input listeners
-    this.scene.input.off('pointerdown');
     if (this.spaceKey) {
       this.spaceKey.removeAllListeners();
     }

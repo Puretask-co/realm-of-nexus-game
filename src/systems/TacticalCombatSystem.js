@@ -459,7 +459,6 @@ export class TacticalCombatSystem {
 
     const evasion = 10 + (defender.stats.agility || defender.stats.agi || 0);
     const hit = attackRoll === 20 || total >= evasion;
-    const criticalHit = attackRoll === 20;
 
     if (!hit) {
       this._log(`${attacker.name} missed ${defender.name}!`);
@@ -469,15 +468,16 @@ export class TacticalCombatSystem {
       return { success: true, hit: false };
     }
 
+    // Verdance 4-pillar positioning (needed before crit so guaranteedCrit doubles damage)
+    const posResult = this._getPositionBonus(attacker, defender);
+    const criticalHit = attackRoll === 20 || !!posResult.guaranteedCrit;
+
     // Damage calculation
     let damage = (attacker.stats.might || attacker.stats.atk || 2) +
       Math.floor(Math.random() * 6) + 1; // d6 base weapon damage
 
     if (criticalHit) damage *= 2;
 
-    // Verdance 4-pillar positioning
-    const posResult = this._getPositionBonus(attacker, defender);
-    if (posResult.guaranteedCrit) criticalHit = true;
     damage = Math.round(damage * (1 + posResult.damageMultiplier));
 
     // Difficulty modifier
@@ -743,9 +743,16 @@ export class TacticalCombatSystem {
 
     // ─── Pillar 1: Entanglement (allies adjacent to defender) ───
     const adjacentAllies = this._countAlliesAdjacentTo(defender);
-    if (adjacentAllies >= 4) bonus += this.positionBonuses.entanglementRooted;
-    else if (adjacentAllies >= 3) bonus += this.positionBonuses.entanglementDeep;
-    else if (adjacentAllies >= 2) bonus += this.positionBonuses.entanglementBase;
+    if (adjacentAllies >= 4) {
+      bonus += this.positionBonuses.entanglementRooted;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Entanglement', description: 'Rooted — 4+ allies surrounding target: +35% damage' });
+    } else if (adjacentAllies >= 3) {
+      bonus += this.positionBonuses.entanglementDeep;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Entanglement', description: 'Deep entanglement — 3 allies flanking: +25% damage' });
+    } else if (adjacentAllies >= 2) {
+      bonus += this.positionBonuses.entanglementBase;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Entanglement', description: 'Entanglement — 2 allies flanking: +15% damage' });
+    }
 
     // ─── Pillar 2: Shrouded Strike (rear / terrain shroud) ───
     const isRear = (defender.facing === 'right' && dx < 0) || (defender.facing === 'left' && dx > 0);
@@ -755,9 +762,11 @@ export class TacticalCombatSystem {
       bonus += this.positionBonuses.shroudFull;
       defenseIgnore = 0.50;
       guaranteedCrit = true;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Shrouded Strike', description: 'Full shroud — rear attack through concealing terrain: +40% damage, ignore 50% defense, guaranteed crit' });
     } else if (isRear || terrainShroud) {
       bonus += this.positionBonuses.shroudPartial;
       defenseIgnore = 0.25;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Shrouded Strike', description: 'Partial shroud — rear or terrain concealment: +20% damage, ignore 25% defense' });
     } else if (isFlank) {
       bonus += this.positionBonuses.flanking;
     }
@@ -766,8 +775,10 @@ export class TacticalCombatSystem {
     const elevationDiff = (attackerTile?.elevation ?? 0) - (defenderTile?.elevation ?? 0);
     if (elevationDiff >= 2) {
       bonus += this.positionBonuses.canopyTier2Ranged; // melee uses same for simplicity
+      this.eventBus.emit('pillar-activated', { pillarName: 'Canopy Advantage', description: 'Tier 2 elevation — high ground mastery: +35% ranged / +25% melee damage' });
     } else if (elevationDiff >= 1) {
       bonus += this.positionBonuses.canopyTier1Ranged;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Canopy Advantage', description: 'Tier 1 elevation — elevated position: +20% ranged / +15% melee damage' });
     } else if (elevationDiff > 0) {
       bonus += this.positionBonuses.elevation; // legacy single tier
     }
@@ -777,10 +788,13 @@ export class TacticalCombatSystem {
     const wardMod = defenderTile?.wardModifier || 'normal';
     if (terrain === 'ward_heavy') {
       bonus += (wardMod === 'strengthened') ? -0.60 : (wardMod === 'corrupted') ? -0.40 : this.positionBonuses.wardHeavy;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Verdant Ward', description: `Heavy ward${wardMod !== 'normal' ? ` (${wardMod})` : ''} — strong protection: damage reduced 50%+` });
     } else if (terrain === 'ward_medium') {
       bonus += (wardMod === 'strengthened') ? -0.40 : (wardMod === 'corrupted') ? -0.20 : this.positionBonuses.wardMedium;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Verdant Ward', description: `Medium ward${wardMod !== 'normal' ? ` (${wardMod})` : ''} — moderate protection: damage reduced 30%` });
     } else if (terrain === 'ward_light') {
       bonus += (wardMod === 'strengthened') ? -0.25 : (wardMod === 'corrupted') ? -0.10 : this.positionBonuses.wardLight;
+      this.eventBus.emit('pillar-activated', { pillarName: 'Verdant Ward', description: `Light ward${wardMod !== 'normal' ? ` (${wardMod})` : ''} — light protection: damage reduced 15%` });
     } else if (terrain === 'cover_high') bonus += this.positionBonuses.cover;
     else if (terrain === 'cover_low') bonus -= 0.25;
 

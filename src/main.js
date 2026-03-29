@@ -5,6 +5,7 @@ import CharacterCreationScene from './scenes/CharacterCreationScene.js';
 import GameScene from './scenes/GameScene.js';
 import EditorScene from './scenes/EditorScene.js';
 import UIScene from './scenes/UIScene.js';
+import PauseMenuScene from './scenes/PauseMenuScene.js';
 import NormalMapPipeline from './pipelines/NormalMapPipeline.js';
 import PostProcessingPipeline from './pipelines/PostProcessingPipeline.js';
 
@@ -49,10 +50,43 @@ const config = {
         PostProcessing: PostProcessingPipeline
     },
 
-    scene: [BootScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene]
+    scene: [BootScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene, PauseMenuScene]
 };
 
-const game = new Phaser.Game(config);
+function showBootError(message) {
+    const el = document.getElementById('game-boot-error');
+    if (el) {
+        el.hidden = false;
+        el.textContent = message;
+    }
+}
+
+/**
+ * Custom WebGL pipelines can fail to compile on some GPUs/drivers; retry without them.
+ */
+function createGame(gameConfig) {
+    try {
+        return new Phaser.Game(gameConfig);
+    } catch (err) {
+        console.error('[Verdance] Phaser.Game failed:', err);
+        const { pipeline, ...withoutPipeline } = gameConfig;
+        if (pipeline) {
+            console.warn('[Verdance] Retrying without custom pipelines (NormalMap / PostProcessing).');
+            try {
+                return new Phaser.Game(withoutPipeline);
+            } catch (err2) {
+                showBootError(
+                    `Game failed to start: ${err2.message}. Open the Console (F12) for details.`
+                );
+                throw err2;
+            }
+        }
+        showBootError(`Game failed to start: ${err.message}. Open the Console (F12) for details.`);
+        throw err;
+    }
+}
+
+const game = createGame(config);
 
 // Expose for debugging in dev mode
 if (import.meta.env.DEV) {

@@ -146,6 +146,7 @@ export default class Projectile {
         // Impact effects
         EventBus.emit('spell-impact', {
             spell: this.spell,
+            caster: this.caster,
             target: enemy,
             x: this.sprite.x,
             y: this.sprite.y,

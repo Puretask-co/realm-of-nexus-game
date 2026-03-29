@@ -113,14 +113,7 @@ export default class SpellVFXIntegration {
             this.cameraSystem.shake('heavy');
         }
 
-        // Emit damage number event for the renderer
-        EventBus.emit('damage-number', {
-            x: target.x,
-            y: target.y - 20,
-            value: damage,
-            element: spell.element,
-            isCrit: data.isCrit || false
-        });
+        // Damage numbers are shown by GameScene / DamageNumberRenderer — avoid duplicate emits here.
     }
 
     // ----------------------------------------------------------------
@@ -151,7 +144,11 @@ export default class SpellVFXIntegration {
             nature: 0x44ff66,
             shadow: 0x8844cc,
             light: 0xffdd44,
-            ice: 0x88ddff
+            ice: 0x88ddff,
+            radiant: 0xffffaa,
+            physical: 0xcccccc,
+            spirit: 0xaaccff,
+            void: 0x440066
         };
         return map[element] || 0xffffff;
     }

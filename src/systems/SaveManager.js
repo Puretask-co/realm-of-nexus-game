@@ -68,6 +68,9 @@ export default class SaveManager {
             localStorage.setItem(key, json);
             console.log(`[SaveManager] Saved to slot ${slot} (${(json.length / 1024).toFixed(1)}KB)`);
 
+            // Also write to disk via proxy server (silent — doesn't block or fail the save)
+            this._writeFileSave(slot, saveData);
+
             EventBus.emit('save-complete', { slot, timestamp: saveData.timestamp });
             return true;
         } catch (err) {
@@ -77,17 +80,48 @@ export default class SaveManager {
         }
     }
 
+    /**
+     * Mirror the save to disk via the local proxy server.
+     * Writes to Documents\Realm of Nexus Saves\verdance_save_slot{N}.json
+     * Silent no-op if the proxy isn't running.
+     */
+    async _writeFileSave(slot, saveData) {
+        try {
+            await fetch(`http://localhost:3001/api/save/${slot}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(saveData)
+            });
+        } catch {
+            // Proxy not running — localStorage save already succeeded, so this is fine
+        }
+    }
+
     // ----------------------------------------------------------------
     // Load
     // ----------------------------------------------------------------
 
-    load(slot = 0) {
+    async load(slot = 0) {
         if (slot < 0 || slot >= this.maxSlots) {
             console.error(`[SaveManager] Invalid slot: ${slot}`);
             return null;
         }
 
         const key = `${this.storagePrefix}${slot}`;
+
+        // Try reading from disk first (more reliable than localStorage)
+        const fileSave = await this._readFileSave(slot);
+        if (fileSave) {
+            const lsJson = localStorage.getItem(key);
+            const lsSave = lsJson ? JSON.parse(lsJson) : null;
+            // Use whichever save is newer
+            if (!lsSave || fileSave.timestamp >= lsSave.timestamp) {
+                console.log(`[SaveManager] Loaded slot ${slot} from disk (${new Date(fileSave.timestamp).toLocaleString()})`);
+                EventBus.emit('save-restore', fileSave);
+                EventBus.emit('load-complete', { slot, saveData: fileSave });
+                return fileSave;
+            }
+        }
 
         try {
             let json = localStorage.getItem(key);
@@ -125,6 +159,20 @@ export default class SaveManager {
         } catch (err) {
             console.error(`[SaveManager] Load failed:`, err);
             EventBus.emit('load-failed', { slot, error: err.message });
+            return null;
+        }
+    }
+
+    /**
+     * Try to read a save file from disk via the proxy server.
+     * Returns parsed save data, or null if proxy isn't running or no file exists.
+     */
+    async _readFileSave(slot) {
+        try {
+            const res = await fetch(`http://localhost:3001/api/save/${slot}`);
+            if (!res.ok) return null;
+            return await res.json();
+        } catch {
             return null;
         }
     }

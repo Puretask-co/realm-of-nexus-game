@@ -243,6 +243,7 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
         this._attrTexts = {};
         this._attrBarGfx = {};
+        this._attrBarLayout = {};
 
         attrNames.forEach((attr, i) => {
             const ay = y + 45 + i * 44;
@@ -260,10 +261,14 @@ export default class CharacterCreationScene extends Phaser.Scene {
                 fontFamily: 'monospace', fontSize: '14px', color: '#ffffff'
             }).setOrigin(0.5);
 
-            // Bar
+            // Bar (store layout — Phaser Graphics has no reliable getBounds for redraw)
             const barGfx = this.add.graphics();
             this._attrBarGfx[attr] = barGfx;
-            this._drawAttrBar(barGfx, x + 10, ay + 26, w - 80, attr, attrColors[attr]);
+            const barX = x + 10;
+            const barY = ay + 26;
+            const barW = w - 80;
+            this._attrBarLayout[attr] = { x: barX, y: barY, width: barW };
+            this._drawAttrBar(barGfx, barX, barY, barW, attr, attrColors[attr]);
 
             // - button
             const minusBtn = this.add.text(x + w - 60, ay + 2, '[-]', {
@@ -322,9 +327,9 @@ export default class CharacterCreationScene extends Phaser.Scene {
         for (const [attr, text] of Object.entries(this._attrTexts)) {
             text.setText(`${this.attributes[attr]}`);
             const gfx = this._attrBarGfx[attr];
-            if (gfx) {
-                const bounds = gfx.getBounds();
-                this._drawAttrBar(gfx, bounds.x, bounds.y, bounds.width || 300, attr, attrColors[attr]);
+            const layout = this._attrBarLayout[attr];
+            if (gfx && layout) {
+                this._drawAttrBar(gfx, layout.x, layout.y, layout.width, attr, attrColors[attr]);
             }
         }
     }

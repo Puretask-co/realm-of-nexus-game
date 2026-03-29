@@ -16,6 +16,7 @@
     "phaser": "^3.80.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "vite": "^5.4.0"
   },
   "keywords": [
@@ -26,5 +27,8 @@
     "2d"
   ],
   "author": "Nathan Chiaratti",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

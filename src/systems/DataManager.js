@@ -89,7 +89,10 @@ class DataManager {
 
             this.data.spells = spellsData.spells || [];
             this.data.enemies = enemiesData.enemies || [];
-            this.data.items = itemsData.items || [];
+            // Skip section markers like { "_comment": "..." } — not real item rows
+            this.data.items = (itemsData.items || []).filter(
+                (item) => item && typeof item.id === 'string' && item.id.length > 0
+            );
             this.data.locations = locationsData.locations || [];
             this.data.quests = questsData.quests || [];
             this.data.dialogues = dialoguesData;
@@ -113,7 +116,9 @@ class DataManager {
             console.log(`  - ${this.data.locations.length} locations`);
             console.log(`  - ${this.data.quests.length} quests`);
             console.log(`  - ${(this.data.dialogues.dialogues || []).length} dialogues`);
-            console.log(`  - ${this.data.skills.length} skills`);
+            const skillCount = Array.isArray(this.data.skills) ? this.data.skills.length : 0;
+            const treeCount = (this.data.talentTrees || []).length;
+            console.log(`  - ${skillCount} skills, ${treeCount} talent trees`);
             console.log(`  - ${(this.data.classes.classes || []).length} classes`);
             console.log(`  - ${(this.data.ancestries.ancestries || []).length} ancestries`);
             console.log(`  - ${(this.data.story.eras || []).length} story eras`);
@@ -220,6 +225,7 @@ class DataManager {
         const check = (items, type) => {
             const seen = new Set();
             items.forEach((item) => {
+                if (!item || item.id == null || item.id === '') return;
                 if (seen.has(item.id)) {
                     this.validationErrors.push({
                         type, id: item.id, errors: [`Duplicate ${type} ID: ${item.id}`]

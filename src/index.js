@@ -20,6 +20,8 @@ export { HotReloadSystem } from './systems/HotReloadSystem.js';
 // Tool 3: Advanced Lighting System
 export { default as AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
 export { SapCycleLightingIntegration } from './integration/SapCycleLightingIntegration.js';
+export { default as SpellVFXIntegration } from './integration/SpellVFXIntegration.js';
+export { default as TacticalCombatCameraBridge } from './integration/TacticalCombatCameraBridge.js';
 
 // Tool 4: Advanced Particle System
 export { default as AdvancedParticleSystem } from './systems/AdvancedParticleSystem.js';

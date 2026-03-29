@@ -170,9 +170,20 @@ export class AttributeSystem {
 
   /**
    * Compute derived stats from current attributes + class.
+   * Applies Pure/Blighted variant stat modifiers if a variant is active.
    */
   computeDerivedStats(classDef) {
-    const a = this.attributes;
+    // Lazily import to avoid circular deps — PlayerClassSystem is a singleton
+    const { PlayerClassSystem } = /** @type {any} */ (this._getClassSystem());
+    const variantMods = PlayerClassSystem?.getInstance?.()?.getVariantStatModifiers?.() || {};
+
+    const a = {
+      might:      (this.attributes.might      || 0) + (variantMods.might      || 0),
+      agility:    (this.attributes.agility    || 0) + (variantMods.agility    || 0),
+      resilience: (this.attributes.resilience || 0) + (variantMods.resilience || 0),
+      insight:    (this.attributes.insight    || 0) + (variantMods.insight    || 0),
+      charisma:   (this.attributes.charisma   || 0) + (variantMods.charisma   || 0),
+    };
 
     // HP: base 20 + (Resilience x 5) + class startingHP
     const classHP = classDef?.startingHP || 30;
@@ -220,6 +231,19 @@ export class AttributeSystem {
       insight: a.insight,
       charisma: a.charisma
     };
+  }
+
+  /**
+   * Lazy-load PlayerClassSystem to avoid circular imports.
+   * Returns the module (with .PlayerClassSystem class export) or empty object.
+   */
+  _getClassSystem() {
+    // Dynamic import not viable in sync context; use global registry trick
+    // PlayerClassSystem registers itself on globalThis during init
+    if (typeof globalThis.__playerClassSystem !== 'undefined') {
+      return { PlayerClassSystem: { getInstance: () => globalThis.__playerClassSystem } };
+    }
+    return {};
   }
 
   /**

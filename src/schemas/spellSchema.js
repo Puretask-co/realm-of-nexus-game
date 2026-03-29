@@ -1,11 +1,15 @@
 /**
  * Schema definition for spell data validation.
- * Used by DataManager to ensure all spell data is well-formed
- * before it enters the game systems.
+ * Aligned with Verdance JSON: dspCost, single_target, forbidden tiers, etc.
  */
 export const spellSchema = {
-    required: ['id', 'name', 'tier', 'baseDamage', 'sapCost', 'cooldown'],
-    optional: ['description', 'element', 'targetType', 'areaOfEffect', 'healAmount', 'defenseBypass'],
+    required: ['id', 'name'],
+
+    optional: [
+        'description', 'element', 'targetType', 'areaOfEffect', 'healAmount', 'defenseBypass',
+        'baseDamage', 'sapCost', 'cooldown', 'dspCost', 'apCost', 'damage', 'range', 'duration',
+        'concentration', 'class', 'learnMethod', 'phaseModifiers', 'statusEffect', 'vfx', 'soundEffects'
+    ],
 
     properties: {
         id: {
@@ -16,25 +20,28 @@ export const spellSchema = {
         name: {
             type: 'string',
             minLength: 3,
-            maxLength: 30,
+            maxLength: 40,
             description: 'Display name shown to player'
         },
         tier: {
-            type: 'integer',
-            min: 1,
-            max: 3,
-            description: 'Spell tier (1, 2, or 3)'
+            description: 'Spell tier: 1–3 or "forbidden" for narrative spells'
         },
         baseDamage: {
             type: 'number',
             min: 0,
-            description: 'Base damage before modifiers'
+            description: 'Optional balance hook; many spells use damage dice strings instead'
         },
         sapCost: {
             type: 'integer',
             min: 0,
             max: 100,
-            description: 'Sap cost to cast'
+            description: 'Legacy sap cost; often replaced by dspCost in data'
+        },
+        dspCost: {
+            type: 'integer',
+            min: 0,
+            max: 100,
+            description: 'Domain Soul Pool cost'
         },
         cooldown: {
             type: 'integer',
@@ -43,12 +50,18 @@ export const spellSchema = {
         },
         element: {
             type: 'string',
-            enum: ['nature', 'arcane', 'shadow', 'radiant'],
-            description: 'Elemental type'
+            enum: [
+                'nature', 'arcane', 'shadow', 'radiant',
+                'spirit', 'fire', 'physical', 'void', 'light'
+            ],
+            description: 'Elemental / damage type'
         },
         targetType: {
             type: 'string',
-            enum: ['single', 'aoe', 'self', 'ally'],
+            enum: [
+                'single', 'aoe', 'self', 'ally',
+                'single_target', 'ground_target', 'ally_target'
+            ],
             default: 'single'
         },
         areaOfEffect: {
@@ -103,7 +116,10 @@ export const enemySchema = {
         },
         aiPattern: {
             type: 'string',
-            enum: ['aggressive', 'defensive', 'balanced', 'healer', 'supporter']
+            enum: [
+                'aggressive', 'defensive', 'balanced', 'healer', 'supporter',
+                'skirmisher', 'boss_phased', 'swarm', 'tactical', 'support'
+            ]
         },
         spells: {
             type: 'array',

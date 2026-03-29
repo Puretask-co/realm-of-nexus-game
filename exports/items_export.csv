@@ -1,0 +1,123 @@
+id,name,type,rarity,value
+,,,,
+iron_sword,Iron Sword,weapon,common,50
+wooden_club,Wooden Club,weapon,common,40
+hunting_knife,Hunting Knife,weapon,common,35
+simple_bow,Simple Bow,weapon,common,55
+light_crossbow,Light Crossbow,weapon,common,65
+wooden_spear,Wooden Spear,weapon,common,50
+,,,,
+verdant_blade,Verdant Blade,weapon,uncommon,120
+thornwood_axe,Thornwood Axe,weapon,uncommon,130
+shadow_dagger,Shadow Dagger,weapon,uncommon,110
+sap_infused_bow,Sap-Infused Bow,weapon,uncommon,140
+bloomguard_mace,Bloomguard Mace,weapon,uncommon,125
+wildkin_shortbow,Wildkin Shortbow,weapon,uncommon,115
+sporecaller_staff,Sporecaller Staff,weapon,uncommon,135
+,,,,
+emerald_edge,Emerald Edge,weapon,rare,350
+crimson_cleaver,Crimson Cleaver,weapon,rare,380
+veilkeepers_athame,Veilkeeper's Athame,weapon,rare,400
+ancient_longbow,Ancient Longbow,weapon,rare,420
+rootbinder_spear,Rootbinder Spear,weapon,rare,370
+thornlash_whip,Thornlash Whip,weapon,rare,360
+,,,,
+everbloom_sword,Everbloom Sword,weapon,legendary,800
+scars_edge,Scar's Edge,weapon,legendary,900
+nexus_staff,Nexus Staff,weapon,legendary,950
+wildkins_fang,Wildkin's Fang,weapon,legendary,850
+,,,,
+everwoods_heartwood,Everwood's Heartwood,weapon,mythic,0
+void_architects_blade,Void Architect's Blade,weapon,mythic,0
+,,,,
+leather_tunic,Leather Tunic,armor,common,40
+hide_armor,Hide Armor,armor,common,60
+iron_chain,Iron Chain,armor,common,80
+wooden_shield,Wooden Shield,armor,common,30
+,,,,
+bloomguard_scout_armor,Bloomguard Scout Armor,armor,uncommon,110
+thornbinder_leather,Thornbinder Leather,armor,uncommon,120
+verdant_mail,Verdant Mail,armor,uncommon,140
+ironbark_plate,Ironbark Plate,armor,uncommon,160
+moss_shield,Moss Shield,armor,uncommon,130
+,,,,
+emerald_robes,Emerald Robes,armor,rare,350
+shadowweave_armor,Shadowweave Armor,armor,rare,400
+crimson_plate,Crimson Plate,armor,rare,420
+rootguard_armor,Rootguard Armor,armor,rare,380
+crystal_shield,Crystal Shield,armor,rare,450
+,,,,
+veilkeepers_vestments,Veilkeeper's Vestments,armor,legendary,800
+bloomguard_commanders_plate,Bloomguard Commander's Plate,armor,legendary,900
+living_bark_armor,Living Bark Armor,armor,legendary,850
+shadow_mantle,Shadow Mantle,armor,legendary,880
+,,,,
+everwood_aegis,Everwood Aegis,armor,mythic,0
+nexus_woven_cloak,Nexus Woven Cloak,armor,mythic,0
+,,,,
+minor_health_potion,Minor Health Potion,consumable,common,25
+health_potion,Health Potion,consumable,common,50
+greater_health_potion,Greater Health Potion,consumable,uncommon,100
+minor_dsp_vial,Minor DSP Vial,consumable,common,25
+dsp_essence,DSP Essence,consumable,common,50
+greater_dsp_vial,Greater DSP Vial,consumable,uncommon,100
+antidote,Antidote,consumable,common,30
+guard_tonic,Guard Tonic,consumable,uncommon,40
+speed_elixir,Speed Elixir,consumable,uncommon,60
+invisibility_potion,Invisibility Potion,consumable,rare,80
+,,,,
+viridian_bomb,Viridian Bomb,consumable,uncommon,75
+spore_bomb,Spore Bomb,consumable,uncommon,50
+flash_bomb,Flash Bomb,consumable,uncommon,60
+frost_bomb,Frost Bomb,consumable,uncommon,55
+corruption_grenade,Corruption Grenade,consumable,rare,100
+,,,,
+dreamroot_tea,Dreamroot Tea,consumable,common,25
+everspring_tea,Everspring Tea,consumable,uncommon,40
+crimson_brew,Crimson Brew,consumable,uncommon,45
+silver_leaf_tea,Silver Leaf Tea,consumable,uncommon,35
+blue_sap_tea,Blue Sap Tea,consumable,uncommon,50
+,,,,
+trail_rations,Trail Rations,consumable,common,5
+verdant_fruit,Verdant Fruit,consumable,common,15
+mushroom_stew,Mushroom Stew,consumable,uncommon,30
+honey_cake,Honey Cake,consumable,uncommon,25
+sacred_nectar,Sacred Nectar,consumable,rare,200
+,,,,
+scroll_of_teleport,Scroll of Teleport,consumable,rare,100
+scroll_of_identify,Scroll of Identify,consumable,common,30
+scroll_of_protection,Scroll of Protection,consumable,uncommon,50
+scroll_of_revelation,Scroll of Revelation,consumable,uncommon,60
+scroll_of_unbinding,Scroll of Unbinding,consumable,rare,150
+,,,,
+shadow_essence,Shadow Essence,quest,rare,0
+crimson_shard,Crimson Shard,quest,rare,0
+veilkeeper_token,Veilkeeper Token,quest,uncommon,0
+hollowroot_key,Hollowroot Key,quest,rare,0
+corruption_sample,Corruption Sample,quest,uncommon,0
+sacred_fire_fragment,Sacred Fire Fragment,quest,rare,0
+ancient_map_fragment,Ancient Map Fragment,quest,uncommon,0
+faction_sigil_bloomguard,Faction Sigil: Bloomguard,quest,uncommon,0
+faction_sigil_veilkeepers,Faction Sigil: Veilkeepers,quest,uncommon,0
+faction_sigil_wildkin,Faction Sigil: Wildkin,quest,uncommon,0
+faction_sigil_thornbinders,Faction Sigil: Thornbinders,quest,uncommon,0
+faction_sigil_crimson_spire,Faction Sigil: Crimson Spire,quest,uncommon,0
+faction_sigil_hollow_court,Faction Sigil: Hollow Court,quest,uncommon,0
+void_crystal,Void Crystal,quest,legendary,0
+sap_capacitor_totem,Sap Capacitor Totem,quest,rare,0
+,,,,
+ironwood_log,Ironwood Log,crafting,common,15
+emerald_dust,Emerald Dust,crafting,uncommon,30
+shadow_silk,Shadow Silk,crafting,uncommon,35
+crimson_ore,Crimson Ore,crafting,uncommon,40
+silver_moss,Silver Moss,crafting,common,10
+blue_sap_crystal,Blue Sap Crystal,crafting,uncommon,45
+thornwood_bark,Thornwood Bark,crafting,common,8
+beast_hide,Beast Hide,crafting,common,12
+spore_extract,Spore Extract,crafting,uncommon,25
+void_fragment,Void Fragment,crafting,rare,80
+ancient_resin,Ancient Resin,crafting,uncommon,20
+crystal_shard,Crystal Shard,crafting,common,10
+living_root,Living Root,crafting,uncommon,25
+enchanted_thread,Enchanted Thread,crafting,uncommon,30
+nexus_shard,Nexus Shard,crafting,rare,100

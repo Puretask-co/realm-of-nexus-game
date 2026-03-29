@@ -235,6 +235,10 @@ export default class NPC {
         } else if (this.role === 'shop') {
             // Listeners should apply AttributeSystem.getShopPriceMultiplier() for Charisma 4+ = -10% prices (GDD)
             EventBus.emit('shop-open', { npc: this.name, inventory: this.config.shopInventory });
+        } else if (this.role === 'crafting') {
+            EventBus.emit('crafting-open', { stationId: this.config.stationId || 'sapling_workshop', npc: this.name });
+        } else if (this.role === 'veilkeeper') {
+            EventBus.emit('veilkeeper-open', { keeperId: this.config.keeperId || 'sylthara', npc: this.name });
         }
     }
 

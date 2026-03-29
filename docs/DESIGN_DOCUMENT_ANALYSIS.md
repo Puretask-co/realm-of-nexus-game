@@ -659,55 +659,9 @@ How the design doc spec is implemented in the current codebase.
 
 ---
 
-## REMAINING IMPLEMENTATION (Spec → Code)
+## 
 
-What is still missing or incomplete when turning the design documents into actual code. Updated after the latest implementation pass.
-
-### High priority (core spec not yet in code)
-
-| # | Spec item | Current state | What’s left |
-|---|-----------|----------------|-------------|
-| 1 | **Tactical combat as main combat** | **Done.** GameScene starts tactical encounter on player–enemy overlap; `TacticalCombatSystem.startCombat()` used; TacticalCombatPanel shows; victory/defeat return to overworld. | — |
-| 2 | **Enemy intent telegraphed** | **Done.** `TacticalCombatSystem.getEnemyIntent()`, `tactical:enemyIntent`; intent shown in TacticalCombatPanel. | — |
-| 3 | **Variable grid sizes** | **Done.** Grid 6×6 / 10×7 / 12×8 by enemy count and boss in `_startTacticalEncounter`. | — |
-| 4 | **Appearance customization (character creation)** | **Done.** CharacterCreationScene has APPEARANCE step (body, skin, hair ×15, Verdant Sigil); persisted in registry and `character:created`. | — |
-| 5 | **5 talent trees (GDD)** | **Done.** SkillTreePanel uses 5 trees from data/skills.json (Martial Prowess, Guardian’s Oath, Soul Magic Mastery, Verdant Bond, Tactical Mind); level-gated via `unlockLevel`; ProgressionSystem talent points and save/load. | — |
-| 6 | **Verdant Ward: reflect & interact** | **Done.** Heavy Ward reflect 20%; Pure/Blighted strengthen/corrupt ward actions and `wardModifier` on tiles. | — |
-
-### Medium priority (partial or scaffold only)
-
-| # | Spec item | Current state | What’s left |
-|---|-----------|----------------|-------------|
-| 7 | **AI Dungeon Master (full)** | **Scaffold done.** `dm:playerCommand` → AIDungeonMaster.processPlayerCommand() calls Claude; emits `dm:commandResponse`, `dm:requestSideQuest`, `dm:requestUIControl`. Main menu "Ask DM" (prompt) + listeners for response and UI control. | Full stateful story state, AI-generated side quest creation from requestSideQuest. |
-| 8 | **Crafting: 4th station** | **Done.** CraftingSystem has 4th station **Veilkeeper Atelier** (scroll/artifact/reagent); recipe `veil_scroll_minor`. | — |
-| 9 | **Ending UI** | **Done.** UIScene listens for `narrative:endingTriggered` and shows ending screen (title, description, variation, Continue → ClassSelectionScene). | — |
-| 10 | **Sap Cycle → gameplay** | **Done.** GameScene loot uses getModifiers().lootRateMultiplier for gold and item drop chance. SkillCheckSystem accepts options.sapCycleDiplomacyBonus for persuasion/deception. | Phase modifiers in config; NPC behavior/music by phase optional. |
-
-### Content / data (design targets)
-
-| # | Spec item | Target | Current | What’s left |
-|---|-----------|--------|---------|-------------|
-| 11 | **NPCs with dialogue** | 50+ | **50** | 50 characters + dialogues (28 new with greetings). Met. |
-| 12 | **Quests** | 40+ | **40** | 40 quests (8 new side quests added). Met. |
-| 13 | **Enemy types** | 40+ | 40 | Met. |
-
-### Lower priority / optional (from docs)
-
-| # | Spec item | Current state | What’s left |
-|---|-----------|----------------|-------------|
-| 14 | **Prestige system** | Doc 2: “20 prestige perks across 4 tiers”. | No prestige or endgame system. Implement only if committing to post-campaign progression. |
-| 15 | **Hex grid / Zone of Control** | Doc 1 mentions hex-grid and Zone of Control. | Tactical grid is offset (effectively square). Hex and ZoC are optional. |
-| 16 | **Charisma 4+ = -10% shop prices** | **Done.** `AttributeSystem.getShopPriceMultiplier()` returns 0.9 when Charisma ≥ 4; NPC comment documents use for shop-open listeners. | Any shop UI should call getShopPriceMultiplier() when displaying/charging. |
-| 17 | **Insight 4+ = detect hidden** | **Done.** canDetectHidden + NPC config.hidden. | — |
-
-### Summary
-
-- **Must-do for “spec in code”:** (1)–(6) **Done:** tactical combat wired, enemy intent, variable grid, appearance customization, 5 talent trees + level-gate, Verdant Ward reflect and Pure/Blighted.
-- **Important next:** (7) AI DM scaffold **done** (text command, response, requestSideQuest, requestUIControl); (10) Sap Cycle **done** (loot + diplomacy bonus). (8)(9) **done.**
-- **Content:** **Done.** 50 characters with dialogue, 40 quests.
-- **Optional:** Prestige, hex/ZoC; (16) Charisma **done**; (17) Insight detect hidden **done** (NPC hidden + canDetectHidden).
-
-### Unique Selling Points
+i wan### Unique Selling Points
 1. AI DM generates emergent narrative in real-time
 2. Magic drains shared world resource (DSP), not personal mana
 3. Asking for hints literally kills your mentors

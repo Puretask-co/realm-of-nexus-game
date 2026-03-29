@@ -1,5 +1,9 @@
 import EventBus from '../core/EventBus.js';
 import { TacticalCombatPanel } from '../ui/TacticalCombatPanel.js';
+import { ShopPanel } from '../ui/ShopPanel.js';
+import { CraftingPanel } from '../ui/CraftingPanel.js';
+import { MoralChoicePanel } from '../ui/MoralChoicePanel.js';
+import { VeilkeeperPanel } from '../ui/VeilkeeperPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -29,14 +33,21 @@ export default class UIScene extends Phaser.Scene {
 
         this._createPhaseIndicator();
         this._createPlayerBars();
+        this._createDSPBar();
         this._createSpellSlots();
         this._createMinimap();
         this._createFPSCounter();
         this._createQuestTracker();
+        this._createQuestJournal();
         this._createLocationIndicator();
 
         this.tacticalCombatPanel = new TacticalCombatPanel(this);
         this.tacticalCombatPanel.create();
+
+        this.shopPanel = new ShopPanel(this);
+        this.craftingPanel = new CraftingPanel(this);
+        this.moralChoicePanel = new MoralChoicePanel(this);
+        this.veilkeeperPanel = new VeilkeeperPanel(this);
 
         // EventBus bindings
         this._unsubs = [
@@ -87,6 +98,15 @@ export default class UIScene extends Phaser.Scene {
             }),
             EventBus.on('narrative:endingTriggered', (data) => {
                 this._showEndingScreen(data);
+            }),
+            EventBus.on('dsp:changed', (status) => {
+                this._updateDSPBar(status);
+            }),
+            EventBus.on('ui:toggleQuestJournal', () => {
+                this._toggleQuestJournal();
+            }),
+            EventBus.on('pillar-activated', (data) => {
+                this._showNotification(`${data.pillarName}: ${data.description}`, 0x88ff88);
             })
         ];
     }
@@ -382,6 +402,7 @@ export default class UIScene extends Phaser.Scene {
 
     _updateQuestTracker(data) {
         this._currentQuestData = data;
+        if (this._journalVisible) this._refreshJournalDisplay();
         this.uiElements.questTitle.setText(data.name || '');
 
         const objectives = data.objectives || [];
@@ -419,6 +440,156 @@ export default class UIScene extends Phaser.Scene {
             obj.setText('');
         }
         this._currentQuestData = null;
+        if (this._journalVisible) this._refreshJournalDisplay();
+    }
+
+    // ----------------------------------------------------------------
+    // DSP Bar
+    // ----------------------------------------------------------------
+
+    _createDSPBar() {
+        const x = 20;
+        const y = 80; // below HP + SAP bars
+
+        this.uiElements.dspLabel = this.add.text(x, y, 'DSP', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#88ddff'
+        }).setDepth(10000);
+
+        this.uiElements.dspBarBg = this.add.graphics().setDepth(10000);
+        this.uiElements.dspBarBg.fillStyle(0x112233, 0.7);
+        this.uiElements.dspBarBg.fillRect(x + 30, y + 1, 150, 12);
+
+        this.uiElements.dspBarFill = this.add.graphics().setDepth(10000);
+
+        this.uiElements.dspValueText = this.add.text(x + 105, y + 7, '100/100', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#88ddff'
+        }).setOrigin(0.5).setDepth(10001);
+
+        this.uiElements.dspWarning = this.add.text(x + 185, y + 7, '', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#ff4444',
+            stroke: '#000', strokeThickness: 1
+        }).setOrigin(0, 0.5).setDepth(10001);
+
+        this._updateDSPBar({ current: 100, max: 100 });
+    }
+
+    _updateDSPBar(status) {
+        if (!this.uiElements.dspBarFill) return;
+        const x = 20;
+        const y = 80;
+        const current = status.current ?? status.dsp ?? 100;
+        const max = status.max || 100;
+        const pct = Math.max(0, Math.min(1, current / max));
+
+        let fillColor = 0x44ccff;
+        let warningText = '';
+        let warningColor = '#ffdd44';
+        if (current <= 20) {
+            fillColor = 0xff2222; warningText = '! CRITICAL'; warningColor = '#ff2222';
+        } else if (current <= 30) {
+            fillColor = 0xff6622; warningText = '! LOW'; warningColor = '#ff8844';
+        } else if (current <= 50) {
+            fillColor = 0xffdd22; warningText = '! STRAINED'; warningColor = '#ffdd44';
+        }
+
+        this.uiElements.dspBarFill.clear();
+        this.uiElements.dspBarFill.fillStyle(fillColor, 0.85);
+        this.uiElements.dspBarFill.fillRect(x + 31, y + 2, 148 * pct, 10);
+
+        if (this.uiElements.dspValueText) {
+            this.uiElements.dspValueText.setText(`${Math.round(current)}/${max}`);
+            this.uiElements.dspValueText.setColor(`#${fillColor.toString(16).padStart(6, '0')}`);
+        }
+        if (this.uiElements.dspWarning) {
+            this.uiElements.dspWarning.setText(warningText).setColor(warningColor);
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Quest Journal overlay (J key)
+    // ----------------------------------------------------------------
+
+    _createQuestJournal() {
+        const { width, height } = this.scale;
+        const jw = 340, jh = 400;
+        const jx = width / 2 - jw / 2;
+        const jy = height / 2 - jh / 2;
+
+        this._journalVisible = false;
+
+        this._journalBg = this.add.graphics().setDepth(15000);
+        this._journalBg.fillStyle(0x0a0a1a, 0.92);
+        this._journalBg.fillRoundedRect(jx, jy, jw, jh, 10);
+        this._journalBg.lineStyle(2, 0x4466aa, 0.8);
+        this._journalBg.strokeRoundedRect(jx, jy, jw, jh, 10);
+
+        this._journalTitle = this.add.text(width / 2, jy + 22, 'QUEST JOURNAL  [J] close', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#ffaa44',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(15001);
+
+        this._journalDivGfx = this.add.graphics().setDepth(15001);
+        this._journalDivGfx.lineStyle(1, 0x334466, 0.6);
+        this._journalDivGfx.lineBetween(jx + 16, jy + 42, jx + jw - 16, jy + 42);
+
+        this._journalActiveLabel = this.add.text(jx + 16, jy + 52, 'Active Quest', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#888888'
+        }).setDepth(15001);
+
+        this._journalQuestName = this.add.text(jx + 16, jy + 68, '—', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#ffcc66',
+            stroke: '#000', strokeThickness: 1
+        }).setDepth(15001);
+
+        this._journalObjectiveLines = [];
+        for (let i = 0; i < 6; i++) {
+            const line = this.add.text(jx + 24, jy + 90 + i * 18, '', {
+                fontFamily: 'monospace', fontSize: '11px', color: '#aaaaaa',
+                stroke: '#000', strokeThickness: 1
+            }).setDepth(15001);
+            this._journalObjectiveLines.push(line);
+        }
+
+        this._journalHint = this.add.text(width / 2, jy + jh - 18, 'Press J to toggle journal', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#445566'
+        }).setOrigin(0.5).setDepth(15001);
+
+        this._journalElements = [
+            this._journalBg, this._journalTitle, this._journalDivGfx,
+            this._journalActiveLabel, this._journalQuestName, this._journalHint,
+            ...this._journalObjectiveLines
+        ];
+        for (const el of this._journalElements) { if (el?.setVisible) el.setVisible(false); }
+    }
+
+    _toggleQuestJournal() {
+        this._journalVisible = !this._journalVisible;
+        for (const el of (this._journalElements || [])) {
+            if (el?.setVisible) el.setVisible(this._journalVisible);
+        }
+        if (this._journalVisible) this._refreshJournalDisplay();
+    }
+
+    _refreshJournalDisplay() {
+        if (!this._currentQuestData) {
+            if (this._journalQuestName) this._journalQuestName.setText('No active quest');
+            for (const line of (this._journalObjectiveLines || [])) line.setText('');
+            return;
+        }
+        const data = this._currentQuestData;
+        if (this._journalQuestName) this._journalQuestName.setText(data.name || '—');
+        const objectives = data.objectives || [];
+        for (let i = 0; i < 6; i++) {
+            const line = this._journalObjectiveLines?.[i];
+            if (!line) continue;
+            if (i < objectives.length) {
+                const obj = objectives[i];
+                const done = obj._done || false;
+                line.setText(`${done ? '[x]' : '[ ]'} ${obj.description}`).setColor(done ? '#44ff88' : '#aaaaaa');
+            } else {
+                line.setText('');
+            }
+        }
     }
 
     // ----------------------------------------------------------------

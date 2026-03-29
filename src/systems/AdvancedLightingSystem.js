@@ -1,5 +1,3 @@
-import EventBus from '../core/EventBus.js';
-
 /**
  * 2D lighting engine layered on top of Phaser's renderer.
  *
@@ -10,8 +8,7 @@ import EventBus from '../core/EventBus.js';
  * Light types: point, spot, directional, area.
  * Effects: flicker, pulse, color-cycle, volumetric glow.
  *
- * Integrates with SapCycleManager via EventBus to shift ambient
- * colour as the phase changes (blue cool tones, crimson warm, etc.).
+ * Sap phase ambient is applied by SapCycleLightingIntegration in GameScene.
  */
 export default class AdvancedLightingSystem {
     constructor(scene) {
@@ -30,7 +27,7 @@ export default class AdvancedLightingSystem {
         this.lightPool = [];
 
         this._initRenderTextures();
-        this._listenForPhaseChanges();
+        // Phase ambient is driven by SapCycleLightingIntegration (GameScene) to avoid double updates.
     }
 
     // ----------------------------------------------------------------
@@ -51,19 +48,6 @@ export default class AdvancedLightingSystem {
         this.volumetricRT.setBlendMode(Phaser.BlendModes.ADD);
         this.volumetricRT.setScrollFactor(0);
         this.volumetricRT.setAlpha(0.4);
-    }
-
-    _listenForPhaseChanges() {
-        const PHASE_AMBIENT = {
-            blue: { color: 0x2244aa, intensity: 0.35 },
-            crimson: { color: 0xaa2244, intensity: 0.3 },
-            silver: { color: 0xccccdd, intensity: 0.45 }
-        };
-
-        EventBus.on('phase-changed', (newPhase) => {
-            const preset = PHASE_AMBIENT[newPhase];
-            if (preset) this.setAmbientLight(preset.color, preset.intensity);
-        });
     }
 
     // ----------------------------------------------------------------

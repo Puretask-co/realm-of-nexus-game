@@ -45,6 +45,8 @@ export class PlayerClassSystem {
     this.eventBus.on('data-reloaded', () => this._loadFromData());
 
     PlayerClassSystem.instance = this;
+    // Expose on globalThis so AttributeSystem can read variant mods without circular import
+    globalThis.__playerClassSystem = this;
   }
 
   /**
@@ -255,7 +257,25 @@ export class PlayerClassSystem {
   }
 
   /**
+   * Get variant data for the currently selected Pure/Blighted choice.
+   * Returns null if no variant is set or class has no variant data.
+   */
+  getVariantData() {
+    if (!this.pureBlightedVariant || !this.currentClass?.variants) return null;
+    return this.currentClass.variants[this.pureBlightedVariant] || null;
+  }
+
+  /**
+   * Get stat modifiers granted by the selected variant.
+   * e.g. { resilience: 1, insight: 1 } for Pure Bloomguard
+   */
+  getVariantStatModifiers() {
+    return this.getVariantData()?.statModifiers || {};
+  }
+
+  /**
    * Get available spells for current class up to a given level.
+   * Includes the variant bonus ability if it is type 'active'.
    */
   getAvailableSpells(level) {
     const spells = [...(this.currentClass?.startingSpells || [])];
@@ -274,6 +294,12 @@ export class PlayerClassSystem {
     if (level >= 10 && this.currentClass?.classAbilities?.ultimate) {
       const ult = this.currentClass.classAbilities.ultimate;
       if (ult.id) spells.push(ult.id);
+    }
+
+    // Add variant bonus ability (active only — passives handled separately)
+    const variantAbility = this.getVariantData()?.bonusAbility;
+    if (variantAbility?.id && variantAbility.type === 'active') {
+      spells.push(variantAbility.id);
     }
 
     return spells;

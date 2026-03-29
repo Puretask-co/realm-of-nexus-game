@@ -140,15 +140,15 @@ export class SapCycleLightingIntegration {
     this._deepPoolTime = 0;
 
     // ── Phase particle lights ────────────────────────────────────────────────
-    /** IDs of ephemeral lights created for phase atmosphere. */
-    this._phaseLightIds = [];
+    /** Ephemeral lights created for phase atmosphere (AdvancedLightingSystem stores objects, not IDs). */
+    this._phaseLightRefs = [];
     this._maxPhaseLights = 6;
 
     // ── Event subscriptions ──────────────────────────────────────────────────
-    this._unsubPhaseChange = this.eventBus.on(
-      'sap:phaseChange',
-      (data) => this.onPhaseChange(data.newPhase, data.oldPhase),
-    );
+    // SapCycleManager emits `phase-changed` with (newPhase, oldPhase) — not `sap:phaseChange`.
+    this._unsubPhaseChange = this.eventBus.on('phase-changed', (newPhase, oldPhase) => {
+      this.onPhaseChange(this._normalizePhase(newPhase), this._normalizePhase(oldPhase));
+    });
     this._unsubDeepPoolNear = this.eventBus.on(
       'sap:deepPoolNear',
       (data) => this._onDeepPoolNear(data),
@@ -158,8 +158,33 @@ export class SapCycleLightingIntegration {
       () => this._onDeepPoolLeave(),
     );
 
-    // Apply initial phase immediately (no transition)
-    this.applyPhaseEffects(this.currentPhase);
+    // Initial profile applied via syncInitialPhase() from GameScene once SapCycleManager exists.
+  }
+
+  /**
+   * Normalize phase name from SapCycleManager ("Crimson", "crimson", etc.) to GameConfig keys.
+   * @param {string} phase
+   * @returns {string}
+   */
+  _normalizePhase(phase) {
+    if (phase == null || phase === '') return GameConfig.SAP_PHASES.BLUE;
+    const s = String(phase).toLowerCase();
+    if (s.includes('crimson')) return GameConfig.SAP_PHASES.CRIMSON;
+    if (s.includes('silver')) return GameConfig.SAP_PHASES.SILVER;
+    if (s.includes('blue')) return GameConfig.SAP_PHASES.BLUE;
+    return s;
+  }
+
+  /**
+   * Call once after SapCycleManager is constructed so ambient matches the active calendar phase.
+   * @param {string} phase - Raw phase name from SapCycleManager
+   */
+  syncInitialPhase(phase) {
+    const p = this._normalizePhase(phase);
+    if (!PHASE_PROFILES[p]) return;
+    this.currentPhase = p;
+    this.previousPhase = p;
+    this.applyPhaseEffects(p);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -256,7 +281,7 @@ export class SapCycleLightingIntegration {
     const ambientTo = hexToNorm(to.ambientColor);
     const ambientLerped = lerpColor(ambientFrom, ambientTo, t);
     const ambientIntensity = lerp(from.ambientIntensity, to.ambientIntensity, t);
-    this.lighting.setAmbient(normToHex(ambientLerped), ambientIntensity);
+    this.lighting.setAmbientLight(normToHex(ambientLerped), ambientIntensity);
 
     // Update current profile snapshot for other consumers
     this.currentProfile = {
@@ -295,7 +320,7 @@ export class SapCycleLightingIntegration {
     if (!profile) return;
 
     this.currentProfile = { ...profile };
-    this.lighting.setAmbient(profile.ambientColor, profile.ambientIntensity);
+    this.lighting.setAmbientLight(profile.ambientColor, profile.ambientIntensity);
 
     // Remove old phase particle lights
     this._clearPhaseLights();
@@ -323,7 +348,7 @@ export class SapCycleLightingIntegration {
     // Restore ambient to current phase baseline
     const profile = PHASE_PROFILES[this.currentPhase];
     if (profile) {
-      this.lighting.setAmbient(profile.ambientColor, profile.ambientIntensity);
+      this.lighting.setAmbientLight(profile.ambientColor, profile.ambientIntensity);
     }
   }
 
@@ -342,7 +367,7 @@ export class SapCycleLightingIntegration {
       Math.sin(time * 0.0023) * 0.06;
 
     const boosted = base + wave * this._deepPoolIntensity;
-    this.lighting.setAmbient(profile.ambientColor, Math.max(0.02, boosted));
+    this.lighting.setAmbientLight(profile.ambientColor, Math.max(0.02, boosted));
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -365,25 +390,23 @@ export class SapCycleLightingIntegration {
     for (let i = 0; i < this._maxPhaseLights; i++) {
       const angle = (Math.PI * 2 * i) / this._maxPhaseLights;
       const spread = 150 + Math.random() * 250;
+      const lx = cx + Math.cos(angle) * spread;
+      const ly = cy + Math.sin(angle) * spread;
 
-      const light = this.lighting.addLight({
+      const light = this.lighting.addLight(lx, ly, {
         type: 'point',
-        x: cx + Math.cos(angle) * spread,
-        y: cy + Math.sin(angle) * spread,
         color: profile.particleColor,
         intensity: 0.3 + Math.random() * 0.2,
         radius: 60 + Math.random() * 40,
         castShadows: false,
-        effects: {
-          pulse: {
-            speed: 0.4 + Math.random() * 0.6,
-            min: 0.15,
-            max: 0.55,
-          },
+        pulse: {
+          speed: 0.4 + Math.random() * 0.6,
+          min: 0.15,
+          max: 0.55,
         },
       });
 
-      this._phaseLightIds.push(light.id);
+      if (light) this._phaseLightRefs.push(light);
     }
   }
 
@@ -392,10 +415,10 @@ export class SapCycleLightingIntegration {
    * @private
    */
   _clearPhaseLights() {
-    for (const id of this._phaseLightIds) {
-      this.lighting.removeLight(id);
+    for (const light of this._phaseLightRefs) {
+      if (light) this.lighting.removeLight(light);
     }
-    this._phaseLightIds = [];
+    this._phaseLightRefs = [];
   }
 
   /**
@@ -404,20 +427,19 @@ export class SapCycleLightingIntegration {
    */
   _updatePhaseLights(time, delta) {
     const scene = this.lighting.scene;
-    if (!scene || !scene.cameras || this._phaseLightIds.length === 0) return;
+    if (!scene || !scene.cameras || this._phaseLightRefs.length === 0) return;
 
     const cam = scene.cameras.main;
     const cx = cam.scrollX + GameConfig.WIDTH * 0.5;
     const cy = cam.scrollY + GameConfig.HEIGHT * 0.5;
     const driftSpeed = 0.002;
 
-    for (let i = 0; i < this._phaseLightIds.length; i++) {
-      const id = this._phaseLightIds[i];
-      const light = this.lighting.lights.get(id);
+    for (let i = 0; i < this._phaseLightRefs.length; i++) {
+      const light = this._phaseLightRefs[i];
       if (!light) continue;
 
       // Slowly orbit around camera centre
-      const baseAngle = (Math.PI * 2 * i) / this._phaseLightIds.length;
+      const baseAngle = (Math.PI * 2 * i) / this._phaseLightRefs.length;
       const wobble = Math.sin(time * 0.0005 + i * 1.7) * 0.3;
       const targetAngle = baseAngle + time * driftSpeed + wobble;
       const spread = 180 + Math.sin(time * 0.0003 + i) * 80;

@@ -92,6 +92,21 @@ export default class AdvancedParticleSystem {
         return this.createEmitter({ ...preset, x, y, ...overrides });
     }
 
+    /**
+     * One-shot burst at (x, y) using a named preset (used by GameScene / SpellVFX).
+     * Unknown spell cast names fall back to `hit_sparks` so casting never throws.
+     */
+    burst(x, y, presetName, options = {}) {
+        const { count, ...rest } = options;
+        const overrides = { ...rest };
+        if (count != null) overrides.burstCount = count;
+        let name = presetName;
+        if (!this.presets.has(name)) {
+            name = 'hit_sparks';
+        }
+        return this.createEffect(name, x, y, overrides);
+    }
+
     // ----------------------------------------------------------------
     // Forces
     // ----------------------------------------------------------------
