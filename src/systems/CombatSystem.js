@@ -1,5 +1,6 @@
 import { EventBus } from '../core/EventBus.js';
 import SapCycleManager from './SapCycleManager.js';
+import { AttackTypeSystem } from './AttackTypeSystem.js';
 
 /**
  * CombatSystem - Turn-based tactical combat for Verdance.
@@ -253,24 +254,43 @@ export class CombatSystem {
 
   /**
    * Calculate damage from an attack.
-   * Formula: (ATK - DEF * 0.5) * variance(0.85-1.15) * phaseMultiplier * comboMultiplier
+   * Formula: (ATK - resistance * 0.5) * variance(0.85-1.15) * phaseMultiplier * comboMultiplier
+   *
+   * damageType routing (provided by AttackTypeSystem):
+   *   'physical' → reduced by defender.stats.def
+   *   'magical'  → reduced by defender.stats.magicResist (default 0)
+   *
    * @param {object} attacker - Entity with stats
    * @param {object} defender - Entity with stats
-   * @param {object} options - { spell, isPhysical, sapPhaseBonus, sapPhaseVulnerability }
-   * @returns {object} { damage, isCrit, isDodged, isBlocked, breakdown }
+   * @param {object} options  - { spell, isPhysical, damageType, attackType,
+   *                              sapPhaseBonus, sapPhaseVulnerability, attackerSide }
+   * @returns {object} { damage, isCrit, isDodged, isBlocked, damageType, breakdown }
    */
   calculateDamage(attacker, defender, options = {}) {
     const { spell = null, isPhysical = false } = options;
+
+    // Resolve damage type — prefer explicit options.damageType, then infer from
+    // options.attackType (if AttackTypeSystem was used upstream), else fall back
+    // to the legacy isPhysical flag.
+    let damageType = options.damageType;
+    if (!damageType && options.attackType) {
+      damageType = AttackTypeSystem.getInstance().getDamageType(options.attackType);
+    }
+    if (!damageType) {
+      damageType = (isPhysical || !spell) ? 'physical' : 'magical';
+    }
 
     // Dodge check
     const dodgeChance = this.dodgeBaseChance + (defender.stats?.dodge || 0);
     if (Math.random() < dodgeChance) {
       this.log(`${defender.name} dodged the attack!`);
-      return { damage: 0, isCrit: false, isDodged: true, isBlocked: false };
+      return { damage: 0, isCrit: false, isDodged: true, isBlocked: false, damageType };
     }
 
-    // Block check
-    const blockChance = this.blockBaseChance + (defender.stats?.block || 0);
+    // Block check (only physical attacks can be blocked)
+    const blockChance = damageType === 'physical'
+      ? this.blockBaseChance + (defender.stats?.block || 0)
+      : 0;
     const isBlocked = Math.random() < blockChance;
 
     // Base damage
@@ -284,9 +304,14 @@ export class CombatSystem {
       baseDamage *= this.difficultyMultipliers.enemyDamageMultiplier || 1.0;
     }
 
-    // Defense reduction
-    const defense = defender.stats?.def || 0;
-    let damage = baseDamage - (defense * 0.5);
+    // Resistance reduction — physical uses def, magical uses magicResist
+    let resistance;
+    if (damageType === 'magical') {
+      resistance = defender.stats?.magicResist ?? defender.stats?.magic_resist ?? 0;
+    } else {
+      resistance = defender.stats?.def ?? defender.stats?.defense ?? 0;
+    }
+    let damage = baseDamage - (resistance * 0.5);
 
     // Variance (0.85 - 1.15)
     const variance = 0.85 + Math.random() * 0.3;
@@ -328,7 +353,7 @@ export class CombatSystem {
     // Clamp minimum
     damage = Math.max(1, Math.round(damage));
 
-    return { damage, isCrit, isDodged: false, isBlocked };
+    return { damage, isCrit, isDodged: false, isBlocked, damageType };
   }
 
   /**

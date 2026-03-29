@@ -36,6 +36,11 @@ import SpellVFXIntegration from '../integration/SpellVFXIntegration.js';
 import { SapCycleLightingIntegration } from '../integration/SapCycleLightingIntegration.js';
 import TacticalCombatCameraBridge from '../integration/TacticalCombatCameraBridge.js';
 import { EndingEvaluator } from '../systems/EndingEvaluator.js';
+import { AttackTypeSystem } from '../systems/AttackTypeSystem.js';
+import { PortalSystem } from '../systems/PortalSystem.js';
+import StashSystem from '../systems/StashSystem.js';
+import ZoneContentManager from '../systems/ZoneContentManager.js';
+import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -71,6 +76,7 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Gameplay Systems (singletons) ----
         this.combatSystem = CombatSystem.getInstance();
+        this.attackTypeSystem = AttackTypeSystem.getInstance();
         this.tacticalCombat = TacticalCombatSystem.getInstance();
         this.aiSystem = AISystem.getInstance();
         this.progression = ProgressionSystem.getInstance();
@@ -93,6 +99,7 @@ export default class GameScene extends Phaser.Scene {
         this.skillCheckSystem = SkillCheckSystem.getInstance();
         this.difficultySystem = DifficultySystem.getInstance();
         this.dungeonMaster = AIDungeonMaster.getInstance();
+        this.equipmentSystem = EquipmentSystem.getInstance();
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -110,8 +117,20 @@ export default class GameScene extends Phaser.Scene {
         ContentInitializer.registerVeilkeepers(this.veilkeeperSystem);
         ContentInitializer.registerCompanions(this.companionSystem);
 
+        // ---- Portal System (Silver phase portals) ----
+        this.portalSystem = new PortalSystem();
+        this.portalSystem.init(this);
+
+        // ---- Stash System (item vault) ----
+        this.stashSystem = StashSystem.getInstance();
+
         // ---- World ----
         this._buildWorld();
+
+        // ---- Zone Content Manager (per-zone visuals, enemies, music mood) ----
+        this.zoneContentManager = new ZoneContentManager(this);
+        // Initial zone entered after world is built; deferred so _unsubs is set up first
+        this._pendingInitialZone = this.currentZone || 'canopy_of_life';
 
         // ---- Player ----
         this._createPlayer();
@@ -253,8 +272,33 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('pause-world', () => this._onPauseWorld()),
             EventBus.on('resume-world', () => this._onResumeWorld()),
             // ---- World map travel ----
-            EventBus.on('worldmap:travelTo', (data) => this._onWorldMapTravelTo(data))
+            EventBus.on('worldmap:travelTo', (data) => this._onWorldMapTravelTo(data)),
+            // ---- Portal system ----
+            EventBus.on('portal:enter', (data) => this._onPortalEnter(data)),
+            // ---- Homebase exit (return from HomeBaseScene) ----
+            EventBus.on('homebase:exit', (data) => {
+                const zone = data?.returnZone || this.currentZone || 'canopy_of_life';
+                this._onWorldMapTravelTo({ locationId: zone });
+            }),
+            // ---- Equipment stat bonuses ----
+            EventBus.on('equipment:changed', (data) => this._onEquipmentChanged(data)),
+            // ---- Zone content: show zone name toast on entry ----
+            EventBus.on('zone:entered', (data) => {
+                if (data?.ambientLabel) {
+                    EventBus.emit('ui:notification', {
+                        message: `\u25B6 ${data.ambientLabel}`,
+                        color: '#88ffcc',
+                        duration: 2500
+                    });
+                }
+            })
         ];
+
+        // ---- Fire initial zone entry now that listeners are wired ----
+        if (this._pendingInitialZone && this.zoneContentManager) {
+            this.zoneContentManager.enterZone(this._pendingInitialZone);
+            this._pendingInitialZone = null;
+        }
 
         // ---- Tactical combat (design: grid-based main combat) ----
         this.inTacticalCombat = false;
@@ -1000,6 +1044,11 @@ export default class GameScene extends Phaser.Scene {
                 this.scene.stop('WorldMapScene');
             }
         });
+
+        // H → enter Home Base (The Verdant Hearth)
+        this.input.keyboard.on('keydown-H', () => {
+            this.scene.start('HomeBaseScene', { returnZone: this.currentZone || 'canopy_of_life' });
+        });
     }
 
     _castSpell(index) {
@@ -1047,7 +1096,7 @@ export default class GameScene extends Phaser.Scene {
             return;
         }
 
-        // Find nearest enemy in range
+        // Find nearest enemy in range (cursor-aimed)
         let targetEnemy = null;
         let closestDist = 300;
         this.enemies.children.entries.forEach((e) => {
@@ -1060,6 +1109,34 @@ export default class GameScene extends Phaser.Scene {
         });
 
         if (targetEnemy) {
+            // ── Attack-type validation ──────────────────────────────────
+            // Spell data may declare attackType ('melee'|'ranged'|'magic').
+            // Default to 'magic' when absent so all legacy spells just work.
+            const weaponData = { attackType: spell.attackType ?? 'magic', range: spell.range };
+            const validation = this.attackTypeSystem.validateAttack(this.player, targetEnemy, weaponData);
+
+            if (!validation.canAttack) {
+                // Show floating "Out of range!" text and bail without consuming sap.
+                // Refund the sap we already deducted above.
+                this.player.stats.sap += spell.sapCost;
+                this.damageNumbers.show(
+                    this.player.x, this.player.y - 30,
+                    validation.reason,
+                    0xff4444
+                );
+                EventBus.emit('player-stats-updated', this.player.stats);
+                return;
+            }
+
+            // For ranged/magic attacks fire a projectile event before applying damage
+            if (weaponData.attackType !== 'melee') {
+                this.attackTypeSystem.fireProjectile(this.player, targetEnemy, weaponData.attackType, {
+                    spell,
+                    damage
+                });
+            }
+            // ── End attack-type validation ──────────────────────────────
+
             const atk = this.player.stats.attack ?? this.player.stats.might ?? 0;
             const finalDmg = Math.max(1, damage + atk);
             targetEnemy.data.hp -= finalDmg;
@@ -1067,8 +1144,9 @@ export default class GameScene extends Phaser.Scene {
             // SpellVFXIntegration: impact burst + flash (if vfx.impactParticle, etc.)
             EventBus.emit('spell-impact', { spell, caster: this.player, target: targetEnemy, damage: finalDmg });
 
-            // Damage number
-            this.damageNumbers.show(targetEnemy.x, targetEnemy.y - 20, finalDmg, 0xffaa44);
+            // Damage number — colour-coded by attack type
+            const dmgColor = this.attackTypeSystem.getDamageColor(weaponData.attackType);
+            this.damageNumbers.show(targetEnemy.x, targetEnemy.y - 20, finalDmg, dmgColor);
 
             // Update HP bar
             this._updateEnemyHpBar(targetEnemy);
@@ -1350,6 +1428,45 @@ export default class GameScene extends Phaser.Scene {
         console.log('[GameScene] World resumed after moral choice');
     }
 
+    /**
+     * Player touched a Silver-phase portal — teleport to the destination zone.
+     */
+    _onEquipmentChanged({ bonuses }) {
+        if (!this.player?.stats || !bonuses) return;
+        // Apply equipment bonuses on top of base stats
+        this.player.stats.equipDamage    = bonuses.damage    || 0;
+        this.player.stats.equipDefense   = bonuses.defense   || 0;
+        this.player.stats.equipSpeed     = bonuses.speed     || 0;
+        this.player.stats.equipHealth    = bonuses.health    || 0;
+        this.player.stats.equipMight     = bonuses.might     || 0;
+        this.player.stats.equipAgility   = bonuses.agility   || 0;
+        this.player.stats.equipResilience= bonuses.resilience|| 0;
+        this.player.stats.equipInsight   = bonuses.insight   || 0;
+        this.player.stats.equipCrit      = bonuses.critChance|| 0;
+        this.player.stats.equipEvasion   = bonuses.evasion   || 0;
+
+        // Adjust max HP by equipment health bonus
+        const baseMaxHp = this.player.stats.maxHp - (this.player.stats._prevEquipHealth || 0);
+        this.player.stats._prevEquipHealth = bonuses.health || 0;
+        this.player.stats.maxHp = baseMaxHp + (bonuses.health || 0);
+
+        EventBus.emit('hud:update', {
+            hp: this.player.stats.hp,
+            maxHp: this.player.stats.maxHp,
+        });
+    }
+
+    _onPortalEnter({ destinationZoneId }) {
+        if (!destinationZoneId) return;
+        console.log(`[Portal] Entering portal → ${destinationZoneId}`);
+        this._onWorldMapTravelTo({ locationId: destinationZoneId });
+        EventBus.emit('ui:notification', {
+            message: `Teleported via Silver Portal`,
+            color: '#aaccff',
+            duration: 2500
+        });
+    }
+
     _onWorldMapTravelTo({ locationId }) {
         if (!locationId) return;
         this.currentZone = locationId;
@@ -1379,6 +1496,11 @@ export default class GameScene extends Phaser.Scene {
         const destZone = this.zones?.find(z => z.id === locationId);
         this._discoverZone(locationId, destZone?.name || locationId);
         EventBus.emit('zone:changed', { locationId });
+
+        // Zone content: update visuals, enemies, and music mood
+        if (this.zoneContentManager) {
+            this.zoneContentManager.enterZone(locationId);
+        }
     }
 
     /**
@@ -1771,6 +1893,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.dspSystem.update) this.dspSystem.update(delta);
         if (this.narrativeSystem.update) this.narrativeSystem.update(delta);
         if (this.companionSystem.update) this.companionSystem.update(delta, this.player);
+        if (this.portalSystem) this.portalSystem.update();
         this.profiler.end('newSystems');
 
         // Sap regeneration

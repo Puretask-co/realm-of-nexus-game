@@ -5,6 +5,8 @@ import { CraftingPanel } from '../ui/CraftingPanel.js';
 import { MoralChoicePanel } from '../ui/MoralChoicePanel.js';
 import { VeilkeeperPanel } from '../ui/VeilkeeperPanel.js';
 import { SpellbookPanel } from '../ui/SpellbookPanel.js';
+import { StashPanel } from '../ui/StashPanel.js';
+import { InventoryPanel } from '../ui/InventoryPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -50,8 +52,11 @@ export default class UIScene extends Phaser.Scene {
         this.moralChoicePanel = new MoralChoicePanel(this);
         this.veilkeeperPanel = new VeilkeeperPanel(this);
         this.spellbookPanel = new SpellbookPanel(this);
+        this.stashPanel = new StashPanel(this);
+        this.inventoryPanel = new InventoryPanel(this, this._makeMinimalUI());
 
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
+        this.input.keyboard.on('keydown-I', () => this._toggleInventory());
 
         // EventBus bindings
         this._unsubs = [
@@ -705,6 +710,66 @@ export default class UIScene extends Phaser.Scene {
 
     _hexToRGB(hex) {
         return [(hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff];
+    }
+
+    _toggleInventory() {
+        if (!this.inventoryPanel) return;
+        const visible = !this.inventoryPanel.visible;
+        this.inventoryPanel.setVisible(visible);
+        if (visible) this.inventoryPanel.onShow?.();
+        else this.inventoryPanel.onHide?.();
+    }
+
+    /**
+     * Minimal UI adapter so InventoryPanel (which expects a UIFramework) can run
+     * without the full UIFramework — just enough to create panels and buttons.
+     */
+    _makeMinimalUI() {
+        const scene = this;
+        return {
+            notify: (msg, opts = {}) => {
+                this._showNotification(msg, opts.type === 'warning' ? 0xff4444 : 0xffdd44);
+            },
+            createPanel: (x, y, w, h, opts = {}) => {
+                const container = scene.add.container(x, y).setDepth(opts.depth || 7000);
+                const bg = scene.add.graphics();
+                bg.fillStyle(0x0d0d22, 0.95);
+                bg.fillRoundedRect(0, 0, w, h, 10);
+                bg.lineStyle(2, 0x4466aa, 0.8);
+                bg.strokeRoundedRect(0, 0, w, h, 10);
+                container.add(bg);
+                if (opts.title) {
+                    const title = scene.add.text(w / 2, 16, opts.title, {
+                        fontFamily: 'monospace', fontSize: '14px', color: '#aaccff'
+                    }).setOrigin(0.5);
+                    container.add(title);
+                }
+                // Minimal container API used by InventoryPanel
+                container.setItem = () => {};
+                return container;
+            },
+            createSlot: (x, y, opts = {}) => {
+                const size = opts.size || 42;
+                const g = scene.add.graphics();
+                g.lineStyle(1, 0x334466, 0.8);
+                g.fillStyle(0x111122, 0.9);
+                g.fillRect(x, y, size, size);
+                g.strokeRect(x, y, size, size);
+                g.setItem = () => {};
+                return g;
+            },
+            createButton: (x, y, label, opts = {}) => {
+                const bw = opts.width || 60, bh = opts.height || 24;
+                const bg = scene.add.graphics();
+                bg.fillStyle(0x224466, 0.9);
+                bg.fillRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 4);
+                const txt = scene.add.text(x, y, label, {
+                    fontFamily: 'monospace', fontSize: opts.fontSize || '11px', color: '#ffffff'
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+                if (opts.onClick) txt.on('pointerdown', opts.onClick);
+                return txt;
+            },
+        };
     }
 
     shutdown() {

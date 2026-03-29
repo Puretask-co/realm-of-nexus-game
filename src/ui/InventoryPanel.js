@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
+import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 
 /**
  * InventoryPanel - Player inventory UI with grid layout, equipment slots,
@@ -27,6 +28,7 @@ export class InventoryPanel {
     this.selectedSlot = null;
     this.sortMode = 'type'; // type, rarity, name, value
     this.filterType = 'all';
+    this.equipSystem = EquipmentSystem.getInstance();
 
     // UI
     this.panel = null;
@@ -225,9 +227,10 @@ export class InventoryPanel {
 
   onEquipmentSlotClick(slotKey, item) {
     if (item) {
-      // Unequip to inventory
-      const added = this.addItem({ itemId: item.id, quantity: 1, itemData: item });
-      if (added) {
+      // Unequip: return item to inventory
+      const displaced = this.equipSystem.unequip(slotKey);
+      if (displaced) {
+        this.addItem({ itemId: displaced.id, quantity: 1, itemData: displaced });
         this.equipment[slotKey] = null;
         this.equipmentSlots[slotKey].setItem(null);
         this.updateStats();
@@ -235,13 +238,20 @@ export class InventoryPanel {
     } else if (this.selectedSlot !== null) {
       // Equip from inventory
       const invItem = this.items[this.selectedSlot];
-      if (invItem && this.canEquip(invItem, slotKey)) {
-        this.equipment[slotKey] = invItem;
-        this.equipmentSlots[slotKey].setItem(invItem);
-        this.items[this.selectedSlot] = null;
-        this.refreshSlot(this.selectedSlot);
-        this.selectedSlot = null;
-        this.updateStats();
+      if (invItem && this.equipSystem.canEquip(invItem, slotKey)) {
+        const result = this.equipSystem.equip(invItem, slotKey);
+        if (result.success) {
+          this.equipment[slotKey] = invItem;
+          this.equipmentSlots[slotKey].setItem(invItem);
+          this.items[this.selectedSlot] = null;
+          this.refreshSlot(this.selectedSlot);
+          // If something was displaced from the slot, return it to inventory
+          if (result.unequipped) {
+            this.addItem({ itemId: result.unequipped.id, quantity: 1, itemData: result.unequipped });
+          }
+          this.selectedSlot = null;
+          this.updateStats();
+        }
       }
     }
   }
@@ -337,23 +347,19 @@ export class InventoryPanel {
   }
 
   updateStats() {
-    let atk = 0, def = 0, spd = 0, hp = 0, sapRegen = 0;
-
-    for (const item of Object.values(this.equipment)) {
-      if (item?.stats) {
-        atk += item.stats.damage || 0;
-        def += item.stats.defense || 0;
-        spd += item.stats.speed || 0;
-        hp += item.stats.health || 0;
-        sapRegen += item.stats.sapRegenRate || 0;
-      }
-    }
+    const b = this.equipSystem.getTotalBonuses();
 
     this.statsText.setText(
-      `ATK: ${atk}\nDEF: ${def}\nSPD: ${spd}\n HP: +${hp}\nSAP: +${sapRegen}`
+      `ATK: ${b.damage}\nDEF: ${b.defense}\nSPD: ${b.speed}\n HP: +${b.health}\nSAP: +${b.sapRegenRate}`
     );
 
-    this.eventBus.emit('player:statsUpdated', { atk, def, spd, hp, sapRegen });
+    this.eventBus.emit('player:statsUpdated', {
+      atk: b.damage, def: b.defense, spd: b.speed,
+      hp: b.health, sapRegen: b.sapRegenRate,
+      might: b.might, agility: b.agility, resilience: b.resilience,
+      insight: b.insight, charisma: b.charisma,
+      critChance: b.critChance, evasion: b.evasion,
+    });
   }
 
   setVisible(visible) {
