@@ -135,7 +135,9 @@
         { "id": "trapper_vek", "name": "Trapper Vek", "nameColor": "#668855", "voicePitch": 0.8, "textSpeed": 1.0 },
         { "id": "singer_aria", "name": "Singer Aria", "nameColor": "#cc88aa", "voicePitch": 1.3, "textSpeed": 0.9 },
         { "id": "watcher_cole", "name": "Watcher Cole", "nameColor": "#4488aa", "voicePitch": 0.85, "textSpeed": 1.0 },
-        { "id": "sylara", "name": "Sylara", "nameColor": "#cc99ff", "voicePitch": 0.85, "textSpeed": 0.8 }
+        { "id": "sylara", "name": "Sylara", "nameColor": "#cc99ff", "voicePitch": 0.85, "textSpeed": 0.8 },
+        { "id": "elder_thornwick", "name": "Elder Thornwick", "nameColor": "#88cc66", "voicePitch": 0.75, "textSpeed": 0.85 },
+        { "id": "player", "name": "You", "nameColor": "#ffffff", "voicePitch": 1.0, "textSpeed": 1.0 }
     ],
     "dialogues": [
         {
@@ -829,7 +831,388 @@
         ]},
         { "id": "sylara_greeting", "startNode": "start", "nodes": [
             { "id": "start", "speaker": "sylara", "text": "The Veil whispers your name. What do you seek to know?" }
-        ]}
+        ]},
+
+        {
+            "id": "elder_thornwick_quest1",
+            "startNode": "start",
+            "metadata": { "context": "Elder Thornwick summons the player — Quest 1 of the Veil Fractures chain" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder_thornwick",
+                    "text": "Good — you came quickly. I wouldn't have sent for you if it weren't urgent.",
+                    "emotion": "troubled",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder_thornwick",
+                    "text": "Three oaks at the eastern edge of Verdant Heart collapsed overnight. Not felled — collapsed, from the inside out. The heartwood was black as ash.",
+                    "emotion": "troubled",
+                    "next": "lore"
+                },
+                {
+                    "id": "lore",
+                    "speaker": "elder_thornwick",
+                    "text": "In forty years tending this grove, I have never seen decay move so fast. This is not rot, and it is not blight. Something is consuming the Sap from within the root network itself.",
+                    "emotion": "grave",
+                    "next": "player_ask",
+                    "choices": [
+                        {
+                            "text": "What's causing it?",
+                            "next": "cause"
+                        },
+                        {
+                            "text": "How can I help?",
+                            "next": "task"
+                        },
+                        {
+                            "text": "Has this happened before?",
+                            "next": "history"
+                        }
+                    ]
+                },
+                {
+                    "id": "cause",
+                    "speaker": "elder_thornwick",
+                    "text": "I believe it originates from a fracture — a tear in the Veil, the thin membrane between our world and the hollow void beyond. When the Veil cracks, it bleeds corruption into whatever touches it.",
+                    "emotion": "grave",
+                    "next": "task"
+                },
+                {
+                    "id": "history",
+                    "speaker": "elder_thornwick",
+                    "text": "Once. Centuries ago, before any of us were born. The old texts call it the First Hollowing. The grove recovered, but it took a generation. We cannot afford to wait that long again.",
+                    "emotion": "solemn",
+                    "next": "task"
+                },
+                {
+                    "id": "task",
+                    "speaker": "elder_thornwick",
+                    "text": "I need you to inspect the dying trees — at least three of them. Look at the roots, the bark, the soil. Then come back and tell me what you find. And speak with me first, so I can mark them on your map.",
+                    "emotion": "urgent",
+                    "choices": [
+                        {
+                            "text": "I'll go now.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "quest_veil_awakening" }
+                            ]
+                        },
+                        {
+                            "text": "Tell me more about the Veil first.",
+                            "next": "veil_lore"
+                        }
+                    ]
+                },
+                {
+                    "id": "veil_lore",
+                    "speaker": "elder_thornwick",
+                    "text": "The Veil is ancient — older than the Sap Cycle, older than the grove. Think of it as a skin stretched over a wound. When the skin tears, what was held back seeps through. We call those things Hollow — creatures stripped of their Sap, left only with hunger.",
+                    "emotion": "solemn",
+                    "next": "accept",
+                    "effects": [
+                        { "type": "startQuest", "questId": "quest_veil_awakening" }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "elder_thornwick",
+                    "text": "Be careful as you go. The decay may have already touched the animals near those trees. Don't linger — inspect and return.",
+                    "emotion": "urgent"
+                }
+            ]
+        },
+
+        {
+            "id": "elder_thornwick_quest2",
+            "startNode": "start",
+            "metadata": { "context": "Thornwick sends player to clear the eastern grove — Quest 2 of the Veil Fractures chain" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "elder_thornwick",
+                    "text": "The eastern grove — that's where it's worst. The sprites that lived there have been hollowed out. They're no longer what they were.",
+                    "emotion": "grave",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "elder_thornwick",
+                    "text": "A Hollowed Sprite doesn't eat, doesn't rest, doesn't feel. It just spreads the emptiness. You must clear them before the corruption reaches the root web beneath the village.",
+                    "emotion": "urgent",
+                    "next": "shard"
+                },
+                {
+                    "id": "shard",
+                    "speaker": "elder_thornwick",
+                    "text": "And if you find anything crystallized — a fragment of hardened void energy — bring it back. Those are Veil Shards. Dangerous to leave out there, but useful in the right hands.",
+                    "emotion": "neutral",
+                    "choices": [
+                        {
+                            "text": "I'll handle it.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "quest_veil_first_hollow" }
+                            ]
+                        },
+                        {
+                            "text": "Five sprites and a shard. Understood.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "quest_veil_first_hollow" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "elder_thornwick",
+                    "text": "Go east, past the split oak. Stay out of the deep shadow — a Hollowed Sprite in the dark is harder to put down than one in the light.",
+                    "emotion": "neutral"
+                }
+            ]
+        },
+
+        {
+            "id": "sylara_quest3",
+            "startNode": "start",
+            "metadata": { "context": "Sylara explains the Binding Rite components — Quest 3 of the Veil Fractures chain" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "sylara",
+                    "text": "The Veil remembers what it was. A rite of binding can remind it — pull the edges of the tear back together, slow the seep of void into your world.",
+                    "emotion": "calm",
+                    "next": "components"
+                },
+                {
+                    "id": "components",
+                    "speaker": "sylara",
+                    "text": "But the rite requires three anchors. Moonbloom, gathered under the Silver phase — its petals hold residual Sap light. Three should suffice.",
+                    "emotion": "instructing",
+                    "next": "bark"
+                },
+                {
+                    "id": "bark",
+                    "speaker": "sylara",
+                    "text": "Two shards of Ironbark — not the living wood, the shed kind. Ironbark that has fallen naturally carries the memory of standing. That memory is what we need.",
+                    "emotion": "instructing",
+                    "next": "warning",
+                    "choices": [
+                        {
+                            "text": "Where do I find these?",
+                            "next": "locations"
+                        },
+                        {
+                            "text": "What does the rite actually do?",
+                            "next": "rite_explanation"
+                        }
+                    ]
+                },
+                {
+                    "id": "locations",
+                    "speaker": "sylara",
+                    "text": "Moonbloom grows in the low hollows where the mist lingers past dawn — near the eastern creek beds. Ironbark shards are shed by the old stumps at the grove's edge when the Crimson phase passes.",
+                    "emotion": "calm",
+                    "next": "warning"
+                },
+                {
+                    "id": "rite_explanation",
+                    "speaker": "sylara",
+                    "text": "The rite weaves a temporary lattice across the fracture — living material anchored by Sap memory. It will not seal the breach, but it will buy time. Enough time for what must come next.",
+                    "emotion": "solemn",
+                    "next": "warning"
+                },
+                {
+                    "id": "warning",
+                    "speaker": "sylara",
+                    "text": "Gather what you need. Return to me when you have them. Do not delay — the void does not wait.",
+                    "emotion": "urgent",
+                    "effects": [
+                        { "type": "startQuest", "questId": "quest_veil_ritual" }
+                    ]
+                }
+            ]
+        },
+
+        {
+            "id": "sylara_quest4",
+            "startNode": "start",
+            "metadata": { "context": "Sylara briefs the player on the Corrupted Guardian — Quest 4 of the Veil Fractures chain" },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "sylara",
+                    "text": "The rite held — barely. But something was already in place before the fracture opened. A Guardian, bound to the breach itself now.",
+                    "emotion": "grave",
+                    "next": "explain"
+                },
+                {
+                    "id": "explain",
+                    "speaker": "sylara",
+                    "text": "It was a protector once. The Veil's own warden. Now the corruption has turned it inward. It guards the breach not to keep things out — but to keep it open.",
+                    "emotion": "solemn",
+                    "next": "task",
+                    "choices": [
+                        {
+                            "text": "Can it be saved?",
+                            "next": "cannot_save"
+                        },
+                        {
+                            "text": "I'll face it.",
+                            "next": "accept",
+                            "effects": [
+                                { "type": "startQuest", "questId": "quest_veil_guardian" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "cannot_save",
+                    "speaker": "sylara",
+                    "text": "No. What was in it is gone. What remains is only the shape of it, filled with hollow. To free the breach, you must destroy what stands over it.",
+                    "emotion": "sad",
+                    "next": "accept",
+                    "effects": [
+                        { "type": "startQuest", "questId": "quest_veil_guardian" }
+                    ]
+                },
+                {
+                    "id": "accept",
+                    "speaker": "sylara",
+                    "text": "When it falls, the breach will be exposed. Come back to me then — what you do at the fracture will matter. It will matter for a long time.",
+                    "emotion": "solemn"
+                },
+                {
+                    "id": "task",
+                    "speaker": "sylara",
+                    "text": "Go to the breach site. You will feel it before you see it — a cold that has no source, a silence where there should be sound. The Guardian will be there.",
+                    "emotion": "urgent",
+                    "effects": [
+                        { "type": "startQuest", "questId": "quest_veil_guardian" }
+                    ]
+                }
+            ]
+        },
+
+        {
+            "id": "quest_veil_sealing_complete",
+            "startNode": "start",
+            "metadata": { "context": "Aftermath at the Veil breach — branches on player's sealing choice. Quest 5 completion." },
+            "nodes": [
+                {
+                    "id": "start",
+                    "speaker": "sylara",
+                    "text": "It is done. The fracture is sealed. But I can see from your face that it cost something.",
+                    "emotion": "quiet",
+                    "next": "branch_check",
+                    "choices": [
+                        {
+                            "text": "I sealed it with the ritual. The old way.",
+                            "next": "ritual_seal",
+                            "effects": [
+                                { "type": "setVariable", "variable": "veil_sealing_method", "value": "ritual" }
+                            ]
+                        },
+                        {
+                            "text": "I forced it shut. Used the void energy against itself.",
+                            "next": "void_seal",
+                            "effects": [
+                                { "type": "setVariable", "variable": "veil_sealing_method", "value": "void_force" }
+                            ]
+                        },
+                        {
+                            "text": "I left it partially open. Something felt wrong about sealing it completely.",
+                            "next": "partial_seal",
+                            "effects": [
+                                { "type": "setVariable", "variable": "veil_sealing_method", "value": "partial" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "branch_check",
+                    "speaker": "sylara",
+                    "text": "Whatever you chose — the Verdance will remember it. The Veil always does.",
+                    "emotion": "solemn",
+                    "next": "close",
+                    "effects": [
+                        { "type": "completeQuest", "questId": "quest_veil_sealing" }
+                    ]
+                },
+                {
+                    "id": "ritual_seal",
+                    "speaker": "sylara",
+                    "text": "The old way. Costly, but clean. The Veil will scar, not fester. The grove will grieve — but it will endure. You gave it the best chance it could have had.",
+                    "emotion": "relieved",
+                    "next": "close",
+                    "effects": [
+                        { "type": "completeQuest", "questId": "quest_veil_sealing" },
+                        { "type": "setFlag", "flag": "act1_seal_method_ritual", "value": true }
+                    ]
+                },
+                {
+                    "id": "void_seal",
+                    "speaker": "sylara",
+                    "text": "Clever — and dangerous. The breach is closed, yes. But you let void touch you to do it. Watch yourself in the days ahead. Something that tastes power once tends to remember the flavor.",
+                    "emotion": "cautious",
+                    "next": "close",
+                    "effects": [
+                        { "type": "completeQuest", "questId": "quest_veil_sealing" },
+                        { "type": "setFlag", "flag": "act1_seal_method_void", "value": true }
+                    ]
+                },
+                {
+                    "id": "partial_seal",
+                    "speaker": "sylara",
+                    "text": "You left it open. That is... not what I expected. Tell me why.",
+                    "emotion": "unsettled",
+                    "choices": [
+                        {
+                            "text": "Something on the other side was asking for help.",
+                            "next": "partial_reason_a",
+                            "effects": [
+                                { "type": "setFlag", "flag": "veil_contact_made", "value": true }
+                            ]
+                        },
+                        {
+                            "text": "Sealing it completely felt like cutting off something that belongs here.",
+                            "next": "partial_reason_b"
+                        }
+                    ]
+                },
+                {
+                    "id": "partial_reason_a",
+                    "speaker": "sylara",
+                    "text": "Asking for help. From the other side of the Veil. We will need to talk about that — at length, and soon. For now: rest. What comes next will require you whole.",
+                    "emotion": "alarmed",
+                    "next": "close",
+                    "effects": [
+                        { "type": "completeQuest", "questId": "quest_veil_sealing" },
+                        { "type": "setFlag", "flag": "act1_seal_method_partial", "value": true }
+                    ]
+                },
+                {
+                    "id": "partial_reason_b",
+                    "speaker": "sylara",
+                    "text": "That instinct is not wrong. But it is not yet understood. You are carrying something now. I hope we find out what it is before it decides to tell us itself.",
+                    "emotion": "uneasy",
+                    "next": "close",
+                    "effects": [
+                        { "type": "completeQuest", "questId": "quest_veil_sealing" },
+                        { "type": "setFlag", "flag": "act1_seal_method_partial", "value": true }
+                    ]
+                },
+                {
+                    "id": "close",
+                    "speaker": "elder_thornwick",
+                    "text": "Whatever path you chose at that breach — you faced it when others would have run. That is enough, for now. The grove owes you more than it can yet repay.",
+                    "emotion": "grateful"
+                }
+            ]
+        }
     ]
 }
 

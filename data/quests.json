@@ -1482,6 +1482,237 @@
             ],
             "rewards": { "experience": 400, "items": [{ "id": "sap_crystal", "quantity": 6 }], "reputation": { "bloomguard": 25 } },
             "tags": ["side", "combat", "corruption"]
+        },
+
+        {
+            "id": "quest_veil_awakening",
+            "name": "Whispers in the Bark",
+            "title": "Whispers in the Bark",
+            "description": "The trees near Verdant Heart are dying from the inside. Elder Thornwick has summoned you.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "talk_thornwick",
+                    "type": "dialogue",
+                    "target": "elder_thornwick",
+                    "description": "Speak with Elder Thornwick",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "inspect_trees",
+                    "type": "interact",
+                    "target": "dying_tree",
+                    "description": "Inspect the dying trees (0/3)",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 50,
+                "experience": 50,
+                "gold": 20,
+                "items": [
+                    { "id": "health_potion", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "elder_thornwick_quest1",
+            "dialogueOnAccept": "elder_thornwick_quest1",
+            "chainQuest": "quest_veil_first_hollow",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_first_hollow",
+            "name": "The First Hollow",
+            "title": "The First Hollow",
+            "description": "Something has corrupted the eastern grove. Clear the hollowed creatures.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "defeat_hollowed",
+                    "type": "kill",
+                    "target": "hollowed_sprite",
+                    "description": "Defeat Hollowed Sprites (0/5)",
+                    "count": 5,
+                    "required": 5,
+                    "order": 1
+                },
+                {
+                    "id": "find_shard",
+                    "type": "collect",
+                    "target": "veil_shard",
+                    "description": "Recover the Veil Shard",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 120,
+                "experience": 120,
+                "gold": 40,
+                "items": [
+                    { "id": "veil_shard", "quantity": 1 },
+                    { "id": "antidote", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "elder_thornwick_quest2",
+            "dialogueOnAccept": "elder_thornwick_quest2",
+            "chainQuest": "quest_veil_ritual",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_ritual",
+            "name": "The Binding Rite",
+            "title": "The Binding Rite",
+            "description": "The Veilkeeper Sylara says a ritual can slow the corruption. You need three components.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_first_hollow" }
+            ],
+            "objectives": [
+                {
+                    "id": "get_moonbloom",
+                    "type": "collect",
+                    "target": "moonbloom_herb",
+                    "description": "Gather Moonbloom (0/3)",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "get_bark",
+                    "type": "collect",
+                    "target": "ironbark_shard",
+                    "description": "Collect Ironbark Shards (0/2)",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "talk_sylara",
+                    "type": "dialogue",
+                    "target": "sylara",
+                    "description": "Return to Sylara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 200,
+                "experience": 200,
+                "gold": 60,
+                "items": [
+                    { "id": "ritual_focus", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "sylara_quest3",
+            "dialogueOnAccept": "sylara_quest3",
+            "chainQuest": "quest_veil_guardian",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_guardian",
+            "name": "Guardian of the Breach",
+            "title": "Guardian of the Breach",
+            "description": "A corrupted Guardian blocks the Veil breach. Defeat it before the corruption spreads.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_ritual" }
+            ],
+            "objectives": [
+                {
+                    "id": "defeat_guardian",
+                    "type": "kill",
+                    "target": "corrupted_guardian",
+                    "description": "Defeat the Corrupted Guardian",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 1
+                }
+            ],
+            "rewards": {
+                "xp": 400,
+                "experience": 400,
+                "gold": 100,
+                "items": [
+                    { "id": "guardian_sigil", "quantity": 1 },
+                    { "id": "greater_health_potion", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "sylara_quest4",
+            "dialogueOnAccept": "sylara_quest4",
+            "chainQuest": "quest_veil_sealing",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue", "boss"]
+        },
+
+        {
+            "id": "quest_veil_sealing",
+            "name": "Seal the Fracture",
+            "title": "Seal the Fracture",
+            "description": "With the Guardian fallen, the breach can be sealed. But the choice of how to seal it will change the Verdance forever.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "completesAct": 1,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_guardian" }
+            ],
+            "objectives": [
+                {
+                    "id": "reach_breach",
+                    "type": "move",
+                    "target": "veil_breach",
+                    "description": "Reach the Veil Breach",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "seal_choice",
+                    "type": "moral_choice",
+                    "target": "choice_veil_sealing",
+                    "description": "Make your choice at the breach",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 600,
+                "experience": 600,
+                "gold": 150,
+                "items": [
+                    { "id": "veilbound_amulet", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "quest_veil_sealing_complete",
+            "dialogueOnComplete": "quest_veil_sealing_complete",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue", "branching", "act_1_end"]
         }
     ]
 }

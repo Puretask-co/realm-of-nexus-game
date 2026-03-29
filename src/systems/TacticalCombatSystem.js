@@ -837,6 +837,33 @@ export class TacticalCombatSystem {
   }
 
   /**
+   * Boss intent types — telegraphed one turn ahead so the player can react.
+   * Each entry: { type, description, apCost, color }
+   */
+  static BOSS_INTENTS = [
+    { type: 'heavy_attack',  description: 'Charges a devastating melee strike',    apCost: 2 },
+    { type: 'aoe_blast',     description: 'Prepares a wide area explosion',         apCost: 2 },
+    { type: 'defend',        description: 'Braces and regenerates Guard',           apCost: 1 },
+    { type: 'summon',        description: 'Calls forth additional minions',          apCost: 1 },
+    { type: 'phase_shift',   description: 'Transitions to the next battle phase',   apCost: 2 }
+  ];
+
+  /**
+   * Roll the next boss intent and store it on the unit.
+   * Emits boss:intentChanged for the UI.
+   */
+  _rollBossIntent(boss) {
+    const intents = TacticalCombatSystem.BOSS_INTENTS;
+    const chosen = intents[Math.floor(Math.random() * intents.length)];
+    boss.nextIntent = { ...chosen };
+    this.eventBus.emit('boss:intentChanged', {
+      unitId: boss.id,
+      unitName: boss.name,
+      intent: boss.nextIntent
+    });
+  }
+
+  /**
    * Simple enemy AI.
    */
   _runEnemyAI(enemy) {
@@ -878,6 +905,11 @@ export class TacticalCombatSystem {
       } else {
         break;
       }
+    }
+
+    // After acting: if this is a boss, roll next turn's intent for the player to react to
+    if (enemy.isBoss === true) {
+      this._rollBossIntent(enemy);
     }
 
     // End turn after AI actions

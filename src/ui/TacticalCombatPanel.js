@@ -3,8 +3,29 @@ import { EventBus } from '../core/EventBus.js';
 import { TacticalCombatSystem } from '../systems/TacticalCombatSystem.js';
 
 /**
+ * Boss intent icons and color coding.
+ * Attacks are red, defend is blue, special/phase are purple.
+ */
+const BOSS_INTENT_ICONS = {
+    heavy_attack: '⚔',
+    aoe_blast:    '💥',
+    defend:       '🛡',
+    summon:       '✦',
+    phase_shift:  '⚡'
+};
+
+const BOSS_INTENT_COLORS = {
+    heavy_attack: '#ff5555',
+    aoe_blast:    '#ff7744',
+    defend:       '#4499ff',
+    summon:       '#cc66ff',
+    phase_shift:  '#aa44ff'
+};
+
+/**
  * TacticalCombatPanel — UI for grid-based tactical combat.
  * Shows turn order, current AP, enemy intents (telegraphed), and actions: Attack, Defend, End Turn, Undo.
+ * Also shows a Boss Intent Bar when a boss unit is present.
  */
 export class TacticalCombatPanel {
     constructor(scene) {
@@ -13,6 +34,11 @@ export class TacticalCombatPanel {
         this.tactical = TacticalCombatSystem.getInstance();
         this.container = null;
         this.visible = false;
+        // Boss intent bar state
+        this._bossIntentBar = null;
+        this._bossIntentBg = null;
+        this._bossIntentText = null;
+        this._currentBossIntent = null;
     }
 
     create() {
@@ -80,13 +106,82 @@ export class TacticalCombatPanel {
         });
         this.container.add(this.undoBtn.container);
 
+        // ---- Boss Intent Bar (hidden by default) ----
+        this._buildBossIntentBar(W, panelY);
+
         this._unsubs = [
             this.eventBus.on('tactical:combatStarted', () => this.show()),
             this.eventBus.on('tactical:combatEnded', () => this.hide()),
             this.eventBus.on('tactical:turnStart', (data) => this._onTurnStart(data)),
             this.eventBus.on('tactical:turnEnd', () => this._refresh()),
-            this.eventBus.on('tactical:enemyIntent', (data) => this._onEnemyIntent(data))
+            this.eventBus.on('tactical:enemyIntent', (data) => this._onEnemyIntent(data)),
+            this.eventBus.on('boss:intentChanged', (data) => this._onBossIntentChanged(data))
         ];
+    }
+
+    // ----------------------------------------------------------------
+    // Boss Intent Bar
+    // ----------------------------------------------------------------
+
+    _buildBossIntentBar(W, panelY) {
+        const barH = 32;
+        const barY = panelY - barH - 6; // sits just above the main panel
+
+        this._bossIntentBar = this.scene.add.container(0, 0);
+
+        // Background strip
+        this._bossIntentBg = this.scene.add.graphics();
+        this._bossIntentBg.fillStyle(0x1a0010, 0.92);
+        this._bossIntentBg.fillRoundedRect(20, barY, W - 40, barH, 6);
+        this._bossIntentBg.lineStyle(2, 0xaa2255, 0.8);
+        this._bossIntentBg.strokeRoundedRect(20, barY, W - 40, barH, 6);
+        this._bossIntentBar.add(this._bossIntentBg);
+
+        // Boss intent label text (centered vertically in the strip)
+        this._bossIntentText = this.scene.add.text(W / 2, barY + barH / 2, '', {
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            color: '#ff5555'
+        }).setOrigin(0.5, 0.5);
+        this._bossIntentBar.add(this._bossIntentText);
+
+        this._bossIntentBar.setVisible(false);
+        this.container.add(this._bossIntentBar);
+    }
+
+    _onBossIntentChanged(data) {
+        const { unitName, intent } = data;
+        if (!intent) return;
+
+        this._currentBossIntent = { unitName, intent };
+
+        const icon = BOSS_INTENT_ICONS[intent.type] || '?';
+        const color = BOSS_INTENT_COLORS[intent.type] || '#ffffff';
+        const label = `${unitName}  |  NEXT: ${icon} ${intent.description}  |  AP: ${intent.apCost}`;
+
+        this._bossIntentText.setText(label).setColor(color);
+        this._bossIntentBar.setVisible(true);
+        this._bossIntentBar.setAlpha(1);
+
+        // Flash tween on update
+        this.scene.tweens.killTweensOf(this._bossIntentBar);
+        this.scene.tweens.add({
+            targets: this._bossIntentBar,
+            alpha: { from: 0.2, to: 1 },
+            duration: 350,
+            ease: 'Quad.easeOut'
+        });
+    }
+
+    _checkBossPresence() {
+        const state = this.tactical.getCombatState?.();
+        if (!state) return;
+        const boss = state.enemies?.find(e => e.alive && e.isBoss);
+        if (!boss) {
+            // No boss alive — hide the bar
+            this._bossIntentBar?.setVisible(false);
+            this._currentBossIntent = null;
+        }
     }
 
     _makeButton(x, y, w, h, label, color, callback) {
@@ -134,6 +229,8 @@ export class TacticalCombatPanel {
         const intents = state.enemies?.filter(e => e.alive && e.intent).map(e => `${e.name}: ${e.intent?.action}${e.intent?.targetName ? ' ' + e.intent.targetName : ''}`) || [];
         this.intentText.setText(intents.length ? 'Intent: ' + intents.join(' | ') : '');
         this.undoBtn?.setEnabled?.(state.canUndo);
+        // Keep boss bar in sync — hide if no boss alive
+        this._checkBossPresence();
     }
 
     _showFloat(msg) {
@@ -144,11 +241,16 @@ export class TacticalCombatPanel {
         this.visible = true;
         if (this.container) this.container.setVisible(true);
         this._refresh();
+        // Boss bar starts hidden; it will appear when boss:intentChanged fires
+        this._bossIntentBar?.setVisible(false);
+        this._currentBossIntent = null;
     }
 
     hide() {
         this.visible = false;
         if (this.container) this.container.setVisible(false);
+        this._bossIntentBar?.setVisible(false);
+        this._currentBossIntent = null;
     }
 
     destroy() {

@@ -35,6 +35,7 @@ import { AIDungeonMaster } from '../systems/AIDungeonMaster.js';
 import SpellVFXIntegration from '../integration/SpellVFXIntegration.js';
 import { SapCycleLightingIntegration } from '../integration/SapCycleLightingIntegration.js';
 import TacticalCombatCameraBridge from '../integration/TacticalCombatCameraBridge.js';
+import { EndingEvaluator } from '../systems/EndingEvaluator.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -240,6 +241,7 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
             EventBus.on('moral-choice-made', (data) => this._onMoralChoiceMade(data)),
             EventBus.on('narrative:eraChanged', (data) => this._onEraChanged(data)),
+            EventBus.on('narrative:eraCompleted', (data) => this._onEraCompleted(data)),
             EventBus.on('companion:recruited', (data) => this._onCompanionRecruited(data)),
             EventBus.on('veilkeeper:consulted', (data) => this._onVeilkeeperConsulted(data)),
             EventBus.on('veilkeeper:died', (data) => this._onVeilkeeperDied(data)),
@@ -249,7 +251,9 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('dm:encounter', (data) => this._onDMEncounter(data)),
             // ---- Moral choice overlay: world pause / resume ----
             EventBus.on('pause-world', () => this._onPauseWorld()),
-            EventBus.on('resume-world', () => this._onResumeWorld())
+            EventBus.on('resume-world', () => this._onResumeWorld()),
+            // ---- World map travel ----
+            EventBus.on('worldmap:travelTo', (data) => this._onWorldMapTravelTo(data))
         ];
 
         // ---- Tactical combat (design: grid-based main combat) ----
@@ -262,6 +266,30 @@ export default class GameScene extends Phaser.Scene {
         // ---- Track current location ----
         this.currentLocationId = 'canopy_of_life';
         this._emitLocationDiscovery('canopy_of_life');
+
+        // ---- Fog of War ----
+        // canopy_of_life is the starting zone — always visible.
+        this._discoveredZones = new Set(['canopy_of_life']);
+        // Fog layer sits above zone graphics (depth 0) but below sprites (depth 4+).
+        this._fogLayer = this.add.graphics().setDepth(5);
+        // Additional fog-related EventBus wiring (travel discover handled in _onWorldMapTravelTo).
+        this._unsubs.push(
+            EventBus.on('zone:discovered', (data) => {
+                if (data?.zoneName) {
+                    EventBus.emit('ui:notification', {
+                        message: `Area Discovered: ${data.zoneName}`,
+                        color: '#88ffcc',
+                        duration: 3000
+                    });
+                }
+            }),
+            EventBus.on('save-collect', (saveData) => {
+                saveData.discoveredZones = [...this._discoveredZones];
+            }),
+            EventBus.on('save-restore', (saveData) => {
+                this._discoveredZones = new Set(saveData.discoveredZones || ['canopy_of_life']);
+            })
+        );
 
         // ---- Start first quest automatically ----
         this.time.delayedCall(2000, () => {
@@ -531,12 +559,68 @@ export default class GameScene extends Phaser.Scene {
             this.player.stats.passives = this.classSystem.getActivePassives(1);
         }
 
+        // Apply Pure / Blighted variant visuals
+        this._applyVariantVisuals();
+
         // Emit initial stats
         EventBus.emit('player-stats-updated', this.player.stats);
         EventBus.emit('class:applied', {
             classId: this.player.stats.classId,
             className: this.player.stats.className
         });
+    }
+
+    /**
+     * Apply Pure/Blighted visual theme to the player sprite.
+     * Pure  → soft golden tint + periodic white sparkle particles
+     * Blighted → desaturated purple-green tint + periodic corruption particles
+     */
+    _applyVariantVisuals() {
+        const variant = this.registry.get('selectedVariant') || this.classSystem.getVariant() || 'pure';
+        if (!this.player) return;
+
+        if (variant === 'pure') {
+            // Warm golden tint — subtle, not garish
+            this.player.setTint(0xffe8c0);
+            this._variantParticleColor = 0xffffaa;
+            this._variantParticleLabel = 'Pure';
+        } else if (variant === 'blighted') {
+            // Cool purple-green desaturated tint
+            this.player.setTint(0xc0d8b0);
+            this._variantParticleColor = 0x88ff88;
+            this._variantParticleLabel = 'Blighted';
+        }
+
+        // Periodic ambient particle bursts from player (every 4s)
+        this._variantParticleTimer = this.time.addEvent({
+            delay: 4000,
+            loop: true,
+            callback: () => this._emitVariantParticle()
+        });
+
+        // Store variant for HUD badge
+        this.player.variant = variant;
+        EventBus.emit('player:variantApplied', { variant, label: this._variantParticleLabel });
+    }
+
+    _emitVariantParticle() {
+        if (!this.player?.active) return;
+        const color = this._variantParticleColor || 0xffffff;
+        // Use Phaser particles if available; otherwise a simple flash graphic
+        try {
+            const gfx = this.add.graphics().setDepth(6);
+            gfx.fillStyle(color, 0.7);
+            for (let i = 0; i < 4; i++) {
+                const angle = (Math.PI * 2 * i) / 4;
+                const dx = Math.cos(angle) * 12;
+                const dy = Math.sin(angle) * 12;
+                gfx.fillCircle(this.player.x + dx, this.player.y + dy, 3);
+            }
+            this.tweens.add({
+                targets: gfx, alpha: 0, duration: 600,
+                onComplete: () => gfx.destroy()
+            });
+        } catch {}
     }
 
     // ----------------------------------------------------------------
@@ -907,6 +991,15 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-J', () => {
             EventBus.emit('ui:toggleQuestJournal');
         });
+
+        // M → toggle world map overlay
+        this.input.keyboard.on('keydown-M', () => {
+            if (!this.scene.isActive('WorldMapScene')) {
+                this.scene.launch('WorldMapScene', { currentZone: this.currentZone || 'canopy_of_life' });
+            } else {
+                this.scene.stop('WorldMapScene');
+            }
+        });
     }
 
     _castSpell(index) {
@@ -1162,6 +1255,13 @@ export default class GameScene extends Phaser.Scene {
                 this.factionSystem.modifyReputation(factionId, amount);
             }
         }
+
+        // Check if this is a main quest completion — trigger ending evaluation
+        const questDef = this.questSystem?.questDefinitions?.get?.(data.questId);
+        if (questDef?.type === 'main' || questDef?.isMainQuest === true) {
+            // Brief delay so DSP recovery and reputation changes settle first
+            this.time.delayedCall(1500, () => this._evaluateEnding());
+        }
     }
 
     _respawnEnemy(def, zoneId) {
@@ -1248,6 +1348,37 @@ export default class GameScene extends Phaser.Scene {
     _onResumeWorld() {
         this.physics.resume();
         console.log('[GameScene] World resumed after moral choice');
+    }
+
+    _onWorldMapTravelTo({ locationId }) {
+        if (!locationId) return;
+        this.currentZone = locationId;
+        console.log(`[WorldMap] Travelling to zone: ${locationId}`);
+        if (this.player) {
+            const ZONE_SPAWNS = {
+                canopy_of_life: { x: 640, y: 360 }, verdant_exchange: { x: 580, y: 400 },
+                bloomguard_barracks: { x: 700, y: 400 }, emerald_sanctum: { x: 620, y: 450 },
+                whispering_veil: { x: 660, y: 450 }, hollowroot_catacombs: { x: 580, y: 520 },
+                spindlewood_forest: { x: 360, y: 360 }, mycelium_nexus: { x: 580, y: 600 },
+                thornbinder_safehouse: { x: 260, y: 420 }, emerald_cascades: { x: 820, y: 380 },
+                glinting_groves: { x: 450, y: 280 }, thornbinder_training_grounds: { x: 300, y: 300 },
+                wildkin_hunting_grounds: { x: 240, y: 380 }, sporecaller_labs: { x: 620, y: 660 },
+                veil_echo_chamber: { x: 870, y: 480 }, abyss_forward_camp: { x: 920, y: 420 },
+                hollow_tree_grove: { x: 860, y: 560 }, corruption_quarantine_zone: { x: 740, y: 620 },
+                sapling_plantation: { x: 500, y: 240 }, ancient_unbinding_site: { x: 960, y: 540 },
+                veil_tear_rift_alpha: { x: 1000, y: 460 }, veil_tear_rift_beta: { x: 1060, y: 520 },
+                veil_tear_rift_gamma: { x: 1100, y: 580 }, the_scar: { x: 1050, y: 380 },
+                everwood_heart: { x: 640, y: 700 }, void_nexus: { x: 1140, y: 660 },
+                canopy_overlook: { x: 700, y: 200 },
+            };
+            const spawn = ZONE_SPAWNS[locationId] || { x: 640, y: 360 };
+            this.player.setPosition(spawn.x, spawn.y);
+            if (this.cameraSystem?.camera) this.cameraSystem.camera.centerOn(spawn.x, spawn.y);
+        }
+        // Fog of War: reveal the travel destination immediately
+        const destZone = this.zones?.find(z => z.id === locationId);
+        this._discoverZone(locationId, destZone?.name || locationId);
+        EventBus.emit('zone:changed', { locationId });
     }
 
     /**
@@ -1647,6 +1778,9 @@ export default class GameScene extends Phaser.Scene {
             this._regenSap(delta);
         }
 
+        // Fog of War
+        this._updateFog();
+
         // Profiler (always last)
         this.profiler.end('total');
         this.profiler.stats.lightsActive = this.lighting.lights.length;
@@ -1704,6 +1838,87 @@ export default class GameScene extends Phaser.Scene {
                 this.player.stats.maxSap,
                 this.player.stats.sap + regenRate * (delta / 1000)
             );
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Ending
+    // ----------------------------------------------------------------
+
+    /**
+     * Called when NarrativeSystem completes an era.
+     * Only triggers the ending on the final era (era 6 per design docs).
+     */
+    _onEraCompleted(data) {
+        const FINAL_ERA = 6;
+        if (data?.eraNumber >= FINAL_ERA) {
+            this.time.delayedCall(2000, () => this._evaluateEnding());
+        }
+    }
+
+    /**
+     * Evaluate the ending and transition to EndingScene.
+     * Guards against double-calls with a flag.
+     */
+    _evaluateEnding() {
+        if (this._endingTriggered) return;
+        this._endingTriggered = true;
+
+        const evaluator = new EndingEvaluator();
+        const result    = evaluator.evaluate({ player: this.player });
+
+        console.log(`[Ending] Triggering: ${result.endingId}`);
+
+        // Fade out then launch ending scene
+        this.cameras.main.fadeOut(1500, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('EndingScene', { endingId: result.endingId });
+        });
+    }
+
+    // ----------------------------------------------------------------
+    // Fog of War
+    // ----------------------------------------------------------------
+
+    /**
+     * Discover a zone — add it to the revealed set and fire zone:discovered.
+     * Safe to call multiple times; subsequent calls for the same zone are no-ops.
+     */
+    _discoverZone(zoneId, zoneName) {
+        if (this._discoveredZones.has(zoneId)) return;
+        this._discoveredZones.add(zoneId);
+        EventBus.emit('zone:discovered', { zoneId, zoneName: zoneName || zoneId });
+    }
+
+    /**
+     * Redraws the fog-of-war overlay every frame.
+     *
+     * Logic:
+     *   - Undiscovered zones get a semi-transparent dark rectangle over their bounds.
+     *   - If the player physically walks into an undiscovered zone it is auto-revealed.
+     */
+    _updateFog() {
+        if (!this._fogLayer || !this.zones) return;
+
+        this._fogLayer.clear();
+
+        for (const zone of this.zones) {
+            const { x, y, w, h } = zone.bounds;
+
+            // Auto-discover zone when player physically walks into it
+            if (!this._discoveredZones.has(zone.id) && this.player) {
+                const px = this.player.x;
+                const py = this.player.y;
+                if (px >= x && px <= x + w && py >= y && py <= y + h) {
+                    this._discoverZone(zone.id, zone.name);
+                }
+            }
+
+            // Draw fog over undiscovered zones
+            if (!this._discoveredZones.has(zone.id)) {
+                this._fogLayer.fillStyle(0x000000, 0.75);
+                this._fogLayer.fillRect(x, y, w, h);
+            }
         }
     }
 

@@ -6,6 +6,10 @@ import GameScene from './scenes/GameScene.js';
 import EditorScene from './scenes/EditorScene.js';
 import UIScene from './scenes/UIScene.js';
 import PauseMenuScene from './scenes/PauseMenuScene.js';
+import SettingsScene from './scenes/SettingsScene.js';
+import WorldMapScene from './scenes/WorldMapScene.js';
+import EndingScene from './scenes/EndingScene.js';
+import ProceduralAudio from './systems/ProceduralAudio.js';
 import NormalMapPipeline from './pipelines/NormalMapPipeline.js';
 import PostProcessingPipeline from './pipelines/PostProcessingPipeline.js';
 
@@ -50,7 +54,7 @@ const config = {
         PostProcessing: PostProcessingPipeline
     },
 
-    scene: [BootScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene, PauseMenuScene]
+    scene: [BootScene, ClassSelectionScene, CharacterCreationScene, GameScene, EditorScene, UIScene, PauseMenuScene, SettingsScene, WorldMapScene, EndingScene]
 };
 
 function showBootError(message) {
@@ -87,6 +91,10 @@ function createGame(gameConfig) {
 }
 
 const game = createGame(config);
+
+// Boot procedural audio — starts ambient music and wires all SFX to EventBus
+// Needs to be after game creation so Web Audio context is available
+ProceduralAudio.getInstance();
 
 // Expose for debugging in dev mode
 if (import.meta.env.DEV) {

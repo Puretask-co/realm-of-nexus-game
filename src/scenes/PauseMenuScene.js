@@ -93,10 +93,7 @@ export default class PauseMenuScene extends Phaser.Scene {
     }
 
     _settings() {
-        if (this._feedbackText) this._feedbackText.setText('Settings coming soon...');
-        this.time.delayedCall(1800, () => {
-            if (this._feedbackText?.active) this._feedbackText.setText('');
-        });
+        this.scene.launch('SettingsScene');
     }
 
     _quit() {

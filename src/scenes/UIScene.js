@@ -4,6 +4,7 @@ import { ShopPanel } from '../ui/ShopPanel.js';
 import { CraftingPanel } from '../ui/CraftingPanel.js';
 import { MoralChoicePanel } from '../ui/MoralChoicePanel.js';
 import { VeilkeeperPanel } from '../ui/VeilkeeperPanel.js';
+import { SpellbookPanel } from '../ui/SpellbookPanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -48,6 +49,9 @@ export default class UIScene extends Phaser.Scene {
         this.craftingPanel = new CraftingPanel(this);
         this.moralChoicePanel = new MoralChoicePanel(this);
         this.veilkeeperPanel = new VeilkeeperPanel(this);
+        this.spellbookPanel = new SpellbookPanel(this);
+
+        this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
 
         // EventBus bindings
         this._unsubs = [

@@ -1,0 +1,13 @@
+---
+description: JSON schema validators for DataManager
+globs:
+  - src/schemas/**/*.js
+alwaysApply: false
+---
+
+# Schemas
+
+- **Role:** Define allowed shapes for `data/*.json` consumed by `DataManager`.
+- **Breaking changes:** Tightening rules without updating JSON **fails boot** — coordinate both sides.
+- **Style:** Prefer warnings + filter bad rows over failing entire load when content is messy (match existing patterns).
+- **After edits:** `npm run dev` + `npm run validate-data`; grep callers for new fields.
