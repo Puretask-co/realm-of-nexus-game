@@ -42,6 +42,9 @@ import StashSystem from '../systems/StashSystem.js';
 import ZoneContentManager from '../systems/ZoneContentManager.js';
 import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
+import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
+import { AudioManager } from '../systems/AudioManager.js';
+import ParticleEffects from '../systems/ParticleEffects.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -101,7 +104,7 @@ export default class GameScene extends Phaser.Scene {
         this.difficultySystem = DifficultySystem.getInstance();
         this.dungeonMaster = AIDungeonMaster.getInstance();
         this.equipmentSystem = EquipmentSystem.getInstance();
-        this.tutorialSystem = TutorialSystem.getInstance();
+        this.tutorialSystem = TutorialSystem;
 
         // ---- Utilities ----
         this.cooldowns = new CooldownManager();
@@ -125,6 +128,14 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Stash System (item vault) ----
         this.stashSystem = StashSystem.getInstance();
+
+        // ---- Audio ----
+        this.audioManager = AudioManager.getInstance(this);
+        this.audioManager.wireToGame(this);
+
+        // ---- Particle Effects (real Kenney textures) ----
+        this.particleEffects = new ParticleEffects(this);
+        this.particleEffects.init();
 
         // ---- World ----
         this._buildWorld();
@@ -376,79 +387,66 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _buildWorld() {
-        const worldWidth = 2400;
-        const worldHeight = 1800;
+        const locations  = dataManager.getAllLocations();
+        const ZONE_COLS  = 3;
+        const ZONE_W     = 800;
+        const ZONE_H     = 900;
+        const rowCount   = Math.ceil(locations.length / ZONE_COLS);
+        const worldWidth  = ZONE_COLS * ZONE_W;
+        const worldHeight = rowCount   * ZONE_H;
 
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
 
-        // Zone layout: 3 columns x 2 rows, each 800x900
-        const locations = dataManager.getAllLocations();
-        this._worldGfx = this.add.graphics().setDepth(0);
-        this._zoneLabels = [];
-
-        // Zone definitions with grid positions
+        this._zoneLabels  = [];
+        this._zoneTilemaps = [];   // keep refs so we can destroy them on shutdown
         this.zones = [];
-        locations.forEach((loc, i) => {
-            const col = i % 3;
-            const row = Math.floor(i / 3);
-            const zoneX = col * 800;
-            const zoneY = row * 900;
-            const zoneW = 800;
-            const zoneH = 900;
 
-            const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: zoneW, h: zoneH } };
+        locations.forEach((loc, i) => {
+            const col  = i % ZONE_COLS;
+            const row  = Math.floor(i / ZONE_COLS);
+            const zoneX = col * ZONE_W;
+            const zoneY = row * ZONE_H;
+
+            const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
             this.zones.push(zone);
 
-            // Draw zone background
-            const color = parseInt((loc.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
-            this._worldGfx.fillStyle(color, 0.4);
-            this._worldGfx.fillRect(zoneX, zoneY, zoneW, zoneH);
+            // ── Tilemap / Graphics rendering ──────────────────────────
+            const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
+            this._zoneTilemaps.push(...result.tilemaps);
 
-            // Zone border
-            this._worldGfx.lineStyle(2, color, 0.7);
-            this._worldGfx.strokeRect(zoneX + 2, zoneY + 2, zoneW - 4, zoneH - 4);
+            // ── Zone name label (above all tile layers) ───────────────
+            const color = parseInt((loc.environment?.ambientColor || '0x44aa44').replace('0x', ''), 16);
+            const hexStr = '#' + color.toString(16).padStart(6, '0');
 
-            // Grid overlay
-            this._worldGfx.lineStyle(1, color, 0.15);
-            const gridSize = 64;
-            for (let x = zoneX; x <= zoneX + zoneW; x += gridSize) {
-                this._worldGfx.lineBetween(x, zoneY, x, zoneY + zoneH);
-            }
-            for (let y = zoneY; y <= zoneY + zoneH; y += gridSize) {
-                this._worldGfx.lineBetween(zoneX, y, zoneX + zoneW, y);
-            }
-
-            // Zone name label
-            const label = this.add.text(zoneX + zoneW / 2, zoneY + 20, loc.name.toUpperCase(), {
+            const label = this.add.text(zoneX + ZONE_W / 2, zoneY + 20, loc.name.toUpperCase(), {
                 fontFamily: 'Open Sans',
                 fontSize: '20px',
-                color: `#${color.toString(16).padStart(6, '0')}`,
+                color: hexStr,
                 stroke: '#000000',
                 strokeThickness: 3
-            }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.7);
+            }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.85);
             this._zoneLabels.push(label);
 
-            // Level indicator
-            this.add.text(zoneX + zoneW / 2, zoneY + 38, `Lv.${loc.level} — ${loc.type}`, {
+            this.add.text(zoneX + ZONE_W / 2, zoneY + 38, `Lv.${loc.level} — ${loc.type}`, {
                 fontFamily: 'Open Sans',
                 fontSize: '14px',
-                color: '#888888',
+                color: '#aaaaaa',
                 stroke: '#000000',
                 strokeThickness: 2
-            }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.6);
+            }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.7);
 
-            // Weather effects per zone
+            // ── Weather ────────────────────────────────────────────────
             if (loc.environment?.weather === 'fog') {
-                this._addFogEffect(zoneX, zoneY, zoneW, zoneH);
+                this._addFogEffect(zoneX, zoneY, ZONE_W, ZONE_H);
             }
 
-            // Decorative elements (themed per zone)
-            this._addZoneDecorations(zoneX, zoneY, zoneW, zoneH, loc);
+            // ── Decorations (trees, props) ─────────────────────────────
+            this._addZoneDecorations(zoneX, zoneY, ZONE_W, ZONE_H, loc);
 
-            // Camera zone
+            // ── Camera zone ────────────────────────────────────────────
             this.cameraSystem.addZone(
-                { x: zoneX, y: zoneY, width: zoneW, height: zoneH },
+                { x: zoneX, y: zoneY, width: ZONE_W, height: ZONE_H },
                 {
                     zoom: loc.environment?.cameraZoom || 1.0,
                     priority: i,
@@ -465,7 +463,7 @@ export default class GameScene extends Phaser.Scene {
             );
         });
 
-        // Connection paths between zones (visual)
+        // Connection paths between zones
         this._drawZoneConnections(locations);
     }
 
@@ -492,29 +490,45 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _addZoneDecorations(x, y, w, h, location) {
-        const count = location.type === 'dungeon' ? 15 : 25;
+        const count = location.type === 'dungeon' ? 12 : 20;
+
+        // Real tree keys for forest/overworld zones
+        const forestTrees = ['tree1', 'tree2', 'tree3', 'tree_moss1', 'tree_moss2', 'tree_flower1', 'tree_flower2', 'tree_autumn'];
+        const dungeon = location.type === 'dungeon' || location.type === 'boss';
+
         for (let i = 0; i < count; i++) {
-            const dx = x + Phaser.Math.Between(40, w - 40);
-            const dy = y + Phaser.Math.Between(60, h - 40);
-            const gfx = this.add.graphics().setDepth(1);
+            const dx = x + Phaser.Math.Between(50, w - 50);
+            const dy = y + Phaser.Math.Between(70, h - 50);
 
-            const color = parseInt((location.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
-
-            if (location.type === 'dungeon') {
-                // Crystal formations
-                gfx.fillStyle(color, 0.6);
-                const size = Phaser.Math.Between(4, 12);
-                gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
-            } else if (location.type === 'boss') {
-                // Glowing pillars
-                gfx.fillStyle(color, 0.5);
-                gfx.fillRect(dx - 4, dy - 20, 8, 20);
-                gfx.fillStyle(0xffffff, 0.3);
-                gfx.fillCircle(dx, dy - 22, 6);
+            if (!dungeon) {
+                // Use real tree sprites if loaded, else fall back to graphics
+                const treeKey = forestTrees[Phaser.Math.Between(0, forestTrees.length - 1)];
+                if (this.textures.exists(treeKey)) {
+                    const tree = this.add.image(dx, dy, treeKey)
+                        .setDepth(2)
+                        .setScale(Phaser.Math.FloatBetween(0.4, 0.7))
+                        .setAlpha(0.9);
+                    // Subtle sway tween
+                    this.tweens.add({
+                        targets: tree,
+                        angle: Phaser.Math.Between(-3, 3),
+                        duration: Phaser.Math.Between(2000, 4000),
+                        yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                    });
+                } else {
+                    // Fallback circle
+                    const color = parseInt((location.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+                    const gfx = this.add.graphics().setDepth(1);
+                    gfx.fillStyle(color, 0.5);
+                    gfx.fillCircle(dx, dy, Phaser.Math.Between(8, 18));
+                }
             } else {
-                // Trees and rocks
-                gfx.fillStyle(color, 0.5);
-                gfx.fillCircle(dx, dy, Phaser.Math.Between(6, 16));
+                // Dungeon: use cave/crystal graphics
+                const color = parseInt((location.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+                const gfx = this.add.graphics().setDepth(1);
+                gfx.fillStyle(color, 0.6);
+                const size = Phaser.Math.Between(4, 14);
+                gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
             }
         }
     }
@@ -566,6 +580,13 @@ export default class GameScene extends Phaser.Scene {
         this.player.setDamping(true);
         this.player.setDrag(0.85);
         this.player.setMaxVelocity(250);
+        // Scale 256px frame down to 64px display size
+        this.player.setDisplaySize(64, 64);
+        // Physics body sized to match display, not raw frame
+        this.player.body.setSize(40, 40);
+        this.player.body.setOffset(108, 140);
+        // Start idle animation
+        if (this.anims.exists('player-idle')) this.player.play('player-idle');
 
         // Base stats — use Verdance attribute-based system
         if (classDef) {
@@ -714,9 +735,10 @@ export default class GameScene extends Phaser.Scene {
         // Player-enemy overlap: start tactical encounter (design: tactical as main combat)
         this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
             if (this.isDead || this.inTacticalCombat) return;
-            if (enemy.data._encounterCooldown) return;
-            enemy.data._encounterCooldown = true;
-            this.time.delayedCall(2000, () => { if (enemy.active) enemy.data._encounterCooldown = false; });
+            if (enemy._state?._encounterCooldown) return;
+            if (!enemy._state) enemy._state = {};
+            enemy._state._encounterCooldown = true;
+            this.time.delayedCall(2000, () => { if (enemy.active && enemy._state) enemy._state._encounterCooldown = false; });
 
             const nearby = this.enemies.children.entries.filter(e =>
                 e.active && Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y) < 180
@@ -832,15 +854,40 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _spawnSingleEnemy(def, x, y, zoneId) {
-        // Use zone-specific texture if available
-        const textureKey = `enemy_${def.id}`;
-        const texture = this.textures.exists(textureKey) ? textureKey : 'enemy';
+        // Map enemy types to animated spritesheet keys
+        const ENEMY_SPRITE_MAP = {
+            forest_guardian:       'enemy_treetitan',
+            verdant_guardian:      'enemy_treetitan',
+            tree_titan:            'enemy_treetitan',
+            corrupted_guardian:    'enemy_corrupted_titan',
+            shadow_stalker:        'enemy_warrior',
+            crimson_warden:        'enemy_warrior',
+            mushroom_berserker:    'enemy_mushroom',
+            spore_caller:          'enemy_mushroom',
+            mycelium_hulk:         'enemy_mushroom',
+        };
+        const ENEMY_ANIM_MAP = {
+            'enemy_treetitan':      'enemy_treetitan-walk',
+            'enemy_corrupted_titan':'enemy_corrupted_titan-walk',
+            'enemy_mushroom':       'enemy_mushroom-walk',
+            'enemy_warrior':        'enemy_warrior-idle',
+        };
 
-        const enemy = this.physics.add.sprite(x, y, texture);
+        const spriteKey = ENEMY_SPRITE_MAP[def.id] ||
+            (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+
+        const enemy = this.physics.add.sprite(x, y, spriteKey);
         enemy.setDepth(4);
         enemy.setCollideWorldBounds(true);
+        // Scale 256px frame down to 56px display size
+        enemy.setDisplaySize(56, 56);
+        enemy.body.setSize(36, 36);
+        enemy.body.setOffset(110, 140);
+        // Play walk animation if available
+        const animKey = ENEMY_ANIM_MAP[spriteKey];
+        if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
 
-        enemy.data = {
+        enemy._state = {
             definition: def,
             hp: def.baseStats?.hp || 50,
             maxHp: def.baseStats?.hp || 50,
@@ -862,7 +909,7 @@ export default class GameScene extends Phaser.Scene {
     _updateEnemyHpBar(enemy) {
         if (!enemy._hpBar || !enemy.active) return;
         enemy._hpBar.clear();
-        const ratio = enemy.data.hp / enemy.data.maxHp;
+        const ratio = enemy._state.hp / enemy._state.maxHp;
         const barW = 30;
         const barH = 3;
         const x = enemy.x - barW / 2;
@@ -1310,12 +1357,12 @@ export default class GameScene extends Phaser.Scene {
         if (enemy._hpBar) { enemy._hpBar.destroy(); enemy._hpBar = null; }
 
         // Award XP
-        const xpReward = (enemy.data.definition?.baseStats?.hp || 50) / 2;
+        const xpReward = (enemy._state.definition?.baseStats?.hp || 50) / 2;
         this.player.stats.experience += xpReward;
         this.damageNumbers.show(enemy.x, enemy.y - 30, `+${Math.round(xpReward)} XP`, 0x44ff88);
 
         // Award gold (Sap Cycle: lootRateMultiplier affects economy)
-        const lootTable = enemy.data.definition?.lootTable;
+        const lootTable = enemy._state.definition?.lootTable;
         const sapMods = this.sapCycle.getModifiers();
         if (lootTable) {
             const rawGold = Phaser.Math.Between(lootTable.goldMin || 5, lootTable.goldMax || 15);
@@ -1339,7 +1386,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // Notify quest system
-        const enemyId = enemy.data.definition?.id;
+        const enemyId = enemy._state.definition?.id;
         if (enemyId) {
             EventBus.emit('enemy:defeated', { enemyId });
         }
@@ -1364,7 +1411,7 @@ export default class GameScene extends Phaser.Scene {
 
         // Respawn after delay
         this.time.delayedCall(15000, () => {
-            this._respawnEnemy(enemy.data.definition, enemy.data.zoneId);
+            this._respawnEnemy(enemy._state.definition, enemy._state.zoneId);
         });
     }
 
@@ -1501,7 +1548,6 @@ export default class GameScene extends Phaser.Scene {
         if (this._dspOverlay) { this._dspOverlay.destroy(); this._dspOverlay = null; }
 
         if (threshold === 'stable') {
-            cam.clearRenderToTexture();
             return;
         }
 
@@ -2015,9 +2061,9 @@ export default class GameScene extends Phaser.Scene {
         const dt = delta / 1000;
 
         this.enemies.children.entries.forEach((enemy) => {
-            if (!enemy.active || !enemy.data) return;
+            if (!enemy.active || !enemy._state) return;
 
-            const d = enemy.data;
+            const d = enemy._state;
             d.aiTimer += dt;
 
             // Update HP bar position
@@ -2026,6 +2072,10 @@ export default class GameScene extends Phaser.Scene {
             const distToPlayer = Phaser.Math.Distance.Between(
                 enemy.x, enemy.y, this.player.x, this.player.y
             );
+
+            // Flip sprite based on movement direction
+            if (enemy.body.velocity.x < -10) enemy.setFlipX(true);
+            else if (enemy.body.velocity.x > 10) enemy.setFlipX(false);
 
             switch (d.aiState) {
                 case 'idle':
@@ -2341,6 +2391,15 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.destroy();
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
+        // Cleanup particle effects and audio
+        this.particleEffects?.destroy();
+        this.audioManager?.unwireFromGame();
+        // Destroy zone tilemaps to prevent memory leak on scene restart
+        if (this._zoneTilemaps) {
+            for (const map of this._zoneTilemaps) {
+                try { map.destroy(); } catch (_) {}
+            }
+        }
         this.scene.stop('UIScene');
     }
 }

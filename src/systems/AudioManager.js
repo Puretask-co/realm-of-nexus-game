@@ -651,6 +651,90 @@ export class AudioManager {
     this.cleanupActiveSounds();
   }
 
+  // ─── Game Event Wiring ───────────────────────────────────────────────
+  // Call wireToGame(scene) from GameScene.create() after the scene is ready.
+
+  wireToGame(scene) {
+    this.scene = scene;
+    const eb = this.eventBus;
+
+    const ELEMENT_SFX = {
+      fire:     ['sfx_fire1','sfx_fire2','sfx_fire3'],
+      arcane:   ['sfx_magic1','sfx_magic2','sfx_magic3'],
+      shadow:   ['sfx_magic4','sfx_magic5'],
+      nature:   ['sfx_wind1','sfx_wind2','sfx_skill1'],
+      verdant:  ['sfx_wind1','sfx_skill2'],
+      radiant:  ['sfx_saint1','sfx_saint2'],
+      light:    ['sfx_saint1','sfx_chime1'],
+      spirit:   ['sfx_magic3','sfx_chime2'],
+      void:     ['sfx_magic4','sfx_magic5'],
+      physical: ['sfx_slash1','sfx_slash2','sfx_sword1'],
+      water:    ['sfx_water1','sfx_water2'],
+      ice:      ['sfx_ice1','sfx_ice2'],
+      thunder:  ['sfx_thunder1','sfx_thunder2','sfx_thunder3'],
+      wind:     ['sfx_wind1','sfx_wind2'],
+    };
+    const ZONE_BGM = {
+      hub:'bgm_town', market:'bgm_town', military:'bgm_town', settlement:'bgm_town',
+      dungeon:'bgm_dungeon', underground_city:'bgm_dungeon', catacombs:'bgm_dungeon',
+      boss:'bgm_boss', hidden:'bgm_boss',
+    };
+    const DEFAULT_BGM = 'bgm_exploration';
+    const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const sfx = (key, vol = 0.7) => {
+      try { if (this.scene?.cache?.audio?.has?.(key)) this.playSFX(key, { volume: vol }); } catch(_) {}
+    };
+
+    this._gameUnsubs = [
+      eb.on('spell-cast', (d) => { const a = ELEMENT_SFX[d?.spell?.element || d?.element || 'arcane'] || ELEMENT_SFX.arcane; sfx(rnd(a)); }),
+      eb.on('enemy-damaged',   () => sfx(rnd(['sfx_damage1','sfx_damage2','sfx_damage3']))),
+      eb.on('player-damaged',  () => sfx(rnd(['sfx_blow1','sfx_blow2','sfx_damage1']))),
+      eb.on('enemy-defeated',  () => sfx('sfx_collapse1')),
+      eb.on('player:healed',   () => sfx(rnd(['sfx_heal1','sfx_heal2','sfx_heal3']))),
+      eb.on('ui:buttonClick',  () => sfx('sfx_cursor1', 0.5)),
+      eb.on('ui:menuOpen',     () => sfx('sfx_cursor2', 0.5)),
+      eb.on('ui:menuClose',    () => sfx('sfx_cancel1', 0.5)),
+      eb.on('ui:notification', () => sfx('sfx_chime2', 0.5)),
+      eb.on('ui:questComplete',() => sfx('sfx_chime1')),
+      eb.on('player:levelUp',  () => sfx('sfx_levelup')),
+      eb.on('progression:levelUp', () => sfx('sfx_levelup')),
+      eb.on('companion:bondLevelUp', () => sfx('sfx_chime1')),
+      eb.on('item:pickup',     () => sfx('sfx_coin', 0.6)),
+      eb.on('currency:gained', () => sfx('sfx_coin', 0.6)),
+      eb.on('game:saved',      () => sfx('sfx_save', 0.6)),
+      eb.on('portal:activated',() => sfx('sfx_teleport')),
+      eb.on('player:teleport', () => sfx('sfx_teleport')),
+      eb.on('player:died', () => {
+        this.stopMusic(0.6);
+        scene.time?.delayedCall(2000, () => {
+          if (scene.cache?.audio?.has?.('bgm_gameover')) this.playMusic('bgm_gameover', { crossfade: 1.5 });
+        });
+      }),
+      eb.on('tactical:combatStarted', () => this.playMusic('bgm_battle', { crossfade: 1.0 })),
+      eb.on('tactical:combatEnded',   () => { const k = this._zoneBgmKey || DEFAULT_BGM; if (scene.cache?.audio?.has?.(k)) this.playMusic(k, { crossfade: 1.5 }); }),
+      eb.on('combat:ended', () => { if (this.currentMusic?.key === 'bgm_battle') { const k = this._zoneBgmKey || DEFAULT_BGM; if (scene.cache?.audio?.has?.(k)) this.playMusic(k, { crossfade: 1.5 }); } }),
+      eb.on('zone-entered', (d) => {
+        const zone = scene.zones?.find(z => z.id === d?.locationId);
+        const bgm  = ZONE_BGM[zone?.type] || DEFAULT_BGM;
+        this._zoneBgmKey = bgm;
+        if (this.currentMusic?.key !== 'bgm_battle' && this.currentMusic?.key !== 'bgm_boss') {
+          if (scene.cache?.audio?.has?.(bgm)) this.playMusic(bgm, { crossfade: 2.0 });
+        }
+      }),
+    ];
+
+    if (!this.currentMusic && scene.cache?.audio?.has?.(DEFAULT_BGM)) {
+      this.playMusic(DEFAULT_BGM, { volume: 0.4 });
+    }
+  }
+
+  unwireFromGame() {
+    if (this._gameUnsubs) {
+      this._gameUnsubs.forEach(fn => typeof fn === 'function' && fn());
+      this._gameUnsubs = [];
+    }
+  }
+
   // ─── Statistics ───────────────────────────────────────────────────
 
   getStatistics() {
