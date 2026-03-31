@@ -254,7 +254,7 @@ export default class Player {
 
         if (this.stats.hp <= 0) {
             this.state = 'dead';
-            EventBus.emit('player-defeated', { player: this.sprite });
+            EventBus.emit('player:died', { player: this.sprite });
         } else {
             this.state = 'hurt';
             this.scene.time.delayedCall(200, () => {
@@ -270,7 +270,7 @@ export default class Player {
     heal(amount) {
         this.stats.hp = Math.min(this.stats.maxHp, this.stats.hp + amount);
         EventBus.emit('player-stats-updated', this.stats);
-        EventBus.emit('player-healed', { amount, hp: this.stats.hp });
+        EventBus.emit('player:healed', { amount, hp: this.stats.hp });
     }
 
     // ----------------------------------------------------------------

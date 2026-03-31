@@ -194,7 +194,8 @@ export default class ContentInitializer {
         } = systems;
         const classSystem = PlayerClassSystem.getInstance();
 
-        EventBus.on('save-collect', (saveData) => {
+        const unsubs = [];
+        unsubs.push(EventBus.on('save-collect', (saveData) => {
             if (questSystem) saveData.quests = questSystem.saveState();
             if (dialogueSystem) saveData.dialogues = dialogueSystem.saveState();
             if (progressionSystem?.serialize) saveData.progression = progressionSystem.serialize();
@@ -211,9 +212,9 @@ export default class ContentInitializer {
             if (attributeSystem?.saveState) saveData.attributes = attributeSystem.saveState();
             if (veilkeeperSystem?.saveState) saveData.veilkeepers = veilkeeperSystem.saveState();
             if (skillCheckSystem?.saveState) saveData.skillChecks = skillCheckSystem.saveState();
-        });
+        }));
 
-        EventBus.on('save-restore', (saveData) => {
+        unsubs.push(EventBus.on('save-restore', (saveData) => {
             if (saveData.quests && questSystem) questSystem.loadState(saveData.quests);
             if (saveData.dialogues && dialogueSystem) dialogueSystem.loadState(saveData.dialogues);
             if (saveData.progression && progressionSystem?.deserialize) progressionSystem.deserialize(saveData.progression);
@@ -230,8 +231,9 @@ export default class ContentInitializer {
             if (saveData.attributes && attributeSystem?.loadState) attributeSystem.loadState(saveData.attributes);
             if (saveData.veilkeepers && veilkeeperSystem?.loadState) veilkeeperSystem.loadState(saveData.veilkeepers);
             if (saveData.skillChecks && skillCheckSystem?.loadState) skillCheckSystem.loadState(saveData.skillChecks);
-        });
+        }));
 
         console.log('[ContentInit] Save system wired (including new systems)');
+        return () => unsubs.forEach(fn => fn());
     }
 }

@@ -1,4 +1,5 @@
 import EventBus from '../core/EventBus.js';
+import { UIFramework } from '../ui/UIFramework.js';
 import { TacticalCombatPanel } from '../ui/TacticalCombatPanel.js';
 import { ShopPanel } from '../ui/ShopPanel.js';
 import { CraftingPanel } from '../ui/CraftingPanel.js';
@@ -58,6 +59,22 @@ export default class UIScene extends Phaser.Scene {
         this.inventoryPanel = new InventoryPanel(this, this._makeMinimalUI());
         this.gameInfoPanel = new GameInfoPanel(this);
         this.companionPanel = new CompanionPanel(this);
+
+        // Register all panels with UIFramework so showPanel/hidePanel/hideAllPanels work
+        // and ui:menuOpen / ui:menuClose SFX fire correctly via UIFramework.showPanel()
+        const ui = UIFramework.getInstance(this);
+        if (ui) {
+            ui.registerPanel('tactical',    this.tacticalCombatPanel);
+            ui.registerPanel('shop',        this.shopPanel);
+            ui.registerPanel('crafting',    this.craftingPanel);
+            ui.registerPanel('moralChoice', this.moralChoicePanel);
+            ui.registerPanel('veilkeeper',  this.veilkeeperPanel);
+            ui.registerPanel('spellbook',   this.spellbookPanel);
+            ui.registerPanel('stash',       this.stashPanel);
+            ui.registerPanel('inventory',   this.inventoryPanel);
+            ui.registerPanel('gameInfo',    this.gameInfoPanel);
+            ui.registerPanel('companion',   this.companionPanel);
+        }
 
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
         this.input.keyboard.on('keydown-TAB', () => this.gameInfoPanel.toggle());

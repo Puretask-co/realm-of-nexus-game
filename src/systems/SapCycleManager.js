@@ -68,7 +68,7 @@ export default class SapCycleManager {
         this._computePhaseDayRanges();
 
         // Respond to data reloads
-        EventBus.on('data-reloaded', () => {
+        this._unsubDataReload = EventBus.on('data-reloaded', () => {
             const cfg = dataManager.getConfig('balance.sapCycle') || {};
             if (cfg.phases) {
                 this.phaseDefinitions = cfg.phases.sort((a, b) => a.order - b.order);
@@ -371,5 +371,9 @@ export default class SapCycleManager {
         this.currentPhaseIndex = this.phaseDefinitions.findIndex(
             p => p.name.toLowerCase() === this.currentPhase
         );
+    }
+
+    destroy() {
+        if (this._unsubDataReload) { this._unsubDataReload(); this._unsubDataReload = null; }
     }
 }

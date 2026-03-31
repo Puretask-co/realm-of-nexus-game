@@ -721,6 +721,24 @@ export class AudioManager {
           if (scene.cache?.audio?.has?.(bgm)) this.playMusic(bgm, { crossfade: 2.0 });
         }
       }),
+      // Zone mood override from ZoneContentManager
+      eb.on('zone:musicMood', (d) => {
+        const mood = d?.mood;
+        const moodBgm = { combat: 'bgm_battle', tense: 'bgm_dungeon', calm: this._zoneBgmKey || DEFAULT_BGM };
+        const bgm = moodBgm[mood] || this._zoneBgmKey || DEFAULT_BGM;
+        if (this.currentMusic?.key !== bgm && scene.cache?.audio?.has?.(bgm)) {
+          this.playMusic(bgm, { crossfade: 1.5 });
+        }
+      }),
+      // Enemy hit on player
+      eb.on('enemy-attack', () => sfx(rnd(['sfx_blow1','sfx_blow2','sfx_damage1']))),
+      // Live volume update from settings screen
+      eb.on('settings:volumeChanged', (d) => {
+        if (d?.master   !== undefined) this.setMasterVolume(d.master);
+        if (d?.music    !== undefined) this.setMusicVolume(d.music);
+        if (d?.sfx      !== undefined) this.setSFXVolume(d.sfx);
+        if (d?.ambience !== undefined) this.setAmbienceVolume(d.ambience);
+      }),
     ];
 
     if (!this.currentMusic && scene.cache?.audio?.has?.(DEFAULT_BGM)) {

@@ -68,9 +68,24 @@ export class UIFramework {
 
   // ─── Panel Management ─────────────────────────────────────────────
 
+  /**
+   * Unified show/hide helper. Supports both Phaser GameObjects (setVisible)
+   * and custom panel classes that use show()/hide() directly.
+   */
+  _panelSetVisible(panel, visible) {
+    if (!panel) return;
+    if (visible) {
+      if (typeof panel.show === 'function') panel.show();
+      else if (typeof panel.setVisible === 'function') panel.setVisible(true);
+    } else {
+      if (typeof panel.hide === 'function') panel.hide();
+      else if (typeof panel.setVisible === 'function') panel.setVisible(false);
+    }
+  }
+
   registerPanel(id, panel) {
     this.panels.set(id, panel);
-    panel.setVisible(false);
+    this._panelSetVisible(panel, false);
   }
 
   showPanel(id, data = null) {
@@ -83,12 +98,11 @@ export class UIFramework {
     // Stack current panel if one is active
     if (this.activePanel && this.activePanel !== id) {
       this.panelStack.push(this.activePanel);
-      const current = this.panels.get(this.activePanel);
-      if (current) current.setVisible(false);
+      this._panelSetVisible(this.panels.get(this.activePanel), false);
     }
 
     this.activePanel = id;
-    panel.setVisible(true);
+    this._panelSetVisible(panel, true);
     if (panel.onShow) panel.onShow(data);
     this.uiInputActive = true;
 
@@ -102,7 +116,7 @@ export class UIFramework {
 
     const panel = this.panels.get(panelId);
     if (panel) {
-      panel.setVisible(false);
+      this._panelSetVisible(panel, false);
       if (panel.onHide) panel.onHide();
     }
 
@@ -113,7 +127,7 @@ export class UIFramework {
         this.activePanel = prevId;
         const prev = this.panels.get(prevId);
         if (prev) {
-          prev.setVisible(true);
+          this._panelSetVisible(prev, true);
           if (prev.onShow) prev.onShow();
         }
       } else {
@@ -136,7 +150,7 @@ export class UIFramework {
 
   hideAllPanels() {
     for (const [id, panel] of this.panels) {
-      panel.setVisible(false);
+      this._panelSetVisible(panel, false);
       if (panel.onHide) panel.onHide();
     }
     this.activePanel = null;

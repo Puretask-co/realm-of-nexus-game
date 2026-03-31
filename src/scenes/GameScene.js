@@ -233,7 +233,7 @@ export default class GameScene extends Phaser.Scene {
         this.saveManager.enableAutoSave(60000);
 
         // ---- Wire save system ----
-        ContentInitializer.wireSaveSystem({
+        this._unsubSaveSystem = ContentInitializer.wireSaveSystem({
             questSystem: this.questSystem,
             dialogueSystem: this.dialogueSystem,
             progressionSystem: this.progression,
@@ -596,7 +596,21 @@ export default class GameScene extends Phaser.Scene {
         // Start idle animation
         if (this.anims.exists('player-idle')) this.player.play('player-idle');
 
-        // Base stats — use Verdance attribute-based system
+        // Complete stat defaults — guaranteed baseline regardless of class system
+        const STAT_DEFAULTS = {
+            hp: 30, maxHp: 30, guard: 5, maxGuard: 5,
+            sap: 100, maxSap: 100, ap: 2, maxAP: 2,
+            speed: 200, level: 1, experience: 0, gold: 0,
+            spells: [], cooldowns: {},
+            might: 2, agility: 2, resilience: 2, insight: 2, charisma: 0,
+            sapRegenRate: 5, attack: 0,
+            classId: null, className: 'Adventurer', classRole: 'Adventurer',
+            name: this.registry?.get('playerName') || 'Adventurer',
+            ancestry: this.registry?.get('selectedAncestry') || '—',
+            variant: this.registry?.get('selectedVariant') || '—',
+        };
+
+        // Base stats — use class system if available, then merge with defaults
         if (classDef) {
             const baseStats = this.classSystem.applyClassStats({
                 level: 1, experience: 0, gold: 0,
@@ -604,8 +618,8 @@ export default class GameScene extends Phaser.Scene {
                 speed: 200, sapRegenRate: 5,
                 sap: 100, maxSap: 100
             });
-
-            this.player.stats = baseStats;
+            // Merge: class stats win where defined; defaults fill any gaps
+            this.player.stats = Object.assign({}, STAT_DEFAULTS, baseStats);
 
             // Apply ancestry bonuses if selected
             const ancestry = this.registry?.get('selectedAncestry');
@@ -613,15 +627,7 @@ export default class GameScene extends Phaser.Scene {
                 this.attributeSystem.applyAncestryBonuses(ancestry);
             }
         } else {
-            this.player.stats = {
-                hp: 30, maxHp: 30, guard: 5, maxGuard: 5,
-                sap: 100, maxSap: 100, ap: 2, maxAP: 2,
-                speed: 200, level: 1, experience: 0, gold: 0,
-                spells: [], cooldowns: {},
-                might: 2, agility: 2, resilience: 2, insight: 2, charisma: 0,
-                sapRegenRate: 5,
-                classId: null, className: 'Adventurer', classRole: 'Adventurer'
-            };
+            this.player.stats = { ...STAT_DEFAULTS };
         }
 
         // Equip starting spells — class spells first, then shared as fallback
@@ -2404,6 +2410,8 @@ export default class GameScene extends Phaser.Scene {
 
     shutdown() {
         if (this._unsubs) this._unsubs.forEach((fn) => fn());
+        // Unsub save/restore listeners registered via ContentInitializer
+        if (this._unsubSaveSystem) this._unsubSaveSystem();
         if (this.spellVfxIntegration) this.spellVfxIntegration.shutdown();
         if (this.sapCycleLightingIntegration) this.sapCycleLightingIntegration.destroy();
         if (this.tacticalCombatCameraBridge) this.tacticalCombatCameraBridge.destroy();
@@ -2415,6 +2423,10 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.destroy();
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
+        // Clean up systems that subscribe to EventBus (prevents ghost listeners on scene restart)
+        this.sapCycleManager?.destroy();
+        this.portalSystem?.destroy();
+        this.zoneContentManager?.destroy?.();
         // Cleanup particle effects, audio, and physics
         this.particleEffects?.destroy();
         this.audioManager?.unwireFromGame();
