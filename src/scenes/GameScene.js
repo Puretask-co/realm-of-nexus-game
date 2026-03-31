@@ -45,6 +45,7 @@ import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
+import PhysicsSystem from '../systems/PhysicsSystem.js';
 
 /**
  * GameScene — Main gameplay scene.
@@ -137,6 +138,10 @@ export default class GameScene extends Phaser.Scene {
         this.particleEffects = new ParticleEffects(this);
         this.particleEffects.init();
 
+        // ---- Physics System (knockback, acceleration movement, zone modifiers, projectiles) ----
+        this.physicsSystem = new PhysicsSystem(this);
+        // init() is called after player is spawned (needs player.body)
+
         // ---- World ----
         this._buildWorld();
 
@@ -147,6 +152,9 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Player ----
         this._createPlayer();
+
+        // ---- Physics System init (needs player.body to exist) ----
+        this.physicsSystem.init();
 
         // ---- Enemies (zone-based) ----
         this._spawnEnemies();
@@ -1260,7 +1268,15 @@ export default class GameScene extends Phaser.Scene {
 
             // Hit flash + knockback
             this._flashEnemyHit(targetEnemy);
-            this._knockbackEnemy(targetEnemy, this.player.x, this.player.y);
+            const _kbClass = ['void','thunder','explosive'].includes(spell?.element) ? 'heavy'
+                           : ['fire','physical','water'].includes(spell?.element)    ? 'medium' : 'light';
+            this._knockbackEnemy(targetEnemy, this.player.x, this.player.y, _kbClass);
+
+            EventBus.emit('enemy-damaged', {
+                enemy: targetEnemy, x: targetEnemy.x, y: targetEnemy.y,
+                attackerX: this.player.x, attackerY: this.player.y,
+                element: spell?.element, damage: finalDmg,
+            });
 
             // Apply status effects declared by the spell
             this._applySpellEffects(targetEnemy, spell);
@@ -1309,20 +1325,11 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /**
-     * Apply a short knockback impulse away from the damage source.
-     * @param {Phaser.GameObjects.Sprite} enemySprite
-     * @param {number} sourceX
-     * @param {number} sourceY
+     * Apply a knockback impulse away from the damage source.
+     * Delegates to PhysicsSystem which handles weighted force and falloff.
      */
-    _knockbackEnemy(enemySprite, sourceX, sourceY) {
-        if (!enemySprite?.body) return;
-        const angle = Phaser.Math.Angle.Between(sourceX, sourceY, enemySprite.x, enemySprite.y);
-        enemySprite.body.setVelocity(Math.cos(angle) * 120, Math.sin(angle) * 120);
-        this.time.delayedCall(200, () => {
-            if (enemySprite?.body?.velocity) {
-                enemySprite.body.setVelocity(0, 0);
-            }
-        });
+    _knockbackEnemy(enemySprite, sourceX, sourceY, weightClass = 'light') {
+        this.physicsSystem?.applyKnockback(enemySprite, sourceX, sourceY, weightClass);
     }
 
     _broadcastCooldown(spell) {
@@ -2213,6 +2220,9 @@ export default class GameScene extends Phaser.Scene {
         this.particles.update(delta);
         this.profiler.end('particles');
 
+        // Physics system (knockback, projectiles, slow effects)
+        this.physicsSystem?.update(delta);
+
         // Camera
         this.profiler.begin('camera');
         this.cameraSystem.update(delta);
@@ -2287,22 +2297,14 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _handleMovement() {
-        const speed = this.player.stats.speed;
-        let vx = 0;
-        let vy = 0;
+        let ix = 0, iy = 0;
 
-        if (this.cursors.left.isDown || this.wasd.left.isDown) vx = -speed;
-        if (this.cursors.right.isDown || this.wasd.right.isDown) vx = speed;
-        if (this.cursors.up.isDown || this.wasd.up.isDown) vy = -speed;
-        if (this.cursors.down.isDown || this.wasd.down.isDown) vy = speed;
+        if (this.cursors.left.isDown  || this.wasd.left.isDown)  ix = -1;
+        if (this.cursors.right.isDown || this.wasd.right.isDown) ix =  1;
+        if (this.cursors.up.isDown    || this.wasd.up.isDown)    iy = -1;
+        if (this.cursors.down.isDown  || this.wasd.down.isDown)  iy =  1;
 
-        // Normalize diagonal movement
-        if (vx !== 0 && vy !== 0) {
-            vx *= 0.707;
-            vy *= 0.707;
-        }
-
-        this.player.setVelocity(vx, vy);
+        this.physicsSystem.applyPlayerMovement(this.player, ix, iy, this.player.stats.speed);
     }
 
     _regenSap(delta) {
@@ -2413,9 +2415,10 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.destroy();
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
-        // Cleanup particle effects and audio
+        // Cleanup particle effects, audio, and physics
         this.particleEffects?.destroy();
         this.audioManager?.unwireFromGame();
+        this.physicsSystem?.destroy();
         // Destroy zone tilemaps to prevent memory leak on scene restart
         if (this._zoneTilemaps) {
             for (const map of this._zoneTilemaps) {
