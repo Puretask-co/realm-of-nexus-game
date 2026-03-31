@@ -244,7 +244,7 @@ export default class CompanionPanel {
             cardBg.strokeRoundedRect(cardX, cardY, CARD_W, CARD_H, 6);
             this._leftContainer.add(cardBg);
 
-            // Portrait rect (40×40)
+            // Portrait (40×40) — real image if available, colored rect fallback
             const portGfx = s.add.graphics();
             portGfx.fillStyle(classColor, 0.8);
             portGfx.fillRoundedRect(cardX + 6, cardY + 8, 40, 40, 4);
@@ -252,13 +252,20 @@ export default class CompanionPanel {
             portGfx.strokeRoundedRect(cardX + 6, cardY + 8, 40, 40, 4);
             this._leftContainer.add(portGfx);
 
-            // Initials in portrait
-            const initials = (companion.name || '?').substring(0, 2).toUpperCase();
-            const portInitials = s.add.text(cardX + 6 + 20, cardY + 8 + 20, initials, {
-                fontFamily: 'Open Sans', fontSize: '20px', color: '#ffffff',
-                stroke: '#000', strokeThickness: 2,
-            }).setOrigin(0.5);
-            this._leftContainer.add(portInitials);
+            const nameKey = (companion.name || '').toLowerCase().replace(/\s+/g, '_');
+            const portKey = `portrait_companion_${nameKey}`;
+            if (s.textures.exists(portKey)) {
+                const portImg = s.add.image(cardX + 6 + 20, cardY + 8 + 20, portKey)
+                    .setDisplaySize(40, 40).setOrigin(0.5);
+                this._leftContainer.add(portImg);
+            } else {
+                const initials = (companion.name || '?').substring(0, 2).toUpperCase();
+                const portInitials = s.add.text(cardX + 6 + 20, cardY + 8 + 20, initials, {
+                    fontFamily: 'Open Sans', fontSize: '20px', color: '#ffffff',
+                    stroke: '#000', strokeThickness: 2,
+                }).setOrigin(0.5);
+                this._leftContainer.add(portInitials);
+            }
 
             // Name
             const nameTxt = s.add.text(cardX + 52, cardY + 10, companion.name || 'Unknown', {

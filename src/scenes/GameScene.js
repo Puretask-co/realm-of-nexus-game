@@ -1400,19 +1400,30 @@ export default class GameScene extends Phaser.Scene {
             });
         }
 
-        // Remove enemy
-        enemy.destroy();
+        // Play death animation then remove enemy
+        const DEATH_ANIM = {
+            enemy_treetitan:      'enemy_treetitan-death',
+            enemy_corrupted_titan:'enemy_treetitan-death',
+        };
+        const deathAnim = DEATH_ANIM[enemy.texture?.key];
+        const defId     = enemy._state?.definition?.id;
+        const zoneId    = enemy._state?.zoneId;
 
-        // Check level up
-        this._checkLevelUp();
+        const _doDestroy = () => {
+            if (enemy?.active) enemy.destroy();
+            this._checkLevelUp();
+            EventBus.emit('player-stats-updated', this.player.stats);
+            this.time.delayedCall(15000, () => this._respawnEnemy(enemy._state?.definition, zoneId));
+        };
 
-        // Update UI
-        EventBus.emit('player-stats-updated', this.player.stats);
-
-        // Respawn after delay
-        this.time.delayedCall(15000, () => {
-            this._respawnEnemy(enemy._state.definition, enemy._state.zoneId);
-        });
+        if (deathAnim && this.anims.exists(deathAnim)) {
+            enemy.setVelocity(0, 0);
+            enemy.body?.setEnable(false);
+            enemy.play(deathAnim);
+            enemy.once(Phaser.Animations.Events.ANIMATION_COMPLETE, _doDestroy);
+        } else {
+            _doDestroy();
+        }
     }
 
     _checkLevelUp() {
@@ -2117,7 +2128,18 @@ export default class GameScene extends Phaser.Scene {
                         if (d.attackCooldown <= 0) {
                             const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
                             this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
+                            // Play attack animation if available (reverts to walk anim automatically)
+                            const ATTACK_ANIM = { enemy_treetitan: 'enemy_treetitan-attack', enemy_corrupted_titan: 'enemy_treetitan-attack' };
+                            const atkAnim = ATTACK_ANIM[enemy.texture?.key];
+                            if (atkAnim && this.anims.exists(atkAnim) && !enemy.anims.isPlaying) {
+                                enemy.play(atkAnim);
+                                enemy.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                                    const walkAnim = { enemy_treetitan: 'enemy_treetitan-walk', enemy_corrupted_titan: 'enemy_corrupted_titan-walk' }[enemy.texture?.key];
+                                    if (walkAnim && this.anims.exists(walkAnim)) enemy.play(walkAnim);
+                                });
+                            }
                             EventBus.emit('enemy-attack', { enemy, player: this.player, damage });
+                            EventBus.emit('player-damaged', { x: this.player.x, y: this.player.y });
                             EventBus.emit('player-stats-updated', this.player.stats);
                             d.attackCooldown = 1.5;
                             if (this.player.stats.hp <= 0) this._onPlayerDeath?.();

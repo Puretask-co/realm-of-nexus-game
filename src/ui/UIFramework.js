@@ -93,6 +93,7 @@ export class UIFramework {
     this.uiInputActive = true;
 
     this.eventBus.emit('ui:panelOpened', { panelId: id });
+    EventBus.emit('ui:menuOpen');
   }
 
   hidePanel(id = null) {
@@ -122,6 +123,7 @@ export class UIFramework {
     }
 
     this.eventBus.emit('ui:panelClosed', { panelId });
+    EventBus.emit('ui:menuClose');
   }
 
   togglePanel(id, data = null) {
@@ -152,65 +154,107 @@ export class UIFramework {
       textColor = this.theme.text,
       fontSize = this.theme.fontSize,
       onClick = null,
-      disabled = false
+      disabled = false,
+      // Atlas variant: 'brown' | 'blue' | 'beige' | 'grey' (default: 'brown')
+      atlasVariant = 'brown'
     } = config;
 
     const container = this.scene.add.container(x, y);
+    const hasAtlas = this.scene.textures.exists('ui_rpg');
 
-    // Background
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(color, disabled ? 0.4 : 0.8);
-    bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
-    bg.lineStyle(1, this.theme.border, 0.6);
-    bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
-    container.add(bg);
+    if (hasAtlas) {
+      // ── Atlas-backed button (Kenney ui_rpg) ─────────────────────────
+      const normalFrame  = `buttonLong_${atlasVariant}.png`;
+      const pressedFrame = `buttonLong_${atlasVariant}_pressed.png`;
 
-    // Label
-    const label = this.scene.add.text(0, 0, text, {
-      fontSize,
-      fill: disabled ? '#666666' : textColor,
-      fontFamily: this.theme.fontFamily
-    }).setOrigin(0.5);
-    container.add(label);
+      // NineSlice: fixed 14px end caps, rest stretches horizontally
+      const btnImg = this.scene.add.nineslice(0, 0, 'ui_rpg', normalFrame, width, height, 14, 14, 0, 0);
+      if (disabled) btnImg.setTint(0x888888).setAlpha(0.6);
+      container.add(btnImg);
 
-    if (!disabled) {
-      container.setSize(width, height);
-      container.setInteractive();
+      const label = this.scene.add.text(0, 0, text, {
+        fontSize,
+        fill: disabled ? '#888888' : textColor,
+        fontFamily: this.theme.fontFamily
+      }).setOrigin(0.5);
+      container.add(label);
 
-      container.on('pointerover', () => {
-        bg.clear();
-        bg.fillStyle(color, 1);
-        bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
-        bg.lineStyle(1, this.theme.accent, 0.8);
-        bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
-      });
+      if (!disabled) {
+        container.setSize(width, height);
+        container.setInteractive();
 
-      container.on('pointerout', () => {
-        bg.clear();
-        bg.fillStyle(color, 0.8);
-        bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
-        bg.lineStyle(1, this.theme.border, 0.6);
-        bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
-      });
+        container.on('pointerover', () => btnImg.setTint(0xdddddd));
+        container.on('pointerout',  () => btnImg.clearTint());
+        container.on('pointerdown', () => {
+          btnImg.setFrame(pressedFrame);
+          // Slight downward shift on press
+          label.setY(2);
+          EventBus.emit('ui:buttonClick');
+          if (onClick) onClick();
+        });
+        container.on('pointerup', () => {
+          btnImg.setFrame(normalFrame);
+          label.setY(0);
+        });
+      }
 
-      container.on('pointerdown', () => {
-        bg.clear();
-        bg.fillStyle(color, 0.6);
-        bg.fillRoundedRect(-width / 2 + 1, -height / 2 + 1, width - 2, height - 2, 4);
-        if (onClick) onClick();
-      });
+      container._bg    = btnImg;
+      container._label = label;
 
-      container.on('pointerup', () => {
-        bg.clear();
-        bg.fillStyle(color, 1);
-        bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
-        bg.lineStyle(1, this.theme.accent, 0.8);
-        bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
-      });
+    } else {
+      // ── Fallback: plain graphics button ─────────────────────────────
+      const bg = this.scene.add.graphics();
+      bg.fillStyle(color, disabled ? 0.4 : 0.8);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
+      bg.lineStyle(1, this.theme.border, 0.6);
+      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
+      container.add(bg);
+
+      const label = this.scene.add.text(0, 0, text, {
+        fontSize,
+        fill: disabled ? '#666666' : textColor,
+        fontFamily: this.theme.fontFamily
+      }).setOrigin(0.5);
+      container.add(label);
+
+      if (!disabled) {
+        container.setSize(width, height);
+        container.setInteractive();
+
+        container.on('pointerover', () => {
+          bg.clear();
+          bg.fillStyle(color, 1);
+          bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
+          bg.lineStyle(1, this.theme.accent, 0.8);
+          bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
+        });
+        container.on('pointerout', () => {
+          bg.clear();
+          bg.fillStyle(color, 0.8);
+          bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
+          bg.lineStyle(1, this.theme.border, 0.6);
+          bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
+        });
+        container.on('pointerdown', () => {
+          bg.clear();
+          bg.fillStyle(color, 0.6);
+          bg.fillRoundedRect(-width / 2 + 1, -height / 2 + 1, width - 2, height - 2, 4);
+          EventBus.emit('ui:buttonClick');
+          if (onClick) onClick();
+        });
+        container.on('pointerup', () => {
+          bg.clear();
+          bg.fillStyle(color, 1);
+          bg.fillRoundedRect(-width / 2, -height / 2, width, height, 4);
+          bg.lineStyle(1, this.theme.accent, 0.8);
+          bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 4);
+        });
+      }
+
+      container._bg    = bg;
+      container._label = label;
     }
 
-    container._bg = bg;
-    container._label = label;
     return container;
   }
 
@@ -228,53 +272,99 @@ export class UIFramework {
     } = config;
 
     const container = this.scene.add.container(x, y);
+    const hasAtlas = this.scene.textures.exists('ui_rpg');
 
-    // Background
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(bgColor, 0.8);
-    bg.fillRoundedRect(0, 0, width, height, 3);
-    bg.lineStyle(1, this.theme.border, 0.5);
-    bg.strokeRoundedRect(0, 0, width, height, 3);
-    container.add(bg);
-
-    // Fill bar
-    const fill = this.scene.add.graphics();
-    container.add(fill);
-
-    // Text
-    const text = this.scene.add.text(width / 2, height / 2, '', {
-      fontSize: '15px',
-      fill: this.theme.text,
-      fontFamily: this.theme.fontFamily
-    }).setOrigin(0.5);
-    container.add(text);
-
-    // Label
-    if (label) {
-      const labelText = this.scene.add.text(0, -16, label, {
-        fontSize: '15px',
-        fill: this.theme.textSecondary,
-        fontFamily: this.theme.fontFamily
-      });
-      container.add(labelText);
-    }
-
-    // Update function
-    container.setValue = (val, max = maxValue) => {
-      const progress = Math.max(0, Math.min(1, val / max));
-      fill.clear();
-      if (progress > 0) {
-        fill.fillStyle(barColor, 1);
-        fill.fillRoundedRect(2, 2, (width - 4) * progress, height - 4, 2);
-      }
-      if (showText) {
-        if (textFormat) {
-          text.setText(textFormat(val, max));
-        } else {
-          text.setText(`${Math.round(val)} / ${max}`);
-        }
-      }
+    // Map theme colors → Kenney atlas bar variants
+    const BAR_VARIANTS = {
+      [this.theme.success]:  { left: 'barGreen_horizontalLeft.png',  mid: 'barGreen_horizontalMid.png',  right: 'barGreen_horizontalRight.png'  },
+      [this.theme.primary]:  { left: 'barBlue_horizontalLeft.png',   mid: 'barBlue_horizontalBlue.png',  right: 'barBlue_horizontalRight.png'   },
+      [this.theme.danger]:   { left: 'barRed_horizontalLeft.png',    mid: 'barRed_horizontalMid.png',    right: 'barRed_horizontalRight.png'    },
+      [this.theme.accent]:   { left: 'barYellow_horizontalLeft.png', mid: 'barYellow_horizontalMid.png', right: 'barYellow_horizontalRight.png' },
     };
+    const fillVariant = BAR_VARIANTS[barColor] || BAR_VARIANTS[this.theme.primary];
+
+    // Atlas bar height is 18px; we stretch to fit config height
+    const BAR_H = height;
+
+    if (hasAtlas) {
+      // ── Atlas-backed progress bar (Kenney ui_rpg) ───────────────────
+      // Track: nineslice using barBack frames (9px end caps)
+      const track = this.scene.add.nineslice(0, 0, 'ui_rpg', 'barBack_horizontalMid.png', width, BAR_H, 9, 9, 0, 0)
+        .setOrigin(0, 0);
+      container.add(track);
+
+      // Fill: nineslice using color-matched frames, starts at 0 width
+      const fillBar = this.scene.add.nineslice(0, 0, 'ui_rpg', fillVariant.mid, 1, BAR_H, 4, 4, 0, 0)
+        .setOrigin(0, 0).setVisible(false);
+      container.add(fillBar);
+
+      // Text overlay
+      const text = this.scene.add.text(width / 2, BAR_H / 2, '', {
+        fontSize: '14px', fill: '#ffffff',
+        fontFamily: this.theme.fontFamily,
+        stroke: '#000000', strokeThickness: 2
+      }).setOrigin(0.5);
+      container.add(text);
+
+      if (label) {
+        const labelText = this.scene.add.text(0, -16, label, {
+          fontSize: '15px', fill: this.theme.textSecondary,
+          fontFamily: this.theme.fontFamily
+        });
+        container.add(labelText);
+      }
+
+      container.setValue = (val, max = maxValue) => {
+        const progress = Math.max(0, Math.min(1, val / max));
+        const fillW = Math.floor((width) * progress);
+        if (fillW > 1) {
+          fillBar.setSize(fillW, BAR_H).setVisible(true);
+        } else {
+          fillBar.setVisible(false);
+        }
+        if (showText) {
+          text.setText(textFormat ? textFormat(val, max) : `${Math.round(val)} / ${max}`);
+        }
+      };
+
+    } else {
+      // ── Fallback: plain graphics bar ─────────────────────────────────
+      const bg = this.scene.add.graphics();
+      bg.fillStyle(bgColor, 0.8);
+      bg.fillRoundedRect(0, 0, width, height, 3);
+      bg.lineStyle(1, this.theme.border, 0.5);
+      bg.strokeRoundedRect(0, 0, width, height, 3);
+      container.add(bg);
+
+      const fill = this.scene.add.graphics();
+      container.add(fill);
+
+      const text = this.scene.add.text(width / 2, height / 2, '', {
+        fontSize: '15px', fill: this.theme.text,
+        fontFamily: this.theme.fontFamily
+      }).setOrigin(0.5);
+      container.add(text);
+
+      if (label) {
+        const labelText = this.scene.add.text(0, -16, label, {
+          fontSize: '15px', fill: this.theme.textSecondary,
+          fontFamily: this.theme.fontFamily
+        });
+        container.add(labelText);
+      }
+
+      container.setValue = (val, max = maxValue) => {
+        const progress = Math.max(0, Math.min(1, val / max));
+        fill.clear();
+        if (progress > 0) {
+          fill.fillStyle(barColor, 1);
+          fill.fillRoundedRect(2, 2, (width - 4) * progress, height - 4, 2);
+        }
+        if (showText) {
+          text.setText(textFormat ? textFormat(val, max) : `${Math.round(val)} / ${max}`);
+        }
+      };
+    }
 
     container.setValue(value, maxValue);
     return container;
@@ -291,63 +381,91 @@ export class UIFramework {
     } = config;
 
     const container = this.scene.add.container(x, y);
+    const hasAtlas = this.scene.textures.exists('ui_rpg');
 
-    // Slot background
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(this.theme.surface, 0.8);
-    bg.fillRoundedRect(0, 0, size, size, 4);
-    bg.lineStyle(1, this.theme.border, 0.5);
-    bg.strokeRoundedRect(0, 0, size, size, 4);
+    // Slot background — atlas nineslice or fallback graphics
+    let bg;
+    let rarityOverlay = null; // colored border for rarity, drawn on top of atlas slot
+
+    if (hasAtlas) {
+      bg = this.scene.add.nineslice(0, 0, 'ui_rpg', 'panelInset_beige.png', size, size, 10, 10, 10, 10)
+        .setOrigin(0, 0);
+    } else {
+      bg = this.scene.add.graphics();
+      bg.fillStyle(this.theme.surface, 0.8);
+      bg.fillRoundedRect(0, 0, size, size, 4);
+      bg.lineStyle(1, this.theme.border, 0.5);
+      bg.strokeRoundedRect(0, 0, size, size, 4);
+    }
     container.add(bg);
 
-    // Item icon placeholder
+    // Rarity border overlay (graphics, drawn above slot image)
+    const rarityBorder = this.scene.add.graphics();
+    container.add(rarityBorder);
+
     let itemIcon = null;
     let quantityText = null;
 
     container.setSize(size, size);
     container.setInteractive();
 
-    container.on('pointerover', () => {
-      bg.clear();
-      bg.fillStyle(this.theme.surface, 1);
-      bg.fillRoundedRect(0, 0, size, size, 4);
-      bg.lineStyle(2, this.theme.primary, 0.8);
-      bg.strokeRoundedRect(0, 0, size, size, 4);
+    const _drawRarityBorder = (color, alpha = 0.8) => {
+      rarityBorder.clear();
+      rarityBorder.lineStyle(2, color, alpha);
+      rarityBorder.strokeRect(1, 1, size - 2, size - 2);
+    };
 
+    container.on('pointerover', () => {
+      if (hasAtlas) {
+        bg.setTint(0xdddddd);
+      } else {
+        bg.clear();
+        bg.fillStyle(this.theme.surface, 1);
+        bg.fillRoundedRect(0, 0, size, size, 4);
+        bg.lineStyle(2, this.theme.primary, 0.8);
+        bg.strokeRoundedRect(0, 0, size, size, 4);
+      }
       if (item) this.showTooltip(x + size + 10, y, item.name, item.description);
     });
 
     container.on('pointerout', () => {
-      bg.clear();
-      bg.fillStyle(this.theme.surface, 0.8);
-      bg.fillRoundedRect(0, 0, size, size, 4);
-      bg.lineStyle(1, this.theme.border, 0.5);
-      bg.strokeRoundedRect(0, 0, size, size, 4);
+      if (hasAtlas) {
+        bg.clearTint();
+      } else {
+        bg.clear();
+        bg.fillStyle(this.theme.surface, 0.8);
+        bg.fillRoundedRect(0, 0, size, size, 4);
+        bg.lineStyle(1, this.theme.border, 0.5);
+        bg.strokeRoundedRect(0, 0, size, size, 4);
+      }
       this.hideTooltip();
     });
 
-    if (onClick) container.on('pointerdown', () => onClick(slotIndex, item));
+    if (onClick) container.on('pointerdown', () => { EventBus.emit('ui:buttonClick'); onClick(slotIndex, item); });
 
-    // Update slot contents
     container.setItem = (newItem) => {
       item = newItem;
       if (itemIcon) { itemIcon.destroy(); itemIcon = null; }
       if (quantityText) { quantityText.destroy(); quantityText = null; }
+      rarityBorder.clear();
 
       if (newItem) {
-        // Rarity color border
         const rarityColors = {
           common: 0x888888, uncommon: 0x44ff44, rare: 0x4a9eff,
           epic: 0xaa44ff, legendary: 0xff8800, mythic: 0xff4444
         };
         const rarityColor = rarityColors[newItem.rarity] || 0x888888;
-        bg.clear();
-        bg.fillStyle(this.theme.surface, 0.8);
-        bg.fillRoundedRect(0, 0, size, size, 4);
-        bg.lineStyle(2, rarityColor, 0.8);
-        bg.strokeRoundedRect(0, 0, size, size, 4);
 
-        // Item icon (text placeholder if no sprite)
+        if (!hasAtlas) {
+          bg.clear();
+          bg.fillStyle(this.theme.surface, 0.8);
+          bg.fillRoundedRect(0, 0, size, size, 4);
+          bg.lineStyle(2, rarityColor, 0.8);
+          bg.strokeRoundedRect(0, 0, size, size, 4);
+        } else {
+          _drawRarityBorder(rarityColor);
+        }
+
         if (newItem.icon && this.scene.textures.exists(newItem.icon)) {
           itemIcon = this.scene.add.sprite(size / 2, size / 2, newItem.icon)
             .setDisplaySize(size - 8, size - 8);
@@ -358,7 +476,6 @@ export class UIFramework {
         }
         container.add(itemIcon);
 
-        // Quantity
         if (showQuantity && newItem.quantity > 1) {
           quantityText = this.scene.add.text(size - 4, size - 4, `${newItem.quantity}`, {
             fontSize: '14px', fill: '#ffffff', fontFamily: this.theme.fontFamily,
@@ -378,56 +495,93 @@ export class UIFramework {
       title = '',
       closable = true,
       draggable = false,
-      depth = 5000
+      depth = 5000,
+      // Atlas variant: 'brown' | 'blue' | 'beige' (default: 'brown')
+      atlasVariant = 'brown'
     } = config;
 
     const container = this.scene.add.container(x, y).setDepth(depth).setScrollFactor(0);
+    const hasAtlas = this.scene.textures.exists('ui_rpg');
 
-    // Panel background
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(this.theme.background, 0.95);
-    bg.fillRoundedRect(0, 0, width, height, this.theme.borderRadius);
-    bg.lineStyle(2, this.theme.border, 0.8);
-    bg.strokeRoundedRect(0, 0, width, height, this.theme.borderRadius);
-    container.add(bg);
+    if (hasAtlas) {
+      // ── Atlas-backed panel (Kenney ui_rpg) ───────────────────────────
+      // Main panel nineslice — 6px border on all sides
+      const panelImg = this.scene.add.nineslice(0, 0, 'ui_rpg', `panel_${atlasVariant}.png`, width, height, 6, 6, 6, 6)
+        .setOrigin(0, 0);
+      container.add(panelImg);
 
-    // Title bar
-    if (title) {
-      const titleBar = this.scene.add.graphics();
-      titleBar.fillStyle(this.theme.surface, 0.9);
-      titleBar.fillRoundedRect(0, 0, width, 36, { tl: this.theme.borderRadius, tr: this.theme.borderRadius, bl: 0, br: 0 });
-      container.add(titleBar);
+      if (title) {
+        // Title inset strip using panelInset for contrast
+        const titleBg = this.scene.add.nineslice(0, 0, 'ui_rpg', 'panelInset_brown.png', width, 36, 6, 6, 6, 6)
+          .setOrigin(0, 0);
+        container.add(titleBg);
 
-      const titleText = this.scene.add.text(this.theme.padding, 10, title, {
-        fontSize: '22px',
-        fill: this.theme.textHighlight,
-        fontFamily: this.theme.fontFamily,
-        fontStyle: 'bold'
-      });
-      container.add(titleText);
-
-      // Close button
-      if (closable) {
-        const closeBtn = this.scene.add.text(width - 28, 8, 'X', {
+        const titleText = this.scene.add.text(this.theme.padding, 8, title, {
           fontSize: '22px',
-          fill: '#888888',
-          fontFamily: this.theme.fontFamily
-        }).setInteractive();
-        closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'));
-        closeBtn.on('pointerout', () => closeBtn.setColor('#888888'));
-        closeBtn.on('pointerdown', () => container.setVisible(false));
-        container.add(closeBtn);
+          fill: this.theme.textHighlight,
+          fontFamily: this.theme.fontFamily,
+          fontStyle: 'bold'
+        });
+        container.add(titleText);
+
+        if (closable) {
+          const closeBtn = this.scene.add.text(width - 28, 8, 'X', {
+            fontSize: '22px', fill: '#888888',
+            fontFamily: this.theme.fontFamily
+          }).setInteractive();
+          closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'));
+          closeBtn.on('pointerout',  () => closeBtn.setColor('#888888'));
+          closeBtn.on('pointerdown', () => {
+            container.setVisible(false);
+            EventBus.emit('ui:menuClose');
+          });
+          container.add(closeBtn);
+        }
+      }
+    } else {
+      // ── Fallback: graphics panel ──────────────────────────────────────
+      const bg = this.scene.add.graphics();
+      bg.fillStyle(this.theme.background, 0.95);
+      bg.fillRoundedRect(0, 0, width, height, this.theme.borderRadius);
+      bg.lineStyle(2, this.theme.border, 0.8);
+      bg.strokeRoundedRect(0, 0, width, height, this.theme.borderRadius);
+      container.add(bg);
+
+      if (title) {
+        const titleBar = this.scene.add.graphics();
+        titleBar.fillStyle(this.theme.surface, 0.9);
+        titleBar.fillRoundedRect(0, 0, width, 36, { tl: this.theme.borderRadius, tr: this.theme.borderRadius, bl: 0, br: 0 });
+        container.add(titleBar);
+
+        const titleText = this.scene.add.text(this.theme.padding, 10, title, {
+          fontSize: '22px',
+          fill: this.theme.textHighlight,
+          fontFamily: this.theme.fontFamily,
+          fontStyle: 'bold'
+        });
+        container.add(titleText);
+
+        if (closable) {
+          const closeBtn = this.scene.add.text(width - 28, 8, 'X', {
+            fontSize: '22px', fill: '#888888',
+            fontFamily: this.theme.fontFamily
+          }).setInteractive();
+          closeBtn.on('pointerover', () => closeBtn.setColor('#ff4444'));
+          closeBtn.on('pointerout',  () => closeBtn.setColor('#888888'));
+          closeBtn.on('pointerdown', () => {
+            container.setVisible(false);
+            EventBus.emit('ui:menuClose');
+          });
+          container.add(closeBtn);
+        }
       }
     }
 
-    // Draggable
     if (draggable) {
       container.setSize(width, 36);
       container.setInteractive();
       this.scene.input.setDraggable(container);
-      container.on('drag', (pointer, dragX, dragY) => {
-        container.setPosition(dragX, dragY);
-      });
+      container.on('drag', (pointer, dragX, dragY) => container.setPosition(dragX, dragY));
     }
 
     container._width = width;

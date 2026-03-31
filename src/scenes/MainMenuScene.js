@@ -32,6 +32,12 @@ export default class MainMenuScene extends Phaser.Scene {
         // Floating particle update loop
         this.events.on('update', this._updateParticles, this);
 
+        // Start menu BGM
+        if (this.sound && this.cache.audio.exists('bgm_menu')) {
+            this._bgm = this.sound.add('bgm_menu', { loop: true, volume: 0.55 });
+            this._bgm.play();
+        }
+
         EventBus.emit('main-menu-open');
     }
 
@@ -254,56 +260,79 @@ export default class MainMenuScene extends Phaser.Scene {
     _makeButton(cx, cy, bw, bh, def) {
         const bx = cx - bw / 2;
         const by = cy - bh / 2;
-        const radius = 8;
 
-        const bg = this.add.graphics();
+        const hasAtlas = this.textures.exists('ui_rpg');
 
-        const draw = (fillColor, borderColor, glowAlpha) => {
-            bg.clear();
-            // Background fill
-            bg.fillStyle(fillColor, 0.92);
-            bg.fillRoundedRect(bx, by, bw, bh, radius);
-            // Border
-            bg.lineStyle(2, borderColor, glowAlpha);
-            bg.strokeRoundedRect(bx, by, bw, bh, radius);
-        };
+        if (hasAtlas) {
+            // Atlas nineslice button
+            const atlasVariant = def.atlasVariant || 'brown';
+            const btnImg = this.add.nineslice(cx, cy, 'ui_rpg', `buttonLong_${atlasVariant}.png`, bw, bh, 14, 14, 0, 0);
 
-        draw(def.color, def.border, 0.5);
+            const label = this.add.text(cx, cy, def.label, {
+                fontFamily: 'Open Sans', fontSize: '24px',
+                color: '#e8eeff', stroke: '#000000', strokeThickness: 2,
+            }).setOrigin(0.5);
 
-        const label = this.add.text(cx, cy, def.label, {
-            fontFamily: 'Open Sans',
-            fontSize: '24px',
-            color: '#e8eeff',
-            stroke: '#000000',
-            strokeThickness: 2,
-        }).setOrigin(0.5);
+            const zone = this.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true });
 
-        const zone = this.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true });
-
-        zone.on('pointerover', () => {
-            draw(def.hover, def.border, 1.0);
-            label.setColor('#ffffff');
-            // Scale pulse
-            this.tweens.add({ targets: [bg, label], scaleX: 1.03, scaleY: 1.03, duration: 80, ease: 'Power1' });
-        });
-
-        zone.on('pointerout', () => {
-            draw(def.color, def.border, 0.5);
-            label.setColor('#e8eeff');
-            this.tweens.add({ targets: [bg, label], scaleX: 1.0, scaleY: 1.0, duration: 80, ease: 'Power1' });
-        });
-
-        zone.on('pointerdown', () => {
-            this.tweens.add({
-                targets: [bg, label],
-                scaleX: 0.96,
-                scaleY: 0.96,
-                duration: 60,
-                ease: 'Power1',
-                yoyo: true,
-                onComplete: () => def.action(),
+            zone.on('pointerover', () => {
+                btnImg.setTint(0xdddddd);
+                label.setColor('#ffffff');
+                this.tweens.add({ targets: [btnImg, label], scaleX: 1.03, scaleY: 1.03, duration: 80 });
             });
-        });
+            zone.on('pointerout', () => {
+                btnImg.clearTint();
+                label.setColor('#e8eeff');
+                this.tweens.add({ targets: [btnImg, label], scaleX: 1.0, scaleY: 1.0, duration: 80 });
+            });
+            zone.on('pointerdown', () => {
+                btnImg.setFrame(`buttonLong_${atlasVariant}_pressed.png`);
+                label.setY(cy + 2);
+                EventBus.emit('ui:buttonClick');
+                this.tweens.add({
+                    targets: [btnImg, label], scaleX: 0.96, scaleY: 0.96,
+                    duration: 60, ease: 'Power1', yoyo: true,
+                    onComplete: () => { btnImg.setFrame(`buttonLong_${atlasVariant}.png`); label.setY(cy); def.action(); }
+                });
+            });
+        } else {
+            // Fallback: plain graphics button
+            const radius = 8;
+            const bg = this.add.graphics();
+            const draw = (fillColor, borderColor, glowAlpha) => {
+                bg.clear();
+                bg.fillStyle(fillColor, 0.92);
+                bg.fillRoundedRect(bx, by, bw, bh, radius);
+                bg.lineStyle(2, borderColor, glowAlpha);
+                bg.strokeRoundedRect(bx, by, bw, bh, radius);
+            };
+            draw(def.color, def.border, 0.5);
+
+            const label = this.add.text(cx, cy, def.label, {
+                fontFamily: 'Open Sans', fontSize: '24px',
+                color: '#e8eeff', stroke: '#000000', strokeThickness: 2,
+            }).setOrigin(0.5);
+
+            const zone = this.add.zone(cx, cy, bw, bh).setInteractive({ useHandCursor: true });
+            zone.on('pointerover', () => {
+                draw(def.hover, def.border, 1.0);
+                label.setColor('#ffffff');
+                this.tweens.add({ targets: [bg, label], scaleX: 1.03, scaleY: 1.03, duration: 80 });
+            });
+            zone.on('pointerout', () => {
+                draw(def.color, def.border, 0.5);
+                label.setColor('#e8eeff');
+                this.tweens.add({ targets: [bg, label], scaleX: 1.0, scaleY: 1.0, duration: 80 });
+            });
+            zone.on('pointerdown', () => {
+                EventBus.emit('ui:buttonClick');
+                this.tweens.add({
+                    targets: [bg, label], scaleX: 0.96, scaleY: 0.96,
+                    duration: 60, ease: 'Power1', yoyo: true,
+                    onComplete: () => def.action(),
+                });
+            });
+        }
     }
 
     // ----------------------------------------------------------------
@@ -657,5 +686,6 @@ export default class MainMenuScene extends Phaser.Scene {
         this._particles.forEach(p => p.gfx?.destroy());
         this._particles = [];
         this._clearModal();
+        if (this._bgm) { this._bgm.stop(); this._bgm = null; }
     }
 }

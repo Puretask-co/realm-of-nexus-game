@@ -209,13 +209,30 @@ export default class CharacterSheetScene extends Phaser.Scene {
         const portW = 70,      portH = 88;
         const classHex = this._classHex(classId);
 
+        // Class → portrait key map; add entries as portraits are loaded
+        const CLASS_PORTRAIT = {
+            bloomguard:     'portrait_companion_vaeril',
+            thornbinder:    'portrait_companion_aeliana',
+        };
+        const portraitKey = CLASS_PORTRAIT[classId] || `portrait_${classId}`;
+        const hasPortrait = portraitKey && this.textures.exists(portraitKey);
+
+        // Colored rect frame (always drawn as background/border)
         this._contentGfx.fillStyle(classHex, 0.85);
         this._contentGfx.fillRect(portX, portY, portW, portH);
         this._contentGfx.lineStyle(2, 0xffcc44, 0.7);
         this._contentGfx.strokeRect(portX, portY, portW, portH);
-        this._addText(portX + portW / 2, portY + portH / 2, classData?.name || '?', {
-            fontSize: '14px', color: '#ffffff', stroke: '#000', strokeThickness: 2,
-        }, D).setOrigin(0.5);
+
+        if (hasPortrait) {
+            const portImg = this.add.image(portX + portW / 2, portY + portH / 2, portraitKey)
+                .setDisplaySize(portW, portH)
+                .setDepth(D).setScrollFactor(0);
+            this._contentTexts.push(portImg);
+        } else {
+            this._addText(portX + portW / 2, portY + portH / 2, classData?.name || '?', {
+                fontSize: '14px', color: '#ffffff', stroke: '#000', strokeThickness: 2,
+            }, D).setOrigin(0.5);
+        }
 
         // Identity
         const iX = portX + portW + 18;
