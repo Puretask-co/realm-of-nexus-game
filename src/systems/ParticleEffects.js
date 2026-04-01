@@ -1,4 +1,4 @@
-import { EventBus } from '../core/EventBus.js';
+import EventBus from '../core/EventBus.js';
 
 /**
  * ParticleEffects — Plays Phaser built-in particle bursts using Kenney CC0 textures.

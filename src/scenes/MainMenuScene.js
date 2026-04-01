@@ -32,10 +32,14 @@ export default class MainMenuScene extends Phaser.Scene {
         // Floating particle update loop
         this.events.on('update', this._updateParticles, this);
 
-        // Start menu BGM
+        // Start menu BGM — defer until AudioContext is unlocked (Chrome autoplay policy)
         if (this.sound && this.cache.audio.exists('bgm_menu')) {
             this._bgm = this.sound.add('bgm_menu', { loop: true, volume: 0.55 });
-            this._bgm.play();
+            if (this.sound.locked) {
+                this.sound.once('unlocked', () => { if (this._bgm?.active) this._bgm.play(); });
+            } else {
+                this._bgm.play();
+            }
         }
 
         EventBus.emit('main-menu-open');

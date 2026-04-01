@@ -52,7 +52,8 @@ export const spellSchema = {
             type: 'string',
             enum: [
                 'nature', 'arcane', 'shadow', 'radiant',
-                'spirit', 'fire', 'physical', 'void', 'light'
+                'spirit', 'fire', 'physical', 'void', 'light',
+                'verdant', 'silver'
             ],
             description: 'Elemental / damage type'
         },

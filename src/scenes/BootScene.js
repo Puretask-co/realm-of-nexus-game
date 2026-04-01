@@ -175,7 +175,7 @@ export default class BootScene extends Phaser.Scene {
 
         // ── Kenney UI Pack RPG Expansion ───────────────────────────────
         // Single spritesheet atlas — used by all UI panels
-        this.load.atlas(
+        this.load.atlasXML(
             'ui_rpg',
             'assets/ui/Spritesheet/uipack_rpg_sheet.png',
             'assets/ui/Spritesheet/uipack_rpg_sheet.xml'
