@@ -9,13 +9,10 @@ export { GameConfig } from './core/GameConfig.js';
 
 // Tool 1: Data-Driven Architecture
 export { default as DataManager } from './systems/DataManager.js';
-export { CSVDataLoader } from './systems/CSVDataLoader.js';
 
 // Tool 2: Visual Level Editor
-export { SceneLoader } from './systems/SceneLoader.js';
 export { InspectorPanel } from './ui/InspectorPanel.js';
 export { HotReloadOverlay } from './ui/HotReloadOverlay.js';
-export { HotReloadSystem } from './systems/HotReloadSystem.js';
 
 // Tool 3: Advanced Lighting System
 export { default as AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
@@ -25,14 +22,9 @@ export { default as TacticalCombatCameraBridge } from './integration/TacticalCom
 
 // Tool 4: Advanced Particle System
 export { default as AdvancedParticleSystem } from './systems/AdvancedParticleSystem.js';
-export { ParticleCollisionSystem } from './systems/ParticleCollisionSystem.js';
-export { SpellParticleIntegration } from './integration/SpellParticleIntegration.js';
 
 // Tool 5: Advanced Camera System
 export { default as AdvancedCameraSystem } from './systems/AdvancedCameraSystem.js';
-export { CombatCameraIntegration } from './integration/CombatCameraIntegration.js';
-export { ScreenSpaceEffects } from './effects/ScreenSpaceEffects.js';
-export { CameraZoneSystem } from './systems/CameraZoneSystem.js';
 
 // Tool 6: Animation System
 export { AdvancedAnimationSystem, Animator, AnimationStateMachine, AnimationTimeline } from './systems/AdvancedAnimationSystem.js';

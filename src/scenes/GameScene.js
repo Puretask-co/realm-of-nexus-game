@@ -1259,8 +1259,16 @@ export default class GameScene extends Phaser.Scene {
                 return;
             }
 
-            // For ranged/magic attacks fire a projectile event before applying damage
-            if (weaponData.attackType !== 'melee') {
+            // Play sword animation for melee attacks, projectile event for ranged/magic
+            if (weaponData.attackType === 'melee') {
+                const playerSprite = this.player.sprite ?? this.player;
+                if (playerSprite?.anims && this.anims.exists('player-sword')) {
+                    playerSprite.play('player-sword', true);
+                    playerSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                        if (playerSprite.active) playerSprite.play('player-idle', true);
+                    });
+                }
+            } else {
                 this.attackTypeSystem.fireProjectile(this.player, targetEnemy, weaponData.attackType, {
                     spell,
                     damage

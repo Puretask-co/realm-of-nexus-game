@@ -109,6 +109,9 @@ export default class UIScene extends Phaser.Scene {
             EventBus.on('spell-cooldown-tick', (spellId, remaining, total) => {
                 this._updateSpellCooldown(spellId, remaining, total);
             }),
+            EventBus.on('cooldown-ready', (data) => {
+                this._flashCooldownReady(data?.id);
+            }),
             EventBus.on('quest:started', (data) => {
                 this._updateQuestTracker(data);
                 this._showNotification(`Quest Started: ${data.name}`, 0x4488ff);
@@ -419,6 +422,22 @@ export default class UIScene extends Phaser.Scene {
     _getSlotForSpell(spellId) {
         // Dynamic mapping — matches whatever spells the player has equipped
         return this._spellMapping ? this._spellMapping.indexOf(spellId) : -1;
+    }
+
+    /** Flash a spell slot gold when its cooldown finishes. */
+    _flashCooldownReady(spellId) {
+        if (!spellId) return;
+        const slotIndex = this._getSlotForSpell(spellId);
+        const slot = slotIndex !== -1 ? this.uiElements.spellSlots?.[slotIndex] : null;
+        if (!slot?.bg) return;
+
+        // Clear any lingering cooldown overlay first
+        slot.cooldownOverlay.clear();
+
+        // Brief gold flash on the slot background
+        const origTint = 0xffffff;
+        slot.bg.setTint(0xffdd44);
+        this.time.delayedCall(200, () => { if (slot.bg?.active) slot.bg.clearTint(); });
     }
 
     // ----------------------------------------------------------------
