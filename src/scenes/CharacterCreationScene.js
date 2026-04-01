@@ -4,17 +4,14 @@ import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 import { AttributeSystem } from '../systems/AttributeSystem.js';
 
 /**
- * CharacterCreationScene — 5-step character creation.
+ * CharacterCreationScene — 3-column layout.
+ *
+ * Left   (374px): Ancestry selection — 3 stacked cards
+ * Center (420px): Attribute point allocation — 5 rows
+ * Right  (450px): Backstory / Path / Appearance stacked sections
+ * Bottom (90px) : Character summary strip + BEGIN ADVENTURE button
  *
  * Flow: ClassSelectionScene → CharacterCreationScene → GameScene
- *
- * Steps:
- *   1. Ancestry selection (Human, Soulborn, Half-Abyss) — done here
- *   2. Class was already selected in ClassSelectionScene
- *   3. Attribute point allocation (8 points, max 4 each, cap 6)
- *   4. Pure/Blighted variant selection
- *   5. Appearance (body type, skin tone, 15 hair styles, Verdant Sigil placement)
- *   6. Backstory selection (8 backgrounds that affect dialogue/quests)
  */
 export default class CharacterCreationScene extends Phaser.Scene {
     constructor() {
@@ -27,105 +24,146 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
         const { width, height } = this.scale;
 
-        // Load ancestry data
+        // ── Ancestry data ──────────────────────────────────────────────
         this.ancestries = dataManager.getAllAncestries?.() || [];
         if (this.ancestries.length === 0) {
-            // Fallback if DataManager doesn't have getAllAncestries
             const data = dataManager.getAncestryData?.();
             this.ancestries = data?.ancestries || [];
         }
+        if (this.ancestries.length === 0) {
+            this.ancestries = [
+                {
+                    id: 'human', name: 'Human',
+                    description: 'Adaptable and resourceful, humans flourish in every corner of the realm, driven by ambition alone.',
+                    attributeModifiers: [{ attribute: 'player_choice', value: 1 }],
+                    specialAbility: { name: 'Resilient', description: 'Once per rest, reduce incoming damage by 5.' }
+                },
+                {
+                    id: 'soulborn', name: 'Soulborn',
+                    description: 'Infused with radiant Sap energy from birth, the Soulborn glow faintly in darkness and dream in light.',
+                    attributeModifiers: [{ attribute: 'Insight', value: 2 }],
+                    specialAbility: { name: 'Sap Resonance', description: 'Spells cost 1 less SP during Silver Sap phase.' }
+                },
+                {
+                    id: 'half-abyss', name: 'Half-Abyss',
+                    description: 'Born of mortal and shadow, they carry the Veil\'s echo in their blood and walk between two worlds.',
+                    attributeModifiers: [{ attribute: 'Agility', value: 1 }, { attribute: 'Charisma', value: 1 }],
+                    specialAbility: { name: 'Shadow Step', description: 'Teleport up to 3 tiles once per combat.' }
+                }
+            ];
+        }
 
-        // Current state
+        // ── State ──────────────────────────────────────────────────────
         this.selectedAncestryIndex = 0;
         this.attributes = { Might: 0, Agility: 0, Resilience: 0, Insight: 0, Charisma: 0 };
         this.pointsRemaining = 8;
         this.maxPerAttr = 4;
-        this.humanBonusAttr = null; // For Human's +1 choice
         this.selectedVariant = 'pure';
         this.selectedBackstoryIndex = 0;
         this.selectedBodyType = 0;
         this.selectedSkinTone = 0;
         this.selectedHairStyle = 0;
         this.selectedSigilPlacement = 0;
+        this.hairStyles = Array.from({ length: 15 }, (_, i) => `Style ${i + 1}`);
 
-        // 8 backstory options
         this.backstories = [
-            { id: 'orphan_of_the_grove', name: 'Orphan of the Grove', description: 'Raised by the trees themselves after your family vanished during a Crimson Sap surge.', bonusSkill: 'survival', bonusQuest: 'find_your_family' },
-            { id: 'coven_apprentice', name: 'Coven Apprentice', description: 'Trained by an Emerald Coven mystic who disappeared, leaving only cryptic notes.', bonusSkill: 'arcana', bonusQuest: 'the_missing_mentor' },
-            { id: 'bloomguard_recruit', name: 'Bloomguard Recruit', description: 'You served as a Bloomguard cadet before a scandal forced you out. Now you seek redemption.', bonusSkill: 'athletics', bonusQuest: 'clear_your_name' },
-            { id: 'wandering_trader', name: 'Wandering Trader', description: 'A Sapling Consortium merchant who stumbled into something far larger than any trade deal.', bonusSkill: 'persuasion', bonusQuest: 'the_lost_caravan' },
-            { id: 'corruption_survivor', name: 'Corruption Survivor', description: 'You survived Blight infection as a child, leaving you scarred but resistant.', bonusSkill: 'medicine', bonusQuest: 'the_cure' },
-            { id: 'veil_touched', name: 'Veil-Touched', description: 'Born during a Silver Sap phase, you occasionally hear whispers from beyond the Veil.', bonusSkill: 'perception', bonusQuest: 'voices_in_the_veil' },
-            { id: 'beast_raised', name: 'Beast-Raised', description: 'Abandoned as an infant and raised by Wildkin creatures in the deep forest.', bonusSkill: 'nature', bonusQuest: 'the_wild_calling' },
-            { id: 'noble_exile', name: 'Noble Exile', description: 'Heir to a disgraced Thornbinder house, you walk the line between shadow and light.', bonusSkill: 'deception', bonusQuest: 'house_of_thorns' }
+            { id: 'orphan_of_the_grove',  name: 'Orphan of the Grove',    description: 'Raised by the trees themselves after your family vanished during a Crimson Sap surge.',          bonusSkill: 'survival',   bonusQuest: 'find_your_family'   },
+            { id: 'coven_apprentice',      name: 'Coven Apprentice',       description: 'Trained by an Emerald Coven mystic who disappeared, leaving only cryptic notes behind.',         bonusSkill: 'arcana',     bonusQuest: 'the_missing_mentor' },
+            { id: 'bloomguard_recruit',    name: 'Bloomguard Recruit',     description: 'You served as a Bloomguard cadet before a scandal forced you out. Now you seek redemption.',     bonusSkill: 'athletics',  bonusQuest: 'clear_your_name'    },
+            { id: 'wandering_trader',      name: 'Wandering Trader',       description: 'A Sapling Consortium merchant who stumbled into something far larger than any trade deal.',      bonusSkill: 'persuasion', bonusQuest: 'the_lost_caravan'   },
+            { id: 'corruption_survivor',   name: 'Corruption Survivor',    description: 'You survived Blight infection as a child, leaving you scarred but strangely resistant.',         bonusSkill: 'medicine',   bonusQuest: 'the_cure'           },
+            { id: 'veil_touched',          name: 'Veil-Touched',           description: 'Born during a Silver Sap phase, you occasionally hear whispers from beyond the Veil.',          bonusSkill: 'perception', bonusQuest: 'voices_in_the_veil' },
+            { id: 'beast_raised',          name: 'Beast-Raised',           description: 'Abandoned as an infant and raised by Wildkin creatures deep in the ancient forest.',             bonusSkill: 'nature',     bonusQuest: 'the_wild_calling'   },
+            { id: 'noble_exile',           name: 'Noble Exile',            description: 'Heir to a disgraced Thornbinder house, you walk the line between shadow and light.',            bonusSkill: 'deception',  bonusQuest: 'house_of_thorns'    }
         ];
 
-        // Apply class starting attributes as base
+        // Apply class base stats
         const cls = this.classSystem.getCurrentClass();
         if (cls?.baseStats) {
-            this.attributes.Might = cls.baseStats.might || 0;
-            this.attributes.Agility = cls.baseStats.agility || 0;
+            this.attributes.Might      = cls.baseStats.might      || 0;
+            this.attributes.Agility    = cls.baseStats.agility    || 0;
             this.attributes.Resilience = cls.baseStats.resilience || 0;
-            this.attributes.Insight = cls.baseStats.insight || 0;
-            this.attributes.Charisma = cls.baseStats.charisma || 0;
+            this.attributes.Insight    = cls.baseStats.insight    || 0;
+            this.attributes.Charisma   = cls.baseStats.charisma   || 0;
         }
 
-        // Background
-        const bg = this.add.graphics();
-        bg.fillStyle(0x0a0a1a, 1);
-        bg.fillRect(0, 0, width, height);
-        bg.lineStyle(1, 0x222244, 0.15);
-        for (let x = 0; x < width; x += 64) bg.lineBetween(x, 0, x, height);
-        for (let y = 0; y < height; y += 64) bg.lineBetween(0, y, width, y);
+        // ── Layout constants ───────────────────────────────────────────
+        // Screen: 1280 × 720.  Columns: y 68–616 (h 548).  Strip: y 620–710 (h 90).
+        const COL_L = { x: 10,  w: 374, y: 68, h: 548 };  // right edge 384
+        const COL_C = { x: 392, w: 420, y: 68, h: 548 };  // right edge 812
+        const COL_R = { x: 820, w: 450, y: 68, h: 548 };  // right edge 1270
 
-        // Title
-        const clsName = cls?.name || 'Adventurer';
-        this.add.text(width / 2, 25, 'CHARACTER CREATION', {
-            fontFamily: 'Open Sans', fontSize: '34px', color: '#88aaff',
-            stroke: '#000', strokeThickness: 4
-        }).setOrigin(0.5);
+        this._buildBackground(width, height);
+        this._buildTitleBar(width, cls);
+        this._buildAncestryPanel(COL_L);
+        this._buildAttributePanel(COL_C);
+        this._buildRightColumn(COL_R);
+        this._buildSummaryStrip(width);
 
-        this.add.text(width / 2, 50, `Class: ${clsName}`, {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#66aa88'
-        }).setOrigin(0.5);
-
-        // ---- Left panel: Ancestry Selection ----
-        this._buildAncestryPanel(30, 80, 500, 210);
-
-        // ---- Right panel: Attribute Allocation ----
-        this._buildAttributePanel(560, 80, 400, 280);
-
-        // ---- Middle-left: Pure/Blighted Variant ----
-        this._buildVariantPanel(30, 300, 240, 90);
-
-        // ---- Middle: Appearance (design: body, skin, 15 hair, Verdant Sigil) ----
-        this._buildAppearancePanel(280, 300, 260, 90);
-
-        // ---- Middle-right: Backstory Selection ----
-        this._buildBackstoryPanel(550, 300, 250, 90);
-
-        // ---- Bottom: Summary + Confirm ----
-        this._buildSummaryPanel(width / 2, 400, 600, 200);
-
-        // Keyboard
         this.input.keyboard.on('keydown-ENTER', () => this._confirm());
         this.input.keyboard.on('keydown-SPACE', () => this._confirm());
     }
 
-    _buildAncestryPanel(x, y, w, h) {
-        this.add.text(x + w / 2, y, 'CHOOSE ANCESTRY', {
-            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccaa88',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
+    // ── Background ────────────────────────────────────────────────────
+    _buildBackground(width, height) {
+        const bg = this.add.graphics();
+        bg.fillStyle(0x07070f, 1);
+        bg.fillRect(0, 0, width, height);
+        bg.lineStyle(1, 0x14142a, 0.25);
+        for (let x = 0; x < width; x += 64) bg.lineBetween(x, 0, x, height);
+        for (let y = 0; y < height; y += 64) bg.lineBetween(0, y, width, y);
+    }
+
+    // ── Title bar ─────────────────────────────────────────────────────
+    _buildTitleBar(width, cls) {
+        const bar = this.add.graphics();
+        bar.fillStyle(0x0b0b1d, 1);
+        bar.fillRect(0, 0, width, 66);
+        bar.lineStyle(1, 0x30305a, 0.8);
+        bar.lineBetween(0, 66, width, 66);
+
+        this.add.text(width / 2, 14, 'CHARACTER CREATION', {
+            fontFamily: '"Cinzel Decorative", Cinzel, serif',
+            fontSize: '26px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5, 0);
+
+        this.add.text(width / 2, 44, `Class: ${cls?.name || 'Adventurer'}`, {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#6a8a6a', letterSpacing: 2
+        }).setOrigin(0.5, 0);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    //  LEFT COLUMN — Ancestry
+    // ─────────────────────────────────────────────────────────────────
+    _buildAncestryPanel(col) {
+        const panelBg = this.add.graphics();
+        panelBg.fillStyle(0x0d0d1e, 0.97);
+        panelBg.fillRect(col.x, col.y, col.w, col.h);
+        panelBg.lineStyle(1, 0x28284a, 0.8);
+        panelBg.strokeRect(col.x, col.y, col.w, col.h);
+
+        this.add.text(col.x + col.w / 2, col.y + 12, 'CHOOSE ANCESTRY', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 3
+        }).setOrigin(0.5, 0);
+
+        const divider = this.add.graphics();
+        divider.lineStyle(1, 0x38385a, 0.5);
+        divider.lineBetween(col.x + 12, col.y + 33, col.x + col.w - 12, col.y + 33);
 
         this._ancestryCards = [];
-        const cardW = (w - 20) / Math.max(this.ancestries.length, 1);
-        const cardH = h - 30;
+        const HEADER_H = 37;
+        const CARD_GAP = 4;
+        const cardH = Math.floor((col.h - HEADER_H - CARD_GAP * (this.ancestries.length + 1)) / this.ancestries.length);
+        const cardW = col.w - CARD_GAP * 2;
 
         this.ancestries.forEach((ancestry, i) => {
-            const cx = x + 5 + i * cardW;
-            const cy = y + 25;
-            const card = this._createAncestryCard(cx, cy, cardW - 5, cardH, ancestry, i);
+            const cx = col.x + CARD_GAP;
+            const cy = col.y + HEADER_H + CARD_GAP + i * (cardH + CARD_GAP);
+            const card = this._createAncestryCard(cx, cy, cardW, cardH, ancestry, i);
             this._ancestryCards.push(card);
         });
 
@@ -133,180 +171,220 @@ export default class CharacterCreationScene extends Phaser.Scene {
     }
 
     _createAncestryCard(x, y, w, h, ancestry, index) {
-        const container = this.add.container(x, y);
-
-        const colors = { human: 0x88aa66, soulborn: 0x6688cc, 'half-abyss': 0xcc4488, half_abyss: 0xcc4488 };
-        const color = colors[ancestry.id] || 0x888888;
-
-        const bg = this.add.graphics();
-        bg.fillStyle(0x111133, 0.8);
-        bg.fillRoundedRect(0, 0, w, h, 6);
-        bg.lineStyle(2, color, 0.5);
-        bg.strokeRoundedRect(0, 0, w, h, 6);
-        container.add(bg);
-
+        const COLORS = {
+            human: 0x8aaa66, soulborn: 0x6688cc,
+            'half-abyss': 0xaa6699, half_abyss: 0xaa6699
+        };
+        const color = COLORS[ancestry.id] || 0x7788aa;
         const colorStr = `#${color.toString(16).padStart(6, '0')}`;
 
-        container.add(this.add.text(w / 2, 15, ancestry.name, {
-            fontFamily: 'Open Sans', fontSize: '18px', color: colorStr,
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5));
+        const bg = this.add.graphics();
 
-        // Description
-        const desc = (ancestry.description || '').substring(0, 100) + '...';
-        container.add(this.add.text(w / 2, 35, desc, {
-            fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
-            wordWrap: { width: w - 10 }, align: 'center', lineSpacing: 2
-        }).setOrigin(0.5, 0));
-
-        // Attribute modifiers
-        const modY = 100;
-        container.add(this.add.text(5, modY, 'Modifiers:', {
-            fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaa88'
-        }));
-
-        const mods = ancestry.attributeModifiers || [];
-        mods.forEach((mod, mi) => {
-            const label = mod.attribute === 'player_choice'
-                ? `+${mod.value} to any attribute`
-                : `+${mod.value} ${mod.attribute}`;
-            container.add(this.add.text(10, modY + 14 + mi * 12, label, {
-                fontFamily: 'Open Sans', fontSize: '13px', color: colorStr
-            }));
+        // Name
+        this.add.text(x + 14, y + 12, ancestry.name, {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '16px', color: colorStr,
+            stroke: '#000000', strokeThickness: 2
         });
 
-        // Special ability
-        if (ancestry.specialAbility) {
-            const abilY = modY + 14 + mods.length * 12 + 10;
-            container.add(this.add.text(5, abilY, `Ability: ${ancestry.specialAbility.name}`, {
-                fontFamily: 'Open Sans', fontSize: '13px', color: '#ffcc44'
-            }));
-            const abilDesc = (ancestry.specialAbility.description || '').substring(0, 80);
-            container.add(this.add.text(5, abilY + 14, abilDesc, {
-                fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
-                wordWrap: { width: w - 10 }, lineSpacing: 1
-            }));
+        // Description
+        const desc = (ancestry.description || '').substring(0, 130);
+        this.add.text(x + 14, y + 34, desc, {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '11px', color: '#7a8aaa',
+            wordWrap: { width: w - 28 }, lineSpacing: 3
+        });
+
+        // Modifiers section (bottom-anchored)
+        const mods = ancestry.attributeModifiers || [];
+        const hasAbility = !!ancestry.specialAbility;
+        const abilH = hasAbility ? 30 : 0;
+        const modsH = mods.length * 16;
+        let modLabelY = y + h - abilH - modsH - 22;
+
+        this.add.text(x + 14, modLabelY, 'Modifiers', {
+            fontFamily: 'Cinzel, serif', fontSize: '10px', color: '#5a6a4a', letterSpacing: 1
+        });
+
+        mods.forEach((mod, mi) => {
+            const label = mod.attribute === 'player_choice'
+                ? `  +${mod.value} to your choice`
+                : `  +${mod.value} ${mod.attribute}`;
+            this.add.text(x + 14, modLabelY + 14 + mi * 16, label, {
+                fontFamily: '"Open Sans", sans-serif', fontSize: '12px', color: colorStr
+            });
+        });
+
+        if (hasAbility) {
+            const abilText = `✦ ${ancestry.specialAbility.name}: ${(ancestry.specialAbility.description || '').substring(0, 60)}`;
+            this.add.text(x + 14, y + h - 26, abilText, {
+                fontFamily: '"Open Sans", sans-serif',
+                fontSize: '11px', color: '#b89030',
+                wordWrap: { width: w - 28 }
+            });
         }
 
-        // Click
-        const hitZone = this.add.zone(w / 2, h / 2, w, h).setInteractive({ useHandCursor: true });
-        hitZone.on('pointerdown', () => {
+        // Click zone
+        const hit = this.add.zone(x + w / 2, y + h / 2, w, h).setInteractive({ useHandCursor: true });
+        hit.on('pointerdown', () => {
             this.selectedAncestryIndex = index;
             this._highlightAncestry(index);
             this._updateSummary();
         });
-        container.add(hitZone);
 
-        return { container, bg, color, w, h, ancestry };
+        return { bg, color, x, y, w, h };
     }
 
     _highlightAncestry(index) {
         this._ancestryCards.forEach((card, i) => {
-            const selected = (i === index);
             card.bg.clear();
-            if (selected) {
-                card.bg.fillStyle(0x1a1a55, 0.95);
-                card.bg.fillRoundedRect(0, 0, card.w, card.h, 6);
-                card.bg.lineStyle(3, card.color, 1.0);
-                card.bg.strokeRoundedRect(0, 0, card.w, card.h, 6);
+            if (i === index) {
+                card.bg.fillStyle(0x171730, 1);
+                card.bg.fillRoundedRect(card.x, card.y, card.w, card.h, 5);
+                card.bg.lineStyle(2, card.color, 0.95);
+                card.bg.strokeRoundedRect(card.x, card.y, card.w, card.h, 5);
+                card.bg.fillStyle(card.color, 0.75);
+                card.bg.fillRect(card.x, card.y + 5, 3, card.h - 10);
             } else {
-                card.bg.fillStyle(0x111133, 0.6);
-                card.bg.fillRoundedRect(0, 0, card.w, card.h, 6);
-                card.bg.lineStyle(1, card.color, 0.3);
-                card.bg.strokeRoundedRect(0, 0, card.w, card.h, 6);
+                card.bg.fillStyle(0x0c0c1e, 0.7);
+                card.bg.fillRoundedRect(card.x, card.y, card.w, card.h, 5);
+                card.bg.lineStyle(1, card.color, 0.22);
+                card.bg.strokeRoundedRect(card.x, card.y, card.w, card.h, 5);
             }
         });
     }
 
-    _buildAttributePanel(x, y, w, h) {
-        this.add.text(x + w / 2, y, 'ALLOCATE ATTRIBUTES', {
-            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccaa88',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
+    // ─────────────────────────────────────────────────────────────────
+    //  CENTER COLUMN — Attribute Allocation
+    // ─────────────────────────────────────────────────────────────────
+    _buildAttributePanel(col) {
+        const panelBg = this.add.graphics();
+        panelBg.fillStyle(0x0d0d1e, 0.97);
+        panelBg.fillRect(col.x, col.y, col.w, col.h);
+        panelBg.lineStyle(1, 0x28284a, 0.8);
+        panelBg.strokeRect(col.x, col.y, col.w, col.h);
 
-        this._pointsText = this.add.text(x + w / 2, y + 22, `Points: ${this.pointsRemaining}`, {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#88ff88'
-        }).setOrigin(0.5);
+        this.add.text(col.x + col.w / 2, col.y + 12, 'ALLOCATE ATTRIBUTES', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 2
+        }).setOrigin(0.5, 0);
 
-        const attrNames = ['Might', 'Agility', 'Resilience', 'Insight', 'Charisma'];
-        const attrColors = {
-            Might: '#ff6666', Agility: '#66ffaa', Resilience: '#88aacc',
-            Insight: '#cc66ff', Charisma: '#ffcc44'
+        this._pointsText = this.add.text(col.x + col.w / 2, col.y + 32, `${this.pointsRemaining} points remaining`, {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '13px', color: '#70b870'
+        }).setOrigin(0.5, 0);
+
+        const divider = this.add.graphics();
+        divider.lineStyle(1, 0x38385a, 0.5);
+        divider.lineBetween(col.x + 12, col.y + 51, col.x + col.w - 12, col.y + 51);
+
+        const ATTR_NAMES  = ['Might', 'Agility', 'Resilience', 'Insight', 'Charisma'];
+        const ATTR_COLORS = {
+            Might: '#b05555', Agility: '#55996a', Resilience: '#5580a8',
+            Insight: '#8055b0', Charisma: '#b09030'
         };
-        const attrDescs = {
-            Might: 'Physical power, melee damage, carry weight',
-            Agility: 'Speed, evasion, initiative, ranged accuracy',
-            Resilience: 'HP, damage resistance, stamina',
-            Insight: 'Magic power, perception, lore knowledge',
-            Charisma: 'Persuasion, prices, companion bonds'
+        const ATTR_DESCS  = {
+            Might:      'Physical power, melee damage, carry weight',
+            Agility:    'Speed, evasion, initiative, ranged accuracy',
+            Resilience: 'Max HP, damage resistance, stamina recovery',
+            Insight:    'Magic potency, perception, lore knowledge',
+            Charisma:   'Persuasion, prices, companion bond strength'
         };
 
-        this._attrTexts = {};
-        this._attrBarGfx = {};
+        this._attrTexts     = {};
+        this._attrBarGfx    = {};
         this._attrBarLayout = {};
 
-        attrNames.forEach((attr, i) => {
-            const ay = y + 45 + i * 44;
+        const HEADER_H = 55;
+        const rowH = Math.floor((col.h - HEADER_H) / ATTR_NAMES.length);
 
-            this.add.text(x + 10, ay, attr, {
-                fontFamily: 'Open Sans', fontSize: '17px', color: attrColors[attr]
+        ATTR_NAMES.forEach((attr, i) => {
+            const ay = col.y + HEADER_H + i * rowH;
+
+            // Alternating row tint
+            if (i % 2 === 1) {
+                const rowTint = this.add.graphics();
+                rowTint.fillStyle(0x111130, 0.35);
+                rowTint.fillRect(col.x + 2, ay, col.w - 4, rowH);
+            }
+
+            // Attribute name
+            this.add.text(col.x + 14, ay + 10, attr, {
+                fontFamily: 'Cinzel, serif',
+                fontSize: '15px', color: ATTR_COLORS[attr],
+                stroke: '#000000', strokeThickness: 1
             });
 
-            this.add.text(x + 10, ay + 14, attrDescs[attr], {
-                fontFamily: 'Open Sans', fontSize: '10px', color: '#666688'
+            // Description
+            this.add.text(col.x + 14, ay + 30, ATTR_DESCS[attr], {
+                fontFamily: '"Open Sans", sans-serif',
+                fontSize: '11px', color: '#4a5a6a'
             });
 
-            // Value text
-            this._attrTexts[attr] = this.add.text(x + w / 2, ay + 2, `${this.attributes[attr]}`, {
-                fontFamily: 'Open Sans', fontSize: '20px', color: '#ffffff'
+            // Bar
+            const barX = col.x + 14;
+            const barY = ay + 48;
+            const barW = col.w - 110;
+            const barGfx = this.add.graphics();
+            this._attrBarGfx[attr]    = barGfx;
+            this._attrBarLayout[attr] = { x: barX, y: barY, width: barW };
+            this._drawAttrBar(barGfx, barX, barY, barW, attr, ATTR_COLORS[attr]);
+
+            // Current value (right side, vertically centered in row)
+            this._attrTexts[attr] = this.add.text(col.x + col.w - 65, ay + rowH / 2, `${this.attributes[attr]}`, {
+                fontFamily: 'Cinzel, serif',
+                fontSize: '24px', color: '#e8e8e8',
+                stroke: '#000000', strokeThickness: 2
             }).setOrigin(0.5);
 
-            // Bar (store layout — Phaser Graphics has no reliable getBounds for redraw)
-            const barGfx = this.add.graphics();
-            this._attrBarGfx[attr] = barGfx;
-            const barX = x + 10;
-            const barY = ay + 26;
-            const barW = w - 80;
-            this._attrBarLayout[attr] = { x: barX, y: barY, width: barW };
-            this._drawAttrBar(barGfx, barX, barY, barW, attr, attrColors[attr]);
-
-            // - button
-            const minusBtn = this.add.text(x + w - 60, ay + 2, '[-]', {
-                fontFamily: 'Open Sans', fontSize: '20px', color: '#ff6666'
-            }).setInteractive({ useHandCursor: true });
+            // Minus button
+            const minusBtn = this.add.text(col.x + col.w - 100, ay + rowH / 2 - 1, '−', {
+                fontFamily: '"Open Sans", sans-serif',
+                fontSize: '22px', color: '#994444',
+                backgroundColor: '#1a0808', padding: { x: 6, y: 2 }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
             minusBtn.on('pointerdown', () => this._adjustAttribute(attr, -1));
+            minusBtn.on('pointerover', () => minusBtn.setColor('#dd6666'));
+            minusBtn.on('pointerout',  () => minusBtn.setColor('#994444'));
 
-            // + button
-            const plusBtn = this.add.text(x + w - 25, ay + 2, '[+]', {
-                fontFamily: 'Open Sans', fontSize: '20px', color: '#66ff66'
-            }).setInteractive({ useHandCursor: true });
+            // Plus button
+            const plusBtn = this.add.text(col.x + col.w - 22, ay + rowH / 2 - 1, '+', {
+                fontFamily: '"Open Sans", sans-serif',
+                fontSize: '22px', color: '#449944',
+                backgroundColor: '#081808', padding: { x: 6, y: 2 }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
             plusBtn.on('pointerdown', () => this._adjustAttribute(attr, 1));
+            plusBtn.on('pointerover', () => plusBtn.setColor('#66dd66'));
+            plusBtn.on('pointerout',  () => plusBtn.setColor('#449944'));
         });
     }
 
     _drawAttrBar(gfx, x, y, w, attr, colorStr) {
         gfx.clear();
-        gfx.fillStyle(0x222244, 0.6);
-        gfx.fillRect(x, y, w, 6);
+        gfx.fillStyle(0x181830, 1);
+        gfx.fillRoundedRect(x, y, w, 8, 3);
         const ratio = Math.min(1, this.attributes[attr] / 6);
-        const barColor = parseInt(colorStr.replace('#', ''), 16);
-        gfx.fillStyle(barColor, 0.7);
-        gfx.fillRect(x, y, w * ratio, 6);
+        if (ratio > 0) {
+            const barColor = parseInt(colorStr.replace('#', ''), 16);
+            gfx.fillStyle(barColor, 0.7);
+            gfx.fillRoundedRect(x, y, w * ratio, 8, 3);
+        }
     }
 
     _adjustAttribute(attr, delta) {
         const cls = this.classSystem.getCurrentClass();
-        const baseVal = cls?.baseStats?.[attr.toLowerCase()] || 0;
+        const baseVal  = cls?.baseStats?.[attr.toLowerCase()] || 0;
         const allocated = this.attributes[attr] - baseVal;
 
         if (delta > 0) {
             if (this.pointsRemaining <= 0) return;
             if (allocated >= this.maxPerAttr) return;
-            if (this.attributes[attr] >= 6) return; // absolute cap
+            if (this.attributes[attr] >= 6) return;
             this.attributes[attr]++;
             this.pointsRemaining--;
         } else {
-            if (allocated <= 0) return; // Can't go below class base
+            if (allocated <= 0) return;
             this.attributes[attr]--;
             this.pointsRemaining++;
         }
@@ -316,58 +394,146 @@ export default class CharacterCreationScene extends Phaser.Scene {
     }
 
     _refreshAttributeDisplay() {
-        this._pointsText.setText(`Points: ${this.pointsRemaining}`);
-        this._pointsText.setColor(this.pointsRemaining > 0 ? '#88ff88' : '#ffffff');
+        this._pointsText.setText(`${this.pointsRemaining} points remaining`);
+        this._pointsText.setColor(this.pointsRemaining > 0 ? '#70b870' : '#c0c0c0');
 
-        const attrColors = {
-            Might: '#ff6666', Agility: '#66ffaa', Resilience: '#88aacc',
-            Insight: '#cc66ff', Charisma: '#ffcc44'
+        const ATTR_COLORS = {
+            Might: '#b05555', Agility: '#55996a', Resilience: '#5580a8',
+            Insight: '#8055b0', Charisma: '#b09030'
         };
-
         for (const [attr, text] of Object.entries(this._attrTexts)) {
             text.setText(`${this.attributes[attr]}`);
-            const gfx = this._attrBarGfx[attr];
+            const gfx    = this._attrBarGfx[attr];
             const layout = this._attrBarLayout[attr];
-            if (gfx && layout) {
-                this._drawAttrBar(gfx, layout.x, layout.y, layout.width, attr, attrColors[attr]);
-            }
+            if (gfx && layout) this._drawAttrBar(gfx, layout.x, layout.y, layout.width, attr, ATTR_COLORS[attr]);
         }
     }
 
-    _buildVariantPanel(x, y, w, h) {
-        this.add.text(x + w / 2, y, 'PATH', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
+    // ─────────────────────────────────────────────────────────────────
+    //  RIGHT COLUMN — Backstory / Path / Appearance
+    // ─────────────────────────────────────────────────────────────────
+    _buildRightColumn(col) {
+        const panelBg = this.add.graphics();
+        panelBg.fillStyle(0x0d0d1e, 0.97);
+        panelBg.fillRect(col.x, col.y, col.w, col.h);
+        panelBg.lineStyle(1, 0x28284a, 0.8);
+        panelBg.strokeRect(col.x, col.y, col.w, col.h);
+
+        const BS_H = 208;  // Backstory
+        const PV_H = 128;  // Path / Variant
+        // Appearance: remaining space
+        const AP_H = col.h - BS_H - PV_H - 8;
+
+        this._buildBackstorySection(col.x, col.y,                    col.w, BS_H);
+
+        const div = this.add.graphics();
+        div.lineStyle(1, 0x2a2a4a, 0.5);
+        div.lineBetween(col.x + 12, col.y + BS_H + 2, col.x + col.w - 12, col.y + BS_H + 2);
+
+        this._buildVariantSection(col.x, col.y + BS_H + 4, col.w, PV_H);
+
+        div.lineBetween(col.x + 12, col.y + BS_H + PV_H + 6, col.x + col.w - 12, col.y + BS_H + PV_H + 6);
+
+        this._buildAppearanceSection(col.x, col.y + BS_H + PV_H + 8, col.w, AP_H);
+    }
+
+    // ── Backstory ─────────────────────────────────────────────────────
+    _buildBackstorySection(x, y, w, h) {
+        this.add.text(x + w / 2, y + 12, 'BACKSTORY', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 3
+        }).setOrigin(0.5, 0);
+
+        const divider = this.add.graphics();
+        divider.lineStyle(1, 0x38385a, 0.5);
+        divider.lineBetween(x + 12, y + 32, x + w - 12, y + 32);
+
+        const bs   = this.backstories[0];
+        const midX = x + w / 2;
+
+        const leftBtn = this.add.text(x + 18, y + 52, '‹', {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '28px', color: '#7088aa'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        leftBtn.on('pointerdown', () => this._navigateBackstory(-1));
+        leftBtn.on('pointerover', () => leftBtn.setColor('#aabbdd'));
+        leftBtn.on('pointerout',  () => leftBtn.setColor('#7088aa'));
+
+        const rightBtn = this.add.text(x + w - 18, y + 52, '›', {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '28px', color: '#7088aa'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        rightBtn.on('pointerdown', () => this._navigateBackstory(1));
+        rightBtn.on('pointerover', () => rightBtn.setColor('#aabbdd'));
+        rightBtn.on('pointerout',  () => rightBtn.setColor('#7088aa'));
+
+        this._backstoryNameText = this.add.text(midX, y + 40, bs.name, {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#9aaabb'
+        }).setOrigin(0.5, 0);
+
+        this._backstoryDescText = this.add.text(midX, y + 62, bs.description, {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '12px', color: '#6a7a8a',
+            wordWrap: { width: w - 70 }, align: 'center', lineSpacing: 4
+        }).setOrigin(0.5, 0);
+
+        this._backstoryBonusText = this.add.text(midX, y + h - 22, `Bonus skill: ${bs.bonusSkill}`, {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '12px', color: '#c0942a'
+        }).setOrigin(0.5, 0);
+    }
+
+    _navigateBackstory(dir) {
+        this.selectedBackstoryIndex = (this.selectedBackstoryIndex + dir + this.backstories.length) % this.backstories.length;
+        const bs = this.backstories[this.selectedBackstoryIndex];
+        this._backstoryNameText.setText(bs.name);
+        this._backstoryDescText.setText(bs.description);
+        this._backstoryBonusText.setText(`Bonus skill: ${bs.bonusSkill}`);
+        this._updateSummary();
+    }
+
+    // ── Path / Variant ────────────────────────────────────────────────
+    _buildVariantSection(x, y, w, h) {
+        this.add.text(x + w / 2, y + 10, 'PATH', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 3
+        }).setOrigin(0.5, 0);
+
+        const divider = this.add.graphics();
+        divider.lineStyle(1, 0x38385a, 0.5);
+        divider.lineBetween(x + 12, y + 30, x + w - 12, y + 30);
 
         const variants = [
-            { id: 'pure', name: 'Pure (Lumen)', color: 0x44cc88, desc: 'Healing, protection, growth' },
-            { id: 'blighted', name: 'Blighted', color: 0xcc4488, desc: 'Decay, corruption, chaos' }
+            { id: 'pure',     name: 'Pure — Lumen', color: 0x3a8850, desc: 'Healing, protection, growth magic' },
+            { id: 'blighted', name: 'Blighted',      color: 0x883355, desc: 'Decay, corruption, shadow power' }
         ];
 
         this._variantBgs = [];
+        const VH  = 36;
+        const VY0 = y + 36;
+
         variants.forEach((v, i) => {
-            const vx = x + 5;
-            const vy = y + 18 + i * 34;
-            const vw = w - 10;
-
-            const bg = this.add.graphics();
-            bg.fillStyle(0x111133, 0.8);
-            bg.fillRoundedRect(vx, vy, vw, 30, 4);
-            bg.lineStyle(2, v.color, this.selectedVariant === v.id ? 1.0 : 0.3);
-            bg.strokeRoundedRect(vx, vy, vw, 30, 4);
-            this._variantBgs.push({ bg, vx, vy, vw, color: v.color, id: v.id });
-
+            const vx = x + 12;
+            const vy = VY0 + i * (VH + 8);
+            const vw = w - 24;
             const colorStr = `#${v.color.toString(16).padStart(6, '0')}`;
-            this.add.text(vx + 8, vy + 4, v.name, {
-                fontFamily: 'Open Sans', fontSize: '14px', color: colorStr
+
+            const vbg = this.add.graphics();
+            this._drawVariantBg(vbg, vx, vy, vw, VH, v.color, this.selectedVariant === v.id);
+            this._variantBgs.push({ bg: vbg, vx, vy, vw, vh: VH, color: v.color, id: v.id });
+
+            this.add.text(vx + 14, vy + 7, v.name, {
+                fontFamily: 'Cinzel, serif', fontSize: '13px', color: colorStr
             });
-            this.add.text(vx + 8, vy + 17, v.desc, {
-                fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa'
+            this.add.text(vx + 14, vy + 22, v.desc, {
+                fontFamily: '"Open Sans", sans-serif', fontSize: '11px', color: '#5a6a7a'
             });
 
-            const hitZone = this.add.zone(vx + vw / 2, vy + 15, vw, 30).setInteractive({ useHandCursor: true });
-            hitZone.on('pointerdown', () => {
+            const hit = this.add.zone(vx + vw / 2, vy + VH / 2, vw, VH).setInteractive({ useHandCursor: true });
+            hit.on('pointerdown', () => {
                 this.selectedVariant = v.id;
                 this._refreshVariantHighlight();
                 this._updateSummary();
@@ -375,64 +541,90 @@ export default class CharacterCreationScene extends Phaser.Scene {
         });
     }
 
-    _refreshVariantHighlight() {
-        for (const v of this._variantBgs) {
-            v.bg.clear();
-            const selected = this.selectedVariant === v.id;
-            v.bg.fillStyle(selected ? 0x1a1a55 : 0x111133, 0.8);
-            v.bg.fillRoundedRect(v.vx, v.vy, v.vw, 30, 4);
-            v.bg.lineStyle(2, v.color, selected ? 1.0 : 0.3);
-            v.bg.strokeRoundedRect(v.vx, v.vy, v.vw, 30, 4);
+    _drawVariantBg(gfx, x, y, w, h, color, selected) {
+        gfx.clear();
+        gfx.fillStyle(selected ? 0x181830 : 0x0d0d1e, selected ? 1 : 0.6);
+        gfx.fillRoundedRect(x, y, w, h, 4);
+        gfx.lineStyle(selected ? 2 : 1, color, selected ? 0.9 : 0.22);
+        gfx.strokeRoundedRect(x, y, w, h, 4);
+        if (selected) {
+            gfx.fillStyle(color, 0.7);
+            gfx.fillRect(x, y + 5, 3, h - 10);
         }
     }
 
-    _buildAppearancePanel(x, y, w, h) {
-        this.add.text(x + w / 2, y, 'APPEARANCE', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
+    _refreshVariantHighlight() {
+        for (const v of this._variantBgs) {
+            this._drawVariantBg(v.bg, v.vx, v.vy, v.vw, v.vh, v.color, this.selectedVariant === v.id);
+        }
+    }
 
-        const optsY = y + 18;
-        const rowH = 20;
-        const bodyOpts = ['Slim', 'Heavy'];
-        const skinOpts = ['Light', 'Tan', 'Brown', 'Dark'];
-        this.hairStyles = Array.from({ length: 15 }, (_, i) => `Style ${i + 1}`);
-        const sigilOpts = ['Forehead', 'Cheek', 'Chest', 'Hand'];
+    // ── Appearance ────────────────────────────────────────────────────
+    _buildAppearanceSection(x, y, w, h) {
+        this.add.text(x + w / 2, y + 10, 'APPEARANCE', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '14px', color: '#c8a96e',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 3
+        }).setOrigin(0.5, 0);
+
+        const divider = this.add.graphics();
+        divider.lineStyle(1, 0x38385a, 0.5);
+        divider.lineBetween(x + 12, y + 30, x + w - 12, y + 30);
+
+        const LABEL_X    = x + 14;
+        const OPT_X      = x + 82;
+        const OPT_SPACE  = 52;
+        const ROW_H      = 26;
+        const ROWS_Y0    = y + 36;
+
+        const rows = [
+            { label: 'Body',  opts: ['Slim', 'Sturdy'],             get: () => this.selectedBodyType,       set: v => { this.selectedBodyType = v; } },
+            { label: 'Skin',  opts: ['Pale', 'Tan', 'Brown', 'Dark'], get: () => this.selectedSkinTone,    set: v => { this.selectedSkinTone = v; } },
+            { label: 'Sigil', opts: ['Forehead', 'Cheek', 'Chest'],  get: () => this.selectedSigilPlacement, set: v => { this.selectedSigilPlacement = v; } }
+        ];
 
         this._appearanceOptionButtons = [];
-        [['Body', bodyOpts, () => this.selectedBodyType, (v) => { this.selectedBodyType = v; }],
-         ['Skin', skinOpts, () => this.selectedSkinTone, (v) => { this.selectedSkinTone = v; }],
-         ['Sigil', sigilOpts, () => this.selectedSigilPlacement, (v) => { this.selectedSigilPlacement = v; }]].forEach(([label, opts, get, set], i) => {
-            const ly = optsY + i * rowH;
-            this.add.text(x + 4, ly, label + ':', { fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaacc' });
+        rows.forEach(({ label, opts, get, set }, ri) => {
+            const ry = ROWS_Y0 + ri * ROW_H;
+            this.add.text(LABEL_X, ry + 5, `${label}:`, {
+                fontFamily: '"Open Sans", sans-serif', fontSize: '12px', color: '#7a8aaa'
+            });
             const rowBtns = [];
             opts.forEach((txt, j) => {
-                const btn = this.add.text(x + 40 + j * 52, ly + 6, txt, {
-                    fontFamily: 'Open Sans', fontSize: '11px',
-                    color: get() === j ? '#88ff88' : '#666688'
-                }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+                const btn = this.add.text(OPT_X + j * OPT_SPACE, ry + 5, txt, {
+                    fontFamily: '"Open Sans", sans-serif',
+                    fontSize: '12px', color: get() === j ? '#70cc70' : '#3a4a5a'
+                }).setInteractive({ useHandCursor: true });
                 btn.on('pointerdown', () => { set(j); this._updateAppearanceButtons(); this._updateSummary(); });
+                btn.on('pointerover', () => { if (get() !== j) btn.setColor('#6a8888'); });
+                btn.on('pointerout',  () => { btn.setColor(get() === j ? '#70cc70' : '#3a4a5a'); });
                 rowBtns.push({ btn, get });
             });
             this._appearanceOptionButtons.push(rowBtns);
         });
 
-        const hairY = optsY + 3 * rowH;
-        this.add.text(x + 4, hairY, 'Hair:', { fontFamily: 'Open Sans', fontSize: '13px', color: '#aaaacc' });
-        this._hairLabel = this.add.text(x + 80, hairY + 6, this.hairStyles[0], {
-            fontFamily: 'Open Sans', fontSize: '13px', color: '#88aaff'
-        }).setOrigin(0, 0.5);
-        const leftH = this.add.text(x + 42, hairY + 6, '<', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#4488ff'
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        // Hair cycler
+        const hairY = ROWS_Y0 + rows.length * ROW_H + 6;
+        this.add.text(LABEL_X, hairY + 5, 'Hair:', {
+            fontFamily: '"Open Sans", sans-serif', fontSize: '12px', color: '#7a8aaa'
+        });
+
+        const leftH = this.add.text(OPT_X, hairY + 5, '‹', {
+            fontFamily: '"Open Sans", sans-serif', fontSize: '18px', color: '#7088aa'
+        }).setInteractive({ useHandCursor: true });
         leftH.on('pointerdown', () => {
             this.selectedHairStyle = (this.selectedHairStyle - 1 + 15) % 15;
             this._hairLabel.setText(this.hairStyles[this.selectedHairStyle]);
             this._updateSummary();
         });
-        const rightH = this.add.text(x + w - 20, hairY + 6, '>', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#4488ff'
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        this._hairLabel = this.add.text(OPT_X + 22, hairY + 7, this.hairStyles[0], {
+            fontFamily: '"Open Sans", sans-serif', fontSize: '12px', color: '#aabbcc'
+        });
+
+        const rightH = this.add.text(OPT_X + 110, hairY + 5, '›', {
+            fontFamily: '"Open Sans", sans-serif', fontSize: '18px', color: '#7088aa'
+        }).setInteractive({ useHandCursor: true });
         rightH.on('pointerdown', () => {
             this.selectedHairStyle = (this.selectedHairStyle + 1) % 15;
             this._hairLabel.setText(this.hairStyles[this.selectedHairStyle]);
@@ -442,203 +634,152 @@ export default class CharacterCreationScene extends Phaser.Scene {
 
     _updateAppearanceButtons() {
         if (!this._appearanceOptionButtons) return;
-        this._appearanceOptionButtons.forEach((rowBtns) => {
-            const selected = rowBtns[0]?.get?.() ?? 0;
-            rowBtns.forEach(({ btn }, j) => {
-                btn.setColor(selected === j ? '#88ff88' : '#666688');
+        this._appearanceOptionButtons.forEach(rowBtns => {
+            rowBtns.forEach(({ btn, get }, j) => {
+                btn.setColor(get() === j ? '#70cc70' : '#3a4a5a');
             });
         });
     }
 
-    _buildBackstoryPanel(x, y, w, h) {
-        this.add.text(x + w / 2, y, 'BACKSTORY', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ccaa88',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
-
-        // Compact list with left/right arrows
-        const listY = y + 20;
-        const listW = w - 40;
-
-        this._backstoryNameText = this.add.text(x + w / 2, listY + 8, this.backstories[0].name, {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#88aaff'
-        }).setOrigin(0.5);
-
-        this._backstoryDescText = this.add.text(x + w / 2, listY + 24, this.backstories[0].description, {
-            fontFamily: 'Open Sans', fontSize: '10px', color: '#8888aa',
-            wordWrap: { width: listW }, align: 'center', lineSpacing: 1
-        }).setOrigin(0.5, 0);
-
-        this._backstoryBonusText = this.add.text(x + w / 2, listY + 56, `Bonus: +1 ${this.backstories[0].bonusSkill}`, {
-            fontFamily: 'Open Sans', fontSize: '11px', color: '#ffcc44'
-        }).setOrigin(0.5);
-
-        // Arrow buttons
-        const leftBtn = this.add.text(x + 5, listY + 8, '<', {
-            fontFamily: 'Open Sans', fontSize: '25px', color: '#4488ff'
-        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
-        leftBtn.on('pointerdown', () => this._navigateBackstory(-1));
-
-        const rightBtn = this.add.text(x + w - 5, listY + 8, '>', {
-            fontFamily: 'Open Sans', fontSize: '25px', color: '#4488ff'
-        }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
-        rightBtn.on('pointerdown', () => this._navigateBackstory(1));
-    }
-
-    _navigateBackstory(dir) {
-        this.selectedBackstoryIndex = (this.selectedBackstoryIndex + dir + this.backstories.length) % this.backstories.length;
-        const bs = this.backstories[this.selectedBackstoryIndex];
-        this._backstoryNameText.setText(bs.name);
-        this._backstoryDescText.setText(bs.description);
-        this._backstoryBonusText.setText(`Bonus: +1 ${bs.bonusSkill}`);
-        this._updateSummary();
-    }
-
-    _buildSummaryPanel(cx, y, w, h) {
-        const x = cx - w / 2;
+    // ─────────────────────────────────────────────────────────────────
+    //  BOTTOM STRIP — Summary + Confirm
+    // ─────────────────────────────────────────────────────────────────
+    _buildSummaryStrip(width) {
+        const SX = 10;
+        const SY = 620;
+        const SW = width - 20;
+        const SH = 90;
 
         const bg = this.add.graphics();
-        bg.fillStyle(0x111133, 0.6);
-        bg.fillRoundedRect(x, y, w, h, 8);
-        bg.lineStyle(1, 0x334466, 0.5);
-        bg.strokeRoundedRect(x, y, w, h, 8);
+        bg.fillStyle(0x0b0b1d, 0.98);
+        bg.fillRect(SX, SY, SW, SH);
+        bg.lineStyle(1, 0x30305a, 0.8);
+        bg.strokeRect(SX, SY, SW, SH);
 
-        this.add.text(cx, y + 10, 'CHARACTER SUMMARY', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#88aaff',
-            stroke: '#000', strokeThickness: 2
-        }).setOrigin(0.5);
+        this.add.text(SX + 16, SY + 10, 'CHARACTER SUMMARY', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '10px', color: '#50604a', letterSpacing: 2
+        });
 
-        this._summaryText = this.add.text(cx, y + 30, '', {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaacc',
-            wordWrap: { width: w - 30 }, align: 'center', lineSpacing: 3
-        }).setOrigin(0.5, 0);
-
-        this._updateSummary();
+        this._summaryText = this.add.text(SX + 16, SY + 26, '', {
+            fontFamily: '"Open Sans", sans-serif',
+            fontSize: '12px', color: '#8a9aaa',
+            wordWrap: { width: SW - 270 }, lineSpacing: 4
+        });
 
         // Confirm button
-        const btnW = 220;
-        const btnH = 36;
-        const btnX = cx - btnW / 2;
-        const btnY = y + h - 50;
+        const BTN_W = 220;
+        const BTN_H = 52;
+        const BTN_X = width - SX - BTN_W - 10;
+        const BTN_Y = SY + (SH - BTN_H) / 2;
 
         const btnBg = this.add.graphics();
-        btnBg.fillStyle(0x224488, 0.8);
-        btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
-        btnBg.lineStyle(2, 0x4488ff, 0.7);
-        btnBg.strokeRoundedRect(btnX, btnY, btnW, btnH, 6);
+        this._drawConfirmBtn(btnBg, BTN_X, BTN_Y, BTN_W, BTN_H, false);
 
-        this.add.text(cx, btnY + btnH / 2, 'BEGIN ADVENTURE', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#88bbff',
-            stroke: '#000', strokeThickness: 2
+        this.add.text(BTN_X + BTN_W / 2, BTN_Y + BTN_H / 2, 'BEGIN ADVENTURE', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '15px', color: '#c0d090',
+            stroke: '#000000', strokeThickness: 2, letterSpacing: 1
         }).setOrigin(0.5);
 
-        const hitZone = this.add.zone(cx, btnY + btnH / 2, btnW, btnH).setInteractive({ useHandCursor: true });
-        hitZone.on('pointerdown', () => this._confirm());
-        hitZone.on('pointerover', () => {
-            btnBg.clear();
-            btnBg.fillStyle(0x3366aa, 0.9);
-            btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
-            btnBg.lineStyle(2, 0x66aaff, 0.9);
-            btnBg.strokeRoundedRect(btnX, btnY, btnW, btnH, 6);
-        });
-        hitZone.on('pointerout', () => {
-            btnBg.clear();
-            btnBg.fillStyle(0x224488, 0.8);
-            btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
-            btnBg.lineStyle(2, 0x4488ff, 0.7);
-            btnBg.strokeRoundedRect(btnX, btnY, btnW, btnH, 6);
-        });
+        const hit = this.add.zone(BTN_X + BTN_W / 2, BTN_Y + BTN_H / 2, BTN_W, BTN_H).setInteractive({ useHandCursor: true });
+        hit.on('pointerdown', () => this._confirm());
+        hit.on('pointerover', () => this._drawConfirmBtn(btnBg, BTN_X, BTN_Y, BTN_W, BTN_H, true));
+        hit.on('pointerout',  () => this._drawConfirmBtn(btnBg, BTN_X, BTN_Y, BTN_W, BTN_H, false));
+
+        this._updateSummary();
     }
 
+    _drawConfirmBtn(gfx, x, y, w, h, hover) {
+        gfx.clear();
+        gfx.fillStyle(hover ? 0x284428 : 0x1a2e1a, 0.97);
+        gfx.fillRoundedRect(x, y, w, h, 6);
+        gfx.lineStyle(hover ? 2 : 1, hover ? 0x88bb55 : 0x486a30, 0.9);
+        gfx.strokeRoundedRect(x, y, w, h, 6);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    //  Logic
+    // ─────────────────────────────────────────────────────────────────
     _updateSummary() {
-        const cls = this.classSystem.getCurrentClass();
-        const ancestry = this.ancestries[this.selectedAncestryIndex];
+        const cls       = this.classSystem.getCurrentClass();
+        const ancestry  = this.ancestries[this.selectedAncestryIndex];
         const backstory = this.backstories[this.selectedBackstoryIndex];
-        const clsName = cls?.name || 'Adventurer';
-        const ancName = ancestry?.name || 'Unknown';
+
+        const clsName      = cls?.name    || 'Adventurer';
+        const ancName      = ancestry?.name || 'Unknown';
         const variantLabel = this.selectedVariant === 'pure' ? 'Pure (Lumen)' : 'Blighted';
+        const hp           = (cls?.startingHP  || 30) + (this.attributes.Resilience * 5);
+        const guard        = cls?.startingGuard || 5;
 
-        const hp = (cls?.startingHP || 30) + (this.attributes.Resilience * 5);
-        const guard = cls?.startingGuard || 5;
+        const bodyLabels  = ['Slim', 'Sturdy'];
+        const skinLabels  = ['Pale', 'Tan', 'Brown', 'Dark'];
+        const hairLabel   = this.hairStyles?.[this.selectedHairStyle] || 'Style 1';
 
-        const bodyLabels = ['Slim', 'Heavy'];
-        const skinLabels = ['Light', 'Tan', 'Brown', 'Dark'];
-        const sigilLabels = ['Forehead', 'Cheek', 'Chest', 'Hand'];
-        const appearanceLine = `Appearance: ${bodyLabels[this.selectedBodyType]}, ${skinLabels[this.selectedSkinTone]}, Hair ${this.selectedHairStyle + 1}, ${sigilLabels[this.selectedSigilPlacement]}`;
+        const attrLine = this.pointsRemaining > 0
+            ? `${this.pointsRemaining} attribute point${this.pointsRemaining > 1 ? 's' : ''} still unspent`
+            : `MIG ${this.attributes.Might}  AGI ${this.attributes.Agility}  RES ${this.attributes.Resilience}  INS ${this.attributes.Insight}  CHA ${this.attributes.Charisma}`;
+
         const lines = [
-            `${ancName} ${variantLabel} ${clsName}  —  ${backstory?.name || ''}`,
-            `HP: ${hp}  |  Guard: ${guard}  |  AP: ${cls?.baseAP || 2}`,
-            `MIG: ${this.attributes.Might}  AGI: ${this.attributes.Agility}  RES: ${this.attributes.Resilience}  INS: ${this.attributes.Insight}  CHA: ${this.attributes.Charisma}`,
-            appearanceLine,
-            this.pointsRemaining > 0 ? `(${this.pointsRemaining} attribute points remaining)` : ''
-        ].filter(Boolean);
+            `${ancName} ${variantLabel} ${clsName}  ·  ${backstory?.name || ''}`,
+            `HP ${hp}  Guard ${guard}  AP ${cls?.baseAP || 2}  ·  ${bodyLabels[this.selectedBodyType]}, ${skinLabels[this.selectedSkinTone]}, ${hairLabel}`,
+            attrLine
+        ];
 
-        if (this._summaryText) {
-            this._summaryText.setText(lines.join('\n'));
-        }
+        if (this._summaryText) this._summaryText.setText(lines.join('\n'));
     }
 
     _confirm() {
         if (this.pointsRemaining > 0) {
-            // Flash warning
-            this._pointsText.setColor('#ff4444');
+            this._pointsText.setColor('#dd4444');
             this.tweens.add({
                 targets: this._pointsText,
                 alpha: { from: 0.3, to: 1 },
-                duration: 200,
-                repeat: 2,
-                onComplete: () => this._pointsText.setAlpha(1)
+                duration: 180, repeat: 3,
+                onComplete: () => { if (this._pointsText?.active) this._pointsText.setAlpha(1); }
             });
             return;
         }
 
-        const ancestry = this.ancestries[this.selectedAncestryIndex];
+        const ancestry  = this.ancestries[this.selectedAncestryIndex];
         const backstory = this.backstories[this.selectedBackstoryIndex];
 
-        // Store selections in registry for GameScene to pick up
-        this.registry.set('selectedAncestry', ancestry?.id || 'human');
-        this.registry.set('allocatedAttributes', { ...this.attributes });
-        this.registry.set('selectedVariant', this.selectedVariant);
-        this.registry.set('selectedBackstory', backstory?.id || 'orphan_of_the_grove');
+        this.registry.set('selectedAncestry',    ancestry?.id || 'human');
+        this.registry.set('allocatedAttributes',  { ...this.attributes });
+        this.registry.set('selectedVariant',      this.selectedVariant);
+        this.registry.set('selectedBackstory',    backstory?.id || 'orphan_of_the_grove');
         this.registry.set('appearance', {
-            bodyType: this.selectedBodyType,
-            skinTone: this.selectedSkinTone,
-            hairStyle: this.selectedHairStyle,
+            bodyType:       this.selectedBodyType,
+            skinTone:       this.selectedSkinTone,
+            hairStyle:      this.selectedHairStyle,
             sigilPlacement: this.selectedSigilPlacement
         });
 
-        // Apply to AttributeSystem
         this.attributeSystem.setAttributes(this.attributes);
-        if (ancestry) {
-            this.attributeSystem.applyAncestryBonuses(ancestry.id);
-        }
-
-        // Apply variant to PlayerClassSystem
+        if (ancestry) this.attributeSystem.applyAncestryBonuses(ancestry.id);
         this.classSystem.setVariant(this.selectedVariant);
 
-        // Transition
         const { width, height } = this.scale;
         const overlay = this.add.graphics().setDepth(100);
-        overlay.fillStyle(0x88aaff, 0);
+        overlay.fillStyle(0x000000, 1);
         overlay.fillRect(0, 0, width, height);
+        overlay.setAlpha(0);
 
         this.tweens.add({
-            targets: overlay,
-            alpha: { from: 0, to: 1 },
-            duration: 600,
+            targets: overlay, alpha: 1, duration: 600,
             onComplete: () => {
                 EventBus.emit('character:created', {
-                    ancestry: ancestry?.id,
-                    attributes: this.attributes,
-                    classId: this.classSystem.getCurrentClass()?.id,
-                    variant: this.selectedVariant,
+                    ancestry:            ancestry?.id,
+                    attributes:          this.attributes,
+                    classId:             this.classSystem.getCurrentClass()?.id,
+                    variant:             this.selectedVariant,
                     appearance: {
-                        bodyType: this.selectedBodyType,
-                        skinTone: this.selectedSkinTone,
-                        hairStyle: this.selectedHairStyle,
+                        bodyType:       this.selectedBodyType,
+                        skinTone:       this.selectedSkinTone,
+                        hairStyle:      this.selectedHairStyle,
                         sigilPlacement: this.selectedSigilPlacement
                     },
-                    backstory: backstory?.id,
+                    backstory:           backstory?.id,
                     backstoryBonusSkill: backstory?.bonusSkill,
                     backstoryBonusQuest: backstory?.bonusQuest
                 });
