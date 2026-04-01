@@ -45,14 +45,36 @@ export class ProceduralAudio {
         this.musicVolume  = 0.5;
         this.sfxVolume    = 0.8;
         this._muted = false;
+        this._audioReady = false;
 
-        this._init();
+        // Do NOT create AudioContext here — Chrome blocks it before a user gesture.
+        // Wire events now; actual audio context is created on first user interaction.
         this._bindEvents();
+        this._waitForUserGesture();
 
         ProceduralAudio.instance = this;
     }
 
-    _init() {
+    /**
+     * Listen for the first user gesture (click / key / touch) then create and
+     * resume the AudioContext. Called once — handler removes itself after firing.
+     */
+    _waitForUserGesture() {
+        const resume = () => {
+            if (this._audioReady) return;
+            this._initAudioContext();
+            // Remove all three listeners after first gesture
+            ['click', 'keydown', 'pointerdown'].forEach(evt =>
+                document.removeEventListener(evt, resume, { capture: true })
+            );
+        };
+        ['click', 'keydown', 'pointerdown'].forEach(evt =>
+            document.addEventListener(evt, resume, { once: false, capture: true })
+        );
+    }
+
+    _initAudioContext() {
+        if (this._audioReady) return;
         try {
             this._ctx = new (window.AudioContext || window.webkitAudioContext)();
             this._masterGain = this._ctx.createGain();
@@ -67,8 +89,10 @@ export class ProceduralAudio {
             this._sfxGain.gain.value = this.sfxVolume;
             this._sfxGain.connect(this._masterGain);
 
-            // Start ambient music after a short delay (needs user gesture first)
-            this._resumeCtx().then(() => this._startAmbient('blue'));
+            this._audioReady = true;
+
+            // Resume if the context started suspended, then begin ambient music
+            this._resumeCtx().then(() => this._startAmbient(this._currentPhase));
         } catch (e) {
             console.warn('[ProceduralAudio] Web Audio API not available:', e.message);
         }
