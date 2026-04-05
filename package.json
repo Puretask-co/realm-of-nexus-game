@@ -16,7 +16,7 @@
     "phaser": "^3.80.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "vite": "^5.4.0"
   },
   "keywords": [
