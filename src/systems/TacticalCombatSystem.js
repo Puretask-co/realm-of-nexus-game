@@ -622,9 +622,9 @@ export class TacticalCombatSystem {
     const posResult = this._getPositionBonus(attacker, defender);
     const criticalHit = attackRoll === 20 || !!posResult.guaranteedCrit;
 
-    // Damage calculation
+    // Damage calculation — roll equipped weapon die (default 1d6 if unarmed)
     let damage = (attacker.stats.might || attacker.stats.atk || 2) +
-      Math.floor(Math.random() * 6) + 1; // d6 base weapon damage
+      TacticalCombatSystem.rollDamageDie(attacker.stats.weaponDie || '1d6');
 
     if (criticalHit) damage *= 2;
 
@@ -1035,6 +1035,25 @@ export class TacticalCombatSystem {
   _saveUndo(type, data) {
     this.undoStack.push({ type, data });
     this.canUndo = true;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Damage Die Utility
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Parse and roll a standard die expression: "1d6", "2d8", "1d4", etc.
+   * Falls back to 1d6 on invalid input.
+   */
+  static rollDamageDie(dieStr) {
+    if (!dieStr) return Math.floor(Math.random() * 6) + 1;
+    const m = String(dieStr).toLowerCase().match(/^(\d+)d(\d+)$/);
+    if (!m) return Math.floor(Math.random() * 6) + 1;
+    const count = parseInt(m[1], 10);
+    const sides = parseInt(m[2], 10);
+    let total = 0;
+    for (let i = 0; i < count; i++) total += Math.floor(Math.random() * sides) + 1;
+    return total;
   }
 
   // ═══════════════════════════════════════════════════════════════

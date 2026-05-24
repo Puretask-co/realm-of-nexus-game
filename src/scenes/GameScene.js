@@ -1324,21 +1324,31 @@ export default class GameScene extends Phaser.Scene {
         const gridHeight = isBoss ? 8 : (defs.length <= 2 ? 6 : 7);
 
         const allyStats = this.player.stats;
+        const equip = this.equipmentSystem;
+        const equippedWeapon = equip?.getEquippedWeapon?.();
+        const equippedArmor  = equip?.getSlot?.('chest') || equip?.getSlot?.('head') || null;
+        const armorDefense   = equip?.getTotalBonuses?.().defense || 0;
+        // Weapon die: use item's damage field (e.g. "1d8"); fall back to 1d4 unarmed
+        const weaponDie = equippedWeapon?.damage || '1d4';
+        // Armor converts defense bonus → extra maxGuard (every 4 points = +1 maxGuard)
+        const armorGuardBonus = Math.floor(armorDefense / 4);
         const allies = [{
             id: 'player',
             name: this.player.name || 'Hero',
             stats: {
                 hp: allyStats.hp ?? 30,
                 maxHp: allyStats.maxHp ?? 30,
-                guard: allyStats.guard ?? 0,
-                maxGuard: allyStats.maxGuard ?? 10,
+                guard: (allyStats.guard ?? 0) + armorGuardBonus,
+                maxGuard: (allyStats.maxGuard ?? 10) + armorGuardBonus,
                 might: allyStats.might ?? allyStats.atk ?? 2,
                 agility: allyStats.agility ?? allyStats.agi ?? 2,
                 resilience: allyStats.resilience ?? 2,
                 insight: allyStats.insight ?? 2,
                 ap: allyStats.agility >= 4 ? 3 : 2,
                 maxAP: allyStats.agility >= 4 ? 3 : 2,
-                speed: 4
+                speed: 4,
+                weaponDie,
+                armorDefense
             },
             // Carry the player's known spells into tactical combat so the
             // Cast action has something to offer.
