@@ -387,12 +387,13 @@ export class UIFramework {
   createSlot(x, y, config = {}) {
     const {
       size = 48,
-      item = null,
+      item: initialItem = null,
       onClick = null,
       onRightClick = null,
       showQuantity = true,
       slotIndex = 0
     } = config;
+    let item = initialItem;
 
     const container = this.scene.add.container(x, y);
     const hasAtlas = this.scene.textures.exists('ui_rpg');
