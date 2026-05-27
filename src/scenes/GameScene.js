@@ -254,6 +254,7 @@ export default class GameScene extends Phaser.Scene {
         this._unsubs = [
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
+            EventBus.on('combat:effectApplied', (data) => this._onCombatEffectApplied(data)),
             EventBus.on('shop:deductGold', (data) => {
                 if (this.player?.stats) {
                     this.player.stats.gold = Math.max(0, (this.player.stats.gold || 0) - (data.amount || 0));
@@ -615,6 +616,52 @@ export default class GameScene extends Phaser.Scene {
                 .setAlpha(Phaser.Math.FloatBetween(0.75, 0.95))
                 .setOrigin(0.5, 0.85);
         }
+
+        // Drop a unique landmark idol per zone (deterministic by id hash so the
+        // same zone always gets the same idol). Skip dungeons.
+        if (!isDungeon) {
+            this._placeZoneLandmark(x, y, w, h, id);
+        }
+    }
+
+    /**
+     * Place a single decorative landmark (tree idol or living gazebo) at a
+     * fixed-ish position in a zone. Deterministic per zone id.
+     */
+    _placeZoneLandmark(x, y, w, h, zoneId) {
+        const LANDMARKS = [
+            'imp_env_tree_idol_deer',
+            'imp_env_tree_idol_dragon',
+            'imp_env_tree_idol_human',
+            'imp_env_tree_idol_wolf',
+            'imp_env_living_gazebo1',
+            'imp_env_living_gazebo2',
+        ];
+        const loaded = LANDMARKS.filter(k => this.textures.exists(k));
+        if (loaded.length === 0) return;
+
+        // Hash the zone id to pick an idol + position offset.
+        let h1 = 0;
+        for (let i = 0; i < zoneId.length; i++) h1 = ((h1 << 5) - h1 + zoneId.charCodeAt(i)) | 0;
+        const idol = loaded[Math.abs(h1) % loaded.length];
+        const px = x + 120 + (Math.abs(h1 >> 3) % Math.max(1, w - 240));
+        const py = y + 140 + (Math.abs(h1 >> 7) % Math.max(1, h - 260));
+
+        const landmark = this.add.image(px, py, idol)
+            .setDepth(2.5)
+            .setScale(0.7)
+            .setAlpha(0.95)
+            .setOrigin(0.5, 0.85);
+
+        // Subtle glow pulse so the player can spot landmarks from afar.
+        this.tweens.add({
+            targets: landmark,
+            scale: 0.74,
+            duration: 2400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
     }
 
     _drawZoneConnections(locations) {
@@ -1453,7 +1500,151 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _onSpellCast(data) {
-        // Could trigger global effects, achievements, etc.
+        const spell = data?.spell || {};
+        const caster = data?.caster;
+        const target = data?.target;
+
+        // Play player cast animation if the caster is the player.
+        if (caster === this.player && this.anims.exists('player-cast')) {
+            const wasPlaying = this.player.anims?.currentAnim?.key;
+            this.player.play('player-cast', true);
+            // Auto-return to idle/walk after the cast plays out.
+            this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                const moving = (this.player.body?.velocity?.x || 0) ** 2 + (this.player.body?.velocity?.y || 0) ** 2 > 16;
+                const next = moving && this.anims.exists('player-walk') ? 'player-walk' : (this.anims.exists('player-idle') ? 'player-idle' : null);
+                if (next) this.player.play(next, true);
+            });
+        }
+
+        // Show a large elemental splash at the spell target / cast direction.
+        let sx = data?.x, sy = data?.y;
+        if ((sx == null || sy == null) && target?.x !== undefined) { sx = target.x; sy = target.y; }
+        if (sx == null || sy == null) {
+            // Fall back to a point in front of the caster toward the cursor.
+            const cam = this.cameras?.main;
+            const ptr = this.input?.activePointer;
+            if (cam && ptr) {
+                const wp = cam.getWorldPoint(ptr.x, ptr.y);
+                sx = wp.x; sy = wp.y;
+            } else {
+                sx = caster?.x ?? this.player?.x ?? 0;
+                sy = caster?.y ?? this.player?.y ?? 0;
+            }
+        }
+        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane');
+    }
+
+    /**
+     * Single large elemental impact PNG that pops, scales up, and fades.
+     * Picks an imported VFX texture by element family. No-op if no candidate
+     * is loaded (the particle burst still fires from ParticleEffects).
+     */
+    _showSpellImpactSplash(x, y, element) {
+        const SPLASH = {
+            fire:     ['imp_vfx_fire2', 'imp_vfx_fire1', 'imp_vfx_explosion1', 'imp_vfx_explosion2'],
+            ice:      ['imp_vfx_ice4', 'imp_vfx_ice5', 'imp_vfx_ice3'],
+            water:    ['imp_vfx_ice3', 'imp_vfx_ice2'],
+            thunder:  ['imp_vfx_thunder3', 'imp_vfx_thunder1', 'imp_vfx_slashthunder'],
+            holy:     ['imp_vfx_holy3', 'imp_vfx_holy4', 'imp_vfx_holy5'],
+            radiant:  ['imp_vfx_holy4', 'imp_vfx_holy5'],
+            light:    ['imp_vfx_holy2', 'imp_vfx_light_balls_tree2'],
+            shadow:   ['imp_vfx_darkness4', 'imp_vfx_darkness3', 'imp_vfx_statedark'],
+            void:     ['imp_vfx_darkness5', 'imp_vfx_statechaos'],
+            nature:   ['imp_vfx_earth3', 'imp_vfx_earth2'],
+            verdant:  ['imp_vfx_earth5', 'imp_vfx_earth3'],
+            arcane:   ['imp_vfx_special2', 'imp_vfx_special1', 'imp_vfx_holy1'],
+            physical: ['imp_vfx_slashspecial2', 'imp_vfx_slashspecial1', 'imp_vfx_slashspecial3'],
+            wind:     ['imp_vfx_sonic', 'imp_vfx_song'],
+            spirit:   ['imp_vfx_howl', 'imp_vfx_sonic'],
+        };
+        const family = String(element || 'arcane').toLowerCase();
+        const candidates = SPLASH[family] || SPLASH.arcane;
+        let key = null;
+        for (const k of candidates) { if (this.textures.exists(k)) { key = k; break; } }
+        if (!key) return;
+
+        const splash = this.add.image(x, y, key)
+            .setDepth(5000)
+            .setAlpha(0.95)
+            .setScale(0.35)
+            .setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({
+            targets: splash,
+            scale: 1.2,
+            alpha: 0,
+            angle: Phaser.Math.Between(-25, 25),
+            duration: 500,
+            ease: 'Sine.easeOut',
+            onComplete: () => { try { splash.destroy(); } catch (_) {} }
+        });
+    }
+
+    /**
+     * Float a status effect icon above a target for the effect's duration.
+     * Listens to `combat:effectApplied` from CombatSystem.
+     */
+    _onCombatEffectApplied(payload) {
+        const effect = payload?.effect;
+        const tName  = payload?.target?.name;
+        if (!effect || !tName) return;
+
+        // Resolve target sprite by matching name. Player first, then enemies.
+        let sprite = null;
+        if (this.player && (this.player.stats?.name === tName || tName === 'Player')) {
+            sprite = this.player;
+        } else if (Array.isArray(this.enemies)) {
+            sprite = this.enemies.find(e => e?._state?.definition?.name === tName) || null;
+        }
+        if (!sprite) return;
+
+        const STATUS_ICON = {
+            dot:            'imp_vfx_statepoison',
+            burn:           'imp_vfx_statepoison',
+            poison:         'imp_vfx_statepoison',
+            bleed:          'imp_vfx_statepoison',
+            sleep:          'imp_vfx_statesleep',
+            silence:        'imp_vfx_statesilent',
+            paralysis:      'imp_vfx_stateparalys',
+            stun:           'imp_vfx_stateparalys',
+            chaos:          'imp_vfx_statechaos',
+            confuse:        'imp_vfx_statechaos',
+            doom:           'imp_vfx_statedeath',
+            death:          'imp_vfx_statedeath',
+            dark:           'imp_vfx_statedark',
+            shadow:         'imp_vfx_statedark',
+            slow:           'imp_vfx_statedown1',
+            weakness:       'imp_vfx_statedown2',
+            curse:          'imp_vfx_curse',
+            heal_over_time: 'imp_vfx_cure2',
+            regen:          'imp_vfx_cure2',
+            buff:           'imp_vfx_stateup1',
+            haste:          'imp_vfx_stateup1',
+            strength:       'imp_vfx_stateup2',
+        };
+        const iconKey = STATUS_ICON[effect.type] || 'imp_vfx_stateup1';
+        if (!this.textures.exists(iconKey)) return;
+
+        const icon = this.add.image(sprite.x, sprite.y - 36, iconKey)
+            .setDepth(7000)
+            .setScale(0.15)
+            .setAlpha(0.95);
+
+        // Follow the sprite while alive; pulse + auto-destroy when duration ends.
+        const durationMs = Math.max(800, (effect.duration || 3) * 1000);
+        const follow = this.time.addEvent({
+            delay: 50,
+            repeat: Math.floor(durationMs / 50),
+            callback: () => { if (sprite?.active && icon?.active) { icon.x = sprite.x; icon.y = sprite.y - 36; } }
+        });
+        this.tweens.add({
+            targets: icon, scale: 0.2, yoyo: true, repeat: -1, duration: 600, ease: 'Sine.easeInOut'
+        });
+        this.time.delayedCall(durationMs, () => {
+            this.tweens.add({
+                targets: icon, alpha: 0, scale: 0.05, duration: 250,
+                onComplete: () => { try { icon.destroy(); follow.remove(); } catch (_) {} }
+            });
+        });
     }
 
     _onEnemyDefeated(data) {
@@ -2238,12 +2429,23 @@ export default class GameScene extends Phaser.Scene {
                             const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
                             this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
                             // Play attack animation if available (reverts to walk anim automatically)
-                            const ATTACK_ANIM = { enemy_treetitan: 'enemy_treetitan-attack', enemy_corrupted_titan: 'enemy_treetitan-attack' };
+                            const ATTACK_ANIM = {
+                                enemy_treetitan: 'enemy_treetitan-attack',
+                                enemy_corrupted_titan: 'enemy_treetitan-attack',
+                                imp_treetitan_treetitanwalk_top_down_10col_5row_256px: 'treetitan-hd-attack',
+                                imp_corruptedtreetitan_walk_top_down_5col_7row_256px: 'treetitan-hd-attack',
+                            };
+                            const WALK_ANIM = {
+                                enemy_treetitan: 'enemy_treetitan-walk',
+                                enemy_corrupted_titan: 'enemy_corrupted_titan-walk',
+                                imp_treetitan_treetitanwalk_top_down_10col_5row_256px: 'treetitan-hd-walk',
+                                imp_corruptedtreetitan_walk_top_down_5col_7row_256px: 'corrupted-titan-hd-walk',
+                            };
                             const atkAnim = ATTACK_ANIM[enemy.texture?.key];
                             if (atkAnim && this.anims.exists(atkAnim) && !enemy.anims.isPlaying) {
                                 enemy.play(atkAnim);
                                 enemy.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                                    const walkAnim = { enemy_treetitan: 'enemy_treetitan-walk', enemy_corrupted_titan: 'enemy_corrupted_titan-walk' }[enemy.texture?.key];
+                                    const walkAnim = WALK_ANIM[enemy.texture?.key];
                                     if (walkAnim && this.anims.exists(walkAnim)) enemy.play(walkAnim);
                                 });
                             }
