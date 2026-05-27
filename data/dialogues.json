@@ -857,7 +857,7 @@
                     "speaker": "elder_thornwick",
                     "text": "In forty years tending this grove, I have never seen decay move so fast. This is not rot, and it is not blight. Something is consuming the Sap from within the root network itself.",
                     "emotion": "grave",
-                    "next": "player_ask",
+                    "next": "task",
                     "choices": [
                         {
                             "text": "What's causing it?",
