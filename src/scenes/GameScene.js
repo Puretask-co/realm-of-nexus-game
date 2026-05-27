@@ -69,6 +69,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this._unsubs = [];
+
         // ---- Core Systems ----
         this.sapCycle = new SapCycleManager(this);
         this.lighting = new AdvancedLightingSystem(this);
@@ -255,7 +257,7 @@ export default class GameScene extends Phaser.Scene {
         this._inventoryCache = {};
 
         // ---- EventBus listeners ----
-        this._unsubs = [
+        this._unsubs.push(...
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
             EventBus.on('shop:deductGold', (data) => {
@@ -312,7 +314,7 @@ export default class GameScene extends Phaser.Scene {
                     });
                 }
             })
-        ];
+        );
 
         // ---- Fire initial zone entry now that listeners are wired ----
         if (this._pendingInitialZone && this.zoneContentManager) {
