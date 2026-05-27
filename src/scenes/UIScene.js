@@ -10,6 +10,7 @@ import { StashPanel } from '../ui/StashPanel.js';
 import { InventoryPanel } from '../ui/InventoryPanel.js';
 import GameInfoPanel from '../ui/GameInfoPanel.js';
 import CompanionPanel from '../ui/CompanionPanel.js';
+import { SkillTreePanel } from '../ui/SkillTreePanel.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -63,6 +64,8 @@ export default class UIScene extends Phaser.Scene {
         // Register all panels with UIFramework so showPanel/hidePanel/hideAllPanels work
         // and ui:menuOpen / ui:menuClose SFX fire correctly via UIFramework.showPanel()
         const ui = UIFramework.getInstance(this);
+        // SkillTreePanel needs the UIFramework instance for createPanel().
+        this.skillTreePanel = new SkillTreePanel(this, ui);
         if (ui) {
             ui.registerPanel('tactical',    this.tacticalCombatPanel);
             ui.registerPanel('shop',        this.shopPanel);
@@ -79,6 +82,7 @@ export default class UIScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
         this.input.keyboard.on('keydown-TAB', () => this.gameInfoPanel.toggle());
         this.input.keyboard.on('keydown-P', () => this.companionPanel.toggle());
+        this.input.keyboard.on('keydown-T', () => this.skillTreePanel?.toggle?.());
         this.input.keyboard.on('keydown-I', () => this._toggleInventory());
         this.input.keyboard.on('keydown-C', () => {
             if (this.scene.isActive('CharacterSheetScene')) {
@@ -733,14 +737,71 @@ export default class UIScene extends Phaser.Scene {
         const y = 16;
 
         this.uiElements.minimapBg = this.add.graphics().setDepth(10000);
-        this.uiElements.minimapBg.fillStyle(0x111122, 0.6);
+        this.uiElements.minimapBg.fillStyle(0x111122, 0.7);
         this.uiElements.minimapBg.fillRect(x, y, size, size);
-        this.uiElements.minimapBg.lineStyle(1, 0x334466, 0.5);
+        this.uiElements.minimapBg.lineStyle(1, 0x334466, 0.6);
         this.uiElements.minimapBg.strokeRect(x, y, size, size);
 
-        this.add.text(x + size / 2, y + size / 2, 'MAP', {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#334466'
-        }).setOrigin(0.5).setDepth(10001);
+        // Dynamic layer: zone tiles + player dot, redrawn each frame.
+        this.uiElements.minimapFg = this.add.graphics().setDepth(10001);
+        this._minimapBounds = { x, y, size };
+
+        // 'M' affordance in the corner so players know full-map exists.
+        this.add.text(x + 4, y + 4, '[M] Map', {
+            fontFamily: 'Open Sans', fontSize: '10px', color: '#88aacc'
+        }).setDepth(10002).setAlpha(0.7);
+    }
+
+    /**
+     * Per-frame minimap redraw — paints each registered zone as a tinted
+     * rect and the player as a yellow dot.
+     */
+    _updateMinimap() {
+        const fg = this.uiElements.minimapFg;
+        const bounds = this._minimapBounds;
+        if (!fg || !bounds) return;
+
+        const gs = this.scene.get('GameScene');
+        const zones = gs?.zones;
+        const player = gs?.player;
+        if (!zones || zones.length === 0 || !player) return;
+
+        // World bounds derived from zone extents.
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const z of zones) {
+            if (!z?.bounds) continue;
+            minX = Math.min(minX, z.bounds.x);
+            minY = Math.min(minY, z.bounds.y);
+            maxX = Math.max(maxX, z.bounds.x + z.bounds.w);
+            maxY = Math.max(maxY, z.bounds.y + z.bounds.h);
+        }
+        const worldW = maxX - minX, worldH = maxY - minY;
+        if (worldW <= 0 || worldH <= 0) return;
+
+        const inset = 6;
+        const pad = bounds.size - inset * 2;
+        const sx = pad / worldW;
+        const sy = pad / worldH;
+
+        fg.clear();
+        // Zone tiles
+        for (const z of zones) {
+            if (!z?.bounds) continue;
+            const rx = bounds.x + inset + (z.bounds.x - minX) * sx;
+            const ry = bounds.y + inset + (z.bounds.y - minY) * sy;
+            const rw = Math.max(1, z.bounds.w * sx);
+            const rh = Math.max(1, z.bounds.h * sy);
+            const isCurrent = z.id === gs.currentLocationId;
+            fg.fillStyle(isCurrent ? 0x4488cc : 0x2a3a55, isCurrent ? 0.9 : 0.55);
+            fg.fillRect(rx, ry, rw, rh);
+        }
+        // Player dot
+        const px = bounds.x + inset + (player.x - minX) * sx;
+        const py = bounds.y + inset + (player.y - minY) * sy;
+        fg.fillStyle(0xffdd44, 1);
+        fg.fillCircle(px, py, 3);
+        fg.lineStyle(1, 0x000000, 0.7);
+        fg.strokeCircle(px, py, 3);
     }
 
     // ----------------------------------------------------------------
@@ -758,6 +819,7 @@ export default class UIScene extends Phaser.Scene {
             const fps = Math.round(this.game.loop.actualFps);
             this.uiElements.fpsText.setText(`${fps} FPS`);
         }
+        this._updateMinimap();
     }
 
     // ----------------------------------------------------------------

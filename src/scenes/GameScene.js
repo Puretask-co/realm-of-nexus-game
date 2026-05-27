@@ -1182,9 +1182,9 @@ export default class GameScene extends Phaser.Scene {
             const npc = this.npcs.find(n => n.name === data.npc);
             if (!npc) return;
 
-            // Wire shop:open for merchant/shop NPCs
+            // Wire shop-open for merchant/shop NPCs (matches ShopPanel listener)
             if (npc.role === 'merchant' || npc.role === 'shop' || npc.isShopkeeper) {
-                EventBus.emit('shop:open', {
+                EventBus.emit('shop-open', {
                     shopId: npc.id || npc.name.toLowerCase().replace(/\s+/g, '_'),
                     shopName: npc.name + "'s Wares",
                     inventory: npc.config.shopInventory || this._getDefaultShopInventory(
