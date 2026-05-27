@@ -420,6 +420,10 @@ export default class GameScene extends Phaser.Scene {
             const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
             this.zones.push(zone);
 
+            // ── Per-zone atmospheric tint overlay (depth 0.2 so it sits
+            // above the base tilemap but below props and gameplay) ──────
+            this._applyZoneTheme(zoneX, zoneY, ZONE_W, ZONE_H, loc);
+
             // ── Tilemap / Graphics rendering ──────────────────────────
             const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
             this._zoneTilemaps.push(...result.tilemaps);
@@ -464,6 +468,7 @@ export default class GameScene extends Phaser.Scene {
                             this.currentLocationId = loc.id;
                             this._emitLocationDiscovery(loc.id);
                             EventBus.emit('zone-entered', { locationId: loc.id, name: loc.name });
+                            this._playZoneEnterTransition(loc);
                             console.log(`[Zone] Entered: ${loc.name}`);
                         }
                     },
@@ -543,6 +548,192 @@ export default class GameScene extends Phaser.Scene {
                 gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
             }
         }
+    }
+
+    /**
+     * Spawn a physical loot pickup at (x, y). Player overlap collects it.
+     * Uses an imported VFX sparkle as the visual; gold gets a different tint.
+     */
+    _spawnLootPickup(x, y, itemId, itemData) {
+        // Lazy-create the pickup group on first use.
+        if (!this._lootGroup) {
+            this._lootGroup = this.physics.add.group();
+            // Player-pickup overlap.
+            this.physics.add.overlap(this.player, this._lootGroup, (_player, pickup) => {
+                this._collectLootPickup(pickup);
+            });
+        }
+
+        const isGold = itemId === '__gold__';
+        const spriteKey = isGold
+            ? (this.textures.exists('imp_vfx_special1') ? 'imp_vfx_special1' : null)
+            : (this.textures.exists('imp_vfx_holy1') ? 'imp_vfx_holy1' : null);
+
+        let pickup;
+        if (spriteKey) {
+            pickup = this._lootGroup.create(x, y, spriteKey);
+            pickup.setDisplaySize(28, 28).setDepth(4.5).setAlpha(0.95);
+            pickup.setTint(isGold ? 0xffdd44 : 0x88ddff);
+        } else {
+            // Fallback: glowing circle graphic.
+            const gfx = this.add.graphics().setDepth(4.5);
+            gfx.fillStyle(isGold ? 0xffdd44 : 0x88ddff, 0.95);
+            gfx.fillCircle(0, 0, 8);
+            pickup = this.physics.add.image(x, y).setDepth(4.5);
+            pickup.setDisplaySize(16, 16);
+            // attach gfx to pickup for cleanup
+            pickup._gfx = gfx;
+            gfx.x = x; gfx.y = y;
+            this._lootGroup.add(pickup);
+        }
+        pickup.body?.setSize?.(28, 28);
+        pickup._itemId = itemId;
+        pickup._itemData = itemData;
+
+        // Hover bob + slow rotation for visibility.
+        this.tweens.add({
+            targets: pickup,
+            y: y - 6,
+            duration: 700,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        if (pickup.setAngle) {
+            this.tweens.add({
+                targets: pickup,
+                angle: 360,
+                duration: 2400,
+                repeat: -1,
+                ease: 'Linear'
+            });
+        }
+
+        // Tiny floating label so the player can see what's there.
+        const labelText = isGold ? (itemData?.name || 'Gold') : (itemData?.name || itemId);
+        const label = this.add.text(x, y - 22, labelText, {
+            fontFamily: 'Open Sans', fontSize: '10px',
+            color: isGold ? '#ffdd44' : '#aaddff',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(4.6);
+        pickup._label = label;
+        // Keep label following the pickup as it bobs.
+        const follow = this.time.addEvent({
+            delay: 30,
+            loop: true,
+            callback: () => {
+                if (pickup?.active && label?.active) { label.x = pickup.x; label.y = pickup.y - 22; }
+                else { follow.remove(); }
+            }
+        });
+
+        // Auto-despawn after 30s if not collected.
+        this.time.delayedCall(30000, () => {
+            if (pickup?.active) this._destroyLootPickup(pickup);
+        });
+    }
+
+    _collectLootPickup(pickup) {
+        if (!pickup?.active) return;
+        const isGold = pickup._itemId === '__gold__';
+        if (isGold) {
+            const amt = pickup._itemData?._goldAmount || 0;
+            this.player.stats.gold = (this.player.stats.gold || 0) + amt;
+            this.damageNumbers?.show?.(pickup.x, pickup.y - 12, `+${amt}g`, 0xffdd44);
+            EventBus.emit('player-stats-updated', this.player.stats);
+        } else {
+            EventBus.emit('inventory:addItem', {
+                itemId: pickup._itemId,
+                quantity: 1,
+                itemData: pickup._itemData || { id: pickup._itemId, name: pickup._itemId, stackable: true }
+            });
+            this.damageNumbers?.show?.(pickup.x, pickup.y - 12, `+${pickup._itemData?.name || pickup._itemId}`, 0xaaddff);
+        }
+        EventBus.emit('item:pickup', { itemId: pickup._itemId });
+        this._destroyLootPickup(pickup);
+    }
+
+    _destroyLootPickup(pickup) {
+        try { pickup._label?.destroy(); } catch (_) {}
+        try { pickup._gfx?.destroy(); } catch (_) {}
+        try { pickup.destroy(); } catch (_) {}
+    }
+
+    /**
+     * Quick fade + zone-name banner whenever the player crosses into a new
+     * zone. Gives the "screen change" feel without a full scene swap.
+     */
+    _playZoneEnterTransition(loc) {
+        const cam = this.cameras.main;
+        // Brief flash that wipes from the zone tint
+        const tintHex = (loc.environment?.ambientColor || '0x223344').replace('0x', '');
+        const tint = parseInt(tintHex, 16) || 0x223344;
+        cam.flash(280, (tint >> 16) & 0xff, (tint >> 8) & 0xff, tint & 0xff, false);
+
+        // Centered banner that fades out
+        const W = cam.width, H = cam.height;
+        const banner = this.add.container(W / 2, H * 0.32).setDepth(11000).setScrollFactor(0);
+        const bg = this.add.graphics();
+        bg.fillStyle(0x000000, 0.55); bg.fillRect(-280, -42, 560, 84);
+        bg.lineStyle(2, tint, 0.9); bg.strokeRect(-280, -42, 560, 84);
+        const title = this.add.text(0, -10, loc.name, {
+            fontFamily: 'Cinzel, Open Sans', fontSize: '30px',
+            color: '#ffffff', stroke: '#000', strokeThickness: 3
+        }).setOrigin(0.5);
+        const sub = this.add.text(0, 22, `Lv. ${loc.level || 1} · ${loc.type || 'wilds'}`, {
+            fontFamily: 'Open Sans', fontSize: '15px',
+            color: '#ccddee', stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5);
+        banner.add([bg, title, sub]);
+        banner.setAlpha(0);
+        this.tweens.add({
+            targets: banner, alpha: 1, duration: 200, ease: 'Sine.easeOut',
+            onComplete: () => {
+                this.tweens.add({
+                    targets: banner, alpha: 0, delay: 1400, duration: 500, ease: 'Sine.easeIn',
+                    onComplete: () => { try { banner.destroy(); } catch (_) {} }
+                });
+            }
+        });
+    }
+
+    /**
+     * Paint a per-zone color overlay so each area reads as visually distinct
+     * — fog blue for forests, ember orange for cinder/blight, deep purple
+     * for void/cave, sea green for tideflow, etc. Picks a tint from the
+     * zone id/tags; falls back to environment.ambientColor or neutral.
+     */
+    _applyZoneTheme(x, y, w, h, location) {
+        const id   = String(location.id || '').toLowerCase();
+        const tags = (location.tags || []).map(t => String(t).toLowerCase());
+        const has  = (re) => re.test(id) || tags.some(t => re.test(t));
+
+        let tint = 0x1a2233;  // default cool slate
+        let alpha = 0.18;
+
+        if (has(/canopy|spindle|verdant|grove|wood|forest/))           { tint = 0x144a22; alpha = 0.22; }
+        else if (has(/cave|catacomb|hollow|crypt|dungeon|tomb/))       { tint = 0x1a0a22; alpha = 0.40; }
+        else if (has(/mycelium|fungal|spore/))                          { tint = 0x351a44; alpha = 0.32; }
+        else if (has(/cinder|burn|ash|scorched|ember|fire/))            { tint = 0x4a1a08; alpha = 0.30; }
+        else if (has(/tideflow|water|sea|reef|shore|beach/))            { tint = 0x0a3a55; alpha = 0.28; }
+        else if (has(/snow|frost|ice|tundra|winter/))                   { tint = 0xb0d8ff; alpha = 0.18; }
+        else if (has(/desert|sand|wastes|drought/))                     { tint = 0xb88a44; alpha = 0.22; }
+        else if (has(/crystal|lumin|radiant|holy|shrine|chapel/))       { tint = 0xffeeaa; alpha = 0.16; }
+        else if (has(/veil|rift|void|shadow|dark|blight|corrupted/))    { tint = 0x2a0a3a; alpha = 0.40; }
+        else if (has(/town|village|haven|hub|home|nexus|sanctum/))      { tint = 0xa8b8cc; alpha = 0.12; }
+        else if (location.environment?.ambientColor) {
+            tint = parseInt(String(location.environment.ambientColor).replace('0x', ''), 16) || tint;
+            alpha = 0.20;
+        }
+
+        const overlay = this.add.graphics().setDepth(0.2);
+        overlay.fillStyle(tint, alpha);
+        overlay.fillRect(x, y, w, h);
+
+        // Subtle border framing so adjacent zones read as separate "rooms".
+        const border = this.add.graphics().setDepth(0.3);
+        border.lineStyle(3, tint, 0.55);
+        border.strokeRect(x + 2, y + 2, w - 4, h - 4);
     }
 
     /**
@@ -1158,6 +1349,7 @@ export default class GameScene extends Phaser.Scene {
         ];
 
         for (const def of npcDefs) {
+            const visual = this._pickNpcVisual(def);
             const npc = new NPC(this, def.x, def.y, {
                 name: def.name,
                 role: def.role,
@@ -1166,13 +1358,61 @@ export default class GameScene extends Phaser.Scene {
                 dialogueId: def.dialogueId,
                 shopInventory: def.shopInventory,
                 keeperId: def.keeperId,
-                stationId: def.stationId
+                stationId: def.stationId,
+                spriteKey: visual.spriteKey,
+                idleAnim: visual.idleAnim,
+                tint: visual.tint,
             });
             this.npcs.push(npc);
         }
 
         // Override NPC E-key to use DialogueSystem for richer dialogues
         this._wireNPCDialogues();
+    }
+
+    /**
+     * Pick a visual variant for an NPC so the world has visible diversity
+     * instead of every villager looking identical. Uses role + name hash to
+     * deterministically choose a sprite key + tint.
+     */
+    _pickNpcVisual(def) {
+        const name = (def.name || '').toLowerCase();
+        const role = (def.role || 'lore').toLowerCase();
+
+        // Hash name → 0..2^32 for stable choice per NPC.
+        let h = 0;
+        for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+        const hash = Math.abs(h);
+
+        // Distinctive sprites for specific archetypes.
+        if (/druid|archdruid|veyla|grove|beastcaller/.test(name)) {
+            return {
+                spriteKey: 'imp_druid_run_top_down_8col_3row_256px',
+                idleAnim: 'npc-druid-run',
+                tint: null
+            };
+        }
+        if (/elder|seer|thalos|althea|sage|oracle/.test(name)) {
+            // Tinted hue marks elders.
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xddccaa };
+        }
+        if (/commander|warden|guard|briara|crimson|brawler/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xff8866 };
+        }
+        if (/merchant|trader|wares|shopkeeper|smith|forger/.test(name) || role === 'shop' || role === 'merchant') {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xffd966 };
+        }
+        if (/veil|keeper|hidden|whisper/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xaa88ff };
+        }
+        if (/companion|vaeril|sylor|aeliana|mycon|kaelen/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0x88ffcc };
+        }
+
+        // Default: hue-shift the legacy 'npc' texture by hash so a row of
+        // villagers reads as different people.
+        const palette = [0xffffff, 0xcceedd, 0xeeddcc, 0xddcceeff & 0xffffff, 0xccddff, 0xeeccdd, 0xddeecc];
+        return { spriteKey: 'npc', idleAnim: null, tint: palette[hash % palette.length] };
     }
 
     _wireNPCDialogues() {
@@ -1669,19 +1909,31 @@ export default class GameScene extends Phaser.Scene {
             const goldDrop = Math.max(0, Math.round(rawGold * (sapMods.lootRateMultiplier ?? 1)));
             this.player.stats.gold += goldDrop;
 
-            // Drop items to inventory (phase affects drop rate)
+            // Drop items as physical pickups the player walks over.
             const items = lootTable.items || [];
             for (const drop of items) {
                 const chance = (drop.dropChance ?? 0.5) * (sapMods.lootRateMultiplier ?? 1);
                 if (Math.random() < Math.min(1, chance)) {
                     const itemData = dataManager.getItem(drop.itemId);
-                    EventBus.emit('inventory:addItem', {
-                        itemId: drop.itemId,
-                        quantity: 1,
-                        itemData: itemData || { id: drop.itemId, name: drop.itemId, stackable: true }
-                    });
-                    console.log(`[Loot] Dropped: ${drop.itemId}`);
+                    this._spawnLootPickup(
+                        enemy.x + Phaser.Math.Between(-18, 18),
+                        enemy.y + Phaser.Math.Between(-12, 12),
+                        drop.itemId,
+                        itemData
+                    );
+                    console.log(`[Loot] Dropped pickup: ${drop.itemId}`);
                 }
+            }
+            // Also drop a gold pickup if there was any.
+            if (goldDrop > 0) {
+                this._spawnLootPickup(
+                    enemy.x + Phaser.Math.Between(-10, 10),
+                    enemy.y + Phaser.Math.Between(-6, 6),
+                    '__gold__',
+                    { name: `${goldDrop} Gold`, stackable: true, _goldAmount: goldDrop }
+                );
+                // The gold was already added to player.stats.gold above; subtract so the pickup awards it on collect.
+                this.player.stats.gold = Math.max(0, this.player.stats.gold - goldDrop);
             }
         }
 
@@ -2609,6 +2861,20 @@ export default class GameScene extends Phaser.Scene {
         if (this.cursors.down.isDown  || this.wasd.down.isDown)  iy =  1;
 
         this.physicsSystem.applyPlayerMovement(this.player, ix, iy, this.player.stats.speed);
+
+        // Animation + facing — switch walk/idle and flip on horizontal input.
+        // Skip if a cast animation is currently playing (it'll auto-return).
+        const current = this.player.anims?.currentAnim?.key;
+        const isCasting = current === 'player-cast' && this.player.anims?.isPlaying;
+        if (!isCasting) {
+            const moving = ix !== 0 || iy !== 0;
+            const target = moving ? 'player-walk' : 'player-idle';
+            if (this.anims.exists(target) && current !== target) {
+                this.player.play(target, true);
+            }
+            if (ix < 0) this.player.setFlipX(true);
+            else if (ix > 0) this.player.setFlipX(false);
+        }
     }
 
     _regenSap(delta) {

@@ -19,11 +19,29 @@ export default class NPC {
         this.scene = scene;
         this.config = config || {};
 
-        // Sprite
-        this.sprite = scene.physics.add.sprite(x, y, 'npc');
+        // Sprite — use config.spriteKey if loaded, else fall back to 'npc'.
+        // HD imported 256px sheets are auto-scaled to a 56px display size;
+        // the legacy npc texture stays at its native render size.
+        const spriteKey = config.spriteKey && scene.textures.exists(config.spriteKey)
+            ? config.spriteKey
+            : 'npc';
+        this.sprite = scene.physics.add.sprite(x, y, spriteKey);
         this.sprite.setDepth(4);
         this.sprite.setImmovable(true);
         this.sprite.owner = this;
+
+        if (config.spriteKey && scene.textures.exists(config.spriteKey)) {
+            // HD source sheet — shrink to display size matching other NPCs
+            this.sprite.setDisplaySize(64, 64);
+            this.sprite.body?.setSize?.(40, 40);
+            this.sprite.body?.setOffset?.(108, 140);
+            if (config.idleAnim && scene.anims.exists(config.idleAnim)) {
+                this.sprite.play(config.idleAnim);
+            }
+        }
+        if (config.tint !== undefined && config.tint !== null) {
+            this.sprite.setTint(config.tint);
+        }
 
         // NPC data
         this.hidden = config.hidden === true;
