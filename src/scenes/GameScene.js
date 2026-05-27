@@ -69,6 +69,22 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
+        try {
+            this._create();
+        } catch (err) {
+            console.error('[GameScene] FATAL create() error:', err);
+            const { width, height } = this.scale;
+            this.add.rectangle(width / 2, height / 2, width, height, 0x110022).setScrollFactor(0);
+            this.add.text(width / 2, height / 2 - 40, 'GameScene failed to load', {
+                fontSize: '24px', color: '#ff4444', fontFamily: 'monospace'
+            }).setOrigin(0.5).setScrollFactor(0);
+            this.add.text(width / 2, height / 2 + 10, err.message, {
+                fontSize: '14px', color: '#ffaaaa', fontFamily: 'monospace', wordWrap: { width: width - 40 }
+            }).setOrigin(0.5, 0).setScrollFactor(0);
+        }
+    }
+
+    _create() {
         this._unsubs = [];
 
         // ---- Core Systems ----
@@ -389,7 +405,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         console.log('[GameScene] Created — all content wired');
-    }
+    } // end _create
 
     // ----------------------------------------------------------------
     // World building — distinct zones per location
@@ -2197,6 +2213,7 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     update(time, delta) {
+        if (!this.profiler) return;
         this._frameCount++;
         this.profiler.begin('total');
 
