@@ -1,6 +1,7 @@
 import dataManager from '../systems/DataManager.js';
 import EventBus from '../core/EventBus.js';
 import MainMenuScene from './MainMenuScene.js';
+import { ImportedAssets } from './ImportedAssets.js';
 
 /**
  * BootScene — First scene loaded.
@@ -18,6 +19,9 @@ export default class BootScene extends Phaser.Scene {
 
     preload() {
         this._createLoadingBar();
+
+        // ── Bulk imported assets (auto-generated registry) ────────────
+        ImportedAssets.preload(this);
 
         // ── Player ─────────────────────────────────────────────────────
         // Green mage spritesheet: 6 cols × 18 rows, 256px per frame
