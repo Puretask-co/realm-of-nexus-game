@@ -504,6 +504,9 @@ export default class GameScene extends Phaser.Scene {
         const forestTrees = ['tree1', 'tree2', 'tree3', 'tree_moss1', 'tree_moss2', 'tree_flower1', 'tree_flower2', 'tree_autumn'];
         const dungeon = location.type === 'dungeon' || location.type === 'boss';
 
+        // Sprinkle imported environment props on top of the base pass.
+        this._scatterImportedDecor(x, y, w, h, location);
+
         for (let i = 0; i < count; i++) {
             const dx = x + Phaser.Math.Between(50, w - 50);
             const dy = y + Phaser.Math.Between(70, h - 50);
@@ -538,6 +541,79 @@ export default class GameScene extends Phaser.Scene {
                 const size = Phaser.Math.Between(4, 14);
                 gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
             }
+        }
+    }
+
+    /**
+     * Scatter imported environment sprites across a zone, themed by zone tags.
+     * Picks key prefixes from public/assets/imported/environment/ — bushes,
+     * trees, stones, ruins, mushrooms, ferns, corals, shells, statues,
+     * buildings, decor — and places them at low depth so they sit behind
+     * gameplay entities. Idempotent: no-op if the imported textures aren't
+     * loaded.
+     */
+    _scatterImportedDecor(x, y, w, h, location) {
+        const env = (location.environment || {});
+        const tags = (location.tags || []).map(t => String(t).toLowerCase());
+        const id = String(location.id || '').toLowerCase();
+
+        // Build a candidate prefix list from zone hints.
+        const prefixes = new Set();
+        const has = (re) => re.test(id) || tags.some(t => re.test(t));
+
+        // Always-on baseline so every zone gets some variety
+        ['imp_env_bush_', 'imp_env_stones_', 'imp_env_greenery_', 'imp_env_decor_'].forEach(p => prefixes.add(p));
+
+        if (has(/cave|catacomb|tomb|dungeon|hollow|crypt/)) {
+            ['imp_env_brown_ruins', 'imp_env_brown_gray_ruins', 'imp_env_statue', 'imp_env_dragon_bones'].forEach(p => prefixes.add(p));
+        }
+        if (has(/forest|canopy|spindle|wood|grove|verdant|root/)) {
+            ['imp_env_tree_', 'imp_env_fern', 'imp_env_chanterelles', 'imp_env_beige_green_mushroom', 'imp_env_white_red_mushroom'].forEach(p => prefixes.add(p));
+        }
+        if (has(/ruin|ancient|temple|altar|shrine/)) {
+            ['imp_env_white_ruins', 'imp_env_yellow_ruins', 'imp_env_sand_ruins', 'imp_env_statue', 'imp_env_tree_idol'].forEach(p => prefixes.add(p));
+        }
+        if (has(/water|tide|sea|reef|coral|shore|beach/)) {
+            ['imp_env_blue_coral', 'imp_env_violet_pink_coral', 'imp_env_starfish', 'imp_env_brown_white_shell', 'imp_env_sea_urchin', 'imp_env_water_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/snow|frost|ice|winter|tundra/)) {
+            ['imp_env_snow_bush', 'imp_env_snow_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/desert|sand|wastes|drought/)) {
+            ['imp_env_cactus', 'imp_env_sand_ruins', 'imp_env_yellow_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/burn|cinder|ash|scorched|blight|corrupted/)) {
+            ['imp_env_burned_tree', 'imp_env_broken_tree', 'imp_env_brown_gray_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/town|village|haven|hub|home|nexus/)) {
+            ['imp_env_building_', 'imp_env_road_', 'imp_env_land_', 'imp_env_decor_'].forEach(p => prefixes.add(p));
+        }
+
+        // Collect all loaded texture keys matching any prefix.
+        const allKeys = this.textures.getTextureKeys();
+        const candidates = [];
+        for (const key of allKeys) {
+            for (const p of prefixes) {
+                if (key.startsWith(p)) { candidates.push(key); break; }
+            }
+        }
+        if (candidates.length === 0) return;
+
+        // Scatter density: more for outdoor zones, fewer for dungeons.
+        const isDungeon = location.type === 'dungeon' || location.type === 'boss';
+        const decorCount = isDungeon ? 14 : 28;
+
+        for (let i = 0; i < decorCount; i++) {
+            const key = candidates[Phaser.Math.Between(0, candidates.length - 1)];
+            const dx = x + Phaser.Math.Between(40, w - 40);
+            const dy = y + Phaser.Math.Between(60, h - 40);
+            const scale = Phaser.Math.FloatBetween(0.35, 0.85);
+            // Depth 1.5 sits between background (0) and gameplay (4+).
+            this.add.image(dx, dy, key)
+                .setDepth(1.5)
+                .setScale(scale)
+                .setAlpha(Phaser.Math.FloatBetween(0.75, 0.95))
+                .setOrigin(0.5, 0.85);
         }
     }
 
@@ -868,13 +944,22 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _spawnSingleEnemy(def, x, y, zoneId) {
-        // Map enemy types to animated spritesheet keys
+        // Map enemy types to animated spritesheet keys. HD imported variants
+        // are preferred when their textures exist; otherwise fall back to
+        // the original lower-res Kenney-derived sheets.
+        const HD_TITAN_WALK  = 'imp_treetitan_treetitanwalk_top_down_10col_5row_256px';
+        const HD_CORRUPTED   = 'imp_corruptedtreetitan_walk_top_down_5col_7row_256px';
+        const HD_SENTINEL    = 'imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px';
+        const useHdTitan     = this.textures.exists(HD_TITAN_WALK);
+        const useHdCorrupted = this.textures.exists(HD_CORRUPTED);
+        const useHdSentinel  = this.textures.exists(HD_SENTINEL);
+
         const ENEMY_SPRITE_MAP = {
-            forest_guardian:       'enemy_treetitan',
-            verdant_guardian:      'enemy_treetitan',
-            tree_titan:            'enemy_treetitan',
-            corrupted_guardian:    'enemy_corrupted_titan',
-            shadow_stalker:        'enemy_warrior',
+            forest_guardian:       useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            verdant_guardian:      useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            tree_titan:            useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            corrupted_guardian:    useHdCorrupted ? HD_CORRUPTED : 'enemy_corrupted_titan',
+            shadow_stalker:        useHdSentinel ? HD_SENTINEL : 'enemy_warrior',
             crimson_warden:        'enemy_warrior',
             mushroom_berserker:    'enemy_mushroom',
             spore_caller:          'enemy_mushroom',
@@ -885,6 +970,9 @@ export default class GameScene extends Phaser.Scene {
             'enemy_corrupted_titan':'enemy_corrupted_titan-walk',
             'enemy_mushroom':       'enemy_mushroom-walk',
             'enemy_warrior':        'enemy_warrior-idle',
+            [HD_TITAN_WALK]:        'treetitan-hd-walk',
+            [HD_CORRUPTED]:         'corrupted-titan-hd-walk',
+            [HD_SENTINEL]:          'corrupted-sentinel-run',
         };
 
         const spriteKey = ENEMY_SPRITE_MAP[def.id] ||

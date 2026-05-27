@@ -672,6 +672,48 @@ export default class BootScene extends Phaser.Scene {
             a.create({ key: 'player-sword', frames: a.generateFrameNumbers('player_swordattack', { start: 0, end: 62 }), frameRate: 14, repeat: 0 });
         }
 
+        // ── HD Tree Titan from imported sheets (opt-in upgrade) ─────────
+        // Walk: 10 cols × 5 rows = 50 frames; Attack: 14 cols × 5 rows = 70;
+        // Damage/Die: 5 cols × 6 rows = 30 frames (split first half = hurt,
+        // second half = death).
+        const hdWalkKey = 'imp_treetitan_treetitanwalk_top_down_10col_5row_256px';
+        if (this.textures.exists(hdWalkKey) && !a.exists('treetitan-hd-walk')) {
+            a.create({ key: 'treetitan-hd-walk', frames: a.generateFrameNumbers(hdWalkKey, { start: 0, end: 49 }), frameRate: 14, repeat: -1 });
+        }
+        const hdAttackKey = 'imp_treetitan_treetitanswordattack_top_down_14col_5row_256px';
+        if (this.textures.exists(hdAttackKey) && !a.exists('treetitan-hd-attack')) {
+            a.create({ key: 'treetitan-hd-attack', frames: a.generateFrameNumbers(hdAttackKey, { start: 0, end: 69 }), frameRate: 18, repeat: 0 });
+        }
+        const hdHurtKey = 'imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px';
+        if (this.textures.exists(hdHurtKey) && !a.exists('treetitan-hd-hurt')) {
+            a.create({ key: 'treetitan-hd-hurt',  frames: a.generateFrameNumbers(hdHurtKey, { start: 0,  end: 14 }), frameRate: 12, repeat: 0 });
+            a.create({ key: 'treetitan-hd-death', frames: a.generateFrameNumbers(hdHurtKey, { start: 15, end: 29 }), frameRate: 10, repeat: 0 });
+        }
+
+        // ── HD Corrupted Tree Titan (5 cols × 7 rows = 35 frames) ──────
+        const corruptedHdKey = 'imp_corruptedtreetitan_walk_top_down_5col_7row_256px';
+        if (this.textures.exists(corruptedHdKey) && !a.exists('corrupted-titan-hd-walk')) {
+            a.create({ key: 'corrupted-titan-hd-walk', frames: a.generateFrameNumbers(corruptedHdKey, { start: 0, end: 34 }), frameRate: 12, repeat: -1 });
+        }
+
+        // ── Corrupted Tree Sentinel (smaller corrupted enemy, 7×3) ─────
+        const sentinelKey = 'imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px';
+        if (this.textures.exists(sentinelKey) && !a.exists('corrupted-sentinel-run')) {
+            a.create({ key: 'corrupted-sentinel-run', frames: a.generateFrameNumbers(sentinelKey, { start: 0, end: 20 }), frameRate: 14, repeat: -1 });
+        }
+
+        // ── Druid NPC walk (8×3 = 24 frames) ────────────────────────────
+        const druidKey = 'imp_druid_run_top_down_8col_3row_256px';
+        if (this.textures.exists(druidKey) && !a.exists('npc-druid-run')) {
+            a.create({ key: 'npc-druid-run', frames: a.generateFrameNumbers(druidKey, { start: 0, end: 23 }), frameRate: 12, repeat: -1 });
+        }
+
+        // ── Imported decorative tree idle (8×3 = 24 frames) ─────────────
+        const idleTreeKey = 'imp_tree_idle_top_down_8col_3row_256px';
+        if (this.textures.exists(idleTreeKey) && !a.exists('decor-tree-idle')) {
+            a.create({ key: 'decor-tree-idle', frames: a.generateFrameNumbers(idleTreeKey, { start: 0, end: 23 }), frameRate: 5, repeat: -1 });
+        }
+
         console.log('[BootScene] Animations registered');
     }
 
