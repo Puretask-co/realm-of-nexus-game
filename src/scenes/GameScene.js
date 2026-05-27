@@ -1843,7 +1843,13 @@ export default class GameScene extends Phaser.Scene {
             };
             const spawn = ZONE_SPAWNS[locationId] || { x: 640, y: 360 };
             this.player.setPosition(spawn.x, spawn.y);
-            if (this.cameraSystem?.camera) this.cameraSystem.camera.centerOn(spawn.x, spawn.y);
+            const cam = this.cameras?.main;
+            if (cam && cam._bounds) {
+                cam.centerOn(spawn.x, spawn.y);
+            } else if (cam) {
+                cam.scrollX = spawn.x - cam.width / 2;
+                cam.scrollY = spawn.y - cam.height / 2;
+            }
         }
         // Fog of War: reveal the travel destination immediately
         const destZone = this.zones?.find(z => z.id === locationId);

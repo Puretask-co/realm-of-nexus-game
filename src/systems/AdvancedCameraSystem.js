@@ -269,6 +269,7 @@ export default class AdvancedCameraSystem {
 
     update(delta) {
         if (this.cinematicActive) return; // tweens handle it
+        if (!this.camera || !this.camera._bounds) return;
 
         // Follow controller
         if (this.followTarget) this._updateFollow(delta);
