@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "godot": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "C:/Users/onlyw/Documents/godot-mcp/build/index.js"
+      ],
+      "env": {
+        "GODOT_PATH": "C:\\Users\\onlyw\\Desktop\\godot\\Godot_v4.6.1-stable_win64.exe"
+      }
+    }
+  }
+}

@@ -1,0 +1,1012 @@
+{
+    "version": "2.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "multiclassing": {
+        "unlockLevel": 5,
+        "description": "At Level 5, a character may select one ability from another class's talent tree. This represents cross-training within the Verdance's interconnected magical traditions.",
+        "maxCrossClassAbilities": 1,
+        "restrictions": ["Cannot select another class's Ultimate ability", "Must meet the ability's Insight or Might prerequisite if any"]
+    },
+    "tierProgression": {
+        "tier1": { "unlocksAt": 1, "description": "Foundational abilities available at character creation." },
+        "tier2": { "unlocksAt": 3, "description": "Intermediate spells and techniques unlocked at Level 3." },
+        "tier3": { "unlocksAt": 7, "description": "Advanced powers that reshape the battlefield, unlocked at Level 7." },
+        "ultimate": { "unlocksAt": 10, "description": "The pinnacle of a class's discipline. One ultimate ability per class, unlocked at Level 10." }
+    },
+    "talentLevels": [1, 3, 5, 7, 9],
+    "classes": [
+        {
+            "id": "bloomguard",
+            "name": "Bloomguard",
+            "role": "Tank",
+            "description": "Front-line protector who channels the ancient strength of the Verdance's great trees. Bloomguards absorb punishment, control positioning, and shield allies behind walls of living bark and interlocking roots.",
+            "lore": "When the first Hollowing scarred the forests of the Verdance, certain Veilkeepers found that the great trees would lend their strength to those willing to stand between corruption and the living world. These guardians wrapped themselves in ironbark and blooming vines, becoming immovable sentinels at the borders of the Hollowed zones. Today, Bloomguards are the shields of every expedition into dangerous territory, drawing on the soul-bond they share with the ancient groves to endure blows that would fell lesser warriors.",
+            "playstyle": "The unmovable wall. You anchor the front line, absorb devastating hits with layered Guard, and punish enemies who try to bypass you. Your toolkit revolves around positioning control -- roots, bark walls, and taunts keep threats focused on you while your allies operate freely. Manage your Guard stacks carefully; a Bloomguard who lets their defenses lapse becomes a liability rather than a bulwark.",
+            "baseStats": {
+                "might": 3,
+                "agility": 0,
+                "resilience": 4,
+                "insight": 1,
+                "charisma": 1
+            },
+            "startingHP": 45,
+            "startingGuard": 10,
+            "baseAP": 3,
+            "startingSpells": ["soul_shield", "verdant_grasp"],
+            "preferredWeapons": ["mace", "warhammer", "sword_and_shield"],
+            "preferredArmor": "heavy",
+            "classAbilities": {
+                "level1": [
+                    {
+                        "id": "shield_wall",
+                        "name": "Shield Wall",
+                        "description": "Brace behind your shield, reducing all incoming damage by 50% until the start of your next turn.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 1
+                    },
+                    {
+                        "id": "taunt",
+                        "name": "Taunt",
+                        "description": "Let out a booming war cry infused with soul energy, forcing a single enemy to target you for their next action.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 2,
+                        "tier": 1
+                    },
+                    {
+                        "id": "guardians_strike",
+                        "name": "Guardian's Strike",
+                        "description": "A heavy melee attack that generates +3 Guard on hit as living bark reinforces your defenses.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 1,
+                        "tier": 1
+                    }
+                ],
+                "level3": [
+                    {
+                        "id": "root_sentinel",
+                        "name": "Root Sentinel",
+                        "description": "Summon a wall of massive roots 3 tiles wide that blocks enemy movement for 3 turns.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 2,
+                        "dspCost": 12
+                    },
+                    {
+                        "id": "guard_fortress",
+                        "name": "Guard Fortress",
+                        "description": "Fortify yourself and all adjacent allies with living bark, granting +10 Guard for 2 turns.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 5,
+                        "tier": 2,
+                        "dspCost": 12
+                    }
+                ],
+                "level7": [
+                    {
+                        "id": "ironbark_sentinel",
+                        "name": "Ironbark Sentinel",
+                        "description": "Summon a towering Ironbark Guardian with 50 HP that attacks enemies for 2d6 damage each turn. Lasts 5 turns.",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 8,
+                        "tier": 3,
+                        "dspCost": 25
+                    },
+                    {
+                        "id": "living_fortress",
+                        "name": "Living Fortress",
+                        "description": "Encase yourself in ancient ironbark, gaining +20 Guard and immunity to forced movement for 3 turns. While active, adjacent allies gain +5 Guard.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 6,
+                        "tier": 3,
+                        "dspCost": 20
+                    }
+                ],
+                "level10": [
+                    {
+                        "id": "heart_of_the_grove",
+                        "name": "Heart of the Grove",
+                        "description": "Channel the soul of the Verdance's oldest tree. For 5 turns, your Guard cannot drop below 15, you regenerate 2d6 HP per turn, all allies within 3 tiles gain +5 Guard, and enemies that strike you in melee take 1d8 thorn damage. Requires concentration.",
+                        "apCost": 3,
+                        "type": "ultimate",
+                        "cooldown": 1,
+                        "usesPerCombat": 1,
+                        "tier": "ultimate",
+                        "dspCost": 35,
+                        "concentration": true,
+                        "duration": 5
+                    }
+                ]
+            },
+            "talentTree": {
+                "id": "guardians_oath",
+                "name": "Guardian's Oath",
+                "description": "Talents focused on fortification, damage absorption, and protecting allies through the sacred bond between guardian and grove.",
+                "talents": [
+                    {
+                        "id": "go_rooted_stance",
+                        "name": "Rooted Stance",
+                        "level": 1,
+                        "description": "While you have not moved this turn, gain +2 Guard at the start of your turn.",
+                        "type": "passive",
+                        "effects": [{ "type": "conditional_buff", "condition": "no_movement", "stat": "guard", "value": 2 }]
+                    },
+                    {
+                        "id": "go_thorned_reprisal",
+                        "name": "Thorned Reprisal",
+                        "level": 3,
+                        "description": "When an enemy attacks you in melee, they take 1d4 thorn damage. This damage increases to 1d6 if your Guard is above 10.",
+                        "type": "passive",
+                        "effects": [{ "type": "damage_reflect", "damage": "1d4", "enhancedDamage": "1d6", "enhancedCondition": "guard_above_10" }]
+                    },
+                    {
+                        "id": "go_bulwark_aura",
+                        "name": "Bulwark Aura",
+                        "level": 5,
+                        "description": "Allies within 2 tiles of you take 15% less damage from all sources.",
+                        "type": "passive",
+                        "effects": [{ "type": "aura", "radius": 2, "damageReduction": 0.15, "affectsAllies": true }]
+                    },
+                    {
+                        "id": "go_unbreakable",
+                        "name": "Unbreakable",
+                        "level": 7,
+                        "description": "Once per combat, when your HP drops below 20%, immediately gain +15 Guard and heal for 2d8 HP.",
+                        "type": "passive",
+                        "effects": [{ "type": "triggered_defense", "trigger": "hp_below_20_percent", "guardBonus": 15, "heal": "2d8", "usesPerCombat": 1 }]
+                    },
+                    {
+                        "id": "go_oath_of_the_ancient",
+                        "name": "Oath of the Ancient",
+                        "level": 9,
+                        "description": "Your Guard maximum is increased by 10. Additionally, when you use Taunt, the targeted enemy deals 25% less damage for 2 turns.",
+                        "type": "passive",
+                        "effects": [{ "type": "stat_bonus", "stat": "maxGuard", "value": 10 }, { "type": "taunt_enhancement", "damageReduction": 0.25, "duration": 2 }]
+                    }
+                ]
+            },
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Ironbloom Sentinel",
+                    "description": "A radiant protector who channels Lumen energy to bolster Guard generation and emit a passive healing aura, keeping allies alive through sustained restoration and ironclad defense.",
+                    "bonusAbility": {
+                        "id": "bg_pure_lumen_aegis",
+                        "name": "Lumen Aegis",
+                        "description": "Emit a healing aura in a 2-tile radius. At the start of each of your turns, all allies within the aura regain 1d6 HP and gain +2 Guard.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "resilience": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Armor glows with warm golden light. Vines bloom with radiant white and gold flowers. Shield emanates a soft luminous barrier."
+                },
+                "blighted": {
+                    "name": "Rotwood Warden",
+                    "description": "A dread sentinel wrapped in decaying bark who punishes attackers with thorns damage and instills fear in nearby enemies, turning defense into a weapon of attrition.",
+                    "bonusAbility": {
+                        "id": "bg_blighted_rotwood_thorns",
+                        "name": "Rotwood Thorns",
+                        "description": "Enemies who strike you in melee take 1d8 necrotic damage and must pass an Insight save or become Frightened for 1 turn, unable to willingly move closer to you.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "resilience": 1
+                    },
+                    "visualTheme": "Bark armor is cracked and oozing dark sap. Thorny growths twist outward from joints. Eyes glow a sickly green, and a faint miasma of decay surrounds the character."
+                }
+            }
+        },
+        {
+            "id": "thornbinder",
+            "name": "Thornbinder",
+            "role": "Rogue",
+            "description": "High-mobility burst damage dealer who strikes from the shadows using thorn-laced blades and nature's poisons. Masters of stealth, traps, and precision attacks that exploit enemy weaknesses.",
+            "lore": "Not all who serve the Verdance stand in the light. The Thornbinders emerged from the Duskwood Enclaves, communities of outcasts who learned to survive by moving unseen through the deepest hollows. They discovered that certain thorns and fungi could be distilled into paralytic poisons, and that the shadow between great trees held a power all its own. The Veilkeepers eventually recognized their value, employing Thornbinders as scouts, saboteurs, and assassins who silence threats before they reach the front line.",
+            "playstyle": "Strike from shadows, vanish before retaliation. You excel at exploiting positioning for devastating burst damage and controlling the battlefield with traps and poisons. Your survivability depends on never being where the enemy expects you. Set up ambushes, apply poisons, and use Shadow Step to slip behind priority targets for lethal Backstabs. A Thornbinder caught in the open is a dead Thornbinder.",
+            "baseStats": {
+                "might": 1,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 2,
+                "charisma": 1
+            },
+            "startingHP": 30,
+            "startingGuard": 3,
+            "baseAP": 4,
+            "startingSpells": ["shadow_step", "thorn_volley"],
+            "preferredWeapons": ["dagger", "short_sword", "throwing_knives"],
+            "preferredArmor": "light",
+            "classAbilities": {
+                "level1": [
+                    {
+                        "id": "backstab",
+                        "name": "Backstab",
+                        "description": "Attacks from behind or against unaware targets deal +50% damage. This bonus increases to +75% if the target is poisoned.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    },
+                    {
+                        "id": "vanish",
+                        "name": "Vanish",
+                        "description": "Dissolve into shadow, becoming invisible for 1 turn. Breaks on attack or taking damage. Your next attack from Vanish is guaranteed to trigger Backstab.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 1
+                    },
+                    {
+                        "id": "trap_setting",
+                        "name": "Trap Setting",
+                        "description": "Place a concealed thorn trap on a tile. When an enemy steps on it, they take 1d6 piercing damage and are immobilized for 1 turn.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 2,
+                        "tier": 1,
+                        "maxTraps": 3
+                    }
+                ],
+                "level3": [
+                    {
+                        "id": "shadow_strike",
+                        "name": "Shadow Strike",
+                        "description": "Strike from the shadows with lethal precision, dealing 2d6+3 shadow damage that bypasses 30% of the target's defense.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 2,
+                        "dspCost": 12,
+                        "defenseBypass": 0.3
+                    },
+                    {
+                        "id": "venomous_edge",
+                        "name": "Venomous Edge",
+                        "description": "Coat your weapons in distilled thornvenom for 3 turns. All melee attacks apply Poisoned status, dealing 1d4 nature damage per turn for 2 turns.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 2,
+                        "duration": 3,
+                        "statusEffect": { "type": "poison", "damagePerTurn": "1d4", "duration": 2 }
+                    }
+                ],
+                "level7": [
+                    {
+                        "id": "hollow_strike",
+                        "name": "Hollow Strike",
+                        "description": "Channel void energy into a single devastating strike dealing 4d8 damage that completely ignores the target's Guard.",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 5,
+                        "tier": 3,
+                        "dspCost": 30,
+                        "ignoresGuard": true
+                    },
+                    {
+                        "id": "thorn_net",
+                        "name": "Thorn Net",
+                        "description": "Hurl a weighted net of razor thorns at a target area (2-tile radius). All enemies caught are immobilized for 2 turns and take 1d6 piercing damage per turn.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 5,
+                        "tier": 3,
+                        "dspCost": 18,
+                        "areaOfEffect": 2
+                    }
+                ],
+                "level10": [
+                    {
+                        "id": "dance_of_thorns",
+                        "name": "Dance of Thorns",
+                        "description": "Enter a whirlwind of shadow and thorns, teleporting between up to 4 enemies within 6 tiles and striking each for 3d6 poison and shadow damage. Each target hit grants you 1 AP. You end in stealth after the final strike.",
+                        "apCost": 3,
+                        "type": "ultimate",
+                        "cooldown": 1,
+                        "usesPerCombat": 1,
+                        "tier": "ultimate",
+                        "dspCost": 30,
+                        "maxTargets": 4,
+                        "range": 6
+                    }
+                ]
+            },
+            "talentTree": {
+                "id": "tactical_mind",
+                "name": "Tactical Mind",
+                "description": "Talents that sharpen cunning, enhance trap mastery, and reward careful positioning and opportunistic strikes.",
+                "talents": [
+                    {
+                        "id": "tm_keen_senses",
+                        "name": "Keen Senses",
+                        "level": 1,
+                        "description": "You can detect hidden enemies and traps within 4 tiles. Gain +1 to initiative rolls.",
+                        "type": "passive",
+                        "effects": [{ "type": "detection", "radius": 4 }, { "type": "stat_bonus", "stat": "initiative", "value": 1 }]
+                    },
+                    {
+                        "id": "tm_preparation",
+                        "name": "Preparation",
+                        "level": 3,
+                        "description": "Your traps deal +1d4 additional damage and their immobilize duration increases by 1 turn.",
+                        "type": "passive",
+                        "effects": [{ "type": "trap_enhancement", "bonusDamage": "1d4", "bonusDuration": 1 }]
+                    },
+                    {
+                        "id": "tm_exploit_weakness",
+                        "name": "Exploit Weakness",
+                        "level": 5,
+                        "description": "Attacks against enemies affected by any debuff (poison, root, slow) deal +25% damage.",
+                        "type": "passive",
+                        "effects": [{ "type": "conditional_damage", "condition": "target_debuffed", "damageBonus": 0.25 }]
+                    },
+                    {
+                        "id": "tm_shadow_reflexes",
+                        "name": "Shadow Reflexes",
+                        "level": 7,
+                        "description": "Once per turn, when attacked, you may spend 1 AP to dodge the attack entirely and move 1 tile in any direction.",
+                        "type": "reactive",
+                        "effects": [{ "type": "dodge_reaction", "apCost": 1, "moveTiles": 1, "usesPerTurn": 1 }]
+                    },
+                    {
+                        "id": "tm_mastermind",
+                        "name": "Mastermind",
+                        "level": 9,
+                        "description": "At the start of combat, you may place 2 traps anywhere within 6 tiles for free. Additionally, Vanish cooldown is reduced by 1 turn.",
+                        "type": "passive",
+                        "effects": [{ "type": "combat_start", "freeTraps": 2, "trapRange": 6 }, { "type": "cooldown_reduction", "ability": "vanish", "value": 1 }]
+                    }
+                ]
+            },
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Silvervine Scout",
+                    "description": "A luminous ranger who uses purified vine magic to reveal hidden enemies and deploy healing traps that restore allies who step on them, blending reconnaissance with battlefield support.",
+                    "bonusAbility": {
+                        "id": "tb_pure_revealing_light",
+                        "name": "Revealing Light",
+                        "description": "Mark a 3-tile radius area for 3 turns. All hidden or invisible enemies within are revealed, and you may place a Healing Snare trap that restores 2d6 HP to the first ally who enters its tile.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Thorns are replaced by shimmering silver vines. Daggers gleam with pale moonlight. Traps emit a soft white glow when placed."
+                },
+                "blighted": {
+                    "name": "Blightshadow",
+                    "description": "A venomous assassin who coats weapons in concentrated blight toxins, applying stacking poison and decay damage over time that eats through even the hardiest foes.",
+                    "bonusAbility": {
+                        "id": "tb_blighted_creeping_decay",
+                        "name": "Creeping Decay",
+                        "description": "Your poison effects now also apply Decay, dealing an additional 1d4 necrotic damage per turn for 3 turns. Decay stacks up to 3 times on a single target.",
+                        "type": "passive",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Shadow cloak drips with dark ichor. Blades are corroded and ooze a viscous purple-black poison. Footsteps leave briefly withered ground."
+                }
+            }
+        },
+        {
+            "id": "emerald_mystic",
+            "name": "Emerald Mystic",
+            "role": "Caster/Healer",
+            "description": "Primary spellcaster and party healer who manages the Domain Soul Pool with unmatched precision. Emerald Mystics channel soul magic to mend wounds, bolster allies, and manipulate the flow of life energy across the battlefield.",
+            "lore": "The Emerald Mystics trace their lineage to the first communion between mortals and the Verdance's soul-wells, deep pools of concentrated life energy hidden beneath the roots of the World Trees. Those who drank from the wells found they could sense the flow of life and death itself, mending torn flesh with a thought and coaxing wilted souls back from the brink. The Veilkeepers formalized this tradition into the Order of the Emerald Eye, training Mystics to serve as the living conduits between the Verdance's boundless vitality and the mortal beings who walk its paths. Their power comes at a cost: every spell draws from the shared Domain Soul Pool, and a careless Mystic can drain the very resource their allies depend upon.",
+            "playstyle": "Every spell matters. You are the lifeline. Your role is to keep the party alive while managing DSP expenditure with surgical precision. Efficient Casting reduces your costs, but you must constantly weigh healing against offensive spells and buffs. Position yourself safely in the back line, use Bloom Step to reposition when threatened, and save your concentration spells for critical moments. A good Emerald Mystic makes a party immortal; a reckless one drains the Soul Pool dry.",
+            "baseStats": {
+                "might": 0,
+                "agility": 1,
+                "resilience": 1,
+                "insight": 4,
+                "charisma": 3
+            },
+            "startingHP": 28,
+            "startingGuard": 2,
+            "baseAP": 3,
+            "startingSpells": ["verdant_bloom", "bloom_step", "verdant_heal"],
+            "preferredWeapons": ["staff", "wand", "tome"],
+            "preferredArmor": "light",
+            "classAbilities": {
+                "level1": [
+                    {
+                        "id": "efficient_casting",
+                        "name": "Efficient Casting",
+                        "description": "Your deep attunement to soul magic reduces the DSP cost of all your spells by 2.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    },
+                    {
+                        "id": "spell_weaving",
+                        "name": "Spell Weaving",
+                        "description": "Cast 2 Tier 1 spells in a single action by weaving their soul threads together.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 1
+                    },
+                    {
+                        "id": "dsp_sense",
+                        "name": "DSP Sense",
+                        "description": "Your connection to the Soul Pool grants perfect awareness of the exact DSP impact before casting any spell, including phase modifiers.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    }
+                ],
+                "level3": [
+                    {
+                        "id": "verdant_bloom_greater",
+                        "name": "Verdant Bloom (Greater)",
+                        "description": "A powerful surge of verdant energy heals an ally for 3d8 HP and removes 1 debuff.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 2,
+                        "dspCost": 15,
+                        "healAmount": "3d8",
+                        "statusEffect": { "type": "cleanse", "debuffCount": 1 }
+                    },
+                    {
+                        "id": "soul_link",
+                        "name": "Soul Link",
+                        "description": "Create a soul tether between yourself and an ally within 5 tiles. For 3 turns, 30% of damage they receive is redirected to you instead, and your healing spells on them are 25% more effective.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 5,
+                        "tier": 2,
+                        "dspCost": 10,
+                        "duration": 3,
+                        "range": 5
+                    }
+                ],
+                "level7": [
+                    {
+                        "id": "verdant_nexus",
+                        "name": "Verdant Nexus",
+                        "description": "Become a nexus of verdant energy, healing all allies within 5 tiles for 2d8+5 HP and granting +2 Guard for 3 turns. Requires concentration.",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 6,
+                        "tier": 3,
+                        "dspCost": 25,
+                        "concentration": true,
+                        "healAmount": "2d8+5",
+                        "areaOfEffect": 5,
+                        "duration": 3
+                    },
+                    {
+                        "id": "temporal_anchor",
+                        "name": "Temporal Anchor",
+                        "description": "Manipulate time to rewind a target to its position and HP from 2 turns ago, undoing wounds and displacement.",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 8,
+                        "tier": 3,
+                        "dspCost": 20,
+                        "statusEffect": { "type": "temporal_rewind", "turnsBack": 2 }
+                    }
+                ],
+                "level10": [
+                    {
+                        "id": "soulbloom_resurrection",
+                        "name": "Soulbloom Resurrection",
+                        "description": "Channel the full power of the Verdance's soul-wells to resurrect a fallen ally at 50% HP with all debuffs cleared. The resurrected ally blooms with emerald light, gaining +5 Guard and immunity to damage for 1 turn. This spell restores 10 DSP to the pool upon successful resurrection.",
+                        "apCost": 3,
+                        "type": "ultimate",
+                        "cooldown": 1,
+                        "usesPerCombat": 1,
+                        "tier": "ultimate",
+                        "dspCost": 40,
+                        "resurrectHPPercent": 0.5,
+                        "dspRestore": 10
+                    }
+                ]
+            },
+            "talentTree": {
+                "id": "soul_magic_mastery",
+                "name": "Soul Magic Mastery",
+                "description": "Talents that deepen the Mystic's connection to the Domain Soul Pool, enhancing healing potency, spell efficiency, and the ability to manipulate life energy.",
+                "talents": [
+                    {
+                        "id": "smm_soul_wellspring",
+                        "name": "Soul Wellspring",
+                        "level": 1,
+                        "description": "At the start of each combat, restore 5 DSP to the Domain Soul Pool.",
+                        "type": "passive",
+                        "effects": [{ "type": "combat_start", "restoreDSP": 5 }]
+                    },
+                    {
+                        "id": "smm_empowered_healing",
+                        "name": "Empowered Healing",
+                        "level": 3,
+                        "description": "Your healing spells restore an additional 1d4 HP. Critical heals (natural 20 on heal roll) restore double the total amount.",
+                        "type": "passive",
+                        "effects": [{ "type": "heal_bonus", "value": "1d4" }, { "type": "critical_heal", "multiplier": 2 }]
+                    },
+                    {
+                        "id": "smm_arcane_reservoir",
+                        "name": "Arcane Reservoir",
+                        "level": 5,
+                        "description": "You maintain a personal reserve of 10 DSP that only you can draw from, separate from the shared pool.",
+                        "type": "passive",
+                        "effects": [{ "type": "personal_dsp", "value": 10 }]
+                    },
+                    {
+                        "id": "smm_life_thread",
+                        "name": "Life Thread",
+                        "level": 7,
+                        "description": "When an ally within 4 tiles would be reduced to 0 HP, you may spend 2 AP as a reaction to heal them for 2d6 HP instead. Usable once per round.",
+                        "type": "reactive",
+                        "effects": [{ "type": "death_prevention", "range": 4, "apCost": 2, "heal": "2d6", "usesPerRound": 1 }]
+                    },
+                    {
+                        "id": "smm_soul_symphony",
+                        "name": "Soul Symphony",
+                        "level": 9,
+                        "description": "Your Spell Weaving can now combine one Tier 1 and one Tier 2 spell. Additionally, all your spells cost 1 less DSP (stacks with Efficient Casting).",
+                        "type": "passive",
+                        "effects": [{ "type": "spell_weaving_upgrade", "allowTier2": true }, { "type": "dsp_reduction", "value": 1 }]
+                    }
+                ]
+            },
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Soulweaver",
+                    "description": "A luminous healer who channels pure Lumen energy to dramatically enhance healing potency and gains the rare ability to resurrect fallen allies, serving as the ultimate lifeline for any party.",
+                    "bonusAbility": {
+                        "id": "em_pure_resurrection",
+                        "name": "Lumen Resurrection",
+                        "description": "Once per combat, revive a fallen ally within 4 tiles with 50% of their maximum HP. The resurrected ally gains +5 Guard and immunity to damage until the start of their next turn.",
+                        "type": "active",
+                        "tier": 3
+                    },
+                    "statModifiers": {
+                        "insight": 2,
+                        "charisma": 1
+                    },
+                    "visualTheme": "Robes shimmer with pure white and emerald light. Hands trail luminous motes when casting. A halo of soft green energy crowns the caster during healing spells."
+                },
+                "blighted": {
+                    "name": "Hollowed Sage",
+                    "description": "A dark spellcaster who drains life force from enemies to fuel twisted magic, converting stolen vitality into devastating necrotic attacks and self-sustaining dark rituals.",
+                    "bonusAbility": {
+                        "id": "em_blighted_life_drain",
+                        "name": "Siphon Vitality",
+                        "description": "Target an enemy within 5 tiles. Deal 2d8 necrotic damage and heal yourself for the amount dealt. If the target is killed by this ability, regain 3 DSP.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "might": 1
+                    },
+                    "visualTheme": "Robes are tattered and stained with dark veins of corruption. Eyes glow hollow purple. Healing spells manifest as dark tendrils that stitch wounds with shadow-thread."
+                }
+            }
+        },
+        {
+            "id": "wildkin_ranger",
+            "name": "Wildkin Ranger",
+            "role": "Ranged DPS",
+            "description": "Long-range damage dealer and terrain specialist who fights alongside a loyal beast companion. Wildkin Rangers rain arrows from afar, track enemies through any terrain, and command the creatures of the Verdance to harry and harass their foes.",
+            "lore": "Deep in the Thornwilds, where the canopy is so thick that sunlight never reaches the forest floor, the Wildkin Rangers learned their craft. They are the eyes and ears of the Verdance, rangers who can track a single corrupted spore across leagues of wilderness and put an arrow through it from a hundred paces. Each Ranger bonds with a beast companion during a sacred ritual at the Moonwell Glades, forging a soul-link that allows human and animal to fight as one. The Veilkeepers rely on Wildkin Rangers to scout the borders of the Hollowed zones, report on enemy movements, and eliminate high-value threats before they can reach the heartlands.",
+            "playstyle": "The forest is your weapon. Every tree, every root, every creature. You dominate the battlefield from range, using your beast companion to flank and harass while you deliver devastating volleys from safe positions. Terrain Mastery lets you reposition freely through difficult ground, and your tracking abilities ensure no enemy escapes. Manage your companion carefully, as losing them mid-combat removes a significant portion of your tactical flexibility.",
+            "baseStats": {
+                "might": 2,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 2,
+                "charisma": 1
+            },
+            "startingHP": 34,
+            "startingGuard": 4,
+            "baseAP": 3,
+            "startingSpells": ["thorn_volley", "wind_arrow"],
+            "preferredWeapons": ["longbow", "shortbow", "crossbow", "spear"],
+            "preferredArmor": "medium",
+            "classAbilities": {
+                "level1": [
+                    {
+                        "id": "eagle_eye",
+                        "name": "Eagle Eye",
+                        "description": "Your keen perception grants +2 range on all ranged attacks and reveals enemy HP values.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    },
+                    {
+                        "id": "beast_companion",
+                        "name": "Beast Companion",
+                        "description": "Summon your bonded animal ally to fight alongside you. The companion has its own HP pool, acts on your turn with 2 AP, and can perform basic attacks (1d6) or use the Harass action to impose Disadvantage on an enemy's next attack.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 5,
+                        "tier": 1,
+                        "summon": { "type": "beast_companion", "hp": 20, "ap": 2, "attackDamage": "1d6" }
+                    },
+                    {
+                        "id": "terrain_mastery",
+                        "name": "Terrain Mastery",
+                        "description": "Years in the Thornwilds have made you one with the landscape. Ignore all difficult terrain movement penalties.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    }
+                ],
+                "level3": [
+                    {
+                        "id": "thorn_barrage",
+                        "name": "Thorn Barrage",
+                        "description": "Unleash a devastating cone of thorns that shreds all enemies in a 3-tile cone for 2d6 damage.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 2,
+                        "dspCost": 15,
+                        "areaOfEffect": 3
+                    },
+                    {
+                        "id": "hunters_mark",
+                        "name": "Hunter's Mark",
+                        "description": "Mark an enemy for 3 turns. All your attacks and your companion's attacks against the marked target deal +1d4 bonus damage. The mark also reveals the target if they become hidden or invisible.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 2,
+                        "duration": 3,
+                        "bonusDamage": "1d4"
+                    }
+                ],
+                "level7": [
+                    {
+                        "id": "storm_of_thorns",
+                        "name": "Storm of Thorns",
+                        "description": "Conjure a raging storm of thorns in a 4-tile radius, dealing 3d8 damage and inflicting Bleeding (1d4 per turn) for 2 turns.",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 6,
+                        "tier": 3,
+                        "dspCost": 25,
+                        "areaOfEffect": 4,
+                        "statusEffect": { "type": "bleed", "damagePerTurn": "1d4", "duration": 2 }
+                    },
+                    {
+                        "id": "pack_tactics",
+                        "name": "Pack Tactics",
+                        "description": "Your beast companion evolves, gaining +10 HP, +1 AP, and the ability to use Pounce (2d6 damage, knocks prone). Additionally, when you and your companion both attack the same target in one turn, the second attack has Advantage.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 3,
+                        "companionUpgrade": { "hpBonus": 10, "apBonus": 1, "newAbility": "pounce" }
+                    }
+                ],
+                "level10": [
+                    {
+                        "id": "wrath_of_the_wild",
+                        "name": "Wrath of the Wild",
+                        "description": "Call upon the full fury of the Verdance. For 3 turns, the battlefield erupts with nature's wrath: your ranged attacks split into 2 projectiles each hitting for full damage, your beast companion gains Frenzy (double attacks per turn), and all enemies on natural terrain take 1d6 nature damage at the start of their turn.",
+                        "apCost": 3,
+                        "type": "ultimate",
+                        "cooldown": 1,
+                        "usesPerCombat": 1,
+                        "tier": "ultimate",
+                        "dspCost": 35,
+                        "duration": 3
+                    }
+                ]
+            },
+            "talentTree": {
+                "id": "verdant_bond",
+                "name": "Verdant Bond",
+                "description": "Talents that strengthen the bond between Ranger and beast, enhance ranged precision, and deepen the Ranger's connection to the natural world.",
+                "talents": [
+                    {
+                        "id": "vb_natures_eye",
+                        "name": "Nature's Eye",
+                        "level": 1,
+                        "description": "Gain +2 to perception checks. You can see through light foliage and underbrush, negating cover bonuses for enemies hiding behind natural objects.",
+                        "type": "passive",
+                        "effects": [{ "type": "stat_bonus", "stat": "perception", "value": 2 }, { "type": "negate_natural_cover" }]
+                    },
+                    {
+                        "id": "vb_bonded_senses",
+                        "name": "Bonded Senses",
+                        "level": 3,
+                        "description": "You can see through your beast companion's eyes as a free action. Your companion gains +2 to its attack rolls and can detect hidden enemies within 3 tiles.",
+                        "type": "passive",
+                        "effects": [{ "type": "shared_vision" }, { "type": "companion_bonus", "attackBonus": 2, "detectionRadius": 3 }]
+                    },
+                    {
+                        "id": "vb_called_shot",
+                        "name": "Called Shot",
+                        "level": 5,
+                        "description": "Once per turn, you may spend 1 additional AP on a ranged attack to target a specific body part: Head (+50% damage, chance to Daze), Arms (-2 to target's attack rolls for 2 turns), or Legs (reduces target's movement by half for 2 turns).",
+                        "type": "active",
+                        "effects": [{ "type": "precision_attack", "apCost": 1, "options": ["head", "arms", "legs"], "usesPerTurn": 1 }]
+                    },
+                    {
+                        "id": "vb_natures_quiver",
+                        "name": "Nature's Quiver",
+                        "level": 7,
+                        "description": "Your arrows are infused with the Verdance's energy. Ranged attacks have a 25% chance to apply one random nature effect: Root (1 turn), Poison (1d4/turn for 2 turns), or Thorns (attacker takes 1d4 damage when hitting the target in melee).",
+                        "type": "passive",
+                        "effects": [{ "type": "proc_on_hit", "chance": 0.25, "possibleEffects": ["root", "poison", "thorns"] }]
+                    },
+                    {
+                        "id": "vb_alpha_bond",
+                        "name": "Alpha Bond",
+                        "level": 9,
+                        "description": "Your soul-bond with your companion reaches its apex. Your companion's HP increases by 15 and it gains a second attack per turn. When your companion is defeated, it can be resummoned after 2 turns instead of waiting for the cooldown. You gain +1 AP on any turn where both you and your companion damage the same target.",
+                        "type": "passive",
+                        "effects": [{ "type": "companion_upgrade", "hpBonus": 15, "extraAttack": true, "reducedResummon": 2 }, { "type": "synergy_bonus", "apBonus": 1, "condition": "same_target" }]
+                    }
+                ]
+            },
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Sunlit Stalker",
+                    "description": "A radiant ranger who deepens their bond with nature, gaining an enhanced beast companion infused with Lumen energy and the ability to summon additional creatures to aid in battle.",
+                    "bonusAbility": {
+                        "id": "wr_pure_beast_summon",
+                        "name": "Call of the Wild",
+                        "description": "Summon a Lumen Beast ally with 25 HP that fights alongside your companion for 4 turns. The summoned beast attacks for 1d8 radiant damage and grants +1 AP to your companion on the turn it is summoned.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "charisma": 1,
+                        "agility": 1
+                    },
+                    "visualTheme": "Armor and cloak are woven with golden vines and sunlit feathers. Beast companion glows with warm amber light. Arrows trail streaks of golden energy."
+                },
+                "blighted": {
+                    "name": "Duskfang Hunter",
+                    "description": "A sinister hunter whose beast companion is corrupted with blight energy, and whose arrows instill supernatural fear, breaking enemy morale while the corrupted beast savages terrified foes.",
+                    "bonusAbility": {
+                        "id": "wr_blighted_fear_arrow",
+                        "name": "Dread Arrow",
+                        "description": "Fire a blight-infused arrow at a target within range. On hit, deal normal damage plus 1d6 necrotic damage and the target becomes Frightened for 2 turns. Frightened enemies have disadvantage on attacks and cannot willingly move toward you or your companion.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Cloak is dark and tattered, trailing wisps of shadow. Beast companion has glowing red eyes and corrupted fur or feathers. Arrows are black-shafted and drip with dark energy."
+                }
+            }
+        },
+        {
+            "id": "sporecaller",
+            "name": "Sporecaller",
+            "role": "Debuffer/Controller",
+            "description": "Battlefield controller and corruption specialist who commands spore and fungal magic to deny space, weaken enemies, and turn the terrain itself into a weapon. Sporecallers excel at area denial, debuff stacking, and slowly dismantling enemy formations.",
+            "lore": "Beneath the roots of the Verdance lies the Mycelial Web, a vast fungal network that connects every living thing in the realm through threads of bioluminescent mycelium. The Sporecallers are those rare individuals who learned to commune with this underground intelligence, coaxing it to the surface to serve as weapon and ward. Their magic is patient and insidious: clouds of paralytic spores, fields of entropy-accelerating fungi, and networks of bioluminescent mycelia that report every enemy footstep. The Veilkeepers regard Sporecallers with a mixture of respect and unease, for the line between commanding the fungal network and being consumed by it is perilously thin.",
+            "playstyle": "Control the board. Deny space. Watch enemies wither. You are not a burst damage dealer; you are an inevitability engine. Layer spore clouds, decay auras, and root snares to create kill zones that enemies cannot safely traverse. Your Fungal Network passive gives you perfect vision through your own hazards, letting you see what your enemies cannot. Stack debuffs methodically and use Spore Detonation to cash them in for devastating burst damage when the moment is right.",
+            "baseStats": {
+                "might": 0,
+                "agility": 1,
+                "resilience": 3,
+                "insight": 3,
+                "charisma": 2
+            },
+            "startingHP": 32,
+            "startingGuard": 5,
+            "baseAP": 3,
+            "startingSpells": ["spore_cloud", "root_snare"],
+            "preferredWeapons": ["staff", "scepter", "fungal_focus"],
+            "preferredArmor": "medium",
+            "classAbilities": {
+                "level1": [
+                    {
+                        "id": "fungal_network",
+                        "name": "Fungal Network",
+                        "description": "Your connection to the Mycelial Web grants full vision through spore clouds and fungal terrain you create. Enemies inside your hazard zones are always visible to you, even if invisible or hidden.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    },
+                    {
+                        "id": "corruption_resist",
+                        "name": "Corruption Resist",
+                        "description": "Your long exposure to fungal magic grants +50% corruption resistance. You are immune to the Poisoned status effect from non-magical sources.",
+                        "apCost": 0,
+                        "type": "passive",
+                        "cooldown": null,
+                        "tier": 1
+                    },
+                    {
+                        "id": "spore_detonation",
+                        "name": "Spore Detonation",
+                        "description": "Detonate all active spore clouds and fungal hazards you control, dealing 2d6 nature damage to all enemies within them. Damage increases by +1d6 for each debuff on affected targets.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 1
+                    }
+                ],
+                "level3": [
+                    {
+                        "id": "decay_aura",
+                        "name": "Decay Aura",
+                        "description": "Emanate a corrosive aura of entropy that deals 1d4 damage per turn to all enemies within 2 tiles for 3 turns. Requires concentration.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 4,
+                        "tier": 2,
+                        "dspCost": 12,
+                        "concentration": true,
+                        "areaOfEffect": 2,
+                        "duration": 3,
+                        "statusEffect": { "type": "decay", "damagePerTurn": "1d4", "duration": 3 }
+                    },
+                    {
+                        "id": "mycelial_snare",
+                        "name": "Mycelial Snare",
+                        "description": "Seed a 3-tile area with underground mycelium. For 4 turns, any enemy that enters or starts their turn in the area has their movement reduced by half and takes 1d4 nature damage.",
+                        "apCost": 1,
+                        "type": "active",
+                        "cooldown": 3,
+                        "tier": 2,
+                        "dspCost": 10,
+                        "areaOfEffect": 3,
+                        "duration": 4
+                    }
+                ],
+                "level7": [
+                    {
+                        "id": "decay_mastery",
+                        "name": "Decay Mastery",
+                        "description": "Unleash mastery over entropy, dealing 3d6 damage to all enemies in a 5-tile area and applying Corrupted status (1d6 damage per turn, does not expire until cleansed).",
+                        "apCost": 3,
+                        "type": "active",
+                        "cooldown": 7,
+                        "tier": 3,
+                        "dspCost": 30,
+                        "areaOfEffect": 5,
+                        "statusEffect": { "type": "corrupted", "damagePerTurn": "1d6", "permanent": true }
+                    },
+                    {
+                        "id": "sporefield",
+                        "name": "Sporefield",
+                        "description": "Transform a 4-tile radius area into hostile fungal terrain for 5 turns. Enemies in the zone suffer: -2 to all attack rolls, -1 AP per turn, and cannot benefit from healing effects. Allies are unaffected.",
+                        "apCost": 2,
+                        "type": "active",
+                        "cooldown": 6,
+                        "tier": 3,
+                        "dspCost": 22,
+                        "areaOfEffect": 4,
+                        "duration": 5
+                    }
+                ],
+                "level10": [
+                    {
+                        "id": "plague_of_the_hollow",
+                        "name": "Plague of the Hollow",
+                        "description": "Unleash the full entropic power of the Mycelial Web. A massive 6-tile radius erupts with virulent spores that persist for 4 turns. All enemies within suffer: 2d8 nature damage per turn, all existing debuffs have their durations refreshed, healing received is reduced by 75%, and movement costs are doubled. At the end of the duration, all surviving enemies in the zone must save or be Stunned for 1 turn.",
+                        "apCost": 3,
+                        "type": "ultimate",
+                        "cooldown": 1,
+                        "usesPerCombat": 1,
+                        "tier": "ultimate",
+                        "dspCost": 40,
+                        "areaOfEffect": 6,
+                        "duration": 4
+                    }
+                ]
+            },
+            "talentTree": {
+                "id": "martial_prowess",
+                "name": "Martial Prowess",
+                "description": "Talents that enhance the Sporecaller's battlefield dominance through superior control techniques, debuff amplification, and fungal warfare mastery.",
+                "talents": [
+                    {
+                        "id": "mp_lingering_spores",
+                        "name": "Lingering Spores",
+                        "level": 1,
+                        "description": "Your spore clouds and fungal hazards last 1 additional turn. Enemies leaving your hazard zones continue to take 1d4 damage for 1 turn after exiting.",
+                        "type": "passive",
+                        "effects": [{ "type": "duration_extension", "value": 1 }, { "type": "lingering_damage", "damage": "1d4", "duration": 1 }]
+                    },
+                    {
+                        "id": "mp_debilitating_toxins",
+                        "name": "Debilitating Toxins",
+                        "level": 3,
+                        "description": "Enemies affected by your poison or decay effects also suffer -1 to all saving throws. This penalty stacks up to -3 for enemies with multiple debuffs from you.",
+                        "type": "passive",
+                        "effects": [{ "type": "debuff_enhancement", "savingThrowPenalty": -1, "maxStacks": 3 }]
+                    },
+                    {
+                        "id": "mp_symbiotic_growth",
+                        "name": "Symbiotic Growth",
+                        "level": 5,
+                        "description": "When an enemy takes damage from your debuffs, you heal for 2 HP. This effect can trigger a maximum of 5 times per turn.",
+                        "type": "passive",
+                        "effects": [{ "type": "damage_leech", "healPerTrigger": 2, "maxTriggersPerTurn": 5 }]
+                    },
+                    {
+                        "id": "mp_pandemic",
+                        "name": "Pandemic",
+                        "level": 7,
+                        "description": "When an enemy affected by your debuffs dies, one random debuff spreads to the nearest enemy within 3 tiles at full duration.",
+                        "type": "passive",
+                        "effects": [{ "type": "debuff_spread", "trigger": "target_death", "spreadRadius": 3, "debuffsSpread": 1 }]
+                    },
+                    {
+                        "id": "mp_mycorrhizal_dominion",
+                        "name": "Mycorrhizal Dominion",
+                        "level": 9,
+                        "description": "All fungal terrain you create is connected through the Mycelial Web. You can cast spells as if you were standing in any of your fungal terrain zones. Additionally, Spore Detonation's cooldown is reduced by 2 and its damage bonus per debuff increases to +2d6.",
+                        "type": "passive",
+                        "effects": [{ "type": "cast_from_terrain", "terrainTypes": ["spore_cloud", "mycelial_snare", "sporefield"] }, { "type": "ability_upgrade", "ability": "spore_detonation", "cooldownReduction": 2, "bonusDamagePerDebuff": "2d6" }]
+                    }
+                ]
+            },
+            "unlockRequirements": null,
+            "variants": {
+                "pure": {
+                    "name": "Mycelium Sage",
+                    "description": "A nurturing fungal healer who uses purified spore magic to restore allies through symbiotic connections, creating healing zones and forging mycelial bonds that share vitality across the party.",
+                    "bonusAbility": {
+                        "id": "sc_pure_symbiotic_spores",
+                        "name": "Symbiotic Spores",
+                        "description": "Release a cloud of healing spores in a 3-tile radius. Allies within the cloud regain 1d6 HP at the start of each of their turns for 3 turns. While in the cloud, allies gain +1 to all saving throws.",
+                        "type": "active",
+                        "tier": 2
+                    },
+                    "statModifiers": {
+                        "insight": 1,
+                        "charisma": 1
+                    },
+                    "visualTheme": "Spores glow with soft bioluminescent blue and green light. Fungal growths are clean and symmetrical, resembling coral. Mycelial threads shimmer with healing energy."
+                },
+                "blighted": {
+                    "name": "Plague Herald",
+                    "description": "A harbinger of pestilence who weaponizes mass poison clouds and a persistent decay aura, slowly rotting everything in their vicinity and turning entire battlefields into toxic wastelands.",
+                    "bonusAbility": {
+                        "id": "sc_blighted_decay_aura",
+                        "name": "Aura of Decay",
+                        "description": "Emit a persistent 2-tile radius aura of decay. All enemies within the aura take 1d6 necrotic damage at the start of their turns and have their healing received reduced by 50%. Lasts until the end of combat.",
+                        "type": "active",
+                        "tier": 3
+                    },
+                    "statModifiers": {
+                        "might": 1,
+                        "insight": 1
+                    },
+                    "visualTheme": "Body is partially overtaken by dark, pulsating fungal growths. Spore clouds are thick and black-green. The ground visibly rots and withers in a radius around the character."
+                }
+            }
+        }
+    ]
+}

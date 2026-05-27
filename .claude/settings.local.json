@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__godot__get_godot_version",
+      "Read(//c/Users/onlyw/Documents/godot-mcp/**)",
+      "Bash(mkdir -p \"C:/Users/onlyw/Desktop/realm-of-nexus-godot\")",
+      "Read(//c/Users/onlyw/Desktop/**)",
+      "Bash(cp:*)",
+      "mcp__godot__launch_editor",
+      "mcp__godot__get_project_info",
+      "mcp__godot__get_debug_output",
+      "Bash(ls:*)",
+      "Bash(for folder:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/onlyw/Desktop/realm-of-nexus-game/**)",
+      "Bash(done)",
+      "Bash(cd:*)",
+      "Bash(PROJECT=\"/c/Users/onlyw/Desktop/realm-of-nexus-godot\" echo \"=== Asset Summary ===\" echo \"icons:\")",
+      "Read(//c/Users/onlyw/Desktop/realm-of-nexus-game/$PROJECT/assets/sprites/**)",
+      "mcp__godot__run_project",
+      "Bash(grep:*)",
+      "Bash(\"C:/Users/onlyw/Desktop/godot/Godot_v4.6.1-stable_win64.exe\" --path \"C:/Users/onlyw/Desktop/realm-of-nexus-godot\" --headless --quit 2>&1 | head -60)",
+      "Bash(\"C:/Users/onlyw/Desktop/godot/Godot_v4.6.1-stable_win64.exe\" --path \"C:/Users/onlyw/Desktop/realm-of-nexus-godot\" --headless --quit 2>&1 | grep -E \"ERROR|SCRIPT|Parse|Warning\" | head -50)",
+      "Bash(\"C:/Users/onlyw/Desktop/godot/Godot_v4.6.1-stable_win64.exe\" --path \"C:/Users/onlyw/Desktop/realm-of-nexus-godot\" --headless --quit 2>&1 | grep -E \"ERROR|SCRIPT\" | head -40)",
+      "Bash(\"C:/Users/onlyw/Desktop/godot/Godot_v4.6.1-stable_win64.exe\" --path \"C:/Users/onlyw/Desktop/realm-of-nexus-godot\" --headless --quit 2>&1 | grep -E \"ERROR|SCRIPT|at:\" | head -60)",
+      "Read(//c/Program Files/**)",
+      "Bash(find /c/Users/onlyw -name godot*.exe)",
+      "mcp__godot__add_node",
+      "mcp__godot__create_scene",
+      "Bash(SRC=\"C:/Users/onlyw/Desktop/2d_game_assets/RPG MAKER STUFF/In Search of Immortality/Audio/SE\" DEST=\"C:/Users/onlyw/Desktop/realm-of-nexus-godot/assets/audio/sfx\" cp \"$SRC/Cancel1.ogg\" \"$DEST/ui_cancel.ogg\" echo \"Fixed. Total SFX:\")",
+      "Bash(find:*)",
+      "mcp__godot__stop_project",
+      "Bash(npm run:*)",
+      "Bash(./node_modules/.bin/vite build:*)",
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(node node_modules/vite/dist/node/cli.js build)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const p=require\\(''./package.json''\\); console.log\\(JSON.stringify\\(Object.keys\\(p.devDependencies||{}\\)\\)\\)\")",
+      "Bash(node:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "godot"
+  ]
+}

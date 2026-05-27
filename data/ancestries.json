@@ -1,0 +1,357 @@
+{
+    "version": "2.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "ancestries": [
+        {
+            "id": "human",
+            "name": "Human",
+            "description": "Adaptable and ambitious. Humans thrive through sheer determination and versatility, compensating for their lack of innate magic with an unmatched capacity to learn and grow.",
+            "lore": "The first settlers to bond with the Everwood, Humans arrived in Verdance generations ago and built the foundations of civilization amid the living forest. Their adaptability allowed them to navigate the complex politics of the Domain, forging alliances with the Emerald Coven and the Bloomguard alike. Most numerous in Verdance, they fill every role from soldier to scholar, their ambition tempered by the ever-present dangers of the Abyss. It is said that Humans were the first to petition the Veilkeepers for knowledge, establishing the consultation traditions that persist to this day.",
+            "attributeModifiers": [
+                {
+                    "attribute": "player_choice",
+                    "value": 1,
+                    "description": "+1 to any single attribute of the player's choosing at character creation",
+                    "selectionRequired": true,
+                    "validAttributes": ["Might", "Agility", "Resilience", "Insight", "Charisma"]
+                }
+            ],
+            "specialAbility": {
+                "id": "human_adaptability",
+                "name": "Adaptability",
+                "description": "+10% XP gain from all sources. Humans learn faster than any other ancestry, turning every experience into accelerated growth.",
+                "effect": {
+                    "type": "xp_multiplier",
+                    "value": 0.10,
+                    "appliesTo": "all_sources",
+                    "stacks": false
+                },
+                "passive": true
+            },
+            "unlockCondition": null,
+            "availableAtStart": true,
+            "customizationOptions": {
+                "bodyTypes": [
+                    {
+                        "id": "body_lean",
+                        "name": "Lean",
+                        "description": "A slim, agile frame suited for quick movement and finesse."
+                    },
+                    {
+                        "id": "body_athletic",
+                        "name": "Athletic",
+                        "description": "A balanced, muscular build reflecting physical training and endurance."
+                    },
+                    {
+                        "id": "body_heavy",
+                        "name": "Heavy",
+                        "description": "A broad, powerful frame built for strength and resilience."
+                    }
+                ],
+                "skinTones": [
+                    { "id": "skin_01", "name": "Porcelain", "hexColor": "#FAE7D0" },
+                    { "id": "skin_02", "name": "Ivory", "hexColor": "#F5DEB3" },
+                    { "id": "skin_03", "name": "Sand", "hexColor": "#E8C899" },
+                    { "id": "skin_04", "name": "Honey", "hexColor": "#D4A76A" },
+                    { "id": "skin_05", "name": "Amber", "hexColor": "#C68E4E" },
+                    { "id": "skin_06", "name": "Bronze", "hexColor": "#B07332" },
+                    { "id": "skin_07", "name": "Copper", "hexColor": "#A0522D" },
+                    { "id": "skin_08", "name": "Teak", "hexColor": "#8B5E3C" },
+                    { "id": "skin_09", "name": "Chestnut", "hexColor": "#6F4E37" },
+                    { "id": "skin_10", "name": "Mahogany", "hexColor": "#5C3A21" },
+                    { "id": "skin_11", "name": "Umber", "hexColor": "#483C32" },
+                    { "id": "skin_12", "name": "Obsidian", "hexColor": "#3B2F2F" }
+                ],
+                "hairStyles": [
+                    { "id": "hair_style_01", "name": "Cropped Short" },
+                    { "id": "hair_style_02", "name": "Shoulder Length" },
+                    { "id": "hair_style_03", "name": "Long Flowing" },
+                    { "id": "hair_style_04", "name": "Braided Crown" },
+                    { "id": "hair_style_05", "name": "Warrior's Knot" },
+                    { "id": "hair_style_06", "name": "Loose Curls" },
+                    { "id": "hair_style_07", "name": "Tight Coils" },
+                    { "id": "hair_style_08", "name": "Side Shave" },
+                    { "id": "hair_style_09", "name": "Twin Tails" },
+                    { "id": "hair_style_10", "name": "Slicked Back" },
+                    { "id": "hair_style_11", "name": "Wild Mane" },
+                    { "id": "hair_style_12", "name": "Monk's Fade" },
+                    { "id": "hair_style_13", "name": "Fishtail Braid" },
+                    { "id": "hair_style_14", "name": "Dreadlocks" },
+                    { "id": "hair_style_15", "name": "Shaved Clean" }
+                ],
+                "hairColors": {
+                    "natural": [
+                        { "id": "hair_color_01", "name": "Raven Black", "hexColor": "#1C1C1C" },
+                        { "id": "hair_color_02", "name": "Dark Brown", "hexColor": "#3B2716" },
+                        { "id": "hair_color_03", "name": "Chestnut", "hexColor": "#6F4E37" },
+                        { "id": "hair_color_04", "name": "Auburn", "hexColor": "#922724" },
+                        { "id": "hair_color_05", "name": "Copper Red", "hexColor": "#B87333" },
+                        { "id": "hair_color_06", "name": "Golden Blonde", "hexColor": "#DAA520" },
+                        { "id": "hair_color_07", "name": "Platinum Blonde", "hexColor": "#E5E4E2" },
+                        { "id": "hair_color_08", "name": "Silver Grey", "hexColor": "#C0C0C0" }
+                    ],
+                    "magical": [
+                        { "id": "hair_color_09", "name": "Everwood Green", "hexColor": "#228B22", "unlockCondition": "Emerald Coven reputation >= 20" },
+                        { "id": "hair_color_10", "name": "Sap Gold", "hexColor": "#FFD700", "unlockCondition": "Survive a Silver Sap phase" },
+                        { "id": "hair_color_11", "name": "Veil Violet", "hexColor": "#7B68EE", "unlockCondition": "Consult all 5 Veilkeepers" },
+                        { "id": "hair_color_12", "name": "Crimson Ember", "hexColor": "#DC143C", "unlockCondition": "Survive a Crimson Sap phase at DSP below 30" }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "soulborn",
+            "name": "Soulborn",
+            "description": "Born from the Everwood's soul magic, Soulborn are rare beings with an innate connection to the Domain Soul Pool. They perceive the world through layers of spiritual resonance that others cannot fathom.",
+            "lore": "Soulborn are not born of flesh and blood in the traditional sense. During Silver Sap phases, when the Everwood's magical energies reach their peak, the forest itself occasionally gives rise to new life — beings woven from concentrated soul energy and living wood. These rare individuals emerge fully formed from the roots of ancient trees, carrying memories that belong to no one and everyone. The Emerald Coven considers them sacred, living proof that the Domain Soul Pool is more than mere energy — it is a consciousness. Soulborn hear the Veil whisper in quiet moments and can sense disturbances in the spiritual fabric of Verdance before anyone else. Their connection to the DSP grants them a personal reserve larger than any other ancestry, making them natural conduits for the domain's power.",
+            "attributeModifiers": [
+                {
+                    "attribute": "Charisma",
+                    "value": 1,
+                    "description": "+1 Charisma — their soul-touched presence draws others in"
+                },
+                {
+                    "attribute": "Insight",
+                    "value": 1,
+                    "description": "+1 Insight — they perceive the spiritual undercurrents of the world"
+                },
+                {
+                    "attribute": "dspMaxReserve",
+                    "value": 5,
+                    "description": "+5 to maximum personal DSP reserve, reflecting their deeper connection to the Domain Soul Pool"
+                }
+            ],
+            "specialAbility": {
+                "id": "soulborn_attunement",
+                "name": "Soulborn Attunement",
+                "description": "A suite of innate spiritual abilities granted by the Soulborn's unique origin. Includes Veil Sense (detect Veil disturbances naturally) and Silver Sap Affinity (+1 to all rolls during Silver Sap phase).",
+                "abilities": [
+                    {
+                        "id": "veil_sense",
+                        "name": "Veil Sense",
+                        "description": "Can sense Veil disturbances naturally, detecting spiritual anomalies, hidden portals, and corruption sources within a moderate radius.",
+                        "effect": {
+                            "type": "detection",
+                            "target": "veil_disturbances",
+                            "range": "moderate",
+                            "passive": true
+                        }
+                    },
+                    {
+                        "id": "silver_sap_affinity",
+                        "name": "Silver Sap Affinity",
+                        "description": "+1 bonus to all d20 rolls during the Silver Sap phase, as the Soulborn resonates with the heightened magical energy.",
+                        "effect": {
+                            "type": "roll_bonus",
+                            "value": 1,
+                            "appliesTo": "all_d20_rolls",
+                            "condition": "silver_sap_phase"
+                        }
+                    }
+                ],
+                "passive": true
+            },
+            "unlockCondition": null,
+            "availableAtStart": true,
+            "customizationOptions": {
+                "bodyTypes": [
+                    {
+                        "id": "body_lean",
+                        "name": "Lean",
+                        "description": "A slim, willowy frame that seems to bend like young branches in a breeze."
+                    },
+                    {
+                        "id": "body_athletic",
+                        "name": "Athletic",
+                        "description": "A balanced build with an otherworldly grace, as if shaped by careful intention."
+                    },
+                    {
+                        "id": "body_heavy",
+                        "name": "Heavy",
+                        "description": "A sturdy, grounded frame reminiscent of ancient tree trunks, radiating quiet power."
+                    }
+                ],
+                "skinTones": [
+                    { "id": "skin_01", "name": "Birch White", "hexColor": "#F5F0E1" },
+                    { "id": "skin_02", "name": "Pale Moss", "hexColor": "#D4E2C8" },
+                    { "id": "skin_03", "name": "Dawn Gold", "hexColor": "#F0D58C" },
+                    { "id": "skin_04", "name": "Living Bark", "hexColor": "#A67B5B" },
+                    { "id": "skin_05", "name": "Twilight Sage", "hexColor": "#8B9A6B" },
+                    { "id": "skin_06", "name": "Silver Dew", "hexColor": "#C5D0D9" },
+                    { "id": "skin_07", "name": "Root Brown", "hexColor": "#7B5B3A" },
+                    { "id": "skin_08", "name": "Amber Sap", "hexColor": "#D4A030" },
+                    { "id": "skin_09", "name": "Deep Loam", "hexColor": "#5C4033" },
+                    { "id": "skin_10", "name": "Moonpetal", "hexColor": "#E8D8F0" },
+                    { "id": "skin_11", "name": "Verdant Shadow", "hexColor": "#4A6741" },
+                    { "id": "skin_12", "name": "Heartwood", "hexColor": "#8B4513" }
+                ],
+                "hairStyles": [
+                    { "id": "hair_style_01", "name": "Vine Tendrils" },
+                    { "id": "hair_style_02", "name": "Flowing Canopy" },
+                    { "id": "hair_style_03", "name": "Root Weave" },
+                    { "id": "hair_style_04", "name": "Petal Crown" },
+                    { "id": "hair_style_05", "name": "Willow Cascade" },
+                    { "id": "hair_style_06", "name": "Moss Cropped" },
+                    { "id": "hair_style_07", "name": "Thorn Spikes" },
+                    { "id": "hair_style_08", "name": "Blossom Braid" },
+                    { "id": "hair_style_09", "name": "Fern Curls" },
+                    { "id": "hair_style_10", "name": "Driftwood Locs" },
+                    { "id": "hair_style_11", "name": "Soul Wisps" },
+                    { "id": "hair_style_12", "name": "Evergreen Mane" },
+                    { "id": "hair_style_13", "name": "Braided Ivy" },
+                    { "id": "hair_style_14", "name": "Autumn Fall" },
+                    { "id": "hair_style_15", "name": "Bare Crown" }
+                ],
+                "hairColors": {
+                    "natural": [
+                        { "id": "hair_color_01", "name": "Deep Forest Green", "hexColor": "#013220" },
+                        { "id": "hair_color_02", "name": "Moss Brown", "hexColor": "#6B4226" },
+                        { "id": "hair_color_03", "name": "Autumn Leaf", "hexColor": "#CC7722" },
+                        { "id": "hair_color_04", "name": "Silver Bark", "hexColor": "#B0B0B0" },
+                        { "id": "hair_color_05", "name": "Midnight Root", "hexColor": "#2C1608" },
+                        { "id": "hair_color_06", "name": "Sunlit Canopy", "hexColor": "#C9B037" },
+                        { "id": "hair_color_07", "name": "Winter Frost", "hexColor": "#E8E8E8" },
+                        { "id": "hair_color_08", "name": "Living Amber", "hexColor": "#FFBF00" }
+                    ],
+                    "magical": [
+                        { "id": "hair_color_09", "name": "Soul Glow White", "hexColor": "#F0F8FF", "unlockCondition": "Reach DSP personal reserve maximum" },
+                        { "id": "hair_color_10", "name": "Veil Shimmer Blue", "hexColor": "#6495ED", "unlockCondition": "Commune with a dead Veilkeeper" },
+                        { "id": "hair_color_11", "name": "Everwood Emerald", "hexColor": "#50C878", "unlockCondition": "Complete an Unbinding during Silver Sap" },
+                        { "id": "hair_color_12", "name": "Sap Prism", "hexColor": "#FF69B4", "unlockCondition": "Experience all three Sap phases in one playthrough" }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "half_abyss",
+            "name": "Half-Abyss",
+            "description": "Touched by the Abyss yet not consumed. Half-Abyss carry corruption in their veins but refuse to surrender to it, wielding their tainted heritage as both weapon and burden. Feared by many, understood by few.",
+            "lore": "The Half-Abyss are living paradoxes — offspring of Verdance dwellers who were exposed to concentrated Abyss energy, or in rarer cases, the children of unions between mortals and Abyss-touched beings. They carry corruption in their blood, but through sheer will or some unknown quirk of spiritual genetics, they resist the madness that claims most who touch the void. The Bloomguard watches them with suspicion, the Emerald Coven studies them with fascination, and the common folk avoid them with fear. Half-Abyss constantly struggle against the whispers of the Abyss that echo in their minds, but this very struggle grants them extraordinary resilience. Their existence is only revealed to the player after Act 1, when the true scope of the Abyss threat becomes clear and certain... previously impossible unions come to light.",
+            "attributeModifiers": [
+                {
+                    "attribute": "Resilience",
+                    "value": 2,
+                    "description": "+2 Resilience — their bodies are hardened by the constant internal battle against corruption"
+                },
+                {
+                    "attribute": "Charisma",
+                    "value": -1,
+                    "description": "-1 Charisma — the visible signs of Abyss taint make social interactions more difficult"
+                }
+            ],
+            "specialAbility": {
+                "id": "abyssal_heritage",
+                "name": "Abyssal Heritage",
+                "description": "A suite of abilities born from the Half-Abyss's corrupted bloodline. Includes innate corruption resistance, immunity to the Corrupted status effect, and reduced criminality penalties when using Forbidden spells.",
+                "abilities": [
+                    {
+                        "id": "corruption_resistance",
+                        "name": "Corruption Resistance",
+                        "description": "50% reduced effect from all corruption sources. The Abyss within recognizes and neutralizes external corruption.",
+                        "effect": {
+                            "type": "corruption_resistance",
+                            "value": 0.50,
+                            "passive": true
+                        }
+                    },
+                    {
+                        "id": "abyss_immunity",
+                        "name": "Abyss Immunity",
+                        "description": "Completely immune to the Corrupted status effect. Cannot be turned by Abyss corruption.",
+                        "effect": {
+                            "type": "status_immunity",
+                            "target": "corrupted",
+                            "passive": true
+                        }
+                    },
+                    {
+                        "id": "forbidden_affinity",
+                        "name": "Forbidden Affinity",
+                        "description": "Can use Forbidden spells with 10% reduced criminality penalty. The Abyss taint provides a natural affinity for dark magic.",
+                        "effect": {
+                            "type": "criminality_reduction",
+                            "value": 0.10,
+                            "appliesTo": "forbidden_spells"
+                        }
+                    }
+                ],
+                "passive": true
+            },
+            "unlockCondition": {
+                "type": "quest_complete",
+                "target": "act_1",
+                "description": "Complete Act 1 to unlock the Half-Abyss ancestry. The true nature of the Abyss threat must be revealed before this path becomes available.",
+                "newGamePlusAvailable": true
+            },
+            "availableAtStart": false,
+            "customizationOptions": {
+                "bodyTypes": [
+                    {
+                        "id": "body_lean",
+                        "name": "Lean",
+                        "description": "A gaunt, sinewy frame with visible dark veins tracing beneath the skin."
+                    },
+                    {
+                        "id": "body_athletic",
+                        "name": "Athletic",
+                        "description": "A hardened build marked by patches of void-darkened skin and subtle asymmetry."
+                    },
+                    {
+                        "id": "body_heavy",
+                        "name": "Heavy",
+                        "description": "A massive, imposing frame with crystallized corruption formations along the shoulders and arms."
+                    }
+                ],
+                "skinTones": [
+                    { "id": "skin_01", "name": "Pale Ash", "hexColor": "#D3CBC4" },
+                    { "id": "skin_02", "name": "Void-Touched Ivory", "hexColor": "#C8BFC0" },
+                    { "id": "skin_03", "name": "Bruised Lavender", "hexColor": "#B8A9C9" },
+                    { "id": "skin_04", "name": "Dusk Grey", "hexColor": "#8B8589" },
+                    { "id": "skin_05", "name": "Corrupted Bronze", "hexColor": "#8B6F47" },
+                    { "id": "skin_06", "name": "Shadow Umber", "hexColor": "#635147" },
+                    { "id": "skin_07", "name": "Abyssal Slate", "hexColor": "#4A4453" },
+                    { "id": "skin_08", "name": "Nightshade", "hexColor": "#3D3145" },
+                    { "id": "skin_09", "name": "Void Charcoal", "hexColor": "#36303A" },
+                    { "id": "skin_10", "name": "Deep Corruption", "hexColor": "#2B1F2E" },
+                    { "id": "skin_11", "name": "Bloodstone Red", "hexColor": "#6B3040" },
+                    { "id": "skin_12", "name": "Abyss Black", "hexColor": "#1A1520" }
+                ],
+                "hairStyles": [
+                    { "id": "hair_style_01", "name": "Jagged Crop" },
+                    { "id": "hair_style_02", "name": "Shadow Veil" },
+                    { "id": "hair_style_03", "name": "Void-Touched Long" },
+                    { "id": "hair_style_04", "name": "Corrupted Crown" },
+                    { "id": "hair_style_05", "name": "Thorn Braids" },
+                    { "id": "hair_style_06", "name": "Smoke Wisps" },
+                    { "id": "hair_style_07", "name": "Horn Frames" },
+                    { "id": "hair_style_08", "name": "Abyss Locs" },
+                    { "id": "hair_style_09", "name": "Shattered Spikes" },
+                    { "id": "hair_style_10", "name": "Dark Cascade" },
+                    { "id": "hair_style_11", "name": "Void Mohawk" },
+                    { "id": "hair_style_12", "name": "Wraithlike Flow" },
+                    { "id": "hair_style_13", "name": "Bound Chains" },
+                    { "id": "hair_style_14", "name": "Ashen Waves" },
+                    { "id": "hair_style_15", "name": "Flayed Bare" }
+                ],
+                "hairColors": {
+                    "natural": [
+                        { "id": "hair_color_01", "name": "Void Black", "hexColor": "#0D0D0D" },
+                        { "id": "hair_color_02", "name": "Ash White", "hexColor": "#D4D4D4" },
+                        { "id": "hair_color_03", "name": "Dried Blood", "hexColor": "#6B2020" },
+                        { "id": "hair_color_04", "name": "Smoke Grey", "hexColor": "#6E6E6E" },
+                        { "id": "hair_color_05", "name": "Corruption Purple", "hexColor": "#4B0082" },
+                        { "id": "hair_color_06", "name": "Bruise Blue", "hexColor": "#3A3A5C" },
+                        { "id": "hair_color_07", "name": "Bone White", "hexColor": "#EDE6D6" },
+                        { "id": "hair_color_08", "name": "Tarnished Silver", "hexColor": "#8E8E8E" }
+                    ],
+                    "magical": [
+                        { "id": "hair_color_09", "name": "Abyssal Flame", "hexColor": "#8B0000", "unlockCondition": "Defeat an Abyss boss without taking corruption damage" },
+                        { "id": "hair_color_10", "name": "Void Starlight", "hexColor": "#9370DB", "unlockCondition": "Reach 0% criminality as Half-Abyss" },
+                        { "id": "hair_color_11", "name": "Purified Crimson", "hexColor": "#FF4444", "unlockCondition": "Survive Crimson Sap with corruption resistance active" },
+                        { "id": "hair_color_12", "name": "Redeemed Gold", "hexColor": "#FFD700", "unlockCondition": "Achieve maximum reputation with the Emerald Coven as Half-Abyss" }
+                    ]
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,83 @@
+{
+  "version": "2.0.0",
+  "lastModified": "2026-03-15T00:00:00Z",
+  "maxPartySize": 2,
+  "bondXPPerLevel": [0, 10, 25, 45, 70, 100, 140, 190, 250, 320, 400],
+  "companions": [
+    {
+      "id": "vaeril",
+      "name": "Vaeril",
+      "title": "Shield of the Grove",
+      "class": "bloomguard",
+      "role": "tank",
+      "description": "A steadfast Bloomguard warrior who believes in duty above all else. His ironbark shield has turned aside a thousand blows.",
+      "personality": "Stoic, protective, quietly humorous. Values honor and keeping promises.",
+      "baseStats": { "might": 4, "agility": 1, "resilience": 4, "insight": 1, "charisma": 2, "hp": 45, "guard": 12 },
+      "abilities": ["shield_wall", "taunt", "guardians_strike"],
+      "recruitLocation": "canopy_of_life",
+      "recruitQuest": "vaeril_recruitment",
+      "bondEvents": ["shared_battle", "saved_ally", "camp_conversation", "personal_quest"],
+      "personalQuest": "oath_of_the_grove"
+    },
+    {
+      "id": "sylor",
+      "name": "Sylor",
+      "title": "Shadow of Thorns",
+      "class": "thornbinder",
+      "role": "dps",
+      "description": "A cunning Thornbinder who walks the line between justice and revenge. Quick with a blade and quicker with words.",
+      "personality": "Sarcastic, clever, fiercely loyal once trust is earned. Distrusts authority.",
+      "baseStats": { "might": 2, "agility": 4, "resilience": 1, "insight": 3, "charisma": 2, "hp": 30, "guard": 3 },
+      "abilities": ["backstab", "vanish", "venomous_edge"],
+      "recruitLocation": "hollowroot_catacombs",
+      "recruitQuest": "sylor_recruitment",
+      "bondEvents": ["shared_secret", "successful_ambush", "trust_test", "personal_quest"],
+      "personalQuest": "shadows_of_the_past"
+    },
+    {
+      "id": "aeliana",
+      "name": "Aeliana",
+      "title": "Voice of the Coven",
+      "class": "emerald_mystic",
+      "role": "healer",
+      "description": "An Emerald Coven mystic with a gift for healing and an insatiable curiosity about the Sap's mysteries.",
+      "personality": "Warm, intellectual, morally principled. Struggles between knowledge-seeking and caution.",
+      "baseStats": { "might": 0, "agility": 1, "resilience": 2, "insight": 4, "charisma": 3, "hp": 28, "guard": 2 },
+      "abilities": ["verdant_bloom", "soul_link", "efficient_casting"],
+      "recruitLocation": "canopy_of_life",
+      "recruitQuest": "aeliana_recruitment",
+      "bondEvents": ["magical_discovery", "moral_discussion", "healing_crisis", "personal_quest"],
+      "personalQuest": "mysteries_of_the_sap"
+    },
+    {
+      "id": "mycon",
+      "name": "Mycon",
+      "title": "The Living Network",
+      "class": "sporecaller",
+      "role": "controller",
+      "description": "A Sporecaller who is slowly merging with the fungal networks beneath the Verdance. Their insights are alien but invaluable.",
+      "personality": "Detached, cryptic, surprisingly empathetic. Speaks of \"we\" instead of \"I\" sometimes.",
+      "baseStats": { "might": 1, "agility": 1, "resilience": 3, "insight": 3, "charisma": 2, "hp": 32, "guard": 5 },
+      "abilities": ["fungal_network", "spore_detonation", "decay_aura"],
+      "recruitLocation": "mycelium_nexus",
+      "recruitQuest": "mycon_recruitment",
+      "bondEvents": ["fungal_communion", "corruption_resistance", "shared_vision", "personal_quest"],
+      "personalQuest": "the_network_calls"
+    },
+    {
+      "id": "kaelen",
+      "name": "Kaelen",
+      "title": "Warden of the Wild",
+      "class": "wildkin_ranger",
+      "role": "ranged_dps",
+      "description": "A Wildkin Ranger who has bonded with a ghostly hawk spirit. They see the world through the eyes of nature itself.",
+      "personality": "Quiet, observant, deeply connected to nature. Speaks more to animals than people.",
+      "baseStats": { "might": 2, "agility": 4, "resilience": 1, "insight": 2, "charisma": 1, "hp": 34, "guard": 4 },
+      "abilities": ["eagle_eye", "thorn_barrage", "terrain_mastery"],
+      "recruitLocation": "spindlewood_forest",
+      "recruitQuest": "kaelen_recruitment",
+      "bondEvents": ["nature_communion", "tracking_success", "animal_rescue", "personal_quest"],
+      "personalQuest": "call_of_the_wild"
+    }
+  ]
+}
