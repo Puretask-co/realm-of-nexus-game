@@ -234,7 +234,7 @@ export class TacticalCombatPanel {
     }
 
     _showFloat(msg) {
-        EventBus.emit('tactical:floatMessage', msg);
+        this.eventBus.emit('tactical:floatMessage', msg);
     }
 
     show() {
@@ -255,6 +255,6 @@ export class TacticalCombatPanel {
 
     destroy() {
         this._unsubs?.forEach(fn => typeof fn === 'function' && fn());
-        this.container?.destroy();
+        this.container?.destroy(true);
     }
 }

@@ -64,6 +64,10 @@ export default class GameScene extends Phaser.Scene {
         super({ key: 'GameScene' });
     }
 
+    init(data) {
+        this._resumeZone = data?.resumeZone || null;
+    }
+
     create() {
         // ---- Core Systems ----
         this.sapCycle = new SapCycleManager(this);
@@ -148,7 +152,7 @@ export default class GameScene extends Phaser.Scene {
         // ---- Zone Content Manager (per-zone visuals, enemies, music mood) ----
         this.zoneContentManager = new ZoneContentManager(this);
         // Initial zone entered after world is built; deferred so _unsubs is set up first
-        this._pendingInitialZone = this.currentZone || 'canopy_of_life';
+        this._pendingInitialZone = this._resumeZone || this.currentZone || 'canopy_of_life';
 
         // ---- Player ----
         this._createPlayer();
@@ -296,11 +300,6 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('worldmap:travelTo', (data) => this._onWorldMapTravelTo(data)),
             // ---- Portal system ----
             EventBus.on('portal:enter', (data) => this._onPortalEnter(data)),
-            // ---- Homebase exit (return from HomeBaseScene) ----
-            EventBus.on('homebase:exit', (data) => {
-                const zone = data?.returnZone || this.currentZone || 'canopy_of_life';
-                this._onWorldMapTravelTo({ locationId: zone });
-            }),
             // ---- Equipment stat bonuses ----
             EventBus.on('equipment:changed', (data) => this._onEquipmentChanged(data)),
             // ---- Zone content: show zone name toast on entry ----
@@ -766,7 +765,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.inTacticalCombat || overworldEnemies.length === 0) return;
         this._tacticalOverworldEnemies = overworldEnemies;
 
-        const defs = overworldEnemies.map(e => e.data.definition);
+        const defs = overworldEnemies.map(e => e._state?.definition).filter(Boolean);
         const isBoss = defs.some(d => (d.tier || 1) >= 4) || defs.length >= 4;
         const gridWidth = isBoss ? 12 : (defs.length <= 2 ? 6 : 10);
         const gridHeight = isBoss ? 8 : (defs.length <= 2 ? 6 : 7);
@@ -1041,9 +1040,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _wireNPCDialogues() {
-        // When an NPC completes its basic dialogue, check if it has a dialogueId
-        // for the full DialogueSystem
-        EventBus.on('npc-dialogue-complete', (data) => {
+        const unsub = EventBus.on('npc-dialogue-complete', (data) => {
             const npc = this.npcs.find(n => n.name === data.npc);
             if (!npc) return;
 
@@ -1065,6 +1062,7 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         });
+        this._unsubs.push(unsub);
     }
 
     _getDefaultShopInventory(shopId) {
@@ -1199,7 +1197,12 @@ export default class GameScene extends Phaser.Scene {
 
         // Apply phase modifier
         const modifier = this.sapCycle.getBlendedModifier(spell);
-        const baseDmg = spell.baseDamage ?? spell.damage ?? 0;
+        let baseDmg = spell.baseDamage ?? spell.damage ?? 0;
+        if (typeof baseDmg === 'string' && baseDmg.includes('d')) {
+            const [count, sides] = baseDmg.split('d').map(Number);
+            baseDmg = 0;
+            for (let i = 0; i < (count || 1); i++) baseDmg += Math.floor(Math.random() * (sides || 6)) + 1;
+        }
         const damage = Math.round(baseDmg * modifier);
 
         // Consume sap (personal) and DSP (world resource)
@@ -1278,7 +1281,7 @@ export default class GameScene extends Phaser.Scene {
 
             const atk = this.player.stats.attack ?? this.player.stats.might ?? 0;
             const finalDmg = Math.max(1, damage + atk);
-            targetEnemy.data.hp -= finalDmg;
+            targetEnemy._state.hp -= finalDmg;
 
             // Hit flash + knockback
             this._flashEnemyHit(targetEnemy);
@@ -1310,7 +1313,7 @@ export default class GameScene extends Phaser.Scene {
                 this.cameraSystem.dramaticSpellZoom(this.player, targetEnemy, 600);
             }
 
-            if (targetEnemy.data.hp <= 0) {
+            if (targetEnemy._state.hp <= 0) {
                 EventBus.emit('enemy-defeated', { enemy: targetEnemy, spell });
             }
         }
@@ -1966,7 +1969,7 @@ export default class GameScene extends Phaser.Scene {
         const { keeperId, question } = data || {};
         if (!keeperId) return;
 
-        const sapPhase = this.sapCycleSystem?.currentPhase || 'blue';
+        const sapPhase = this.sapCycle?.currentPhase || 'blue';
         const result = this.veilkeeperSystem.consult(keeperId, sapPhase);
 
         if (!result.success) {
@@ -2153,7 +2156,9 @@ export default class GameScene extends Phaser.Scene {
                         enemy.setVelocity(0, 0);
                         d.attackCooldown -= dt;
                         if (d.attackCooldown <= 0) {
-                            const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
+                            const might = d.definition?.baseStats?.might ?? d.definition?.might ?? 0;
+                            const tier = d.definition?.tier ?? 1;
+                            const damage = Math.max(1, might + tier * 2);
                             this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
                             // Play attack animation if available (reverts to walk anim automatically)
                             const ATTACK_ANIM = { enemy_treetitan: 'enemy_treetitan-attack', enemy_corrupted_titan: 'enemy_treetitan-attack' };
@@ -2438,7 +2443,7 @@ export default class GameScene extends Phaser.Scene {
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
         // Clean up systems that subscribe to EventBus (prevents ghost listeners on scene restart)
-        this.sapCycleManager?.destroy();
+        this.sapCycle?.destroy();
         this.portalSystem?.destroy();
         this.zoneContentManager?.destroy?.();
         // Cleanup particle effects, audio, and physics
