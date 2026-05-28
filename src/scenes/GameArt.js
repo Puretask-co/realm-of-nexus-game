@@ -80,6 +80,25 @@ export function npcArtFor(name) {
   return 'art_npc_elder_sage';
 }
 
+// ── Companion full-body sprites (reuse class sprites) ─────────────────────
+const COMPANION_FILES = {
+  art_companion_bloomguard:     'assets/imported/sprites/class_sprite_bloomguard.png',
+  art_companion_thornbinder:    'assets/imported/sprites/class_sprite_thornbinder.png',
+  art_companion_emerald_mystic: 'assets/imported/sprites/class_sprite_emerald_mystic.png',
+  art_companion_sporecaller:    'assets/imported/sprites/class_sprite_sporecaller.png',
+  art_companion_wildkin_ranger: 'assets/imported/sprites/class_sprite_wildkin_ranger.png',
+};
+
+const COMPANION_CLASS = {
+  vaeril: 'bloomguard', sylor: 'thornbinder', aeliana: 'emerald_mystic',
+  mycon: 'sporecaller', kaelen: 'wildkin_ranger',
+};
+
+export function companionArtFor(companionId) {
+  const cls = COMPANION_CLASS[companionId] || 'bloomguard';
+  return `art_companion_${cls}`;
+}
+
 // ── Spell icons ───────────────────────────────────────────────────────────
 const SPELL_ICON_FILES = {
   icon_azure_bolt:      'assets/imported/icons/spell_azure_bolt.png',
@@ -197,6 +216,7 @@ export const GameArt = {
     load(PORTRAIT_FILES);
     load(NPC_FILES);
     load(SPELL_ICON_FILES);
+    load(COMPANION_FILES);
   },
 };
 

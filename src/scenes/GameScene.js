@@ -44,7 +44,7 @@ import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
 import { ZoneBackdrops } from './ZoneBackdrops.js';
-import { PAINTERLY_ENEMY_MAP, BOSS_IDS, npcArtFor } from './GameArt.js';
+import { PAINTERLY_ENEMY_MAP, BOSS_IDS, npcArtFor, companionArtFor } from './GameArt.js';
 import MotionLibrary from '../systems/MotionLibrary.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
@@ -164,6 +164,9 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- NPCs ----
         this._spawnNPCs();
+
+        // ---- Companion followers (any already in the party) ----
+        this._syncCompanionFollowers();
 
         // ---- Camera ----
         this.cameraSystem.startFollow(this.player, {
@@ -2532,6 +2535,58 @@ export default class GameScene extends Phaser.Scene {
     _onCompanionRecruited(data) {
         console.log(`[Companion] ${data.name} joined the party`);
         this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 20 });
+        this._syncCompanionFollowers();
+    }
+
+    /**
+     * Spawn a world follower sprite for each active-party companion (and remove
+     * sprites for any who left). Followers are plain images that trail the
+     * player in _updateCompanionFollowers.
+     */
+    _syncCompanionFollowers() {
+        if (!this._companionFollowers) this._companionFollowers = new Map();
+        const party = this.companionSystem?.getActiveParty?.() || [];
+        const activeIds = new Set(party.map(c => c.id));
+
+        for (const [id, spr] of this._companionFollowers) {
+            if (!activeIds.has(id)) { try { spr.destroy(); } catch (_) {} this._companionFollowers.delete(id); }
+        }
+        party.forEach((c, i) => {
+            if (this._companionFollowers.has(c.id)) return;
+            const key = companionArtFor(c.id);
+            if (!this.textures.exists(key)) return;
+            const spr = this.add.image(this.player.x - 44 - i * 22, this.player.y, key)
+                .setDepth(4.8).setDisplaySize(56, 56);
+            spr._cid = c.id;
+            spr._cname = c.name;
+            MotionLibrary.apply(this, spr, 'idle-breathe', { duration: 1600 + i * 150 });
+            // Floating name tag.
+            spr._tag = this.add.text(spr.x, spr.y - 34, c.name, {
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#88ffcc',
+                stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5).setDepth(10);
+            this._companionFollowers.set(c.id, spr);
+        });
+    }
+
+    /** Trail each companion behind the player in a loose chain. */
+    _updateCompanionFollowers() {
+        if (!this._companionFollowers || !this.player) return;
+        let i = 0;
+        for (const spr of this._companionFollowers.values()) {
+            const spacing = 46 + i * 30;
+            const dist = Phaser.Math.Distance.Between(spr.x, spr.y, this.player.x, this.player.y);
+            if (dist > spacing) {
+                const ang = Math.atan2(this.player.y - spr.y, this.player.x - spr.x);
+                const sp = Math.min(3.4, (dist - spacing) * 0.12);
+                spr.x += Math.cos(ang) * sp;
+                spr.y += Math.sin(ang) * sp;
+                if (Math.cos(ang) < -0.1) spr.setFlipX(true);
+                else if (Math.cos(ang) > 0.1) spr.setFlipX(false);
+            }
+            if (spr._tag) { spr._tag.x = spr.x; spr._tag.y = spr.y - 34; }
+            i++;
+        }
     }
 
     _onVeilkeeperConsulted(data) {
@@ -2890,6 +2945,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.dspSystem.update) this.dspSystem.update(delta);
         if (this.narrativeSystem.update) this.narrativeSystem.update(delta);
         if (this.companionSystem.update) this.companionSystem.update(delta, this.player);
+        this._updateCompanionFollowers();
         if (this.portalSystem) this.portalSystem.update();
         this.profiler.end('newSystems');
 
