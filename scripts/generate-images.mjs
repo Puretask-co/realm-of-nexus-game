@@ -63,12 +63,11 @@ async function generateOne(prompt, size, modelOverride, qualityOverride) {
     n: 1,
     size: size || SIZE,
   };
-  // gpt-image-1 supports a quality param and always returns b64_json.
-  // dall-e-3 needs response_format explicitly set to b64_json.
+  // gpt-image-1 accepts a quality param (low|medium|high|auto) and always
+  // returns base64. We do NOT send response_format — newer models reject it,
+  // and we handle both base64 and URL responses below.
   if (model === 'gpt-image-1') {
     body.quality = qualityOverride || QUALITY;
-  } else {
-    body.response_format = 'b64_json';
   }
 
   const res = await fetch('https://api.openai.com/v1/images/generations', {
@@ -86,9 +85,20 @@ async function generateOne(prompt, size, modelOverride, qualityOverride) {
   }
 
   const data = await res.json();
-  const b64 = data?.data?.[0]?.b64_json;
-  if (!b64) throw new Error('No image data returned');
-  return Buffer.from(b64, 'base64');
+  const item = data?.data?.[0];
+  if (!item) throw new Error('No image data returned');
+
+  // Response can be base64 (gpt-image-1, and dall-e-3 when b64 requested) or
+  // a temporary URL (dall-e-3 default). Handle both.
+  if (item.b64_json) {
+    return Buffer.from(item.b64_json, 'base64');
+  }
+  if (item.url) {
+    const imgRes = await fetch(item.url);
+    if (!imgRes.ok) throw new Error(`Failed to download image URL: ${imgRes.status}`);
+    return Buffer.from(await imgRes.arrayBuffer());
+  }
+  throw new Error('Response had neither b64_json nor url');
 }
 
 function saveBuffer(buf, filepath) {
