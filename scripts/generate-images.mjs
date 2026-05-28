@@ -55,17 +55,18 @@ const PROMPT  = getArg('prompt');
 const OUT     = getArg('out');
 
 // ── Core generation call ───────────────────────────────────────────────
-async function generateOne(prompt, size) {
+async function generateOne(prompt, size, modelOverride, qualityOverride) {
+  const model = modelOverride || MODEL;
   const body = {
-    model: MODEL,
+    model,
     prompt,
     n: 1,
     size: size || SIZE,
   };
   // gpt-image-1 supports a quality param and always returns b64_json.
   // dall-e-3 needs response_format explicitly set to b64_json.
-  if (MODEL === 'gpt-image-1') {
-    body.quality = QUALITY;
+  if (model === 'gpt-image-1') {
+    body.quality = qualityOverride || QUALITY;
   } else {
     body.response_format = 'b64_json';
   }
@@ -127,7 +128,7 @@ async function main() {
       const label = `[${i + 1}/${jobs.length}] ${job.filename}`;
       try {
         process.stdout.write(`[gen] ${label} ... `);
-        const buf = await generateOne(job.prompt, job.size);
+        const buf = await generateOne(job.prompt, job.size, job.model, job.quality);
         saveBuffer(buf, path.join(OUTDIR, job.filename));
         ok++;
       } catch (e) {
