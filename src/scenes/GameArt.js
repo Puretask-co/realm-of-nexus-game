@@ -80,6 +80,50 @@ export function npcArtFor(name) {
   return 'art_npc_elder_sage';
 }
 
+// ── Spell icons ───────────────────────────────────────────────────────────
+const SPELL_ICON_FILES = {
+  icon_azure_bolt:      'assets/imported/icons/spell_azure_bolt.png',
+  icon_crimson_surge:   'assets/imported/icons/spell_crimson_surge.png',
+  icon_verdant_bloom:   'assets/imported/icons/spell_verdant_bloom.png',
+  icon_shadow_strike:   'assets/imported/icons/spell_shadow_strike.png',
+  icon_radiant_burst:   'assets/imported/icons/spell_radiant_burst.png',
+  icon_fireball:        'assets/imported/icons/spell_fireball.png',
+  icon_frostbolt:       'assets/imported/icons/spell_frostbolt.png',
+  icon_frostbind:       'assets/imported/icons/spell_frostbind.png',
+  icon_lightning_bolt:  'assets/imported/icons/spell_lightning_bolt.png',
+  icon_thunder:         'assets/imported/icons/spell_thunder.png',
+  icon_divine_heal:     'assets/imported/icons/spell_divine_heal.png',
+  icon_arcane_missile:  'assets/imported/icons/spell_arcane_missile.png',
+  icon_spore_plague:    'assets/imported/icons/spell_spore_plague.png',
+  icon_veil_step:       'assets/imported/icons/spell_veil_step.png',
+  icon_sap_drain:       'assets/imported/icons/spell_sap_drain.png',
+  icon_veilkeepers_memory:'assets/imported/icons/spell_veilkeepers_memory.png',
+  icon_teleport:        'assets/imported/icons/spell_teleport.png',
+};
+
+// element/keyword fallback so any spell gets a reasonable icon.
+const SPELL_ICON_FALLBACK = [
+  [/fire|flame|burn|inciner|ember|blaze/, 'icon_fireball'],
+  [/frost|ice|freeze|cold|chill|blizzard/, 'icon_frostbolt'],
+  [/thunder|storm|lightning|shock|spark|bolt/, 'icon_lightning_bolt'],
+  [/heal|cure|bloom|mend|regen|grove|nature|verdant|root|thorn|spore|vine/, 'icon_verdant_bloom'],
+  [/holy|radiant|divine|light|sanct/, 'icon_radiant_burst'],
+  [/shadow|dark|decay|abyss|void|curse|necro|drain/, 'icon_shadow_strike'],
+  [/crimson|blood|surge|rage|fury/, 'icon_crimson_surge'],
+  [/veil|silver|memory|temporal|step|teleport|sight/, 'icon_veil_step'],
+  [/arcane|azure|magic|bolt|missile|soul/, 'icon_azure_bolt'],
+];
+
+export function spellIconFor(spellId, scene) {
+  const id = String(spellId || '').toLowerCase();
+  const direct = `icon_${id}`;
+  if (scene.textures.exists(direct)) return direct;
+  for (const [re, key] of SPELL_ICON_FALLBACK) {
+    if (re.test(id) && scene.textures.exists(key)) return key;
+  }
+  return scene.textures.exists('icon_azure_bolt') ? 'icon_azure_bolt' : null;
+}
+
 // ── Class portraits (base 6) ──────────────────────────────────────────────
 const PORTRAIT_FILES = {
   art_portrait_bloomguard:     'assets/imported/portraits/class_portrait_bloomguard.png',
@@ -152,6 +196,7 @@ export const GameArt = {
     load(UI_FILES);
     load(PORTRAIT_FILES);
     load(NPC_FILES);
+    load(SPELL_ICON_FILES);
   },
 };
 

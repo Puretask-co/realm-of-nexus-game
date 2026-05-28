@@ -11,6 +11,7 @@ import { InventoryPanel } from '../ui/InventoryPanel.js';
 import GameInfoPanel from '../ui/GameInfoPanel.js';
 import CompanionPanel from '../ui/CompanionPanel.js';
 import { SkillTreePanel } from '../ui/SkillTreePanel.js';
+import { spellIconFor } from './GameArt.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -329,9 +330,20 @@ export default class UIScene extends Phaser.Scene {
                             : '#888888';
                         slot.nameLabel.setText(short);
                         slot.nameLabel.setColor(color);
+                        // Painterly spell icon inside the slot.
+                        const iconKey = spellIconFor(spell.id, this);
+                        if (iconKey) {
+                            if (!slot.icon) {
+                                slot.icon = this.add.image(slot.x + slot.size / 2, slot.y + slot.size / 2 - 3, iconKey)
+                                    .setDepth(10000).setDisplaySize(slot.size - 8, slot.size - 8);
+                            } else {
+                                slot.icon.setTexture(iconKey).setVisible(true);
+                            }
+                        }
                     } else {
                         slot.nameLabel.setText('---');
                         slot.nameLabel.setColor('#444444');
+                        if (slot.icon) slot.icon.setVisible(false);
                     }
                 }
             }
