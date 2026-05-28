@@ -14,7 +14,7 @@
     "gen-images": "node --env-file=.env scripts/generate-images.mjs"
   },
   "dependencies": {
-    "phaser": "^3.80.1"
+    "phaser": "^4.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
