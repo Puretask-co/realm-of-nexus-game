@@ -43,6 +43,7 @@ import ZoneContentManager from '../systems/ZoneContentManager.js';
 import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
+import { ZoneBackdrops } from './ZoneBackdrops.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -420,13 +421,23 @@ export default class GameScene extends Phaser.Scene {
             const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
             this.zones.push(zone);
 
-            // ── Per-zone atmospheric tint overlay (depth 0.2 so it sits
-            // above the base tilemap but below props and gameplay) ──────
-            this._applyZoneTheme(zoneX, zoneY, ZONE_W, ZONE_H, loc);
+            // ── Painterly backdrop floor (if one is loaded for this zone) ──
+            const bgKey = ZoneBackdrops.keyFor(loc.id);
+            const hasBackdrop = this.textures.exists(bgKey);
+            if (hasBackdrop) {
+                this.add.image(zoneX, zoneY, bgKey)
+                    .setOrigin(0, 0)
+                    .setDisplaySize(ZONE_W, ZONE_H)
+                    .setDepth(0.1);
+            } else {
+                // No painterly floor — fall back to the old tilemap graphics.
+                const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
+                this._zoneTilemaps.push(...result.tilemaps);
+            }
 
-            // ── Tilemap / Graphics rendering ──────────────────────────
-            const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
-            this._zoneTilemaps.push(...result.tilemaps);
+            // ── Per-zone atmospheric tint overlay. With a painterly floor we
+            // use a much lighter tint so the art reads; otherwise full tint. ──
+            this._applyZoneTheme(zoneX, zoneY, ZONE_W, ZONE_H, loc, hasBackdrop ? 0.10 : 1.0);
 
             // ── Zone name label (above all tile layers) ───────────────
             const color = parseInt((loc.environment?.ambientColor || '0x44aa44').replace('0x', ''), 16);
@@ -703,7 +714,7 @@ export default class GameScene extends Phaser.Scene {
      * for void/cave, sea green for tideflow, etc. Picks a tint from the
      * zone id/tags; falls back to environment.ambientColor or neutral.
      */
-    _applyZoneTheme(x, y, w, h, location) {
+    _applyZoneTheme(x, y, w, h, location, alphaMul = 1.0) {
         const id   = String(location.id || '').toLowerCase();
         const tags = (location.tags || []).map(t => String(t).toLowerCase());
         const has  = (re) => re.test(id) || tags.some(t => re.test(t));
@@ -727,7 +738,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         const overlay = this.add.graphics().setDepth(0.2);
-        overlay.fillStyle(tint, alpha);
+        overlay.fillStyle(tint, alpha * alphaMul);
         overlay.fillRect(x, y, w, h);
 
         // Subtle border framing so adjacent zones read as separate "rooms".
