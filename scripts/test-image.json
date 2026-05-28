@@ -1,7 +1,8 @@
 [
   {
     "filename": "test_worldsapling.png",
-    "model": "dall-e-3",
+    "model": "gpt-image-1",
+    "quality": "high",
     "size": "1024x1024",
     "prompt": "Hand-painted painterly fantasy game art, visible loose brushwork, Studio Ghibli meets Magic the Gathering quality. Pure top-down view from directly overhead. A single sacred young World-Sapling tree: a round canopy of bright bioluminescent blue glowing leaves with a gentle blue magical aura. Centered on a plain flat neutral grey background. No characters, no text, no UI."
   }
