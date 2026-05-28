@@ -155,22 +155,33 @@ export default class NPC {
         const boxX = (cam.width - boxW) / 2;
         const boxY = cam.height - boxH - 20;
 
-        this._dialogueBox = this.scene.add.graphics().setDepth(20000).setScrollFactor(0);
-        this._dialogueBox.fillStyle(0x111122, 0.9);
-        this._dialogueBox.fillRect(boxX, boxY, boxW, boxH);
-        this._dialogueBox.lineStyle(2, 0x44ff44, 0.5);
-        this._dialogueBox.strokeRect(boxX, boxY, boxW, boxH);
+        // Painterly dialogue frame if loaded, else a simple graphics box.
+        if (this.scene.textures.exists('art_ui_dialogue_box')) {
+            this._dialogueBox = this.scene.add.image(boxX + boxW / 2, boxY + boxH / 2, 'art_ui_dialogue_box')
+                .setDisplaySize(boxW, boxH).setDepth(20000).setScrollFactor(0);
+        } else {
+            this._dialogueBox = this.scene.add.graphics().setDepth(20000).setScrollFactor(0);
+            this._dialogueBox.fillStyle(0x111122, 0.9);
+            this._dialogueBox.fillRect(boxX, boxY, boxW, boxH);
+            this._dialogueBox.lineStyle(2, 0x44ff44, 0.5);
+            this._dialogueBox.strokeRect(boxX, boxY, boxW, boxH);
+        }
+
+        // Text starts right of the painted box's portrait slot.
+        const painted = this.scene.textures.exists('art_ui_dialogue_box');
+        const tX = boxX + (painted ? 78 : 12);
+        const wrapW = boxW - (painted ? 92 : 24);
 
         // Speaker name
-        this._dialogueName = this.scene.add.text(boxX + 12, boxY + 8, this.name, {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#44ff44',
+        this._dialogueName = this.scene.add.text(tX, boxY + 10, this.name, {
+            fontFamily: 'Open Sans', fontSize: '16px', color: painted ? '#5a3a1a' : '#44ff44',
             fontStyle: 'bold'
         }).setDepth(20001).setScrollFactor(0);
 
         // Text content
-        this._dialogueText = this.scene.add.text(boxX + 12, boxY + 26, '', {
-            fontFamily: 'Open Sans', fontSize: '15px', color: '#ccddcc',
-            wordWrap: { width: boxW - 24 }
+        this._dialogueText = this.scene.add.text(tX, boxY + 30, '', {
+            fontFamily: 'Open Sans', fontSize: '14px', color: painted ? '#3a2a14' : '#ccddcc',
+            wordWrap: { width: wrapW }
         }).setDepth(20001).setScrollFactor(0);
 
         // Advance hint
