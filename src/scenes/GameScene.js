@@ -1108,8 +1108,11 @@ export default class GameScene extends Phaser.Scene {
         if (this.inTacticalCombat || overworldEnemies.length === 0) return;
         this._tacticalOverworldEnemies = overworldEnemies;
 
-        const defs = overworldEnemies.map(e => e.data.definition);
-        const isBoss = defs.some(d => (d.tier || 1) >= 4) || defs.length >= 4;
+        // Enemy definitions live on _state.definition (e.data may be null for
+        // painterly sprites). Filter out any without a definition.
+        const defs = overworldEnemies.map(e => e._state?.definition || e.data?.definition).filter(Boolean);
+        if (defs.length === 0) return;
+        const isBoss = defs.some(d => (d?.tier || 1) >= 4) || defs.length >= 4;
         const gridWidth = isBoss ? 12 : (defs.length <= 2 ? 6 : 10);
         const gridHeight = isBoss ? 8 : (defs.length <= 2 ? 6 : 7);
 
@@ -1260,6 +1263,7 @@ export default class GameScene extends Phaser.Scene {
             enemy.body.setSize(tw * 0.5, th * 0.5);
             enemy.body.setOffset(tw * 0.25, th * 0.35);
             enemy._painterly = true;
+            enemy._isBoss = isBoss;
             // Gentle idle "breathing" so static art feels alive.
             MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
         } else {
@@ -2576,15 +2580,51 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    /** Trail each companion behind the player in a loose chain. */
+    /**
+     * Big boss attack telegraph: a crimson shockwave ring that expands and
+     * fades from the boss, a scale-up "rear back + slam" on the boss sprite,
+     * a red tint flash, and a camera shake. Signals a heavy hit.
+     */
+    _bossAttackTell(boss) {
+        // Expanding shockwave ring.
+        const ring = this.add.graphics().setDepth(4.9);
+        ring.lineStyle(5, 0xff3322, 0.9);
+        ring.strokeCircle(0, 0, 18);
+        ring.x = boss.x; ring.y = boss.y;
+        this.tweens.add({
+            targets: ring, scale: 5, alpha: 0, duration: 480, ease: 'Cubic.easeOut',
+            onComplete: () => { try { ring.destroy(); } catch (_) {} }
+        });
+        // Rear-back then slam (scale punch — safe on physics sprites).
+        const base = boss._mlBase?.sy ?? boss.scaleY;
+        this.tweens.add({
+            targets: boss, scaleX: boss.scaleX * 1.18, scaleY: base * 1.18,
+            duration: 160, yoyo: true, ease: 'Back.easeOut'
+        });
+        boss.setTint?.(0xff5544);
+        this.time.delayedCall(220, () => boss.clearTint?.());
+        this.cameraSystem?.shake?.('medium');
+    }
+
+    /** Trail each companion behind the player; auto-attack nearby enemies. */
     _updateCompanionFollowers() {
         if (!this._companionFollowers || !this.player) return;
+        const now = this.time.now;
         let i = 0;
         for (const spr of this._companionFollowers.values()) {
-            const spacing = 46 + i * 30;
-            const dist = Phaser.Math.Distance.Between(spr.x, spr.y, this.player.x, this.player.y);
+            // ── Auto-attack: hit the nearest enemy within range ──
+            const enemy = this._nearestEnemyTo(spr.x, spr.y, 140);
+            if (enemy && now >= (spr._atkReady || 0)) {
+                spr._atkReady = now + 1300;
+                this._companionAttack(spr, enemy);
+            }
+
+            // ── Follow: chase the player (or lunge an enemy if attacking) ──
+            const followTarget = enemy ? enemy : this.player;
+            const spacing = enemy ? 30 : (46 + i * 30);
+            const dist = Phaser.Math.Distance.Between(spr.x, spr.y, followTarget.x, followTarget.y);
             if (dist > spacing) {
-                const ang = Math.atan2(this.player.y - spr.y, this.player.x - spr.x);
+                const ang = Math.atan2(followTarget.y - spr.y, followTarget.x - spr.x);
                 const sp = Math.min(3.4, (dist - spacing) * 0.12);
                 spr.x += Math.cos(ang) * sp;
                 spr.y += Math.sin(ang) * sp;
@@ -2593,6 +2633,32 @@ export default class GameScene extends Phaser.Scene {
             }
             if (spr._tag) { spr._tag.x = spr.x; spr._tag.y = spr.y - 34; }
             i++;
+        }
+    }
+
+    _nearestEnemyTo(x, y, range) {
+        const list = this.enemies?.getChildren?.() || [];
+        let best = null, bestD = range;
+        for (const e of list) {
+            if (!e.active || !e._state || e._state.hp <= 0) continue;
+            const d = Phaser.Math.Distance.Between(x, y, e.x, e.y);
+            if (d < bestD) { bestD = d; best = e; }
+        }
+        return best;
+    }
+
+    _companionAttack(companion, enemy) {
+        const dmg = 5 + Phaser.Math.Between(0, 4);
+        enemy._state.hp = Math.max(0, enemy._state.hp - dmg);
+        if (enemy.data) enemy.data.hp = enemy._state.hp; // keep both fields in sync
+        // Visual feedback.
+        MotionLibrary.apply(this, companion, 'pulse-once');
+        enemy.setTint?.(0x88ffcc);
+        this.time.delayedCall(120, () => enemy.clearTint?.());
+        this.damageNumbers?.show?.(enemy.x, enemy.y - 24, dmg, 0x88ffcc);
+        this._updateEnemyHpBar(enemy);
+        if (enemy._state.hp <= 0) {
+            EventBus.emit('enemy-defeated', { enemy, byCompanion: companion._cid });
         }
     }
 
@@ -2839,6 +2905,11 @@ export default class GameScene extends Phaser.Scene {
                                     const walkAnim = WALK_ANIM[enemy.texture?.key];
                                     if (walkAnim && this.anims.exists(walkAnim)) enemy.play(walkAnim);
                                 });
+                            } else if (enemy._isBoss) {
+                                // Boss signature tell: bigger telegraph — a
+                                // crimson windup ring that expands + fades, a
+                                // scale-up "rear back", and a camera shake.
+                                this._bossAttackTell(enemy);
                             } else if (enemy._painterly) {
                                 // Painterly (physics) enemies can't lunge (body
                                 // overwrites position), so flash + quick wobble as
