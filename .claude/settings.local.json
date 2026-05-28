@@ -36,7 +36,8 @@
       "Bash(node node_modules/vite/dist/node/cli.js build)",
       "Bash(npm install:*)",
       "Bash(node -e \"const p=require\\(''./package.json''\\); console.log\\(JSON.stringify\\(Object.keys\\(p.devDependencies||{}\\)\\)\\)\")",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "mcp__2439dc8e-e2bb-466f-83ef-ebc5e3372e4a__models_explore"
     ]
   },
   "enableAllProjectMcpServers": true,
