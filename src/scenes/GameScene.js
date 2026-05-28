@@ -1831,7 +1831,7 @@ export default class GameScene extends Phaser.Scene {
                 sy = caster?.y ?? this.player?.y ?? 0;
             }
         }
-        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane', spell.vfx?.color);
+        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane', spell.vfx?.color, spell.vfx?.effect);
     }
 
     /**
@@ -1839,7 +1839,27 @@ export default class GameScene extends Phaser.Scene {
      * Picks an imported VFX texture by element family. No-op if no candidate
      * is loaded (the particle burst still fires from ParticleEffects).
      */
-    _showSpellImpactSplash(x, y, element, spellColor) {
+    _showSpellImpactSplash(x, y, element, spellColor, effectName) {
+        // Effect-name keywords pick more specific imagery than element alone.
+        // Checked before the element family below.
+        const EFFECT_KEYWORDS = [
+            [/explos|detonat|erupt|blast|shatter|shockwave/, ['imp_vfx_explosion1', 'imp_vfx_explosion2']],
+            [/slash|dart|garrote|crimson_slash/,             ['imp_vfx_slashspecial2', 'imp_vfx_slashspecial1', 'imp_vfx_slashthunder']],
+            [/arrow/,                                        ['imp_vfx_slashspecial3', 'imp_vfx_slashspecial1']],
+            [/shield|aegis|ward|fortress|wall|cocoon|encase|wrap|shell|mirror|guardian/, ['imp_vfx_holy2', 'imp_vfx_special1']],
+            [/shadow/,                                       ['imp_vfx_darkness4', 'imp_vfx_darkness3', 'imp_vfx_statedark']],
+            [/void/,                                         ['imp_vfx_darkness5', 'imp_vfx_statechaos']],
+            [/decay|necro|rot|soul_rip|mind_leech/,          ['imp_vfx_statedeath', 'imp_vfx_darkness3']],
+            [/poison|toxic|venom|spore|fungal|pollen|mushroom/, ['imp_vfx_earth3', 'imp_vfx_statepoison']],
+            [/vine|root|bark|canopy|bloom|green|nature|thorn|sap/, ['imp_vfx_earth5', 'imp_vfx_earth3', 'imp_vfx_earth2']],
+            [/crystal|prism|silver|mind|sense|reality|time|mana_tether/, ['imp_vfx_special2', 'imp_vfx_holy2']],
+            [/fire|flame/,                                   ['imp_vfx_fire2', 'imp_vfx_fire1']],
+            [/wind/,                                         ['imp_vfx_sonic', 'imp_vfx_song']],
+            [/beast|roar|charge/,                            ['imp_vfx_howl', 'imp_vfx_sonic']],
+            [/soul|spirit|whisper/,                          ['imp_vfx_howl', 'imp_vfx_special1']],
+            [/teleport|leap|vanish|flicker|camo|quick/,      ['imp_vfx_special1', 'imp_vfx_sonic']],
+            [/glow|aura|pulse|wave|ripple/,                  ['imp_vfx_special2', 'imp_vfx_holy1']],
+        ];
         const SPLASH = {
             fire:     ['imp_vfx_fire2', 'imp_vfx_fire1', 'imp_vfx_explosion1', 'imp_vfx_explosion2'],
             ice:      ['imp_vfx_ice4', 'imp_vfx_ice5', 'imp_vfx_ice3'],
@@ -1859,7 +1879,14 @@ export default class GameScene extends Phaser.Scene {
             silver:   ['imp_vfx_special2', 'imp_vfx_holy2', 'imp_vfx_special1'],
         };
         const family = String(element || 'arcane').toLowerCase();
-        const candidates = SPLASH[family] || SPLASH.arcane;
+        // Prefer effect-name-keyword imagery; fall back to the element family.
+        let candidates = SPLASH[family] || SPLASH.arcane;
+        if (effectName) {
+            const en = String(effectName).toLowerCase();
+            for (const [re, cand] of EFFECT_KEYWORDS) {
+                if (re.test(en)) { candidates = cand.concat(candidates); break; }
+            }
+        }
         let key = null;
         for (const k of candidates) { if (this.textures.exists(k)) { key = k; break; } }
         if (!key) return;
