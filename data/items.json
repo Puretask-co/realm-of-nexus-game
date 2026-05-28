@@ -1,6 +1,6 @@
 {
   "version": "2.1.0",
-  "lastModified": "2026-03-29T00:00:00Z",
+  "lastModified": "2026-05-28T16:21:59.967Z",
   "equipmentSlots": [
     "weapon",
     "offhand",
@@ -3213,6 +3213,2270 @@
       "maxStack": 10,
       "stats": {
         "value": 110
+      }
+    },
+    {
+      "id": "abyssal_aegis",
+      "name": "Abyssal Aegis",
+      "type": "armor",
+      "rarity": "legendary",
+      "description": "Abyssal Aegis. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "offhand",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 4,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 40,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "abyssal_crown",
+      "name": "Abyssal Crown",
+      "type": "armor",
+      "rarity": "legendary",
+      "description": "Abyssal Crown. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 4,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 28,
+        "maxHp": 0,
+        "maxSap": 80,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "abyssal_ember",
+      "name": "Abyssal Ember",
+      "type": "crafting",
+      "rarity": "legendary",
+      "description": "Abyssal Ember. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 260
+      }
+    },
+    {
+      "id": "ancient_heartwood",
+      "name": "Ancient Heartwood",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Ancient Heartwood. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "ancient_sap_crystal",
+      "name": "Ancient Sap Crystal",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Ancient Sap Crystal. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "ancient_seed",
+      "name": "Ancient Seed",
+      "type": "quest",
+      "rarity": "uncommon",
+      "description": "Ancient Seed. A key item tied to the fate of the Verdance.",
+      "value": 33,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 33
+      }
+    },
+    {
+      "id": "bear_claw",
+      "name": "Bear Claw",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Bear Claw. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "beast_fang",
+      "name": "Beast Fang",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Beast Fang. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "beast_leather",
+      "name": "Beast Leather",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Beast Leather. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "beetle_shell",
+      "name": "Beetle Shell",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Beetle Shell. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "blight_gland",
+      "name": "Blight Gland",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Blight Gland. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "blighted_bark",
+      "name": "Blighted Bark",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Blighted Bark. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "bloodthorn_spike",
+      "name": "Bloodthorn Spike",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Bloodthorn Spike. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "bloomguard_captain_cloak",
+      "name": "Bloomguard Captain Cloak",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Bloomguard Captain Cloak. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 2,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 21,
+        "maxHp": 54,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "bloomguard_honour_medal",
+      "name": "Bloomguard Honour Medal",
+      "type": "armor",
+      "rarity": "common",
+      "description": "Bloomguard Honour Medal. An item of the Verdance.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 1
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "bloomguard_insignia",
+      "name": "Bloomguard Insignia",
+      "type": "armor",
+      "rarity": "common",
+      "description": "Bloomguard Insignia. An item of the Verdance.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 1
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "chitin_fragment",
+      "name": "Chitin Fragment",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Chitin Fragment. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "corrupted_bark",
+      "name": "Corrupted Bark",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Corrupted Bark. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "corrupted_heartwood",
+      "name": "Corrupted Heartwood",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Corrupted Heartwood. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "coven_blessing_amulet",
+      "name": "Coven Blessing Amulet",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Coven Blessing Amulet. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 3,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 60,
+        "speed": 0,
+        "critChance": 3
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "crimson_heart",
+      "name": "Crimson Heart",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Crimson Heart. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "crystal_core",
+      "name": "Crystal Core",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Crystal Core. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "crystal_edge_blade",
+      "name": "Crystal Edge Blade",
+      "type": "weapon",
+      "rarity": "epic",
+      "description": "Crystal Edge Blade. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "weaponType": "sword",
+      "slot": "weapon",
+      "damage": "2d6",
+      "attackType": "melee",
+      "attackRange": 45,
+      "stats": {
+        "might": 3,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 42,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 5
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "dark_sap",
+      "name": "Dark Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Dark Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "deep_sap",
+      "name": "Deep Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Deep Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "deeproot_core",
+      "name": "Deeproot Core",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Deeproot Core. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "dryad_tear",
+      "name": "Dryad Tear",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Dryad Tear. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "elderroot_sap",
+      "name": "Elderroot Sap",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Elderroot Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "ember_ash",
+      "name": "Ember Ash",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Ember Ash. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "expedition_journal",
+      "name": "Expedition Journal",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Expedition Journal. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "expedition_map",
+      "name": "Expedition Map",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Expedition Map. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "fungal_extract",
+      "name": "Fungal Extract",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Fungal Extract. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "fungal_heart",
+      "name": "Fungal Heart",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Fungal Heart. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "guardian_plate",
+      "name": "Guardian Plate",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Guardian Plate. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 3,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 34,
+        "maxHp": 92,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "guardian_sigil",
+      "name": "Guardian Sigil",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Guardian Sigil. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 0,
+        "maxSap": 48,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "healing_herb",
+      "name": "Healing Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Healing Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "hollow_crown",
+      "name": "Hollow Crown",
+      "type": "armor",
+      "rarity": "legendary",
+      "description": "Hollow Crown. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 4,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 28,
+        "maxHp": 0,
+        "maxSap": 80,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "hollow_plate",
+      "name": "Hollow Plate",
+      "type": "armor",
+      "rarity": "common",
+      "description": "Hollow Plate. An item of the Verdance.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 5,
+        "maxHp": 10,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 1
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "imp_horn",
+      "name": "Imp Horn",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Imp Horn. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "iron_ore",
+      "name": "Iron Ore",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Iron Ore. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "ironbark_shard",
+      "name": "Ironbark Shard",
+      "type": "quest",
+      "rarity": "uncommon",
+      "description": "Ironbark Shard. A key item tied to the fate of the Verdance.",
+      "value": 33,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 33
+      }
+    },
+    {
+      "id": "keeper_sealing_stone",
+      "name": "Keeper Sealing Stone",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Keeper Sealing Stone. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "kings_greatsword",
+      "name": "Kings Greatsword",
+      "type": "weapon",
+      "rarity": "legendary",
+      "description": "Kings Greatsword. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "weaponType": "sword",
+      "slot": "weapon",
+      "damage": "2d8",
+      "attackType": "melee",
+      "attackRange": 45,
+      "stats": {
+        "might": 4,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 65,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 6
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "knight_sigil",
+      "name": "Knight Sigil",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Knight Sigil. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 2,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 11,
+        "maxHp": 0,
+        "maxSap": 26,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "lore_fragment",
+      "name": "Lore Fragment",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Lore Fragment. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "lost_scroll",
+      "name": "Lost Scroll",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Lost Scroll. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "marens_family_ring",
+      "name": "Marens Family Ring",
+      "type": "armor",
+      "rarity": "common",
+      "description": "Marens Family Ring. An item of the Verdance.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "ring",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 1
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "mirror_realm_key",
+      "name": "Mirror Realm Key",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Mirror Realm Key. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "moonbloom_herb",
+      "name": "Moonbloom Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonbloom Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moonpetal",
+      "name": "Moonpetal",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonpetal. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moonpetal_blossom",
+      "name": "Moonpetal Blossom",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonpetal Blossom. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moss_heart",
+      "name": "Moss Heart",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Moss Heart. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "mycelium_crown",
+      "name": "Mycelium Crown",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Mycelium Crown. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 0,
+        "maxSap": 48,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "mycelium_essence",
+      "name": "Mycelium Essence",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Mycelium Essence. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "nexus_crown",
+      "name": "Nexus Crown",
+      "type": "armor",
+      "rarity": "legendary",
+      "description": "Nexus Crown. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 4,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 28,
+        "maxHp": 0,
+        "maxSap": 80,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "nexus_heart",
+      "name": "Nexus Heart",
+      "type": "crafting",
+      "rarity": "legendary",
+      "description": "Nexus Heart. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 260
+      }
+    },
+    {
+      "id": "oakfather_staff",
+      "name": "Oakfather Staff",
+      "type": "weapon",
+      "rarity": "legendary",
+      "description": "Oakfather Staff. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "weaponType": "staff",
+      "slot": "weapon",
+      "damage": "2d8",
+      "attackType": "magic",
+      "attackRange": 220,
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 4,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 65,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 40,
+        "speed": 0,
+        "critChance": 6
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "petrified_bark",
+      "name": "Petrified Bark",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Petrified Bark. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 43
+      }
+    },
+    {
+      "id": "prismatic_shard",
+      "name": "Prismatic Shard",
+      "type": "crafting",
+      "rarity": "rare",
+      "description": "Prismatic Shard. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 90
+      }
+    },
+    {
+      "id": "pure_rootsap",
+      "name": "Pure Rootsap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Pure Rootsap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "resonance_stone",
+      "name": "Resonance Stone",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Resonance Stone. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "resonant_gem",
+      "name": "Resonant Gem",
+      "type": "crafting",
+      "rarity": "rare",
+      "description": "Resonant Gem. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 90
+      }
+    },
+    {
+      "id": "ritual_focus",
+      "name": "Ritual Focus",
+      "type": "crafting",
+      "rarity": "rare",
+      "description": "Ritual Focus. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 90
+      }
+    },
+    {
+      "id": "river_pearl",
+      "name": "River Pearl",
+      "type": "armor",
+      "rarity": "uncommon",
+      "description": "River Pearl. An item of the Verdance.",
+      "value": 43,
+      "level": 4,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 13,
+        "speed": 0,
+        "critChance": 1
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "root_fiber",
+      "name": "Root Fiber",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Root Fiber. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "royal_sigil",
+      "name": "Royal Sigil",
+      "type": "armor",
+      "rarity": "legendary",
+      "description": "Royal Sigil. An item of the Verdance.",
+      "value": 260,
+      "level": 20,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 4,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 28,
+        "maxHp": 0,
+        "maxSap": 80,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 20
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "sabotage_evidence",
+      "name": "Sabotage Evidence",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sabotage Evidence. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sap_charm",
+      "name": "Sap Charm",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Sap Charm. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 32,
+        "speed": 0,
+        "critChance": 2
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "sap_crystal",
+      "name": "Sap Crystal",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Sap Crystal. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sealing_reagent",
+      "name": "Sealing Reagent",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sealing Reagent. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "seers_circlet",
+      "name": "Seers Circlet",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Seers Circlet. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 0,
+        "maxSap": 48,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "sentinel_crystal",
+      "name": "Sentinel Crystal",
+      "type": "crafting",
+      "rarity": "rare",
+      "description": "Sentinel Crystal. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 90
+      }
+    },
+    {
+      "id": "serpent_scale",
+      "name": "Serpent Scale",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Serpent Scale. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "shadow_cloak",
+      "name": "Shadow Cloak",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Shadow Cloak. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 2,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 21,
+        "maxHp": 54,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "shadow_thread",
+      "name": "Shadow Thread",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Shadow Thread. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "skyfeather_charm",
+      "name": "Skyfeather Charm",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Skyfeather Charm. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 32,
+        "speed": 0,
+        "critChance": 2
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "slime_residue",
+      "name": "Slime Residue",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Slime Residue. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "spider_silk",
+      "name": "Spider Silk",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Spider Silk. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "spirit_blessed_vial",
+      "name": "Spirit Blessed Vial",
+      "type": "consumable",
+      "rarity": "epic",
+      "description": "Spirit Blessed Vial. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {
+        "healAmount": "3d6"
+      },
+      "subtype": "potion",
+      "slot": "quickSlot",
+      "effect": {
+        "hp": 30,
+        "sap": 20
+      },
+      "duration": 0,
+      "stackable": true,
+      "maxStack": 10,
+      "stats": {
+        "heal": 30,
+        "value": 160
+      }
+    },
+    {
+      "id": "spore_cap",
+      "name": "Spore Cap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Spore Cap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "spore_lord_crown",
+      "name": "Spore Lord Crown",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Spore Lord Crown. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 0,
+        "maxSap": 48,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "sporecaller_focus",
+      "name": "Sporecaller Focus",
+      "type": "weapon",
+      "rarity": "epic",
+      "description": "Sporecaller Focus. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "weaponType": "staff",
+      "slot": "weapon",
+      "damage": "2d6",
+      "attackType": "magic",
+      "attackRange": 220,
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 42,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 30,
+        "speed": 0,
+        "critChance": 5
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "sporecaller_formula",
+      "name": "Sporecaller Formula",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sporecaller Formula. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sporecaller_log",
+      "name": "Sporecaller Log",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sporecaller Log. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sporelord_staff",
+      "name": "Sporelord Staff",
+      "type": "weapon",
+      "rarity": "common",
+      "description": "Sporelord Staff. An item of the Verdance.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "weaponType": "staff",
+      "slot": "weapon",
+      "damage": "1d6",
+      "attackType": "magic",
+      "attackRange": 220,
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 6,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 2
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 1
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "sprite_dust",
+      "name": "Sprite Dust",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Sprite Dust. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "thorn_cluster",
+      "name": "Thorn Cluster",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Thorn Cluster. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "thorn_needle",
+      "name": "Thorn Needle",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Thorn Needle. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "thornback_pelt",
+      "name": "Thornback Pelt",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Thornback Pelt. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "thornmaw_fang_necklace",
+      "name": "Thornmaw Fang Necklace",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Thornmaw Fang Necklace. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 3,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 60,
+        "speed": 0,
+        "critChance": 3
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "veil_dust",
+      "name": "Veil Dust",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Veil Dust. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "veil_herb",
+      "name": "Veil Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Veil Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "veil_shard",
+      "name": "Veil Shard",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Veil Shard. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "veil_touched_herb",
+      "name": "Veil Touched Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Veil Touched Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "veilbound_amulet",
+      "name": "Veilbound Amulet",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Veilbound Amulet. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 3,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 60,
+        "speed": 0,
+        "critChance": 3
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "veilguard_armor",
+      "name": "Veilguard Armor",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Veilguard Armor. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 3,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 34,
+        "maxHp": 92,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "veilkeeper_focus",
+      "name": "Veilkeeper Focus",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Veilkeeper Focus. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "venom_sac",
+      "name": "Venom Sac",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Venom Sac. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_blue_sap",
+      "name": "Volatile Blue Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Blue Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_crimson_sap",
+      "name": "Volatile Crimson Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Crimson Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_silver_sap",
+      "name": "Volatile Silver Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Silver Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "warden_helm",
+      "name": "Warden Helm",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Warden Helm. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "light",
+      "slot": "head",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 0,
+        "maxSap": 48,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "wardens_mantle",
+      "name": "Wardens Mantle",
+      "type": "armor",
+      "rarity": "epic",
+      "description": "Wardens Mantle. An item of the Verdance.",
+      "value": 160,
+      "level": 14,
+      "effects": {},
+      "armorClass": "medium",
+      "slot": "chest",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 3,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 34,
+        "maxHp": 92,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 14
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "weavers_eye",
+      "name": "Weavers Eye",
+      "type": "crafting",
+      "rarity": "rare",
+      "description": "Weavers Eye. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 90
+      }
+    },
+    {
+      "id": "wildkin_totem",
+      "name": "Wildkin Totem",
+      "type": "armor",
+      "rarity": "rare",
+      "description": "Wildkin Totem. An item of the Verdance.",
+      "value": 90,
+      "level": 8,
+      "effects": {},
+      "armorClass": "accessory",
+      "slot": "amulet",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 32,
+        "speed": 0,
+        "critChance": 2
+      },
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "wolf_pelt",
+      "name": "Wolf Pelt",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Wolf Pelt. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "worldroot_splinter",
+      "name": "Worldroot Splinter",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Worldroot Splinter. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "wraith_vine",
+      "name": "Wraith Vine",
+      "type": "crafting",
+      "rarity": "uncommon",
+      "description": "Wraith Vine. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 35,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 35
       }
     }
   ]
