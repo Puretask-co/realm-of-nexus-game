@@ -18,7 +18,6 @@ const BIOME_FILES = {
   bg_spire:        'assets/imported/backdrops/bg_spire_A.png',
   bg_tideflow:     'assets/imported/backdrops/bg_tideflow_A.png',
   bg_veil:         'assets/imported/backdrops/bg_veil_A.png',
-  bg_witherlands:  'assets/imported/backdrops/bg_witherlands_A.png',
 };
 
 // Game zone id -> biome backdrop key.

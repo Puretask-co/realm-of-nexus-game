@@ -1,81 +1,80 @@
 /**
- * AUTO-GENERATED loader (regenerated to match files on disk).
- * Loads ONLY the lightweight original categories (characters, vfx,
- * environment). Heavy new folders (backdrops, props, enemies, etc.)
- * are loaded selectively elsewhere to avoid blowing the texture budget.
+ * AUTO-GENERATED loader (regenerated). Character sprite-sheet frame
+ * dimensions are divided by 4 because those sheets were downscaled 4x
+ * to cut boot time. Loads only lightweight categories.
  */
 export const IMPORTED_KEYS = { characters: [], vfx: [], environment: [] };
 export const ImportedAssets = {
   preload(scene) {
     scene.load.image('imp_animation6', 'assets/imported/characters/Animation6.png');
     IMPORTED_KEYS.characters.push('imp_animation6');
-    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px_1', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_6col_3row_256px (1).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px_1', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_6col_3row_256px (1).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px_1');
-    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_6col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_6col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_corrupted_tree_sentenel_run_top_down_6col_3row_256px');
-    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_7col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px', 'assets/imported/characters/corrupted-tree-sentenel_run_top-down_7col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px');
-    scene.load.spritesheet('imp_corruptedtreetitan_walk_top_down_5col_7row_256px_2', 'assets/imported/characters/corruptedtreetitan_walk_top-down_5col_7row_256px (2).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_corruptedtreetitan_walk_top_down_5col_7row_256px_2', 'assets/imported/characters/corruptedtreetitan_walk_top-down_5col_7row_256px (2).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_corruptedtreetitan_walk_top_down_5col_7row_256px_2');
-    scene.load.spritesheet('imp_corruptedtreetitan_walk_top_down_5col_7row_256px', 'assets/imported/characters/corruptedtreetitan_walk_top-down_5col_7row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_corruptedtreetitan_walk_top_down_5col_7row_256px', 'assets/imported/characters/corruptedtreetitan_walk_top-down_5col_7row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_corruptedtreetitan_walk_top_down_5col_7row_256px');
-    scene.load.spritesheet('imp_druid_run_top_down_8col_3row_256px', 'assets/imported/characters/druid_run_top-down_8col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_druid_run_top_down_8col_3row_256px', 'assets/imported/characters/druid_run_top-down_8col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_druid_run_top_down_8col_3row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_5col_10row_256px', 'assets/imported/characters/sprite_everything_front_5col_10row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_5col_10row_256px', 'assets/imported/characters/sprite_everything_front_5col_10row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_5col_10row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_5col_11row_256px', 'assets/imported/characters/sprite_everything_front_5col_11row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_5col_11row_256px', 'assets/imported/characters/sprite_everything_front_5col_11row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_5col_11row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_5col_12row_256px', 'assets/imported/characters/sprite_everything_front_5col_12row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_5col_12row_256px', 'assets/imported/characters/sprite_everything_front_5col_12row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_5col_12row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_5col_3row_256px', 'assets/imported/characters/sprite_everything_front_5col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_5col_3row_256px', 'assets/imported/characters/sprite_everything_front_5col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_5col_3row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_5col_8row_256px', 'assets/imported/characters/sprite_everything_front_5col_8row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_5col_8row_256px', 'assets/imported/characters/sprite_everything_front_5col_8row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_5col_8row_256px');
-    scene.load.spritesheet('imp_sprite_everything_front_6col_3row_256px_1', 'assets/imported/characters/sprite_everything_front_6col_3row_256px (1).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_6col_3row_256px_1', 'assets/imported/characters/sprite_everything_front_6col_3row_256px (1).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_6col_3row_256px_1');
-    scene.load.spritesheet('imp_sprite_everything_front_6col_3row_256px_2', 'assets/imported/characters/sprite_everything_front_6col_3row_256px (2).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_everything_front_6col_3row_256px_2', 'assets/imported/characters/sprite_everything_front_6col_3row_256px (2).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_everything_front_6col_3row_256px_2');
-    scene.load.spritesheet('imp_sprite_powerfulswordattack_front_7col_9row_256px', 'assets/imported/characters/sprite_powerfulswordattack_front_7col_9row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_powerfulswordattack_front_7col_9row_256px', 'assets/imported/characters/sprite_powerfulswordattack_front_7col_9row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_powerfulswordattack_front_7col_9row_256px');
-    scene.load.spritesheet('imp_sprite_run_front_16col_2row_256px', 'assets/imported/characters/sprite_run_front_16col_2row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_16col_2row_256px', 'assets/imported/characters/sprite_run_front_16col_2row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_16col_2row_256px');
-    scene.load.spritesheet('imp_sprite_run_front_6col_3row_256px', 'assets/imported/characters/sprite_run_front_6col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_6col_3row_256px', 'assets/imported/characters/sprite_run_front_6col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_6col_3row_256px');
-    scene.load.spritesheet('imp_sprite_run_front_7col_4row_64px', 'assets/imported/characters/sprite_run_front_7col_4row_64px.png', { frameWidth: 64, frameHeight: 64 });
+    scene.load.spritesheet('imp_sprite_run_front_7col_4row_64px', 'assets/imported/characters/sprite_run_front_7col_4row_64px.png', { frameWidth: 16, frameHeight: 16 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_7col_4row_64px');
-    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px_1', 'assets/imported/characters/sprite_run_front_8col_2row_256px (1).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px_1', 'assets/imported/characters/sprite_run_front_8col_2row_256px (1).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_8col_2row_256px_1');
-    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px_2', 'assets/imported/characters/sprite_run_front_8col_2row_256px (2).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px_2', 'assets/imported/characters/sprite_run_front_8col_2row_256px (2).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_8col_2row_256px_2');
-    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px', 'assets/imported/characters/sprite_run_front_8col_2row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_8col_2row_256px', 'assets/imported/characters/sprite_run_front_8col_2row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_8col_2row_256px');
-    scene.load.spritesheet('imp_sprite_run_front_8col_3row_256px', 'assets/imported/characters/sprite_run_front_8col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_8col_3row_256px', 'assets/imported/characters/sprite_run_front_8col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_8col_3row_256px');
-    scene.load.spritesheet('imp_sprite_run_front_9col_2row_256px', 'assets/imported/characters/sprite_run_front_9col_2row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_run_front_9col_2row_256px', 'assets/imported/characters/sprite_run_front_9col_2row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_run_front_9col_2row_256px');
-    scene.load.spritesheet('imp_sprite_walk_front_6col_5row_256px', 'assets/imported/characters/sprite_walk_front_6col_5row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_sprite_walk_front_6col_5row_256px', 'assets/imported/characters/sprite_walk_front_6col_5row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_sprite_walk_front_6col_5row_256px');
-    scene.load.spritesheet('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px_1', 'assets/imported/characters/tree-titan_treetitantakedamagedie_top-down_5col_6row_256px (1).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px_1', 'assets/imported/characters/tree-titan_treetitantakedamagedie_top-down_5col_6row_256px (1).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px_1');
-    scene.load.spritesheet('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px', 'assets/imported/characters/tree-titan_treetitantakedamagedie_top-down_5col_6row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px', 'assets/imported/characters/tree-titan_treetitantakedamagedie_top-down_5col_6row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_titan_treetitantakedamagedie_top_down_5col_6row_256px');
-    scene.load.spritesheet('imp_tree_idle_top_down_10col_10row_256px', 'assets/imported/characters/tree_idle_top-down_10col_10row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_idle_top_down_10col_10row_256px', 'assets/imported/characters/tree_idle_top-down_10col_10row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_idle_top_down_10col_10row_256px');
-    scene.load.spritesheet('imp_tree_idle_top_down_8col_13row_256px_1', 'assets/imported/characters/tree_idle_top-down_8col_13row_256px (1).png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_idle_top_down_8col_13row_256px_1', 'assets/imported/characters/tree_idle_top-down_8col_13row_256px (1).png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_idle_top_down_8col_13row_256px_1');
-    scene.load.spritesheet('imp_tree_idle_top_down_8col_13row_256px', 'assets/imported/characters/tree_idle_top-down_8col_13row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_idle_top_down_8col_13row_256px', 'assets/imported/characters/tree_idle_top-down_8col_13row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_idle_top_down_8col_13row_256px');
-    scene.load.spritesheet('imp_tree_idle_top_down_8col_3row_256px', 'assets/imported/characters/tree_idle_top-down_8col_3row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_tree_idle_top_down_8col_3row_256px', 'assets/imported/characters/tree_idle_top-down_8col_3row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_tree_idle_top_down_8col_3row_256px');
-    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_14col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_14col_5row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_14col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_14col_5row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_treetitan_treetitanswordattack_top_down_14col_5row_256px');
-    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_6col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_6col_5row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_6col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_6col_5row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_treetitan_treetitanswordattack_top_down_6col_5row_256px');
-    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_7col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_7col_5row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_treetitan_treetitanswordattack_top_down_7col_5row_256px', 'assets/imported/characters/treetitan_treetitanswordattack_top-down_7col_5row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_treetitan_treetitanswordattack_top_down_7col_5row_256px');
-    scene.load.spritesheet('imp_treetitan_treetitanwalk_top_down_10col_5row_256px', 'assets/imported/characters/treetitan_treetitanwalk_top-down_10col_5row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_treetitan_treetitanwalk_top_down_10col_5row_256px', 'assets/imported/characters/treetitan_treetitanwalk_top-down_10col_5row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_treetitan_treetitanwalk_top_down_10col_5row_256px');
-    scene.load.spritesheet('imp_treetitan_treetitanwalk_top_down_6col_10row_256px', 'assets/imported/characters/treetitan_treetitanwalk_top-down_6col_10row_256px.png', { frameWidth: 256, frameHeight: 256 });
+    scene.load.spritesheet('imp_treetitan_treetitanwalk_top_down_6col_10row_256px', 'assets/imported/characters/treetitan_treetitanwalk_top-down_6col_10row_256px.png', { frameWidth: 64, frameHeight: 64 });
     IMPORTED_KEYS.characters.push('imp_treetitan_treetitanwalk_top_down_6col_10row_256px');
     scene.load.image('imp_vfx_cure1', 'assets/imported/vfx/Cure1.png');
     IMPORTED_KEYS.vfx.push('imp_vfx_cure1');
