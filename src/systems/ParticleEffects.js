@@ -82,8 +82,19 @@ export default class ParticleEffects {
         const x = data?.x ?? player?.x ?? scene.cameras.main.centerX;
         const y = data?.y ?? player?.y ?? scene.cameras.main.centerY;
         const element = data?.spell?.element || data?.element || 'arcane';
-        const cfg = ELEMENT_FX[element] || ELEMENT_FX.arcane;
+        const baseCfg = ELEMENT_FX[element] || ELEMENT_FX.arcane;
+        // Honor the spell's own vfx.color when present (per-spell tint),
+        // otherwise use the element's default tint.
+        const spellColor = this._parseColor(data?.spell?.vfx?.color);
+        const cfg = spellColor != null ? { ...baseCfg, tint: spellColor } : baseCfg;
         this._burst(x, y, cfg, 18);
+    }
+
+    _parseColor(c) {
+        if (c == null) return null;
+        if (typeof c === 'number') return c;
+        const n = parseInt(String(c).replace(/^0x/i, ''), 16);
+        return Number.isFinite(n) ? n : null;
     }
 
     _onHit(x, y, isPlayer) {

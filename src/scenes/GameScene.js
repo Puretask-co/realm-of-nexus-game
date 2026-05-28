@@ -1831,7 +1831,7 @@ export default class GameScene extends Phaser.Scene {
                 sy = caster?.y ?? this.player?.y ?? 0;
             }
         }
-        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane');
+        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane', spell.vfx?.color);
     }
 
     /**
@@ -1839,7 +1839,7 @@ export default class GameScene extends Phaser.Scene {
      * Picks an imported VFX texture by element family. No-op if no candidate
      * is loaded (the particle burst still fires from ParticleEffects).
      */
-    _showSpellImpactSplash(x, y, element) {
+    _showSpellImpactSplash(x, y, element, spellColor) {
         const SPLASH = {
             fire:     ['imp_vfx_fire2', 'imp_vfx_fire1', 'imp_vfx_explosion1', 'imp_vfx_explosion2'],
             ice:      ['imp_vfx_ice4', 'imp_vfx_ice5', 'imp_vfx_ice3'],
@@ -1869,6 +1869,13 @@ export default class GameScene extends Phaser.Scene {
             .setAlpha(0.95)
             .setScale(0.35)
             .setBlendMode(Phaser.BlendModes.ADD);
+        // Tint with the spell's own vfx.color when provided (per-spell color).
+        if (spellColor != null) {
+            const c = typeof spellColor === 'number'
+                ? spellColor
+                : parseInt(String(spellColor).replace(/^0x/i, ''), 16);
+            if (Number.isFinite(c)) splash.setTint(c);
+        }
         this.tweens.add({
             targets: splash,
             scale: 1.2,
