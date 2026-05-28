@@ -427,14 +427,21 @@ export default class GameScene extends Phaser.Scene {
             const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
             this.zones.push(zone);
 
-            // ── Painterly backdrop floor (if one is loaded for this zone) ──
-            const bgKey = ZoneBackdrops.keyFor(loc.id);
-            const hasBackdrop = this.textures.exists(bgKey);
-            if (hasBackdrop) {
-                this.add.image(zoneX, zoneY, bgKey)
-                    .setOrigin(0, 0)
-                    .setDisplaySize(ZONE_W, ZONE_H)
-                    .setDepth(0.1);
+            // ── Painterly backdrop floor: assemble the realm's panels into a
+            // grid filling the zone (6 panels = 3x2, 4 = 2x2). ──
+            const grid = ZoneBackdrops.gridFor(loc.id, this);
+            const hasBackdrop = !!grid;
+            if (grid) {
+                const cellW = ZONE_W / grid.cols;
+                const cellH = ZONE_H / grid.rows;
+                grid.keys.forEach((key, idx) => {
+                    const cx = idx % grid.cols;
+                    const cy = Math.floor(idx / grid.cols);
+                    this.add.image(zoneX + cx * cellW, zoneY + cy * cellH, key)
+                        .setOrigin(0, 0)
+                        .setDisplaySize(cellW + 1, cellH + 1) // +1 hides hairline seams
+                        .setDepth(0.1);
+                });
             } else {
                 // No painterly floor — fall back to the old tilemap graphics.
                 const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);

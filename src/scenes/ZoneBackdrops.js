@@ -1,74 +1,78 @@
 /**
- * ZoneBackdrops — loads painterly biome backdrops and maps them to zones.
- *
- * To keep memory sane we load ONE representative panel (the `_A` panel) per
- * biome (~11 images) rather than every panel of every location. Each zone is
- * assigned a biome backdrop; GameScene stretches it to fill the zone floor.
+ * ZoneBackdrops — assembles each realm's multi-panel backdrop into one
+ * continuous zone floor. A realm's panels (A..F) are placed edge-to-edge in a
+ * grid (6 panels = 3x2, 4 panels = 2x2) filling the zone bounds, so the whole
+ * zone reads as one large painted area instead of a single stretched image.
  */
 
-// Biome key -> source file (the representative _A panel).
-const BIOME_FILES = {
-  bg_archive:      'assets/imported/backdrops/bg_archive_A.png',
-  bg_catacombs:    'assets/imported/backdrops/bg_catacombs_A.png',
-  bg_crimsonmire:  'assets/imported/backdrops/bg_crimsonmire_A.png',
-  bg_frostmere:    'assets/imported/backdrops/bg_frostmere_A.png',
-  bg_gloamwood:    'assets/imported/backdrops/bg_gloamwood_A.png',
-  bg_heights:      'assets/imported/backdrops/bg_heights_A.png',
-  bg_scar:         'assets/imported/backdrops/bg_scar_A.png',
-  bg_spire:        'assets/imported/backdrops/bg_spire_A.png',
-  bg_tideflow:     'assets/imported/backdrops/bg_tideflow_A.png',
-  bg_veil:         'assets/imported/backdrops/bg_veil_A.png',
+// Realm -> ordered panel letters that exist, plus grid layout.
+const REALM_GRID = {
+  heights:     { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
+  archive:     { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
+  crimsonmire: { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
+  gloamwood:   { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
+  spire:       { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
+  witherlands: { panels: ['B', 'C', 'D', 'E'],            cols: 2, rows: 2 },
+  catacombs:   { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
+  scar:        { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
+  tideflow:    { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
+  frostmere:   { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
+  veil:        { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
 };
 
-// Game zone id -> biome backdrop key.
-const ZONE_BACKDROP_MAP = {
-  canopy_of_life:             'bg_heights',
-  canopy_overlook:            'bg_heights',
-  verdant_exchange:           'bg_heights',
-  bloomguard_barracks:        'bg_heights',
-  emerald_sanctum:            'bg_heights',
-  sapling_plantation:         'bg_heights',
+// Game zone id -> realm.
+const ZONE_REALM = {
+  canopy_of_life: 'heights', canopy_overlook: 'heights', verdant_exchange: 'heights',
+  bloomguard_barracks: 'heights', emerald_sanctum: 'heights', sapling_plantation: 'heights',
 
-  spindlewood_forest:         'bg_gloamwood',
-  glinting_groves:            'bg_gloamwood',
-  wildkin_hunting_grounds:    'bg_gloamwood',
-  hollow_tree_grove:          'bg_gloamwood',
-  everwood_heart:             'bg_gloamwood',
-  thornbinder_safehouse:      'bg_gloamwood',
-  thornbinder_training_grounds:'bg_gloamwood',
-  sporecaller_labs:           'bg_gloamwood',
-  mycelium_nexus:             'bg_gloamwood',
+  spindlewood_forest: 'gloamwood', glinting_groves: 'gloamwood', wildkin_hunting_grounds: 'gloamwood',
+  hollow_tree_grove: 'gloamwood', everwood_heart: 'gloamwood', thornbinder_safehouse: 'gloamwood',
+  thornbinder_training_grounds: 'gloamwood', sporecaller_labs: 'gloamwood', mycelium_nexus: 'gloamwood',
 
-  hollowroot_catacombs:       'bg_catacombs',
-  ancient_unbinding_site:     'bg_spire',
-  void_nexus:                 'bg_spire',
+  hollowroot_catacombs: 'catacombs',
+  ancient_unbinding_site: 'spire', void_nexus: 'spire',
 
-  whispering_veil:            'bg_veil',
-  veil_echo_chamber:          'bg_veil',
-  veil_tear_rift_alpha:       'bg_veil',
-  veil_tear_rift_beta:        'bg_veil',
-  veil_tear_rift_gamma:       'bg_veil',
+  whispering_veil: 'veil', veil_echo_chamber: 'veil',
+  veil_tear_rift_alpha: 'veil', veil_tear_rift_beta: 'veil', veil_tear_rift_gamma: 'veil',
 
-  the_scar:                   'bg_scar',
-  abyss_forward_camp:         'bg_scar',
-  corruption_quarantine_zone: 'bg_crimsonmire',
-
-  emerald_cascades:           'bg_tideflow',
+  the_scar: 'scar', abyss_forward_camp: 'scar',
+  corruption_quarantine_zone: 'crimsonmire',
+  emerald_cascades: 'tideflow',
 };
 
-const DEFAULT_BACKDROP = 'bg_gloamwood';
+const DEFAULT_REALM = 'gloamwood';
+const panelKey = (realm, letter) => `bgp_${realm}_${letter}`;
 
 export const ZoneBackdrops = {
   preload(scene) {
-    for (const [key, path] of Object.entries(BIOME_FILES)) {
-      scene.load.image(key, path);
+    for (const [realm, grid] of Object.entries(REALM_GRID)) {
+      for (const letter of grid.panels) {
+        scene.load.image(panelKey(realm, letter), `assets/imported/backdrops/bg_${realm}_${letter}.png`);
+      }
     }
   },
 
-  /** Return the loaded backdrop texture key for a zone id (or default). */
-  keyFor(zoneId) {
-    const key = ZONE_BACKDROP_MAP[zoneId] || DEFAULT_BACKDROP;
-    return key;
+  realmFor(zoneId) {
+    return ZONE_REALM[zoneId] || DEFAULT_REALM;
+  },
+
+  /**
+   * Returns the panel grid for a zone: { keys: [tex keys row-major], cols, rows }
+   * Only includes panels whose texture actually loaded.
+   */
+  gridFor(zoneId, scene) {
+    const realm = this.realmFor(zoneId);
+    const grid = REALM_GRID[realm];
+    if (!grid) return null;
+    const keys = grid.panels.map(l => panelKey(realm, l)).filter(k => scene.textures.exists(k));
+    if (keys.length === 0) return null;
+    // Fit cols/rows to however many actually loaded.
+    let cols = grid.cols, rows = grid.rows;
+    if (keys.length < cols * rows) {
+      cols = Math.min(cols, keys.length);
+      rows = Math.ceil(keys.length / cols);
+    }
+    return { keys, cols, rows };
   },
 };
 
