@@ -1,0 +1,17 @@
+[
+  {
+    "filename": "prop_tree_worldsapling.png",
+    "size": "1024x1024",
+    "prompt": "Hand-painted painterly fantasy game art, visible loose brushwork, Studio-Ghibli-meets-Magic-the-Gathering quality. Pure top-down view from directly overhead, like a satellite photo. A single sacred young World-Sapling tree: a round canopy of bright bioluminescent blue glowing leaves with a gentle blue magical aura halo. Centered against a plain flat neutral grey background for easy background removal. No characters, no text, no UI, no scene background."
+  },
+  {
+    "filename": "enemy_timber_wolf.png",
+    "size": "1024x1024",
+    "prompt": "Hand-painted painterly fantasy game art, visible loose brushwork, Studio-Ghibli-meets-Magic-the-Gathering quality. High-angle near-top-down view (about 75 degrees). A single feral wolf with shaggy dark grey fur, ember-orange eyes, baring teeth in a snarl, patches of green moss on its back, crouched in a hunting stance. Centered against a plain flat neutral grey background for easy background removal. No other characters, no text, no UI, no scene background."
+  },
+  {
+    "filename": "spell_azure_bolt.png",
+    "size": "1024x1024",
+    "prompt": "Hand-painted painterly fantasy spell icon, visible brushwork, Magic-the-Gathering-card-art quality. A sharp javelin of compressed sapphire-blue magical energy shaped like a thrown lightning bolt with a tapered point, trailing a comet-tail of dispersing blue light, a single glinting blue Sap crystal at its heart, cyan ember-motes drifting in its wake. Centered against a deep slate-grey background with a soft cyan glow halo. No text, no characters, no UI frame."
+  }
+]
