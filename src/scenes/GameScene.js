@@ -1437,7 +1437,33 @@ export default class GameScene extends Phaser.Scene {
             // ---- Veilkeeper — near world center ----
             { name: 'Sylara', role: 'veilkeeper', x: 800, y: 500, zoneId: 'canopy_of_life',
               dialogue: ['The Veil whispers your name. What do you seek to know?'],
-              dialogueId: 'sylara_greeting', keeperId: 'sylthara', interactRadius: 70 }
+              dialogueId: 'sylara_greeting', keeperId: 'sylthara', interactRadius: 70 },
+
+            // ---- Quest-giver NPCs referenced by dialogue objectives ----
+            // Placed so their quests' "speak to X" objectives can complete.
+            { name: 'Faction Leaders', role: 'quest', x: 380, y: 420, zoneId: 'canopy_of_life',
+              dialogue: ['The council has gathered.', 'The factions are divided on how to face the Veil.', 'Your voice may sway the outcome.'], interactRadius: 70 },
+            { name: 'Healer Mora', role: 'quest', x: 520, y: 480, zoneId: 'canopy_of_life',
+              dialogue: ['So many wounded come to me now.', 'I am low on healing herbs.', 'Bless you for helping.'], interactRadius: 60 },
+            { name: 'Keeper Lynn', role: 'quest', x: 620, y: 520, zoneId: 'canopy_of_life',
+              dialogue: ['The archives hold answers, if you can find them.', 'A lost scroll troubles me.', 'Knowledge must not be forgotten.'], interactRadius: 60 },
+            { name: 'Veil Watcher', role: 'quest', x: 180, y: 520, zoneId: 'canopy_of_life',
+              dialogue: ['I watch the Veil for tears.', 'Something stirs beyond the threshold.', 'Stay vigilant.'], interactRadius: 60 },
+            { name: 'Watcher Cole', role: 'quest', x: 260, y: 600, zoneId: 'canopy_of_life',
+              dialogue: ['I have seen things on the borders.', 'A warning must reach the Bloomguard.', 'Time is short.'], interactRadius: 60 },
+            { name: 'Sap Weaver', role: 'quest', x: 680, y: 360, zoneId: 'canopy_of_life',
+              dialogue: ['I weave charms from living Sap.', 'Bring me what I need and I will craft you one.', 'The Sap remembers its shape.'], interactRadius: 60 },
+            { name: 'Consortium Director Orin', role: 'quest', x: 120, y: 480, zoneId: 'canopy_of_life',
+              dialogue: ['The Consortium values efficiency.', 'A blight infestation threatens our workshop.', 'Clear it and you will be rewarded.'], interactRadius: 60 },
+            { name: 'Elder Thornwick', role: 'quest', x: 340, y: 560, zoneId: 'canopy_of_life',
+              dialogue: ['The Veil grows thin, young one.', 'I have studied its tears for decades.', 'Help me, and I will teach you what I know.'],
+              dialogueId: 'elder_thornwick_quest1', interactRadius: 65 },
+            { name: 'Scout Brin', role: 'quest', x: 240, y: 1020, zoneId: 'spindlewood_forest',
+              dialogue: ['I scout the forest paths.', 'My recon route needs covering.', 'Eyes open out there.'], interactRadius: 60 },
+            { name: 'Shadowmaster Kael', role: 'quest', x: 780, y: 200, zoneId: 'hollowroot_catacombs',
+              dialogue: ['You walk in shadow as I do.', 'My past haunts these tunnels.', 'Perhaps you can help me face it.'], interactRadius: 60 },
+            { name: 'Alchemist Ferment', role: 'quest', x: 840, y: 1300, zoneId: 'mycelium_nexus',
+              dialogue: ['Decay is just transformation, friend.', 'I need a moss heart for my brew.', 'Fetch it and we both profit.'], interactRadius: 60 }
         ];
 
         for (const def of npcDefs) {
