@@ -382,16 +382,24 @@ export default class UIScene extends Phaser.Scene {
         const startX = 640 - (slotSize * 2.5);
         const y = 720 - slotSize - 16;
 
+        // Painterly hotbar frame behind the slots (decorative).
+        if (this.textures.exists('art_ui_hotbar')) {
+            const rowW = slotSize * 5 + 8 * 4;
+            this.uiElements.hotbarFrame = this.add.image(startX + rowW / 2, y + slotSize / 2, 'art_ui_hotbar')
+                .setDisplaySize(rowW + 64, slotSize + 44)
+                .setDepth(9999)
+                .setAlpha(0.95);
+        }
+
         this._spellNames = ['Spell 1', 'Spell 2', 'Spell 3', 'Spell 4', 'Spell 5'];
         this._spellColorValues = [0x888888, 0x888888, 0x888888, 0x888888, 0x888888];
 
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);
             const bg = this.add.graphics().setDepth(10000);
-            bg.fillStyle(0x222244, 0.7);
+            // Lighter fill so the painterly hotbar frame's slot wells show through.
+            bg.fillStyle(0x222244, 0.25);
             bg.fillRect(x, y, slotSize, slotSize);
-            bg.lineStyle(1, this._spellColorValues[i], 0.4);
-            bg.strokeRect(x, y, slotSize, slotSize);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
                 fontFamily: 'Open Sans', fontSize: '14px', color: '#6688aa'
