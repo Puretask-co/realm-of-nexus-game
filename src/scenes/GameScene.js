@@ -2115,6 +2115,25 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
+        // Credit XP + gold to the ACTUAL player. QuestSystem.addExperience
+        // writes to its own detached playerStats object (not this.player.stats),
+        // and completeQuest never grants gold — so apply both here, the one
+        // place the live player is in scope. (Items are already added during
+        // completeQuest via inventory:addItem.)
+        const r = data.rewards || {};
+        const xp = r.experience ?? r.xp ?? 0;
+        if (xp && this.player?.stats) {
+            this.player.stats.experience = (this.player.stats.experience || 0) + xp;
+            this.damageNumbers?.show?.(this.player.x, this.player.y - 30, `+${xp} XP`, 0x44ff88);
+        }
+        if (r.gold && this.player?.stats) {
+            this.player.stats.gold = (this.player.stats.gold || 0) + r.gold;
+            this.damageNumbers?.show?.(this.player.x, this.player.y - 12, `+${r.gold}g`, 0xffdd44);
+        }
+        if ((xp || r.gold) && this.player?.stats) {
+            EventBus.emit('player-stats-updated', this.player.stats);
+        }
+
         // Check if this is a main quest completion — trigger ending evaluation
         const questDef = this.questSystem?.questDefinitions?.get?.(data.questId);
         if (questDef?.type === 'main' || questDef?.isMainQuest === true) {
