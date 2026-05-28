@@ -45,6 +45,7 @@ import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
 import { ZoneBackdrops } from './ZoneBackdrops.js';
 import { PAINTERLY_ENEMY_MAP, BOSS_IDS, npcArtFor } from './GameArt.js';
+import MotionLibrary from '../systems/MotionLibrary.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -279,6 +280,7 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
             EventBus.on('quest:started', (data) => this._onQuestStarted(data)),
             EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
+            EventBus.on('player:addExperience', (data) => this._onAddExperience(data)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
             EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
@@ -813,11 +815,15 @@ export default class GameScene extends Phaser.Scene {
             const dy = y + Phaser.Math.Between(60, h - 40);
             const scale = Phaser.Math.FloatBetween(0.35, 0.85);
             // Depth 1.5 sits between background (0) and gameplay (4+).
-            this.add.image(dx, dy, key)
+            const prop = this.add.image(dx, dy, key)
                 .setDepth(1.5)
                 .setScale(scale)
                 .setAlpha(Phaser.Math.FloatBetween(0.75, 0.95))
                 .setOrigin(0.5, 0.85);
+            // Foliage sways; only a third get motion to keep it cheap.
+            if (/tree|bush|fern|flower|willow|greenery|grass/.test(key) && Math.random() < 0.35) {
+                MotionLibrary.apply(this, prop, 'idle-sway', { amount: Phaser.Math.Between(2, 4), duration: 2400 + Math.random() * 1200 });
+            }
         }
 
         // Drop a unique landmark idol per zone (deterministic by id hash so the
@@ -1244,14 +1250,8 @@ export default class GameScene extends Phaser.Scene {
             enemy.body.setSize(tw * 0.5, th * 0.5);
             enemy.body.setOffset(tw * 0.25, th * 0.35);
             enemy._painterly = true;
-            // Gentle idle "breathing" bob so static art feels alive.
-            enemy._baseScaleY = enemy.scaleY;
-            this.tweens.add({
-                targets: enemy,
-                scaleY: enemy.scaleY * 1.04,
-                duration: 1400 + Math.random() * 400,
-                yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-            });
+            // Gentle idle "breathing" so static art feels alive.
+            MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
         } else {
             spriteKey = ENEMY_SPRITE_MAP[def.id] ||
                 (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
@@ -2087,6 +2087,18 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * Apply XP granted directly by a dialogue effect (player:addExperience),
+     * which previously had no listener so dialogue XP rewards were lost.
+     */
+    _onAddExperience(data) {
+        const amount = data?.amount || 0;
+        if (!amount || !this.player?.stats) return;
+        this.player.stats.experience = (this.player.stats.experience || 0) + amount;
+        this.damageNumbers?.show?.(this.player.x, this.player.y - 28, `+${amount} XP`, 0x44ff88);
+        EventBus.emit('player-stats-updated', this.player.stats);
+    }
+
     _onQuestCompleted(data) {
         console.log(`[Quest] Completed: ${data.name}`);
         this.cameraSystem.shake('medium');
@@ -2746,6 +2758,12 @@ export default class GameScene extends Phaser.Scene {
                                     const walkAnim = WALK_ANIM[enemy.texture?.key];
                                     if (walkAnim && this.anims.exists(walkAnim)) enemy.play(walkAnim);
                                 });
+                            } else if (enemy._painterly) {
+                                // Painterly (physics) enemies can't lunge (body
+                                // overwrites position), so flash + quick wobble as
+                                // the attack tell. Wobble restores scale on done.
+                                MotionLibrary.apply(this, enemy, 'flash', { tint: 0xffdd88, duration: 140 });
+                                MotionLibrary.apply(this, enemy, 'wobble');
                             }
                             EventBus.emit('enemy-attack', { enemy, player: this.player, damage });
                             EventBus.emit('player-damaged', { x: this.player.x, y: this.player.y });
