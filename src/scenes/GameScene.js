@@ -358,9 +358,43 @@ export default class GameScene extends Phaser.Scene {
             }),
             EventBus.on('save-collect', (saveData) => {
                 saveData.discoveredZones = [...this._discoveredZones];
+                // Player position, current zone, and live vitals — without
+                // these a load respawns at the default zone with default HP.
+                saveData.location = this.currentZone || 'canopy_of_life';
+                if (this.player) {
+                    saveData.playerPosition = { x: Math.round(this.player.x), y: Math.round(this.player.y) };
+                    saveData.playerVitals = {
+                        hp:  this.player.stats?.hp,
+                        sap: this.player.stats?.sap,
+                    };
+                }
+                saveData.playtime = (this._loadedPlaytime || 0) + (Date.now() - (this._playStartTs || Date.now()));
             }),
             EventBus.on('save-restore', (saveData) => {
                 this._discoveredZones = new Set(saveData.discoveredZones || ['canopy_of_life']);
+                this._loadedPlaytime = saveData.playtime || 0;
+                this._playStartTs = Date.now();
+
+                const targetZone = saveData.location;
+                const pos = saveData.playerPosition;
+                const vitals = saveData.playerVitals;
+
+                // Apply after the synchronous restore listeners have run, so
+                // progression/equipment have set maxHp/maxSap before we clamp.
+                this.time.delayedCall(0, () => {
+                    if (targetZone && this.zoneContentManager) {
+                        this._onWorldMapTravelTo({ locationId: targetZone });
+                    }
+                    if (pos && this.player) {
+                        this.player.setPosition(pos.x, pos.y);
+                        if (this.cameraSystem?.camera) this.cameraSystem.camera.centerOn(pos.x, pos.y);
+                    }
+                    if (vitals && this.player?.stats) {
+                        if (vitals.hp != null)  this.player.stats.hp  = Math.min(vitals.hp,  this.player.stats.maxHp  ?? vitals.hp);
+                        if (vitals.sap != null) this.player.stats.sap = Math.min(vitals.sap, this.player.stats.maxSap ?? vitals.sap);
+                        EventBus.emit('player-stats-updated', this.player.stats);
+                    }
+                });
             })
         );
 
@@ -375,6 +409,10 @@ export default class GameScene extends Phaser.Scene {
         this.time.delayedCall(3000, () => {
             if (!this._veilChoiceShown) this._presentVeilChoice();
         });
+
+        // ---- Playtime tracking (restored/extended by the save system) ----
+        this._loadedPlaytime = this._loadedPlaytime || 0;
+        this._playStartTs = Date.now();
 
         // ---- Death state ----
         this.isDead = false;
@@ -1713,7 +1751,8 @@ export default class GameScene extends Phaser.Scene {
 
             const atk = this.player.stats.attack ?? this.player.stats.might ?? 0;
             const finalDmg = Math.max(1, damage + atk);
-            targetEnemy.data.hp -= finalDmg;
+            targetEnemy._state.hp = Math.max(0, targetEnemy._state.hp - finalDmg);
+            if (targetEnemy.data) targetEnemy.data.hp = targetEnemy._state.hp;
 
             // Hit flash + knockback
             this._flashEnemyHit(targetEnemy);
@@ -1745,7 +1784,7 @@ export default class GameScene extends Phaser.Scene {
                 this.cameraSystem.dramaticSpellZoom(this.player, targetEnemy, 600);
             }
 
-            if (targetEnemy.data.hp <= 0) {
+            if (targetEnemy._state.hp <= 0) {
                 EventBus.emit('enemy-defeated', { enemy: targetEnemy, spell });
             }
         }
@@ -1927,8 +1966,8 @@ export default class GameScene extends Phaser.Scene {
         let sprite = null;
         if (this.player && (this.player.stats?.name === tName || tName === 'Player')) {
             sprite = this.player;
-        } else if (Array.isArray(this.enemies)) {
-            sprite = this.enemies.find(e => e?._state?.definition?.name === tName) || null;
+        } else if (this.enemies) {
+            sprite = this.enemies.children.entries.find(e => e?._state?.definition?.name === tName) || null;
         }
         if (!sprite) return;
 
@@ -2731,7 +2770,7 @@ export default class GameScene extends Phaser.Scene {
         const { keeperId, question } = data || {};
         if (!keeperId) return;
 
-        const sapPhase = this.sapCycleSystem?.currentPhase || 'blue';
+        const sapPhase = this.sapCycle?.currentPhase || 'blue';
         const result = this.veilkeeperSystem.consult(keeperId, sapPhase);
 
         if (!result.success) {
@@ -3240,7 +3279,7 @@ export default class GameScene extends Phaser.Scene {
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
         // Clean up systems that subscribe to EventBus (prevents ghost listeners on scene restart)
-        this.sapCycleManager?.destroy();
+        this.sapCycle?.destroy?.();
         this.portalSystem?.destroy();
         this.zoneContentManager?.destroy?.();
         // Cleanup particle effects, audio, and physics

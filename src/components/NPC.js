@@ -81,14 +81,16 @@ export default class NPC {
         // Idle bobbing
         this._bobTimer = Math.random() * Math.PI * 2;
 
-        // Input
-        scene.input.keyboard.on('keydown-E', () => {
+        // Input — store the handler so destroy() can unbind it (otherwise
+        // each scene restart leaves stale E-key listeners firing on dead NPCs).
+        this._onKeyE = () => {
             if (this._playerInRange && !this.isInteracting) {
                 this._startDialogue();
             } else if (this.isInteracting) {
                 this._advanceDialogue();
             }
-        });
+        };
+        scene.input.keyboard.on('keydown-E', this._onKeyE);
 
         this._playerInRange = false;
     }
@@ -266,10 +268,10 @@ export default class NPC {
 
         EventBus.emit('npc-dialogue-complete', { npc: this.name, role: this.role });
 
-        // Role-specific follow-up
-        if (this.role === 'quest') {
-            EventBus.emit('quest-offer', { npc: this.name, questData: this.config.quest });
-        } else if (this.role === 'shop') {
+        // Role-specific follow-up. Quest NPCs are handled by GameScene's
+        // npc-dialogue-complete listener, which runs the NPC's full
+        // DialogueSystem dialogue (including its startQuest effects).
+        if (this.role === 'shop') {
             // Listeners should apply AttributeSystem.getShopPriceMultiplier() for Charisma 4+ = -10% prices (GDD)
             EventBus.emit('shop-open', { npc: this.name, inventory: this.config.shopInventory });
         } else if (this.role === 'crafting') {
@@ -285,6 +287,10 @@ export default class NPC {
 
     destroy() {
         this._endDialogue();
+        if (this._onKeyE) {
+            this.scene.input?.keyboard?.off('keydown-E', this._onKeyE);
+            this._onKeyE = null;
+        }
         this._nameTag.destroy();
         this._prompt.destroy();
         this.sprite.destroy();
