@@ -44,6 +44,7 @@ import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
 import { ZoneBackdrops } from './ZoneBackdrops.js';
+import { PAINTERLY_ENEMY_MAP, BOSS_IDS } from './GameArt.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -1224,19 +1225,47 @@ export default class GameScene extends Phaser.Scene {
             [HD_SENTINEL]:          'corrupted-sentinel-run',
         };
 
-        const spriteKey = ENEMY_SPRITE_MAP[def.id] ||
-            (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+        // Prefer the new painterly enemy art (single static image) when we
+        // have a mapping and the texture is loaded.
+        const painterlyKey = PAINTERLY_ENEMY_MAP[def.id];
+        const usePainterly = painterlyKey && this.textures.exists(painterlyKey);
 
-        const enemy = this.physics.add.sprite(x, y, spriteKey);
-        enemy.setDepth(4);
-        enemy.setCollideWorldBounds(true);
-        // Scale 256px frame down to 56px display size
-        enemy.setDisplaySize(56, 56);
-        enemy.body.setSize(36, 36);
-        enemy.body.setOffset(110, 140);
-        // Play walk animation if available
-        const animKey = ENEMY_ANIM_MAP[spriteKey];
-        if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        let enemy, spriteKey;
+        if (usePainterly) {
+            const isBoss = BOSS_IDS.has(def.id);
+            const display = isBoss ? 96 : 64;
+            spriteKey = painterlyKey;
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            enemy.setDisplaySize(display, display);
+            // Body in source-texture pixels (~55% of the sprite, centered).
+            const tw = enemy.width, th = enemy.height;
+            enemy.body.setSize(tw * 0.5, th * 0.5);
+            enemy.body.setOffset(tw * 0.25, th * 0.35);
+            enemy._painterly = true;
+            // Gentle idle "breathing" bob so static art feels alive.
+            enemy._baseScaleY = enemy.scaleY;
+            this.tweens.add({
+                targets: enemy,
+                scaleY: enemy.scaleY * 1.04,
+                duration: 1400 + Math.random() * 400,
+                yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+            });
+        } else {
+            spriteKey = ENEMY_SPRITE_MAP[def.id] ||
+                (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            // Scale 256px frame down to 56px display size
+            enemy.setDisplaySize(56, 56);
+            enemy.body.setSize(36, 36);
+            enemy.body.setOffset(110, 140);
+            // Play walk animation if available
+            const animKey = ENEMY_ANIM_MAP[spriteKey];
+            if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        }
 
         enemy._state = {
             definition: def,

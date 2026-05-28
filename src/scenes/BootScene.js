@@ -3,6 +3,7 @@ import EventBus from '../core/EventBus.js';
 import MainMenuScene from './MainMenuScene.js';
 import { ImportedAssets } from './ImportedAssets.js';
 import { ZoneBackdrops } from './ZoneBackdrops.js';
+import { GameArt } from './GameArt.js';
 
 /**
  * BootScene — First scene loaded.
@@ -24,6 +25,7 @@ export default class BootScene extends Phaser.Scene {
         // ── Bulk imported assets (auto-generated registry) ────────────
         ImportedAssets.preload(this);
         ZoneBackdrops.preload(this);
+        GameArt.preload(this);
 
         // ── Player ─────────────────────────────────────────────────────
         // Green mage spritesheet: 6 cols × 18 rows, 256px per frame
