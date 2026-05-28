@@ -55,7 +55,7 @@ const PROMPT  = getArg('prompt');
 const OUT     = getArg('out');
 
 // ── Core generation call ───────────────────────────────────────────────
-async function generateOne(prompt, size, modelOverride, qualityOverride) {
+async function generateOne(prompt, size, modelOverride, qualityOverride, backgroundOverride) {
   const model = modelOverride || MODEL;
   const body = {
     model,
@@ -63,11 +63,14 @@ async function generateOne(prompt, size, modelOverride, qualityOverride) {
     n: 1,
     size: size || SIZE,
   };
-  // gpt-image-1 accepts a quality param (low|medium|high|auto) and always
-  // returns base64. We do NOT send response_format — newer models reject it,
-  // and we handle both base64 and URL responses below.
+  // gpt-image-1 accepts quality (low|medium|high|auto) and background
+  // (transparent|opaque|auto). Transparent output requires PNG format.
   if (model === 'gpt-image-1') {
     body.quality = qualityOverride || QUALITY;
+    if (backgroundOverride) {
+      body.background = backgroundOverride;
+      if (backgroundOverride === 'transparent') body.output_format = 'png';
+    }
   }
 
   const res = await fetch('https://api.openai.com/v1/images/generations', {
@@ -88,8 +91,6 @@ async function generateOne(prompt, size, modelOverride, qualityOverride) {
   const item = data?.data?.[0];
   if (!item) throw new Error('No image data returned');
 
-  // Response can be base64 (gpt-image-1, and dall-e-3 when b64 requested) or
-  // a temporary URL (dall-e-3 default). Handle both.
   if (item.b64_json) {
     return Buffer.from(item.b64_json, 'base64');
   }
@@ -138,7 +139,7 @@ async function main() {
       const label = `[${i + 1}/${jobs.length}] ${job.filename}`;
       try {
         process.stdout.write(`[gen] ${label} ... `);
-        const buf = await generateOne(job.prompt, job.size, job.model, job.quality);
+        const buf = await generateOne(job.prompt, job.size, job.model, job.quality, job.background);
         saveBuffer(buf, path.join(OUTDIR, job.filename));
         ok++;
       } catch (e) {
