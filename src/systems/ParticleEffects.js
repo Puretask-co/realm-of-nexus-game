@@ -29,6 +29,7 @@ const ELEMENT_FX = {
     ice:      { textures: ['imp_vfx_ice5','imp_vfx_ice4','imp_vfx_ice2','particle_circle_04'],                 tint: 0xaaddff, speed: 90,  scale: { start: 0.30, end: 0.05 }, lifespan: 550 },
     thunder:  { textures: ['imp_vfx_thunder1','imp_vfx_thunder5','imp_vfx_slashthunder','particle_spark_07'],  tint: 0xffff00, speed: 180, scale: { start: 0.35, end: 0.05 }, lifespan: 400 },
     wind:     { textures: ['imp_vfx_sonic','imp_vfx_song','imp_vfx_special1','particle_trace_05'],             tint: 0xaaffcc, speed: 100, scale: { start: 0.25, end: 0.02 }, lifespan: 500 },
+    silver:   { textures: ['imp_vfx_special2','imp_vfx_holy2','imp_vfx_special1'],                            tint: 0xc8c8ee, speed: 100, scale: { start: 0.30, end: 0.05 }, lifespan: 550 },
 };
 
 // Hit / damage effect

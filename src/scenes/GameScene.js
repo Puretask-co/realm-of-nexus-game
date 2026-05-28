@@ -1856,6 +1856,7 @@ export default class GameScene extends Phaser.Scene {
             physical: ['imp_vfx_slashspecial2', 'imp_vfx_slashspecial1', 'imp_vfx_slashspecial3'],
             wind:     ['imp_vfx_sonic', 'imp_vfx_song'],
             spirit:   ['imp_vfx_howl', 'imp_vfx_sonic'],
+            silver:   ['imp_vfx_special2', 'imp_vfx_holy2', 'imp_vfx_special1'],
         };
         const family = String(element || 'arcane').toLowerCase();
         const candidates = SPLASH[family] || SPLASH.arcane;
