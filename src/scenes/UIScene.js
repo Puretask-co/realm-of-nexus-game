@@ -307,6 +307,34 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
             fontFamily: 'Open Sans', fontSize: '14px', color: '#ffcc44'
         }).setDepth(10000);
+
+        // ── Painterly bars (if art loaded): painted frame + a dark depletion
+        // overlay over the fill channel that grows as HP/Sap drop. The painted
+        // frame + icons always stay visible; flat graphics bars are hidden. ──
+        if (this.textures.exists('art_ui_health_bar')) {
+            const bw = 220, bh = 48, bx = 14, by = 10;
+            const sy = by + bh - 8;
+            this.uiElements.hpArt = this.add.image(bx, by, 'art_ui_health_bar')
+                .setOrigin(0, 0).setDisplaySize(bw, bh).setDepth(9998);
+            this.uiElements.hpDeplete = this.add.graphics().setDepth(9999);
+            this.uiElements.sapArt = this.add.image(bx, sy, 'art_ui_sap_bar')
+                .setOrigin(0, 0).setDisplaySize(bw, bh).setDepth(9998);
+            this.uiElements.sapDeplete = this.add.graphics().setDepth(9999);
+            // Fill-channel sub-rects within each painted bar (tuned to the art).
+            this._hpChannel  = { x: bx + bw * 0.27, y: by + bh * 0.34, w: bw * 0.66, h: bh * 0.34 };
+            this._sapChannel = { x: bx + bw * 0.27, y: sy + bh * 0.34, w: bw * 0.66, h: bh * 0.34 };
+            // Hide the flat graphics bars + labels (painted bars replace them).
+            [this.uiElements.hpBarBg, this.uiElements.hpBarFill, this.uiElements.sapBarBg,
+             this.uiElements.sapBarFill, this.uiElements.hpLabel, this.uiElements.sapLabel]
+                .forEach(o => o?.setVisible?.(false));
+            // Move HUD text below the painted bars.
+            this.uiElements.hpText.setPosition(bx + bw * 0.62, by + bh * 0.5).setDepth(10002);
+            this.uiElements.classText.setPosition(bx, sy + bh + 2);
+            this.uiElements.levelText.setPosition(bx, sy + bh + 18);
+            this.uiElements.xpText.setPosition(bx + 40, sy + bh + 20);
+            this.uiElements.goldText.setPosition(bx + 120, sy + bh + 20);
+            this._paintedBars = true;
+        }
     }
 
     _updatePlayerBars(stats) {
@@ -352,18 +380,36 @@ export default class UIScene extends Phaser.Scene {
         // HP
         if (stats.hp !== undefined && stats.maxHp) {
             const ratio = Math.max(0, stats.hp / stats.maxHp);
-            this.uiElements.hpBarFill.clear();
-            this.uiElements.hpBarFill.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
-            this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+            if (this._paintedBars) {
+                const c = this._hpChannel;
+                this.uiElements.hpDeplete.clear();
+                if (ratio < 1) {
+                    this.uiElements.hpDeplete.fillStyle(0x1a0505, 0.7);
+                    this.uiElements.hpDeplete.fillRect(c.x + c.w * ratio, c.y, c.w * (1 - ratio), c.h);
+                }
+            } else {
+                this.uiElements.hpBarFill.clear();
+                this.uiElements.hpBarFill.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
+                this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+            }
             this.uiElements.hpText.setText(`${Math.ceil(stats.hp)}/${stats.maxHp}`);
         }
 
         // Sap
         if (stats.sap !== undefined && stats.maxSap) {
             const ratio = Math.max(0, stats.sap / stats.maxSap);
-            this.uiElements.sapBarFill.clear();
-            this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
-            this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+            if (this._paintedBars) {
+                const c = this._sapChannel;
+                this.uiElements.sapDeplete.clear();
+                if (ratio < 1) {
+                    this.uiElements.sapDeplete.fillStyle(0x050a1a, 0.7);
+                    this.uiElements.sapDeplete.fillRect(c.x + c.w * ratio, c.y, c.w * (1 - ratio), c.h);
+                }
+            } else {
+                this.uiElements.sapBarFill.clear();
+                this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
+                this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+            }
         }
 
         // Level & XP
