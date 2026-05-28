@@ -44,7 +44,7 @@ import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
 import { ZoneBackdrops } from './ZoneBackdrops.js';
-import { PAINTERLY_ENEMY_MAP, BOSS_IDS } from './GameArt.js';
+import { PAINTERLY_ENEMY_MAP, BOSS_IDS, npcArtFor } from './GameArt.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -1418,6 +1418,12 @@ export default class GameScene extends Phaser.Scene {
     _pickNpcVisual(def) {
         const name = (def.name || '').toLowerCase();
         const role = (def.role || 'lore').toLowerCase();
+
+        // Prefer painterly NPC art (single static image) when loaded.
+        const artKey = npcArtFor(def.name);
+        if (this.textures.exists(artKey)) {
+            return { spriteKey: artKey, idleAnim: null, tint: null };
+        }
 
         // Hash name → 0..2^32 for stable choice per NPC.
         let h = 0;

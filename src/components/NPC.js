@@ -31,12 +31,20 @@ export default class NPC {
         this.sprite.owner = this;
 
         if (config.spriteKey && scene.textures.exists(config.spriteKey)) {
-            // HD source sheet — shrink to display size matching other NPCs
             this.sprite.setDisplaySize(64, 64);
-            this.sprite.body?.setSize?.(40, 40);
-            this.sprite.body?.setOffset?.(108, 140);
-            if (config.idleAnim && scene.anims.exists(config.idleAnim)) {
-                this.sprite.play(config.idleAnim);
+            if (String(config.spriteKey).startsWith('art_npc_')) {
+                // Painterly single image (large source) — center the body on
+                // the texture's own dimensions, not a 256px-sheet offset.
+                const tw = this.sprite.width, th = this.sprite.height;
+                this.sprite.body?.setSize?.(tw * 0.5, th * 0.5);
+                this.sprite.body?.setOffset?.(tw * 0.25, th * 0.35);
+            } else {
+                // HD 256px sheet — shrink to display size matching other NPCs
+                this.sprite.body?.setSize?.(40, 40);
+                this.sprite.body?.setOffset?.(108, 140);
+                if (config.idleAnim && scene.anims.exists(config.idleAnim)) {
+                    this.sprite.play(config.idleAnim);
+                }
             }
         }
         if (config.tint !== undefined && config.tint !== null) {

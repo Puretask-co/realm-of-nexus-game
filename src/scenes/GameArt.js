@@ -40,6 +40,46 @@ const UI_FILES = {
   art_ui_status_badge: 'assets/imported/ui/ui_status_badge.png',
 };
 
+// ── NPC archetype art (single static images) ─────────────────────────────
+const NPC_FILES = {
+  art_npc_elder_sage:        'assets/imported/npcs/npc_elder_sage.png',
+  art_npc_archdruid:         'assets/imported/npcs/npc_archdruid.png',
+  art_npc_bloomguard_soldier:'assets/imported/npcs/npc_bloomguard_soldier.png',
+  art_npc_guard_halberd:     'assets/imported/npcs/npc_guard_halberd.png',
+  art_npc_merchant:          'assets/imported/npcs/npc_merchant.png',
+  art_npc_blacksmith:        'assets/imported/npcs/npc_blacksmith.png',
+  art_npc_herbalist:         'assets/imported/npcs/npc_herbalist.png',
+  art_npc_seer:              'assets/imported/npcs/npc_seer.png',
+  art_npc_beastcaller:       'assets/imported/npcs/npc_beastcaller.png',
+  art_npc_trainer:           'assets/imported/npcs/npc_trainer.png',
+  art_npc_scholar:           'assets/imported/npcs/npc_scholar.png',
+  art_npc_innkeeper:         'assets/imported/npcs/npc_innkeeper.png',
+  art_npc_child:             'assets/imported/npcs/npc_child.png',
+};
+
+// Match NPC display-name keywords -> npc art key.
+export const NPC_ART_RULES = [
+  [/elder|thalos|thornwick|sage|hollow sage|moss elder/, 'art_npc_elder_sage'],
+  [/archdruid|veyla|druid|grove tender|vine tender/,     'art_npc_archdruid'],
+  [/seer|althea|oracle|veil watcher|keeper of echoes/,   'art_npc_seer'],
+  [/commander|briara|bloomguard|bloom herald/,           'art_npc_bloomguard_soldier'],
+  [/guard|warden|sentinel|reyla|drillmaster|watcher/,    'art_npc_guard_halberd'],
+  [/merchant|trader|lirel|ferren|orla|boskyn|wares/,     'art_npc_merchant'],
+  [/smith|garon|forge|forger|bark carver|ironbark/,      'art_npc_blacksmith'],
+  [/herbalist|tansy|healer|mora|lyra|dew collector/,     'art_npc_herbalist'],
+  [/beastcaller|yenna|ranger|scout|trapper|hunt/,        'art_npc_beastcaller'],
+  [/trainer|borsk|torvak/,                               'art_npc_trainer'],
+  [/scholar|archivist|kael|scribe|director|orin|singer|crystal/, 'art_npc_scholar'],
+  [/innkeeper|maren|aria/,                               'art_npc_innkeeper'],
+  [/child|wren|kid/,                                     'art_npc_child'],
+];
+
+export function npcArtFor(name) {
+  const n = String(name || '').toLowerCase();
+  for (const [re, key] of NPC_ART_RULES) if (re.test(n)) return key;
+  return 'art_npc_elder_sage';
+}
+
 // ── Class portraits (base 6) ──────────────────────────────────────────────
 const PORTRAIT_FILES = {
   art_portrait_bloomguard:     'assets/imported/portraits/class_portrait_bloomguard.png',
@@ -111,6 +151,7 @@ export const GameArt = {
     load(ENEMY_FILES);
     load(UI_FILES);
     load(PORTRAIT_FILES);
+    load(NPC_FILES);
   },
 };
 
