@@ -377,7 +377,11 @@ export default class ClassSelectionScene extends Phaser.Scene {
         this._portFrame.fillRoundedRect(this._portX, this._portY, this._portW, 40, 8);
 
         if (this._portImg) { this._portImg.destroy(); this._portImg = null; }
-        const spriteKey = cls.sprite && this.textures.exists(cls.sprite) ? cls.sprite : 'player';
+        // Prefer the painterly class portrait (art_portrait_<id>); else the
+        // class sprite; else the generic player texture.
+        const portraitKey = `art_portrait_${cls.id}`;
+        const spriteKey = this.textures.exists(portraitKey) ? portraitKey
+            : (cls.sprite && this.textures.exists(cls.sprite) ? cls.sprite : 'player');
         if (this.textures.exists(spriteKey)) {
             this._portImg = this.add.image(this._portX + this._portW / 2, this._portY + this._portH / 2, spriteKey)
                 .setDisplaySize(this._portW - 20, this._portH - 20);

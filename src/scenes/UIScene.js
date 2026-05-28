@@ -10,6 +10,8 @@ import { StashPanel } from '../ui/StashPanel.js';
 import { InventoryPanel } from '../ui/InventoryPanel.js';
 import GameInfoPanel from '../ui/GameInfoPanel.js';
 import CompanionPanel from '../ui/CompanionPanel.js';
+import { SkillTreePanel } from '../ui/SkillTreePanel.js';
+import { spellIconFor } from './GameArt.js';
 
 /**
  * UIScene — Always-on overlay scene for HUD elements.
@@ -63,6 +65,8 @@ export default class UIScene extends Phaser.Scene {
         // Register all panels with UIFramework so showPanel/hidePanel/hideAllPanels work
         // and ui:menuOpen / ui:menuClose SFX fire correctly via UIFramework.showPanel()
         const ui = UIFramework.getInstance(this);
+        // SkillTreePanel needs the UIFramework instance for createPanel().
+        this.skillTreePanel = new SkillTreePanel(this, ui);
         if (ui) {
             ui.registerPanel('tactical',    this.tacticalCombatPanel);
             ui.registerPanel('shop',        this.shopPanel);
@@ -79,6 +83,7 @@ export default class UIScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-K', () => this.spellbookPanel.toggle());
         this.input.keyboard.on('keydown-TAB', () => this.gameInfoPanel.toggle());
         this.input.keyboard.on('keydown-P', () => this.companionPanel.toggle());
+        this.input.keyboard.on('keydown-T', () => this.skillTreePanel?.toggle?.());
         this.input.keyboard.on('keydown-I', () => this._toggleInventory());
         this.input.keyboard.on('keydown-C', () => {
             if (this.scene.isActive('CharacterSheetScene')) {
@@ -302,6 +307,34 @@ export default class UIScene extends Phaser.Scene {
         this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
             fontFamily: 'Open Sans', fontSize: '14px', color: '#ffcc44'
         }).setDepth(10000);
+
+        // ── Painterly bars (if art loaded): painted frame + a dark depletion
+        // overlay over the fill channel that grows as HP/Sap drop. The painted
+        // frame + icons always stay visible; flat graphics bars are hidden. ──
+        if (this.textures.exists('art_ui_health_bar')) {
+            const bw = 220, bh = 48, bx = 14, by = 10;
+            const sy = by + bh - 8;
+            this.uiElements.hpArt = this.add.image(bx, by, 'art_ui_health_bar')
+                .setOrigin(0, 0).setDisplaySize(bw, bh).setDepth(9998);
+            this.uiElements.hpDeplete = this.add.graphics().setDepth(9999);
+            this.uiElements.sapArt = this.add.image(bx, sy, 'art_ui_sap_bar')
+                .setOrigin(0, 0).setDisplaySize(bw, bh).setDepth(9998);
+            this.uiElements.sapDeplete = this.add.graphics().setDepth(9999);
+            // Fill-channel sub-rects within each painted bar (tuned to the art).
+            this._hpChannel  = { x: bx + bw * 0.27, y: by + bh * 0.34, w: bw * 0.66, h: bh * 0.34 };
+            this._sapChannel = { x: bx + bw * 0.27, y: sy + bh * 0.34, w: bw * 0.66, h: bh * 0.34 };
+            // Hide the flat graphics bars + labels (painted bars replace them).
+            [this.uiElements.hpBarBg, this.uiElements.hpBarFill, this.uiElements.sapBarBg,
+             this.uiElements.sapBarFill, this.uiElements.hpLabel, this.uiElements.sapLabel]
+                .forEach(o => o?.setVisible?.(false));
+            // Move HUD text below the painted bars.
+            this.uiElements.hpText.setPosition(bx + bw * 0.62, by + bh * 0.5).setDepth(10002);
+            this.uiElements.classText.setPosition(bx, sy + bh + 2);
+            this.uiElements.levelText.setPosition(bx, sy + bh + 18);
+            this.uiElements.xpText.setPosition(bx + 40, sy + bh + 20);
+            this.uiElements.goldText.setPosition(bx + 120, sy + bh + 20);
+            this._paintedBars = true;
+        }
     }
 
     _updatePlayerBars(stats) {
@@ -325,9 +358,20 @@ export default class UIScene extends Phaser.Scene {
                             : '#888888';
                         slot.nameLabel.setText(short);
                         slot.nameLabel.setColor(color);
+                        // Painterly spell icon inside the slot.
+                        const iconKey = spellIconFor(spell.id, this);
+                        if (iconKey) {
+                            if (!slot.icon) {
+                                slot.icon = this.add.image(slot.x + slot.size / 2, slot.y + slot.size / 2 - 3, iconKey)
+                                    .setDepth(10000).setDisplaySize(slot.size - 8, slot.size - 8);
+                            } else {
+                                slot.icon.setTexture(iconKey).setVisible(true);
+                            }
+                        }
                     } else {
                         slot.nameLabel.setText('---');
                         slot.nameLabel.setColor('#444444');
+                        if (slot.icon) slot.icon.setVisible(false);
                     }
                 }
             }
@@ -336,18 +380,36 @@ export default class UIScene extends Phaser.Scene {
         // HP
         if (stats.hp !== undefined && stats.maxHp) {
             const ratio = Math.max(0, stats.hp / stats.maxHp);
-            this.uiElements.hpBarFill.clear();
-            this.uiElements.hpBarFill.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
-            this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+            if (this._paintedBars) {
+                const c = this._hpChannel;
+                this.uiElements.hpDeplete.clear();
+                if (ratio < 1) {
+                    this.uiElements.hpDeplete.fillStyle(0x1a0505, 0.7);
+                    this.uiElements.hpDeplete.fillRect(c.x + c.w * ratio, c.y, c.w * (1 - ratio), c.h);
+                }
+            } else {
+                this.uiElements.hpBarFill.clear();
+                this.uiElements.hpBarFill.fillStyle(ratio > 0.3 ? 0xff4444 : 0xff0000, 0.9);
+                this.uiElements.hpBarFill.fillRect(x + 25, 22, 148 * ratio, 10);
+            }
             this.uiElements.hpText.setText(`${Math.ceil(stats.hp)}/${stats.maxHp}`);
         }
 
         // Sap
         if (stats.sap !== undefined && stats.maxSap) {
             const ratio = Math.max(0, stats.sap / stats.maxSap);
-            this.uiElements.sapBarFill.clear();
-            this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
-            this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+            if (this._paintedBars) {
+                const c = this._sapChannel;
+                this.uiElements.sapDeplete.clear();
+                if (ratio < 1) {
+                    this.uiElements.sapDeplete.fillStyle(0x050a1a, 0.7);
+                    this.uiElements.sapDeplete.fillRect(c.x + c.w * ratio, c.y, c.w * (1 - ratio), c.h);
+                }
+            } else {
+                this.uiElements.sapBarFill.clear();
+                this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
+                this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
+            }
         }
 
         // Level & XP
@@ -378,16 +440,24 @@ export default class UIScene extends Phaser.Scene {
         const startX = 640 - (slotSize * 2.5);
         const y = 720 - slotSize - 16;
 
+        // Painterly hotbar frame behind the slots (decorative).
+        if (this.textures.exists('art_ui_hotbar')) {
+            const rowW = slotSize * 5 + 8 * 4;
+            this.uiElements.hotbarFrame = this.add.image(startX + rowW / 2, y + slotSize / 2, 'art_ui_hotbar')
+                .setDisplaySize(rowW + 64, slotSize + 44)
+                .setDepth(9999)
+                .setAlpha(0.95);
+        }
+
         this._spellNames = ['Spell 1', 'Spell 2', 'Spell 3', 'Spell 4', 'Spell 5'];
         this._spellColorValues = [0x888888, 0x888888, 0x888888, 0x888888, 0x888888];
 
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);
             const bg = this.add.graphics().setDepth(10000);
-            bg.fillStyle(0x222244, 0.7);
+            // Lighter fill so the painterly hotbar frame's slot wells show through.
+            bg.fillStyle(0x222244, 0.25);
             bg.fillRect(x, y, slotSize, slotSize);
-            bg.lineStyle(1, this._spellColorValues[i], 0.4);
-            bg.strokeRect(x, y, slotSize, slotSize);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
                 fontFamily: 'Open Sans', fontSize: '14px', color: '#6688aa'
@@ -733,14 +803,71 @@ export default class UIScene extends Phaser.Scene {
         const y = 16;
 
         this.uiElements.minimapBg = this.add.graphics().setDepth(10000);
-        this.uiElements.minimapBg.fillStyle(0x111122, 0.6);
+        this.uiElements.minimapBg.fillStyle(0x111122, 0.7);
         this.uiElements.minimapBg.fillRect(x, y, size, size);
-        this.uiElements.minimapBg.lineStyle(1, 0x334466, 0.5);
+        this.uiElements.minimapBg.lineStyle(1, 0x334466, 0.6);
         this.uiElements.minimapBg.strokeRect(x, y, size, size);
 
-        this.add.text(x + size / 2, y + size / 2, 'MAP', {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#334466'
-        }).setOrigin(0.5).setDepth(10001);
+        // Dynamic layer: zone tiles + player dot, redrawn each frame.
+        this.uiElements.minimapFg = this.add.graphics().setDepth(10001);
+        this._minimapBounds = { x, y, size };
+
+        // 'M' affordance in the corner so players know full-map exists.
+        this.add.text(x + 4, y + 4, '[M] Map', {
+            fontFamily: 'Open Sans', fontSize: '10px', color: '#88aacc'
+        }).setDepth(10002).setAlpha(0.7);
+    }
+
+    /**
+     * Per-frame minimap redraw — paints each registered zone as a tinted
+     * rect and the player as a yellow dot.
+     */
+    _updateMinimap() {
+        const fg = this.uiElements.minimapFg;
+        const bounds = this._minimapBounds;
+        if (!fg || !bounds) return;
+
+        const gs = this.scene.get('GameScene');
+        const zones = gs?.zones;
+        const player = gs?.player;
+        if (!zones || zones.length === 0 || !player) return;
+
+        // World bounds derived from zone extents.
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const z of zones) {
+            if (!z?.bounds) continue;
+            minX = Math.min(minX, z.bounds.x);
+            minY = Math.min(minY, z.bounds.y);
+            maxX = Math.max(maxX, z.bounds.x + z.bounds.w);
+            maxY = Math.max(maxY, z.bounds.y + z.bounds.h);
+        }
+        const worldW = maxX - minX, worldH = maxY - minY;
+        if (worldW <= 0 || worldH <= 0) return;
+
+        const inset = 6;
+        const pad = bounds.size - inset * 2;
+        const sx = pad / worldW;
+        const sy = pad / worldH;
+
+        fg.clear();
+        // Zone tiles
+        for (const z of zones) {
+            if (!z?.bounds) continue;
+            const rx = bounds.x + inset + (z.bounds.x - minX) * sx;
+            const ry = bounds.y + inset + (z.bounds.y - minY) * sy;
+            const rw = Math.max(1, z.bounds.w * sx);
+            const rh = Math.max(1, z.bounds.h * sy);
+            const isCurrent = z.id === gs.currentLocationId;
+            fg.fillStyle(isCurrent ? 0x4488cc : 0x2a3a55, isCurrent ? 0.9 : 0.55);
+            fg.fillRect(rx, ry, rw, rh);
+        }
+        // Player dot
+        const px = bounds.x + inset + (player.x - minX) * sx;
+        const py = bounds.y + inset + (player.y - minY) * sy;
+        fg.fillStyle(0xffdd44, 1);
+        fg.fillCircle(px, py, 3);
+        fg.lineStyle(1, 0x000000, 0.7);
+        fg.strokeCircle(px, py, 3);
     }
 
     // ----------------------------------------------------------------
@@ -758,6 +885,7 @@ export default class UIScene extends Phaser.Scene {
             const fps = Math.round(this.game.loop.actualFps);
             this.uiElements.fpsText.setText(`${fps} FPS`);
         }
+        this._updateMinimap();
     }
 
     // ----------------------------------------------------------------

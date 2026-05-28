@@ -90,6 +90,9 @@ export class ShopPanel {
         });
     }
 
+    // Alias for UIFramework.showPanel() compatibility.
+    show(data) { return this.open(data); }
+
     open(data) {
         this._currentShop = data;
         const shopName = data.npc?.name || 'Merchant';

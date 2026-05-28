@@ -533,9 +533,16 @@ export class SkillTreePanel {
   }
 
   setVisible(visible) {
+    const wasVisible = this.visible;
     this.visible = visible;
     this.panel.setVisible(visible);
+    if (visible && !wasVisible) this.onShow();
+    else if (!visible && wasVisible) this.onHide();
   }
+
+  show() { this.setVisible(true); }
+  hide() { this.setVisible(false); }
+  toggle() { this.setVisible(!this.visible); }
 
   onShow() {
     this.updatePointsDisplay();

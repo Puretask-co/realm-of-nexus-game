@@ -488,12 +488,18 @@ export class DialogueSystem {
     });
     this.container.add(this.overlay);
 
-    // Dialogue box background
-    this.dialogueBox = this.scene.add.graphics();
-    this.dialogueBox.fillStyle(cfg.bgColor, cfg.bgAlpha);
-    this.dialogueBox.fillRoundedRect(cfg.boxX, cfg.boxY, cfg.boxWidth, cfg.boxHeight, 8);
-    this.dialogueBox.lineStyle(2, cfg.borderColor, 1);
-    this.dialogueBox.strokeRoundedRect(cfg.boxX, cfg.boxY, cfg.boxWidth, cfg.boxHeight, 8);
+    // Dialogue box background — painterly frame if loaded, else graphics box.
+    if (this.scene.textures.exists('art_ui_dialogue_box')) {
+      this.dialogueBox = this.scene.add.image(
+        cfg.boxX + cfg.boxWidth / 2, cfg.boxY + cfg.boxHeight / 2, 'art_ui_dialogue_box'
+      ).setDisplaySize(cfg.boxWidth, cfg.boxHeight);
+    } else {
+      this.dialogueBox = this.scene.add.graphics();
+      this.dialogueBox.fillStyle(cfg.bgColor, cfg.bgAlpha);
+      this.dialogueBox.fillRoundedRect(cfg.boxX, cfg.boxY, cfg.boxWidth, cfg.boxHeight, 8);
+      this.dialogueBox.lineStyle(2, cfg.borderColor, 1);
+      this.dialogueBox.strokeRoundedRect(cfg.boxX, cfg.boxY, cfg.boxWidth, cfg.boxHeight, 8);
+    }
     this.container.add(this.dialogueBox);
 
     // Portrait placeholder

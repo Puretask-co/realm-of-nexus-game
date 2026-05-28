@@ -10,13 +10,15 @@
     "preview": "vite preview",
     "editor": "EDITOR_MODE=true vite --host",
     "validate-data": "node scripts/validate-data.js",
-    "export-csv": "node scripts/export-csv.js"
+    "export-csv": "node scripts/export-csv.js",
+    "gen-images": "node --env-file=.env scripts/generate-images.mjs"
   },
   "dependencies": {
     "phaser": "^3.80.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "sharp": "^0.34.5",
     "vite": "^5.4.0"
   },
   "keywords": [

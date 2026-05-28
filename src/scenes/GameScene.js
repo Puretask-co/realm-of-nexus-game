@@ -43,6 +43,9 @@ import ZoneContentManager from '../systems/ZoneContentManager.js';
 import { EquipmentSystem } from '../systems/EquipmentSystem.js';
 import TutorialSystem from '../systems/TutorialSystem.js';
 import ZoneTilemapBuilder from '../systems/ZoneTilemapBuilder.js';
+import { ZoneBackdrops } from './ZoneBackdrops.js';
+import { PAINTERLY_ENEMY_MAP, BOSS_IDS, npcArtFor, companionArtFor } from './GameArt.js';
+import MotionLibrary from '../systems/MotionLibrary.js';
 import { AudioManager } from '../systems/AudioManager.js';
 import ParticleEffects from '../systems/ParticleEffects.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -162,6 +165,9 @@ export default class GameScene extends Phaser.Scene {
         // ---- NPCs ----
         this._spawnNPCs();
 
+        // ---- Companion followers (any already in the party) ----
+        this._syncCompanionFollowers();
+
         // ---- Camera ----
         this.cameraSystem.startFollow(this.player, {
             lerpX: 0.08,
@@ -254,6 +260,7 @@ export default class GameScene extends Phaser.Scene {
         this._unsubs = [
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
+            EventBus.on('combat:effectApplied', (data) => this._onCombatEffectApplied(data)),
             EventBus.on('shop:deductGold', (data) => {
                 if (this.player?.stats) {
                     this.player.stats.gold = Math.max(0, (this.player.stats.gold || 0) - (data.amount || 0));
@@ -276,6 +283,7 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
             EventBus.on('quest:started', (data) => this._onQuestStarted(data)),
             EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
+            EventBus.on('player:addExperience', (data) => this._onAddExperience(data)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
             EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
@@ -419,9 +427,30 @@ export default class GameScene extends Phaser.Scene {
             const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
             this.zones.push(zone);
 
-            // ── Tilemap / Graphics rendering ──────────────────────────
-            const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
-            this._zoneTilemaps.push(...result.tilemaps);
+            // ── Painterly backdrop floor: assemble the realm's panels into a
+            // grid filling the zone (6 panels = 3x2, 4 = 2x2). ──
+            const grid = ZoneBackdrops.gridFor(loc.id, this);
+            const hasBackdrop = !!grid;
+            if (grid) {
+                const cellW = ZONE_W / grid.cols;
+                const cellH = ZONE_H / grid.rows;
+                grid.keys.forEach((key, idx) => {
+                    const cx = idx % grid.cols;
+                    const cy = Math.floor(idx / grid.cols);
+                    this.add.image(zoneX + cx * cellW, zoneY + cy * cellH, key)
+                        .setOrigin(0, 0)
+                        .setDisplaySize(cellW + 1, cellH + 1) // +1 hides hairline seams
+                        .setDepth(0.1);
+                });
+            } else {
+                // No painterly floor — fall back to the old tilemap graphics.
+                const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
+                this._zoneTilemaps.push(...result.tilemaps);
+            }
+
+            // ── Per-zone atmospheric tint overlay. With a painterly floor we
+            // use a much lighter tint so the art reads; otherwise full tint. ──
+            this._applyZoneTheme(zoneX, zoneY, ZONE_W, ZONE_H, loc, hasBackdrop ? 0.10 : 1.0);
 
             // ── Zone name label (above all tile layers) ───────────────
             const color = parseInt((loc.environment?.ambientColor || '0x44aa44').replace('0x', ''), 16);
@@ -463,6 +492,7 @@ export default class GameScene extends Phaser.Scene {
                             this.currentLocationId = loc.id;
                             this._emitLocationDiscovery(loc.id);
                             EventBus.emit('zone-entered', { locationId: loc.id, name: loc.name });
+                            this._playZoneEnterTransition(loc);
                             console.log(`[Zone] Entered: ${loc.name}`);
                         }
                     },
@@ -504,6 +534,9 @@ export default class GameScene extends Phaser.Scene {
         const forestTrees = ['tree1', 'tree2', 'tree3', 'tree_moss1', 'tree_moss2', 'tree_flower1', 'tree_flower2', 'tree_autumn'];
         const dungeon = location.type === 'dungeon' || location.type === 'boss';
 
+        // Sprinkle imported environment props on top of the base pass.
+        this._scatterImportedDecor(x, y, w, h, location);
+
         for (let i = 0; i < count; i++) {
             const dx = x + Phaser.Math.Between(50, w - 50);
             const dy = y + Phaser.Math.Between(70, h - 50);
@@ -539,6 +572,315 @@ export default class GameScene extends Phaser.Scene {
                 gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
             }
         }
+    }
+
+    /**
+     * Spawn a physical loot pickup at (x, y). Player overlap collects it.
+     * Uses an imported VFX sparkle as the visual; gold gets a different tint.
+     */
+    _spawnLootPickup(x, y, itemId, itemData) {
+        // Lazy-create the pickup group on first use.
+        if (!this._lootGroup) {
+            this._lootGroup = this.physics.add.group();
+            // Player-pickup overlap.
+            this.physics.add.overlap(this.player, this._lootGroup, (_player, pickup) => {
+                this._collectLootPickup(pickup);
+            });
+        }
+
+        const isGold = itemId === '__gold__';
+        const spriteKey = isGold
+            ? (this.textures.exists('imp_vfx_special1') ? 'imp_vfx_special1' : null)
+            : (this.textures.exists('imp_vfx_holy1') ? 'imp_vfx_holy1' : null);
+
+        let pickup;
+        if (spriteKey) {
+            pickup = this._lootGroup.create(x, y, spriteKey);
+            pickup.setDisplaySize(28, 28).setDepth(4.5).setAlpha(0.95);
+            pickup.setTint(isGold ? 0xffdd44 : 0x88ddff);
+        } else {
+            // Fallback: glowing circle graphic.
+            const gfx = this.add.graphics().setDepth(4.5);
+            gfx.fillStyle(isGold ? 0xffdd44 : 0x88ddff, 0.95);
+            gfx.fillCircle(0, 0, 8);
+            pickup = this.physics.add.image(x, y).setDepth(4.5);
+            pickup.setDisplaySize(16, 16);
+            // attach gfx to pickup for cleanup
+            pickup._gfx = gfx;
+            gfx.x = x; gfx.y = y;
+            this._lootGroup.add(pickup);
+        }
+        pickup.body?.setSize?.(28, 28);
+        pickup._itemId = itemId;
+        pickup._itemData = itemData;
+
+        // Hover bob + slow rotation for visibility.
+        this.tweens.add({
+            targets: pickup,
+            y: y - 6,
+            duration: 700,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        if (pickup.setAngle) {
+            this.tweens.add({
+                targets: pickup,
+                angle: 360,
+                duration: 2400,
+                repeat: -1,
+                ease: 'Linear'
+            });
+        }
+
+        // Tiny floating label so the player can see what's there.
+        const labelText = isGold ? (itemData?.name || 'Gold') : (itemData?.name || itemId);
+        const label = this.add.text(x, y - 22, labelText, {
+            fontFamily: 'Open Sans', fontSize: '10px',
+            color: isGold ? '#ffdd44' : '#aaddff',
+            stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(4.6);
+        pickup._label = label;
+        // Keep label following the pickup as it bobs.
+        const follow = this.time.addEvent({
+            delay: 30,
+            loop: true,
+            callback: () => {
+                if (pickup?.active && label?.active) { label.x = pickup.x; label.y = pickup.y - 22; }
+                else { follow.remove(); }
+            }
+        });
+
+        // Auto-despawn after 30s if not collected.
+        this.time.delayedCall(30000, () => {
+            if (pickup?.active) this._destroyLootPickup(pickup);
+        });
+    }
+
+    _collectLootPickup(pickup) {
+        if (!pickup?.active) return;
+        const isGold = pickup._itemId === '__gold__';
+        if (isGold) {
+            const amt = pickup._itemData?._goldAmount || 0;
+            this.player.stats.gold = (this.player.stats.gold || 0) + amt;
+            this.damageNumbers?.show?.(pickup.x, pickup.y - 12, `+${amt}g`, 0xffdd44);
+            EventBus.emit('player-stats-updated', this.player.stats);
+        } else {
+            EventBus.emit('inventory:addItem', {
+                itemId: pickup._itemId,
+                quantity: 1,
+                itemData: pickup._itemData || { id: pickup._itemId, name: pickup._itemId, stackable: true }
+            });
+            this.damageNumbers?.show?.(pickup.x, pickup.y - 12, `+${pickup._itemData?.name || pickup._itemId}`, 0xaaddff);
+        }
+        EventBus.emit('item:pickup', { itemId: pickup._itemId });
+        this._destroyLootPickup(pickup);
+    }
+
+    _destroyLootPickup(pickup) {
+        try { pickup._label?.destroy(); } catch (_) {}
+        try { pickup._gfx?.destroy(); } catch (_) {}
+        try { pickup.destroy(); } catch (_) {}
+    }
+
+    /**
+     * Quick fade + zone-name banner whenever the player crosses into a new
+     * zone. Gives the "screen change" feel without a full scene swap.
+     */
+    _playZoneEnterTransition(loc) {
+        const cam = this.cameras.main;
+        // Brief flash that wipes from the zone tint
+        const tintHex = (loc.environment?.ambientColor || '0x223344').replace('0x', '');
+        const tint = parseInt(tintHex, 16) || 0x223344;
+        cam.flash(280, (tint >> 16) & 0xff, (tint >> 8) & 0xff, tint & 0xff, false);
+
+        // Centered banner that fades out
+        const W = cam.width, H = cam.height;
+        const banner = this.add.container(W / 2, H * 0.32).setDepth(11000).setScrollFactor(0);
+        const bg = this.add.graphics();
+        bg.fillStyle(0x000000, 0.55); bg.fillRect(-280, -42, 560, 84);
+        bg.lineStyle(2, tint, 0.9); bg.strokeRect(-280, -42, 560, 84);
+        const title = this.add.text(0, -10, loc.name, {
+            fontFamily: 'Cinzel, Open Sans', fontSize: '30px',
+            color: '#ffffff', stroke: '#000', strokeThickness: 3
+        }).setOrigin(0.5);
+        const sub = this.add.text(0, 22, `Lv. ${loc.level || 1} · ${loc.type || 'wilds'}`, {
+            fontFamily: 'Open Sans', fontSize: '15px',
+            color: '#ccddee', stroke: '#000', strokeThickness: 2
+        }).setOrigin(0.5);
+        banner.add([bg, title, sub]);
+        banner.setAlpha(0);
+        this.tweens.add({
+            targets: banner, alpha: 1, duration: 200, ease: 'Sine.easeOut',
+            onComplete: () => {
+                this.tweens.add({
+                    targets: banner, alpha: 0, delay: 1400, duration: 500, ease: 'Sine.easeIn',
+                    onComplete: () => { try { banner.destroy(); } catch (_) {} }
+                });
+            }
+        });
+    }
+
+    /**
+     * Paint a per-zone color overlay so each area reads as visually distinct
+     * — fog blue for forests, ember orange for cinder/blight, deep purple
+     * for void/cave, sea green for tideflow, etc. Picks a tint from the
+     * zone id/tags; falls back to environment.ambientColor or neutral.
+     */
+    _applyZoneTheme(x, y, w, h, location, alphaMul = 1.0) {
+        const id   = String(location.id || '').toLowerCase();
+        const tags = (location.tags || []).map(t => String(t).toLowerCase());
+        const has  = (re) => re.test(id) || tags.some(t => re.test(t));
+
+        let tint = 0x1a2233;  // default cool slate
+        let alpha = 0.18;
+
+        if (has(/canopy|spindle|verdant|grove|wood|forest/))           { tint = 0x144a22; alpha = 0.22; }
+        else if (has(/cave|catacomb|hollow|crypt|dungeon|tomb/))       { tint = 0x1a0a22; alpha = 0.40; }
+        else if (has(/mycelium|fungal|spore/))                          { tint = 0x351a44; alpha = 0.32; }
+        else if (has(/cinder|burn|ash|scorched|ember|fire/))            { tint = 0x4a1a08; alpha = 0.30; }
+        else if (has(/tideflow|water|sea|reef|shore|beach/))            { tint = 0x0a3a55; alpha = 0.28; }
+        else if (has(/snow|frost|ice|tundra|winter/))                   { tint = 0xb0d8ff; alpha = 0.18; }
+        else if (has(/desert|sand|wastes|drought/))                     { tint = 0xb88a44; alpha = 0.22; }
+        else if (has(/crystal|lumin|radiant|holy|shrine|chapel/))       { tint = 0xffeeaa; alpha = 0.16; }
+        else if (has(/veil|rift|void|shadow|dark|blight|corrupted/))    { tint = 0x2a0a3a; alpha = 0.40; }
+        else if (has(/town|village|haven|hub|home|nexus|sanctum/))      { tint = 0xa8b8cc; alpha = 0.12; }
+        else if (location.environment?.ambientColor) {
+            tint = parseInt(String(location.environment.ambientColor).replace('0x', ''), 16) || tint;
+            alpha = 0.20;
+        }
+
+        const overlay = this.add.graphics().setDepth(0.2);
+        overlay.fillStyle(tint, alpha * alphaMul);
+        overlay.fillRect(x, y, w, h);
+
+        // Subtle border framing so adjacent zones read as separate "rooms".
+        const border = this.add.graphics().setDepth(0.3);
+        border.lineStyle(3, tint, 0.55);
+        border.strokeRect(x + 2, y + 2, w - 4, h - 4);
+    }
+
+    /**
+     * Scatter imported environment sprites across a zone, themed by zone tags.
+     * Picks key prefixes from public/assets/imported/environment/ — bushes,
+     * trees, stones, ruins, mushrooms, ferns, corals, shells, statues,
+     * buildings, decor — and places them at low depth so they sit behind
+     * gameplay entities. Idempotent: no-op if the imported textures aren't
+     * loaded.
+     */
+    _scatterImportedDecor(x, y, w, h, location) {
+        const env = (location.environment || {});
+        const tags = (location.tags || []).map(t => String(t).toLowerCase());
+        const id = String(location.id || '').toLowerCase();
+
+        // Build a candidate prefix list from zone hints.
+        const prefixes = new Set();
+        const has = (re) => re.test(id) || tags.some(t => re.test(t));
+
+        // Always-on baseline so every zone gets some variety
+        ['imp_env_bush_', 'imp_env_stones_', 'imp_env_greenery_', 'imp_env_decor_'].forEach(p => prefixes.add(p));
+
+        if (has(/cave|catacomb|tomb|dungeon|hollow|crypt/)) {
+            ['imp_env_brown_ruins', 'imp_env_brown_gray_ruins', 'imp_env_statue', 'imp_env_dragon_bones'].forEach(p => prefixes.add(p));
+        }
+        if (has(/forest|canopy|spindle|wood|grove|verdant|root/)) {
+            ['imp_env_tree_', 'imp_env_fern', 'imp_env_chanterelles', 'imp_env_beige_green_mushroom', 'imp_env_white_red_mushroom'].forEach(p => prefixes.add(p));
+        }
+        if (has(/ruin|ancient|temple|altar|shrine/)) {
+            ['imp_env_white_ruins', 'imp_env_yellow_ruins', 'imp_env_sand_ruins', 'imp_env_statue', 'imp_env_tree_idol'].forEach(p => prefixes.add(p));
+        }
+        if (has(/water|tide|sea|reef|coral|shore|beach/)) {
+            ['imp_env_blue_coral', 'imp_env_violet_pink_coral', 'imp_env_starfish', 'imp_env_brown_white_shell', 'imp_env_sea_urchin', 'imp_env_water_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/snow|frost|ice|winter|tundra/)) {
+            ['imp_env_snow_bush', 'imp_env_snow_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/desert|sand|wastes|drought/)) {
+            ['imp_env_cactus', 'imp_env_sand_ruins', 'imp_env_yellow_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/burn|cinder|ash|scorched|blight|corrupted/)) {
+            ['imp_env_burned_tree', 'imp_env_broken_tree', 'imp_env_brown_gray_ruins'].forEach(p => prefixes.add(p));
+        }
+        if (has(/town|village|haven|hub|home|nexus/)) {
+            ['imp_env_building_', 'imp_env_road_', 'imp_env_land_', 'imp_env_decor_'].forEach(p => prefixes.add(p));
+        }
+
+        // Collect all loaded texture keys matching any prefix.
+        const allKeys = this.textures.getTextureKeys();
+        const candidates = [];
+        for (const key of allKeys) {
+            for (const p of prefixes) {
+                if (key.startsWith(p)) { candidates.push(key); break; }
+            }
+        }
+        if (candidates.length === 0) return;
+
+        // Scatter density: more for outdoor zones, fewer for dungeons.
+        const isDungeon = location.type === 'dungeon' || location.type === 'boss';
+        const decorCount = isDungeon ? 14 : 28;
+
+        for (let i = 0; i < decorCount; i++) {
+            const key = candidates[Phaser.Math.Between(0, candidates.length - 1)];
+            const dx = x + Phaser.Math.Between(40, w - 40);
+            const dy = y + Phaser.Math.Between(60, h - 40);
+            const scale = Phaser.Math.FloatBetween(0.35, 0.85);
+            // Depth 1.5 sits between background (0) and gameplay (4+).
+            const prop = this.add.image(dx, dy, key)
+                .setDepth(1.5)
+                .setScale(scale)
+                .setAlpha(Phaser.Math.FloatBetween(0.75, 0.95))
+                .setOrigin(0.5, 0.85);
+            // Foliage sways; only a third get motion to keep it cheap.
+            if (/tree|bush|fern|flower|willow|greenery|grass/.test(key) && Math.random() < 0.35) {
+                MotionLibrary.apply(this, prop, 'idle-sway', { amount: Phaser.Math.Between(2, 4), duration: 2400 + Math.random() * 1200 });
+            }
+        }
+
+        // Drop a unique landmark idol per zone (deterministic by id hash so the
+        // same zone always gets the same idol). Skip dungeons.
+        if (!isDungeon) {
+            this._placeZoneLandmark(x, y, w, h, id);
+        }
+    }
+
+    /**
+     * Place a single decorative landmark (tree idol or living gazebo) at a
+     * fixed-ish position in a zone. Deterministic per zone id.
+     */
+    _placeZoneLandmark(x, y, w, h, zoneId) {
+        const LANDMARKS = [
+            'imp_env_tree_idol_deer',
+            'imp_env_tree_idol_dragon',
+            'imp_env_tree_idol_human',
+            'imp_env_tree_idol_wolf',
+            'imp_env_living_gazebo1',
+            'imp_env_living_gazebo2',
+        ];
+        const loaded = LANDMARKS.filter(k => this.textures.exists(k));
+        if (loaded.length === 0) return;
+
+        // Hash the zone id to pick an idol + position offset.
+        let h1 = 0;
+        for (let i = 0; i < zoneId.length; i++) h1 = ((h1 << 5) - h1 + zoneId.charCodeAt(i)) | 0;
+        const idol = loaded[Math.abs(h1) % loaded.length];
+        const px = x + 120 + (Math.abs(h1 >> 3) % Math.max(1, w - 240));
+        const py = y + 140 + (Math.abs(h1 >> 7) % Math.max(1, h - 260));
+
+        const landmark = this.add.image(px, py, idol)
+            .setDepth(2.5)
+            .setScale(0.7)
+            .setAlpha(0.95)
+            .setOrigin(0.5, 0.85);
+
+        // Subtle glow pulse so the player can spot landmarks from afar.
+        this.tweens.add({
+            targets: landmark,
+            scale: 0.74,
+            duration: 2400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
     }
 
     _drawZoneConnections(locations) {
@@ -766,8 +1108,11 @@ export default class GameScene extends Phaser.Scene {
         if (this.inTacticalCombat || overworldEnemies.length === 0) return;
         this._tacticalOverworldEnemies = overworldEnemies;
 
-        const defs = overworldEnemies.map(e => e.data.definition);
-        const isBoss = defs.some(d => (d.tier || 1) >= 4) || defs.length >= 4;
+        // Enemy definitions live on _state.definition (e.data may be null for
+        // painterly sprites). Filter out any without a definition.
+        const defs = overworldEnemies.map(e => e._state?.definition || e.data?.definition).filter(Boolean);
+        if (defs.length === 0) return;
+        const isBoss = defs.some(d => (d?.tier || 1) >= 4) || defs.length >= 4;
         const gridWidth = isBoss ? 12 : (defs.length <= 2 ? 6 : 10);
         const gridHeight = isBoss ? 8 : (defs.length <= 2 ? 6 : 7);
 
@@ -868,13 +1213,22 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _spawnSingleEnemy(def, x, y, zoneId) {
-        // Map enemy types to animated spritesheet keys
+        // Map enemy types to animated spritesheet keys. HD imported variants
+        // are preferred when their textures exist; otherwise fall back to
+        // the original lower-res Kenney-derived sheets.
+        const HD_TITAN_WALK  = 'imp_treetitan_treetitanwalk_top_down_10col_5row_256px';
+        const HD_CORRUPTED   = 'imp_corruptedtreetitan_walk_top_down_5col_7row_256px';
+        const HD_SENTINEL    = 'imp_corrupted_tree_sentenel_run_top_down_7col_3row_256px';
+        const useHdTitan     = this.textures.exists(HD_TITAN_WALK);
+        const useHdCorrupted = this.textures.exists(HD_CORRUPTED);
+        const useHdSentinel  = this.textures.exists(HD_SENTINEL);
+
         const ENEMY_SPRITE_MAP = {
-            forest_guardian:       'enemy_treetitan',
-            verdant_guardian:      'enemy_treetitan',
-            tree_titan:            'enemy_treetitan',
-            corrupted_guardian:    'enemy_corrupted_titan',
-            shadow_stalker:        'enemy_warrior',
+            forest_guardian:       useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            verdant_guardian:      useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            tree_titan:            useHdTitan ? HD_TITAN_WALK : 'enemy_treetitan',
+            corrupted_guardian:    useHdCorrupted ? HD_CORRUPTED : 'enemy_corrupted_titan',
+            shadow_stalker:        useHdSentinel ? HD_SENTINEL : 'enemy_warrior',
             crimson_warden:        'enemy_warrior',
             mushroom_berserker:    'enemy_mushroom',
             spore_caller:          'enemy_mushroom',
@@ -885,21 +1239,47 @@ export default class GameScene extends Phaser.Scene {
             'enemy_corrupted_titan':'enemy_corrupted_titan-walk',
             'enemy_mushroom':       'enemy_mushroom-walk',
             'enemy_warrior':        'enemy_warrior-idle',
+            [HD_TITAN_WALK]:        'treetitan-hd-walk',
+            [HD_CORRUPTED]:         'corrupted-titan-hd-walk',
+            [HD_SENTINEL]:          'corrupted-sentinel-run',
         };
 
-        const spriteKey = ENEMY_SPRITE_MAP[def.id] ||
-            (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+        // Prefer the new painterly enemy art (single static image) when we
+        // have a mapping and the texture is loaded.
+        const painterlyKey = PAINTERLY_ENEMY_MAP[def.id];
+        const usePainterly = painterlyKey && this.textures.exists(painterlyKey);
 
-        const enemy = this.physics.add.sprite(x, y, spriteKey);
-        enemy.setDepth(4);
-        enemy.setCollideWorldBounds(true);
-        // Scale 256px frame down to 56px display size
-        enemy.setDisplaySize(56, 56);
-        enemy.body.setSize(36, 36);
-        enemy.body.setOffset(110, 140);
-        // Play walk animation if available
-        const animKey = ENEMY_ANIM_MAP[spriteKey];
-        if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        let enemy, spriteKey;
+        if (usePainterly) {
+            const isBoss = BOSS_IDS.has(def.id);
+            const display = isBoss ? 96 : 64;
+            spriteKey = painterlyKey;
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            enemy.setDisplaySize(display, display);
+            // Body in source-texture pixels (~55% of the sprite, centered).
+            const tw = enemy.width, th = enemy.height;
+            enemy.body.setSize(tw * 0.5, th * 0.5);
+            enemy.body.setOffset(tw * 0.25, th * 0.35);
+            enemy._painterly = true;
+            enemy._isBoss = isBoss;
+            // Gentle idle "breathing" so static art feels alive.
+            MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
+        } else {
+            spriteKey = ENEMY_SPRITE_MAP[def.id] ||
+                (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            // Scale 256px frame down to 56px display size
+            enemy.setDisplaySize(56, 56);
+            enemy.body.setSize(36, 36);
+            enemy.body.setOffset(110, 140);
+            // Play walk animation if available
+            const animKey = ENEMY_ANIM_MAP[spriteKey];
+            if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        }
 
         enemy._state = {
             definition: def,
@@ -1023,6 +1403,7 @@ export default class GameScene extends Phaser.Scene {
         ];
 
         for (const def of npcDefs) {
+            const visual = this._pickNpcVisual(def);
             const npc = new NPC(this, def.x, def.y, {
                 name: def.name,
                 role: def.role,
@@ -1031,13 +1412,67 @@ export default class GameScene extends Phaser.Scene {
                 dialogueId: def.dialogueId,
                 shopInventory: def.shopInventory,
                 keeperId: def.keeperId,
-                stationId: def.stationId
+                stationId: def.stationId,
+                spriteKey: visual.spriteKey,
+                idleAnim: visual.idleAnim,
+                tint: visual.tint,
             });
             this.npcs.push(npc);
         }
 
         // Override NPC E-key to use DialogueSystem for richer dialogues
         this._wireNPCDialogues();
+    }
+
+    /**
+     * Pick a visual variant for an NPC so the world has visible diversity
+     * instead of every villager looking identical. Uses role + name hash to
+     * deterministically choose a sprite key + tint.
+     */
+    _pickNpcVisual(def) {
+        const name = (def.name || '').toLowerCase();
+        const role = (def.role || 'lore').toLowerCase();
+
+        // Prefer painterly NPC art (single static image) when loaded.
+        const artKey = npcArtFor(def.name);
+        if (this.textures.exists(artKey)) {
+            return { spriteKey: artKey, idleAnim: null, tint: null };
+        }
+
+        // Hash name → 0..2^32 for stable choice per NPC.
+        let h = 0;
+        for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+        const hash = Math.abs(h);
+
+        // Distinctive sprites for specific archetypes.
+        if (/druid|archdruid|veyla|grove|beastcaller/.test(name)) {
+            return {
+                spriteKey: 'imp_druid_run_top_down_8col_3row_256px',
+                idleAnim: 'npc-druid-run',
+                tint: null
+            };
+        }
+        if (/elder|seer|thalos|althea|sage|oracle/.test(name)) {
+            // Tinted hue marks elders.
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xddccaa };
+        }
+        if (/commander|warden|guard|briara|crimson|brawler/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xff8866 };
+        }
+        if (/merchant|trader|wares|shopkeeper|smith|forger/.test(name) || role === 'shop' || role === 'merchant') {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xffd966 };
+        }
+        if (/veil|keeper|hidden|whisper/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0xaa88ff };
+        }
+        if (/companion|vaeril|sylor|aeliana|mycon|kaelen/.test(name)) {
+            return { spriteKey: 'npc', idleAnim: null, tint: 0x88ffcc };
+        }
+
+        // Default: hue-shift the legacy 'npc' texture by hash so a row of
+        // villagers reads as different people.
+        const palette = [0xffffff, 0xcceedd, 0xeeddcc, 0xddcceeff & 0xffffff, 0xccddff, 0xeeccdd, 0xddeecc];
+        return { spriteKey: 'npc', idleAnim: null, tint: palette[hash % palette.length] };
     }
 
     _wireNPCDialogues() {
@@ -1047,9 +1482,9 @@ export default class GameScene extends Phaser.Scene {
             const npc = this.npcs.find(n => n.name === data.npc);
             if (!npc) return;
 
-            // Wire shop:open for merchant/shop NPCs
+            // Wire shop-open for merchant/shop NPCs (matches ShopPanel listener)
             if (npc.role === 'merchant' || npc.role === 'shop' || npc.isShopkeeper) {
-                EventBus.emit('shop:open', {
+                EventBus.emit('shop-open', {
                     shopId: npc.id || npc.name.toLowerCase().replace(/\s+/g, '_'),
                     shopName: npc.name + "'s Wares",
                     inventory: npc.config.shopInventory || this._getDefaultShopInventory(
@@ -1365,7 +1800,186 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _onSpellCast(data) {
-        // Could trigger global effects, achievements, etc.
+        const spell = data?.spell || {};
+        const caster = data?.caster;
+        const target = data?.target;
+
+        // Play player cast animation if the caster is the player.
+        if (caster === this.player && this.anims.exists('player-cast')) {
+            const wasPlaying = this.player.anims?.currentAnim?.key;
+            this.player.play('player-cast', true);
+            // Auto-return to idle/walk after the cast plays out.
+            this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                const moving = (this.player.body?.velocity?.x || 0) ** 2 + (this.player.body?.velocity?.y || 0) ** 2 > 16;
+                const next = moving && this.anims.exists('player-walk') ? 'player-walk' : (this.anims.exists('player-idle') ? 'player-idle' : null);
+                if (next) this.player.play(next, true);
+            });
+        }
+
+        // Show a large elemental splash at the spell target / cast direction.
+        let sx = data?.x, sy = data?.y;
+        if ((sx == null || sy == null) && target?.x !== undefined) { sx = target.x; sy = target.y; }
+        if (sx == null || sy == null) {
+            // Fall back to a point in front of the caster toward the cursor.
+            const cam = this.cameras?.main;
+            const ptr = this.input?.activePointer;
+            if (cam && ptr) {
+                const wp = cam.getWorldPoint(ptr.x, ptr.y);
+                sx = wp.x; sy = wp.y;
+            } else {
+                sx = caster?.x ?? this.player?.x ?? 0;
+                sy = caster?.y ?? this.player?.y ?? 0;
+            }
+        }
+        this._showSpellImpactSplash(sx, sy, spell.element || data?.element || 'arcane', spell.vfx?.color, spell.vfx?.effect);
+    }
+
+    /**
+     * Single large elemental impact PNG that pops, scales up, and fades.
+     * Picks an imported VFX texture by element family. No-op if no candidate
+     * is loaded (the particle burst still fires from ParticleEffects).
+     */
+    _showSpellImpactSplash(x, y, element, spellColor, effectName) {
+        // Effect-name keywords pick more specific imagery than element alone.
+        // Checked before the element family below.
+        const EFFECT_KEYWORDS = [
+            [/explos|detonat|erupt|blast|shatter|shockwave/, ['imp_vfx_explosion1', 'imp_vfx_explosion2']],
+            [/slash|dart|garrote|crimson_slash/,             ['imp_vfx_slashspecial2', 'imp_vfx_slashspecial1', 'imp_vfx_slashthunder']],
+            [/arrow/,                                        ['imp_vfx_slashspecial3', 'imp_vfx_slashspecial1']],
+            [/shield|aegis|ward|fortress|wall|cocoon|encase|wrap|shell|mirror|guardian/, ['imp_vfx_holy2', 'imp_vfx_special1']],
+            [/shadow/,                                       ['imp_vfx_darkness4', 'imp_vfx_darkness3', 'imp_vfx_statedark']],
+            [/void/,                                         ['imp_vfx_darkness5', 'imp_vfx_statechaos']],
+            [/decay|necro|rot|soul_rip|mind_leech/,          ['imp_vfx_statedeath', 'imp_vfx_darkness3']],
+            [/poison|toxic|venom|spore|fungal|pollen|mushroom/, ['imp_vfx_earth3', 'imp_vfx_statepoison']],
+            [/vine|root|bark|canopy|bloom|green|nature|thorn|sap/, ['imp_vfx_earth5', 'imp_vfx_earth3', 'imp_vfx_earth2']],
+            [/crystal|prism|silver|mind|sense|reality|time|mana_tether/, ['imp_vfx_special2', 'imp_vfx_holy2']],
+            [/fire|flame/,                                   ['imp_vfx_fire2', 'imp_vfx_fire1']],
+            [/wind/,                                         ['imp_vfx_sonic', 'imp_vfx_song']],
+            [/beast|roar|charge/,                            ['imp_vfx_howl', 'imp_vfx_sonic']],
+            [/soul|spirit|whisper/,                          ['imp_vfx_howl', 'imp_vfx_special1']],
+            [/teleport|leap|vanish|flicker|camo|quick/,      ['imp_vfx_special1', 'imp_vfx_sonic']],
+            [/glow|aura|pulse|wave|ripple/,                  ['imp_vfx_special2', 'imp_vfx_holy1']],
+        ];
+        const SPLASH = {
+            fire:     ['imp_vfx_fire2', 'imp_vfx_fire1', 'imp_vfx_explosion1', 'imp_vfx_explosion2'],
+            ice:      ['imp_vfx_ice4', 'imp_vfx_ice5', 'imp_vfx_ice3'],
+            water:    ['imp_vfx_ice3', 'imp_vfx_ice2'],
+            thunder:  ['imp_vfx_thunder3', 'imp_vfx_thunder1', 'imp_vfx_slashthunder'],
+            holy:     ['imp_vfx_holy3', 'imp_vfx_holy4', 'imp_vfx_holy5'],
+            radiant:  ['imp_vfx_holy4', 'imp_vfx_holy5'],
+            light:    ['imp_vfx_holy2', 'imp_vfx_light_balls_tree2'],
+            shadow:   ['imp_vfx_darkness4', 'imp_vfx_darkness3', 'imp_vfx_statedark'],
+            void:     ['imp_vfx_darkness5', 'imp_vfx_statechaos'],
+            nature:   ['imp_vfx_earth3', 'imp_vfx_earth2'],
+            verdant:  ['imp_vfx_earth5', 'imp_vfx_earth3'],
+            arcane:   ['imp_vfx_special2', 'imp_vfx_special1', 'imp_vfx_holy1'],
+            physical: ['imp_vfx_slashspecial2', 'imp_vfx_slashspecial1', 'imp_vfx_slashspecial3'],
+            wind:     ['imp_vfx_sonic', 'imp_vfx_song'],
+            spirit:   ['imp_vfx_howl', 'imp_vfx_sonic'],
+            silver:   ['imp_vfx_special2', 'imp_vfx_holy2', 'imp_vfx_special1'],
+        };
+        const family = String(element || 'arcane').toLowerCase();
+        // Prefer effect-name-keyword imagery; fall back to the element family.
+        let candidates = SPLASH[family] || SPLASH.arcane;
+        if (effectName) {
+            const en = String(effectName).toLowerCase();
+            for (const [re, cand] of EFFECT_KEYWORDS) {
+                if (re.test(en)) { candidates = cand.concat(candidates); break; }
+            }
+        }
+        let key = null;
+        for (const k of candidates) { if (this.textures.exists(k)) { key = k; break; } }
+        if (!key) return;
+
+        const splash = this.add.image(x, y, key)
+            .setDepth(5000)
+            .setAlpha(0.95)
+            .setScale(0.35)
+            .setBlendMode(Phaser.BlendModes.ADD);
+        // Tint with the spell's own vfx.color when provided (per-spell color).
+        if (spellColor != null) {
+            const c = typeof spellColor === 'number'
+                ? spellColor
+                : parseInt(String(spellColor).replace(/^0x/i, ''), 16);
+            if (Number.isFinite(c)) splash.setTint(c);
+        }
+        this.tweens.add({
+            targets: splash,
+            scale: 1.2,
+            alpha: 0,
+            angle: Phaser.Math.Between(-25, 25),
+            duration: 500,
+            ease: 'Sine.easeOut',
+            onComplete: () => { try { splash.destroy(); } catch (_) {} }
+        });
+    }
+
+    /**
+     * Float a status effect icon above a target for the effect's duration.
+     * Listens to `combat:effectApplied` from CombatSystem.
+     */
+    _onCombatEffectApplied(payload) {
+        const effect = payload?.effect;
+        const tName  = payload?.target?.name;
+        if (!effect || !tName) return;
+
+        // Resolve target sprite by matching name. Player first, then enemies.
+        let sprite = null;
+        if (this.player && (this.player.stats?.name === tName || tName === 'Player')) {
+            sprite = this.player;
+        } else if (Array.isArray(this.enemies)) {
+            sprite = this.enemies.find(e => e?._state?.definition?.name === tName) || null;
+        }
+        if (!sprite) return;
+
+        const STATUS_ICON = {
+            dot:            'imp_vfx_statepoison',
+            burn:           'imp_vfx_statepoison',
+            poison:         'imp_vfx_statepoison',
+            bleed:          'imp_vfx_statepoison',
+            sleep:          'imp_vfx_statesleep',
+            silence:        'imp_vfx_statesilent',
+            paralysis:      'imp_vfx_stateparalys',
+            stun:           'imp_vfx_stateparalys',
+            chaos:          'imp_vfx_statechaos',
+            confuse:        'imp_vfx_statechaos',
+            doom:           'imp_vfx_statedeath',
+            death:          'imp_vfx_statedeath',
+            dark:           'imp_vfx_statedark',
+            shadow:         'imp_vfx_statedark',
+            slow:           'imp_vfx_statedown1',
+            weakness:       'imp_vfx_statedown2',
+            curse:          'imp_vfx_curse',
+            heal_over_time: 'imp_vfx_cure2',
+            regen:          'imp_vfx_cure2',
+            buff:           'imp_vfx_stateup1',
+            haste:          'imp_vfx_stateup1',
+            strength:       'imp_vfx_stateup2',
+        };
+        const iconKey = STATUS_ICON[effect.type] || 'imp_vfx_stateup1';
+        if (!this.textures.exists(iconKey)) return;
+
+        const icon = this.add.image(sprite.x, sprite.y - 36, iconKey)
+            .setDepth(7000)
+            .setScale(0.15)
+            .setAlpha(0.95);
+
+        // Follow the sprite while alive; pulse + auto-destroy when duration ends.
+        const durationMs = Math.max(800, (effect.duration || 3) * 1000);
+        const follow = this.time.addEvent({
+            delay: 50,
+            repeat: Math.floor(durationMs / 50),
+            callback: () => { if (sprite?.active && icon?.active) { icon.x = sprite.x; icon.y = sprite.y - 36; } }
+        });
+        this.tweens.add({
+            targets: icon, scale: 0.2, yoyo: true, repeat: -1, duration: 600, ease: 'Sine.easeInOut'
+        });
+        this.time.delayedCall(durationMs, () => {
+            this.tweens.add({
+                targets: icon, alpha: 0, scale: 0.05, duration: 250,
+                onComplete: () => { try { icon.destroy(); follow.remove(); } catch (_) {} }
+            });
+        });
     }
 
     _onEnemyDefeated(data) {
@@ -1390,19 +2004,31 @@ export default class GameScene extends Phaser.Scene {
             const goldDrop = Math.max(0, Math.round(rawGold * (sapMods.lootRateMultiplier ?? 1)));
             this.player.stats.gold += goldDrop;
 
-            // Drop items to inventory (phase affects drop rate)
+            // Drop items as physical pickups the player walks over.
             const items = lootTable.items || [];
             for (const drop of items) {
                 const chance = (drop.dropChance ?? 0.5) * (sapMods.lootRateMultiplier ?? 1);
                 if (Math.random() < Math.min(1, chance)) {
                     const itemData = dataManager.getItem(drop.itemId);
-                    EventBus.emit('inventory:addItem', {
-                        itemId: drop.itemId,
-                        quantity: 1,
-                        itemData: itemData || { id: drop.itemId, name: drop.itemId, stackable: true }
-                    });
-                    console.log(`[Loot] Dropped: ${drop.itemId}`);
+                    this._spawnLootPickup(
+                        enemy.x + Phaser.Math.Between(-18, 18),
+                        enemy.y + Phaser.Math.Between(-12, 12),
+                        drop.itemId,
+                        itemData
+                    );
+                    console.log(`[Loot] Dropped pickup: ${drop.itemId}`);
                 }
+            }
+            // Also drop a gold pickup if there was any.
+            if (goldDrop > 0) {
+                this._spawnLootPickup(
+                    enemy.x + Phaser.Math.Between(-10, 10),
+                    enemy.y + Phaser.Math.Between(-6, 6),
+                    '__gold__',
+                    { name: `${goldDrop} Gold`, stackable: true, _goldAmount: goldDrop }
+                );
+                // The gold was already added to player.stats.gold above; subtract so the pickup awards it on collect.
+                this.player.stats.gold = Math.max(0, this.player.stats.gold - goldDrop);
             }
         }
 
@@ -1510,6 +2136,18 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
+    /**
+     * Apply XP granted directly by a dialogue effect (player:addExperience),
+     * which previously had no listener so dialogue XP rewards were lost.
+     */
+    _onAddExperience(data) {
+        const amount = data?.amount || 0;
+        if (!amount || !this.player?.stats) return;
+        this.player.stats.experience = (this.player.stats.experience || 0) + amount;
+        this.damageNumbers?.show?.(this.player.x, this.player.y - 28, `+${amount} XP`, 0x44ff88);
+        EventBus.emit('player-stats-updated', this.player.stats);
+    }
+
     _onQuestCompleted(data) {
         console.log(`[Quest] Completed: ${data.name}`);
         this.cameraSystem.shake('medium');
@@ -1524,6 +2162,25 @@ export default class GameScene extends Phaser.Scene {
             for (const [factionId, amount] of Object.entries(data.rewards.reputation)) {
                 this.factionSystem.modifyReputation(factionId, amount);
             }
+        }
+
+        // Credit XP + gold to the ACTUAL player. QuestSystem.addExperience
+        // writes to its own detached playerStats object (not this.player.stats),
+        // and completeQuest never grants gold — so apply both here, the one
+        // place the live player is in scope. (Items are already added during
+        // completeQuest via inventory:addItem.)
+        const r = data.rewards || {};
+        const xp = r.experience ?? r.xp ?? 0;
+        if (xp && this.player?.stats) {
+            this.player.stats.experience = (this.player.stats.experience || 0) + xp;
+            this.damageNumbers?.show?.(this.player.x, this.player.y - 30, `+${xp} XP`, 0x44ff88);
+        }
+        if (r.gold && this.player?.stats) {
+            this.player.stats.gold = (this.player.stats.gold || 0) + r.gold;
+            this.damageNumbers?.show?.(this.player.x, this.player.y - 12, `+${r.gold}g`, 0xffdd44);
+        }
+        if ((xp || r.gold) && this.player?.stats) {
+            EventBus.emit('player-stats-updated', this.player.stats);
         }
 
         // Check if this is a main quest completion — trigger ending evaluation
@@ -1924,6 +2581,120 @@ export default class GameScene extends Phaser.Scene {
     _onCompanionRecruited(data) {
         console.log(`[Companion] ${data.name} joined the party`);
         this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 20 });
+        this._syncCompanionFollowers();
+    }
+
+    /**
+     * Spawn a world follower sprite for each active-party companion (and remove
+     * sprites for any who left). Followers are plain images that trail the
+     * player in _updateCompanionFollowers.
+     */
+    _syncCompanionFollowers() {
+        if (!this._companionFollowers) this._companionFollowers = new Map();
+        const party = this.companionSystem?.getActiveParty?.() || [];
+        const activeIds = new Set(party.map(c => c.id));
+
+        for (const [id, spr] of this._companionFollowers) {
+            if (!activeIds.has(id)) { try { spr.destroy(); } catch (_) {} this._companionFollowers.delete(id); }
+        }
+        party.forEach((c, i) => {
+            if (this._companionFollowers.has(c.id)) return;
+            const key = companionArtFor(c.id);
+            if (!this.textures.exists(key)) return;
+            const spr = this.add.image(this.player.x - 44 - i * 22, this.player.y, key)
+                .setDepth(4.8).setDisplaySize(56, 56);
+            spr._cid = c.id;
+            spr._cname = c.name;
+            MotionLibrary.apply(this, spr, 'idle-breathe', { duration: 1600 + i * 150 });
+            // Floating name tag.
+            spr._tag = this.add.text(spr.x, spr.y - 34, c.name, {
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#88ffcc',
+                stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5).setDepth(10);
+            this._companionFollowers.set(c.id, spr);
+        });
+    }
+
+    /**
+     * Big boss attack telegraph: a crimson shockwave ring that expands and
+     * fades from the boss, a scale-up "rear back + slam" on the boss sprite,
+     * a red tint flash, and a camera shake. Signals a heavy hit.
+     */
+    _bossAttackTell(boss) {
+        // Expanding shockwave ring.
+        const ring = this.add.graphics().setDepth(4.9);
+        ring.lineStyle(5, 0xff3322, 0.9);
+        ring.strokeCircle(0, 0, 18);
+        ring.x = boss.x; ring.y = boss.y;
+        this.tweens.add({
+            targets: ring, scale: 5, alpha: 0, duration: 480, ease: 'Cubic.easeOut',
+            onComplete: () => { try { ring.destroy(); } catch (_) {} }
+        });
+        // Rear-back then slam (scale punch — safe on physics sprites).
+        const base = boss._mlBase?.sy ?? boss.scaleY;
+        this.tweens.add({
+            targets: boss, scaleX: boss.scaleX * 1.18, scaleY: base * 1.18,
+            duration: 160, yoyo: true, ease: 'Back.easeOut'
+        });
+        boss.setTint?.(0xff5544);
+        this.time.delayedCall(220, () => boss.clearTint?.());
+        this.cameraSystem?.shake?.('medium');
+    }
+
+    /** Trail each companion behind the player; auto-attack nearby enemies. */
+    _updateCompanionFollowers() {
+        if (!this._companionFollowers || !this.player) return;
+        const now = this.time.now;
+        let i = 0;
+        for (const spr of this._companionFollowers.values()) {
+            // ── Auto-attack: hit the nearest enemy within range ──
+            const enemy = this._nearestEnemyTo(spr.x, spr.y, 140);
+            if (enemy && now >= (spr._atkReady || 0)) {
+                spr._atkReady = now + 1300;
+                this._companionAttack(spr, enemy);
+            }
+
+            // ── Follow: chase the player (or lunge an enemy if attacking) ──
+            const followTarget = enemy ? enemy : this.player;
+            const spacing = enemy ? 30 : (46 + i * 30);
+            const dist = Phaser.Math.Distance.Between(spr.x, spr.y, followTarget.x, followTarget.y);
+            if (dist > spacing) {
+                const ang = Math.atan2(followTarget.y - spr.y, followTarget.x - spr.x);
+                const sp = Math.min(3.4, (dist - spacing) * 0.12);
+                spr.x += Math.cos(ang) * sp;
+                spr.y += Math.sin(ang) * sp;
+                if (Math.cos(ang) < -0.1) spr.setFlipX(true);
+                else if (Math.cos(ang) > 0.1) spr.setFlipX(false);
+            }
+            if (spr._tag) { spr._tag.x = spr.x; spr._tag.y = spr.y - 34; }
+            i++;
+        }
+    }
+
+    _nearestEnemyTo(x, y, range) {
+        const list = this.enemies?.getChildren?.() || [];
+        let best = null, bestD = range;
+        for (const e of list) {
+            if (!e.active || !e._state || e._state.hp <= 0) continue;
+            const d = Phaser.Math.Distance.Between(x, y, e.x, e.y);
+            if (d < bestD) { bestD = d; best = e; }
+        }
+        return best;
+    }
+
+    _companionAttack(companion, enemy) {
+        const dmg = 5 + Phaser.Math.Between(0, 4);
+        enemy._state.hp = Math.max(0, enemy._state.hp - dmg);
+        if (enemy.data) enemy.data.hp = enemy._state.hp; // keep both fields in sync
+        // Visual feedback.
+        MotionLibrary.apply(this, companion, 'pulse-once');
+        enemy.setTint?.(0x88ffcc);
+        this.time.delayedCall(120, () => enemy.clearTint?.());
+        this.damageNumbers?.show?.(enemy.x, enemy.y - 24, dmg, 0x88ffcc);
+        this._updateEnemyHpBar(enemy);
+        if (enemy._state.hp <= 0) {
+            EventBus.emit('enemy-defeated', { enemy, byCompanion: companion._cid });
+        }
     }
 
     _onVeilkeeperConsulted(data) {
@@ -2150,14 +2921,36 @@ export default class GameScene extends Phaser.Scene {
                             const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
                             this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
                             // Play attack animation if available (reverts to walk anim automatically)
-                            const ATTACK_ANIM = { enemy_treetitan: 'enemy_treetitan-attack', enemy_corrupted_titan: 'enemy_treetitan-attack' };
+                            const ATTACK_ANIM = {
+                                enemy_treetitan: 'enemy_treetitan-attack',
+                                enemy_corrupted_titan: 'enemy_treetitan-attack',
+                                imp_treetitan_treetitanwalk_top_down_10col_5row_256px: 'treetitan-hd-attack',
+                                imp_corruptedtreetitan_walk_top_down_5col_7row_256px: 'treetitan-hd-attack',
+                            };
+                            const WALK_ANIM = {
+                                enemy_treetitan: 'enemy_treetitan-walk',
+                                enemy_corrupted_titan: 'enemy_corrupted_titan-walk',
+                                imp_treetitan_treetitanwalk_top_down_10col_5row_256px: 'treetitan-hd-walk',
+                                imp_corruptedtreetitan_walk_top_down_5col_7row_256px: 'corrupted-titan-hd-walk',
+                            };
                             const atkAnim = ATTACK_ANIM[enemy.texture?.key];
                             if (atkAnim && this.anims.exists(atkAnim) && !enemy.anims.isPlaying) {
                                 enemy.play(atkAnim);
                                 enemy.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                                    const walkAnim = { enemy_treetitan: 'enemy_treetitan-walk', enemy_corrupted_titan: 'enemy_corrupted_titan-walk' }[enemy.texture?.key];
+                                    const walkAnim = WALK_ANIM[enemy.texture?.key];
                                     if (walkAnim && this.anims.exists(walkAnim)) enemy.play(walkAnim);
                                 });
+                            } else if (enemy._isBoss) {
+                                // Boss signature tell: bigger telegraph — a
+                                // crimson windup ring that expands + fades, a
+                                // scale-up "rear back", and a camera shake.
+                                this._bossAttackTell(enemy);
+                            } else if (enemy._painterly) {
+                                // Painterly (physics) enemies can't lunge (body
+                                // overwrites position), so flash + quick wobble as
+                                // the attack tell. Wobble restores scale on done.
+                                MotionLibrary.apply(this, enemy, 'flash', { tint: 0xffdd88, duration: 140 });
+                                MotionLibrary.apply(this, enemy, 'wobble');
                             }
                             EventBus.emit('enemy-attack', { enemy, player: this.player, damage });
                             EventBus.emit('player-damaged', { x: this.player.x, y: this.player.y });
@@ -2265,6 +3058,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.dspSystem.update) this.dspSystem.update(delta);
         if (this.narrativeSystem.update) this.narrativeSystem.update(delta);
         if (this.companionSystem.update) this.companionSystem.update(delta, this.player);
+        this._updateCompanionFollowers();
         if (this.portalSystem) this.portalSystem.update();
         this.profiler.end('newSystems');
 
@@ -2319,6 +3113,20 @@ export default class GameScene extends Phaser.Scene {
         if (this.cursors.down.isDown  || this.wasd.down.isDown)  iy =  1;
 
         this.physicsSystem.applyPlayerMovement(this.player, ix, iy, this.player.stats.speed);
+
+        // Animation + facing — switch walk/idle and flip on horizontal input.
+        // Skip if a cast animation is currently playing (it'll auto-return).
+        const current = this.player.anims?.currentAnim?.key;
+        const isCasting = current === 'player-cast' && this.player.anims?.isPlaying;
+        if (!isCasting) {
+            const moving = ix !== 0 || iy !== 0;
+            const target = moving ? 'player-walk' : 'player-idle';
+            if (this.anims.exists(target) && current !== target) {
+                this.player.play(target, true);
+            }
+            if (ix < 0) this.player.setFlipX(true);
+            else if (ix > 0) this.player.setFlipX(false);
+        }
     }
 
     _regenSap(delta) {
