@@ -105,10 +105,14 @@ export class AIDungeonMaster {
     // ─── Narrative Templates ───────────────────────────────────────
     this._initTemplates();
 
-    // ─── Claude API (optional) ──────────────────────────────────────
+    // ─── AI narration providers (optional) ──────────────────────────
+    // Both run through the local proxy (localhost:3001) so API keys stay
+    // server-side. Claude is tried first; OpenAI is the fallback narrator.
     this.claudeApiKey = this._getClaudeApiKey();
     this.claudeModel = 'claude-3-5-haiku-20241022';
     this.claudeMaxTokens = 120;
+    this.openaiModel = 'gpt-4o-mini';
+    this.openaiMaxTokens = 120;
 
     // ─── Event Bindings ────────────────────────────────────────────
     this._bindEvents();
@@ -160,6 +164,39 @@ export class AIDungeonMaster {
   }
 
   /**
+   * Call OpenAI via the local proxy server (http://localhost:3001/api/openai).
+   * The proxy forwards to api.openai.com and keeps the API key server-side.
+   * Falls back gracefully (returns null) if proxy or key is unavailable.
+   */
+  async _callOpenAIAPI(systemPrompt, userMessage) {
+    const body = {
+      model: this.openaiModel,
+      max_tokens: this.openaiMaxTokens,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
+      ]
+    };
+
+    try {
+      const res = await fetch('http://localhost:3001/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        console.warn('[AIDungeonMaster] OpenAI proxy error:', res.status);
+        return null;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content?.trim() || null;
+    } catch (e) {
+      // Proxy not running — silent fallback
+      return null;
+    }
+  }
+
+  /**
    * Generate one short narration line using Claude (design doc: AI Dungeon Master).
    * Falls back to null if API key is missing or request fails; caller should use template then.
    */
@@ -187,7 +224,12 @@ export class AIDungeonMaster {
         userMessage = `Context: ${JSON.stringify(context)}. Write one short narration line.`;
     }
 
-    return this._callClaudeAPI(systemPrompt, userMessage);
+    // Try Claude first; if it returns nothing (no key / proxy down / error),
+    // fall back to OpenAI as the alternative narrator. If both fail, null →
+    // caller uses the static template.
+    const fromClaude = await this._callClaudeAPI(systemPrompt, userMessage);
+    if (fromClaude) return fromClaude;
+    return this._callOpenAIAPI(systemPrompt, userMessage);
   }
 
   // ═══════════════════════════════════════════════════════════════════

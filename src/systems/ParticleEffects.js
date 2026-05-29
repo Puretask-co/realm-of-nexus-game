@@ -12,39 +12,42 @@ import EventBus from '../core/EventBus.js';
  */
 
 // ─── Per-element particle configs ─────────────────────────────────────────
+// Primary textures are the new imp_vfx_* imports; Kenney keys remain as
+// fallback so older builds still render something if the imports are missing.
 const ELEMENT_FX = {
-    fire:     { textures: ['particle_fire_01','particle_fire_02','particle_flame_01'],   tint: 0xff4400, speed: 120, scale: { start: 0.6, end: 0.1 }, lifespan: 600 },
-    arcane:   { textures: ['particle_magic_01','particle_magic_02','particle_flare_01'], tint: 0xaa44ff, speed: 100, scale: { start: 0.5, end: 0.05 }, lifespan: 500 },
-    shadow:   { textures: ['particle_smoke_01','particle_smoke_02','particle_symbol_01'],tint: 0x330066, speed: 80,  scale: { start: 0.5, end: 0.1 },  lifespan: 700 },
-    nature:   { textures: ['particle_circle_01','particle_spark_01','particle_trace_01'],tint: 0x44dd44, speed: 90,  scale: { start: 0.4, end: 0.05 }, lifespan: 500 },
-    verdant:  { textures: ['particle_circle_02','particle_spark_02','particle_trace_02'],tint: 0x33ff77, speed: 90,  scale: { start: 0.4, end: 0.05 }, lifespan: 500 },
-    radiant:  { textures: ['particle_star_01','particle_star_02','particle_light_01'],   tint: 0xffffaa, speed: 110, scale: { start: 0.5, end: 0.05 }, lifespan: 500 },
-    light:    { textures: ['particle_light_01','particle_light_02','particle_flare_01'], tint: 0xffffff, speed: 110, scale: { start: 0.5, end: 0.05 }, lifespan: 500 },
-    spirit:   { textures: ['particle_twirl_01','particle_twirl_02','particle_symbol_02'],tint: 0x88aaff, speed: 70,  scale: { start: 0.4, end: 0.05 }, lifespan: 600 },
-    void:     { textures: ['particle_symbol_01','particle_smoke_04','particle_circle_04'],tint: 0x660099, speed: 80,  scale: { start: 0.5, end: 0.1 },  lifespan: 700 },
-    physical: { textures: ['particle_slash_01','particle_slash_02','particle_spark_03'], tint: 0xffddaa, speed: 150, scale: { start: 0.5, end: 0.05 }, lifespan: 350 },
-    water:    { textures: ['particle_circle_03','particle_trace_03','particle_smoke_07'],tint: 0x4488ff, speed: 100, scale: { start: 0.4, end: 0.05 }, lifespan: 500 },
-    ice:      { textures: ['particle_circle_04','particle_spark_05','particle_trace_04'],tint: 0xaaddff, speed: 90,  scale: { start: 0.4, end: 0.05 }, lifespan: 550 },
-    thunder:  { textures: ['particle_spark_07','particle_spark_06','particle_circle_05'],tint: 0xffff00, speed: 180, scale: { start: 0.5, end: 0.05 }, lifespan: 400 },
-    wind:     { textures: ['particle_trace_05','particle_trace_06','particle_smoke_08'], tint: 0xaaffcc, speed: 100, scale: { start: 0.3, end: 0.02 }, lifespan: 500 },
+    fire:     { textures: ['imp_vfx_fire1','imp_vfx_fire2','imp_vfx_fire3','particle_fire_01'],                tint: 0xff4400, speed: 120, scale: { start: 0.35, end: 0.05 }, lifespan: 600 },
+    arcane:   { textures: ['imp_vfx_holy1','imp_vfx_holy2','imp_vfx_light_balls_tree1','particle_magic_01'],   tint: 0xaa44ff, speed: 100, scale: { start: 0.30, end: 0.05 }, lifespan: 500 },
+    shadow:   { textures: ['imp_vfx_darkness1','imp_vfx_statedark','imp_vfx_darkness3','particle_smoke_01'],   tint: 0x330066, speed: 80,  scale: { start: 0.35, end: 0.08 }, lifespan: 700 },
+    nature:   { textures: ['imp_vfx_earth1','imp_vfx_earth3','imp_vfx_light_balls_tree2','particle_circle_01'],tint: 0x44dd44, speed: 90,  scale: { start: 0.30, end: 0.05 }, lifespan: 500 },
+    verdant:  { textures: ['imp_vfx_earth2','imp_vfx_earth5','imp_vfx_light_balls_tree2','particle_circle_02'],tint: 0x33ff77, speed: 90,  scale: { start: 0.30, end: 0.05 }, lifespan: 500 },
+    radiant:  { textures: ['imp_vfx_holy3','imp_vfx_holy4','imp_vfx_holy5','particle_star_01'],                tint: 0xffffaa, speed: 110, scale: { start: 0.35, end: 0.05 }, lifespan: 500 },
+    light:    { textures: ['imp_vfx_light_balls_tree1','imp_vfx_light_balls_tree3','imp_vfx_hitphoton','particle_light_01'], tint: 0xffffff, speed: 110, scale: { start: 0.35, end: 0.05 }, lifespan: 500 },
+    spirit:   { textures: ['imp_vfx_howl','imp_vfx_sonic','imp_vfx_stateup1','particle_twirl_01'],             tint: 0x88aaff, speed: 70,  scale: { start: 0.30, end: 0.05 }, lifespan: 600 },
+    void:     { textures: ['imp_vfx_statedeath','imp_vfx_statechaos','imp_vfx_darkness5','particle_symbol_01'],tint: 0x660099, speed: 80,  scale: { start: 0.35, end: 0.08 }, lifespan: 700 },
+    physical: { textures: ['imp_vfx_slashspecial1','imp_vfx_slashspecial2','imp_vfx_slashspecial3','particle_slash_01'], tint: 0xffddaa, speed: 150, scale: { start: 0.35, end: 0.05 }, lifespan: 350 },
+    water:    { textures: ['imp_vfx_ice2','imp_vfx_ice3','imp_vfx_ice4','particle_circle_03'],                 tint: 0x4488ff, speed: 100, scale: { start: 0.30, end: 0.05 }, lifespan: 500 },
+    ice:      { textures: ['imp_vfx_ice5','imp_vfx_ice4','imp_vfx_ice2','particle_circle_04'],                 tint: 0xaaddff, speed: 90,  scale: { start: 0.30, end: 0.05 }, lifespan: 550 },
+    thunder:  { textures: ['imp_vfx_thunder1','imp_vfx_thunder5','imp_vfx_slashthunder','particle_spark_07'],  tint: 0xffff00, speed: 180, scale: { start: 0.35, end: 0.05 }, lifespan: 400 },
+    wind:     { textures: ['imp_vfx_sonic','imp_vfx_song','imp_vfx_special1','particle_trace_05'],             tint: 0xaaffcc, speed: 100, scale: { start: 0.25, end: 0.02 }, lifespan: 500 },
+    silver:   { textures: ['imp_vfx_special2','imp_vfx_holy2','imp_vfx_special1'],                            tint: 0xc8c8ee, speed: 100, scale: { start: 0.30, end: 0.05 }, lifespan: 550 },
 };
 
 // Hit / damage effect
 const HIT_FX = {
-    textures: ['particle_spark_01','particle_spark_02','particle_spark_03','particle_scorch_01'],
-    tint: 0xffaa44, speed: 130, scale: { start: 0.4, end: 0 }, lifespan: 350
+    textures: ['imp_vfx_hitfire','imp_vfx_hitspecial1','imp_vfx_hitspecial2','imp_vfx_hit2','particle_spark_01'],
+    tint: 0xffaa44, speed: 130, scale: { start: 0.30, end: 0 }, lifespan: 350
 };
 
 // Heal effect
 const HEAL_FX = {
-    textures: ['particle_star_03','particle_star_04','particle_light_02'],
-    tint: 0x88ff88, speed: 60, scale: { start: 0.4, end: 0 }, lifespan: 700
+    textures: ['imp_vfx_cure1','imp_vfx_cure2','imp_vfx_cure3','imp_vfx_cure4','particle_star_03'],
+    tint: 0x88ff88, speed: 60, scale: { start: 0.30, end: 0 }, lifespan: 700
 };
 
 // Level-up effect
 const LEVELUP_FX = {
-    textures: ['particle_star_01','particle_star_05','particle_twirl_03','particle_light_03'],
-    tint: 0xffdd44, speed: 120, scale: { start: 0.6, end: 0 }, lifespan: 1000
+    textures: ['imp_vfx_special1','imp_vfx_special2','imp_vfx_special3','imp_vfx_holy5','particle_star_01'],
+    tint: 0xffdd44, speed: 120, scale: { start: 0.40, end: 0 }, lifespan: 1000
 };
 
 export default class ParticleEffects {
@@ -79,8 +82,19 @@ export default class ParticleEffects {
         const x = data?.x ?? player?.x ?? scene.cameras.main.centerX;
         const y = data?.y ?? player?.y ?? scene.cameras.main.centerY;
         const element = data?.spell?.element || data?.element || 'arcane';
-        const cfg = ELEMENT_FX[element] || ELEMENT_FX.arcane;
+        const baseCfg = ELEMENT_FX[element] || ELEMENT_FX.arcane;
+        // Honor the spell's own vfx.color when present (per-spell tint),
+        // otherwise use the element's default tint.
+        const spellColor = this._parseColor(data?.spell?.vfx?.color);
+        const cfg = spellColor != null ? { ...baseCfg, tint: spellColor } : baseCfg;
         this._burst(x, y, cfg, 18);
+    }
+
+    _parseColor(c) {
+        if (c == null) return null;
+        if (typeof c === 'number') return c;
+        const n = parseInt(String(c).replace(/^0x/i, ''), 16);
+        return Number.isFinite(n) ? n : null;
     }
 
     _onHit(x, y, isPlayer) {

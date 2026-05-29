@@ -17,6 +17,7 @@ import os from 'os';
 
 const PORT = 3001;
 const ANTHROPIC_HOST = 'api.anthropic.com';
+const OPENAI_HOST = 'api.openai.com';
 
 // Save files go here: C:\Users\<you>\Documents\Realm of Nexus Saves\
 const SAVE_DIR = path.join(os.homedir(), 'Documents', 'Realm of Nexus Saves');
@@ -25,11 +26,12 @@ if (!fs.existsSync(SAVE_DIR)) {
     console.log(`[proxy] Created save folder: ${SAVE_DIR}`);
 }
 
-// Read API key from environment
+// Read API keys from environment
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!API_KEY) {
-    console.warn('\n[proxy] WARNING: ANTHROPIC_API_KEY is not set — AI narration will use fallback text.');
-    console.warn('[proxy] To enable AI: add ANTHROPIC_API_KEY=sk-ant-... to your .env file\n');
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+if (!API_KEY && !OPENAI_API_KEY) {
+    console.warn('\n[proxy] WARNING: no AI API key set — AI narration will use fallback text.');
+    console.warn('[proxy] To enable AI: add ANTHROPIC_API_KEY=sk-ant-... or OPENAI_API_KEY=sk-... to your .env file\n');
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,6 +79,39 @@ async function handleClaudeProxy(req, res) {
 
     proxyReq.on('error', (err) => {
         console.error('[proxy] Anthropic request failed:', err.message);
+        send(res, 502, { error: 'Proxy request failed' });
+    });
+
+    proxyReq.write(body);
+    proxyReq.end();
+}
+
+async function handleOpenAIProxy(req, res) {
+    if (!OPENAI_API_KEY) {
+        send(res, 503, { error: 'OpenAI API key not configured' });
+        return;
+    }
+
+    const body = await readBody(req);
+
+    const options = {
+        hostname: OPENAI_HOST,
+        path: '/v1/chat/completions',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Length': Buffer.byteLength(body)
+        }
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode, { 'Content-Type': 'application/json' });
+        proxyRes.pipe(res);
+    });
+
+    proxyReq.on('error', (err) => {
+        console.error('[proxy] OpenAI request failed:', err.message);
         send(res, 502, { error: 'Proxy request failed' });
     });
 
@@ -170,6 +205,12 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // POST /api/openai  — forward to OpenAI chat completions
+    if (req.method === 'POST' && url === '/api/openai') {
+        await handleOpenAIProxy(req, res);
+        return;
+    }
+
     // POST /api/save/:slot  — write save file to disk
     const saveWriteMatch = url.match(/^\/api\/save\/(\d)$/);
     if (req.method === 'POST' && saveWriteMatch) {
@@ -197,6 +238,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
     console.log(`\n[proxy] Realm of Nexus proxy running on http://localhost:${PORT}`);
     console.log(`[proxy] Save files → ${SAVE_DIR}`);
-    console.log(`[proxy] AI narration → ${API_KEY ? 'ENABLED' : 'DISABLED (no API key)'}`);
+    console.log(`[proxy] Claude narration → ${API_KEY ? 'ENABLED' : 'DISABLED (no key)'}`);
+    console.log(`[proxy] OpenAI narration → ${OPENAI_API_KEY ? 'ENABLED' : 'DISABLED (no key)'}`);
     console.log('[proxy] Ready.\n');
 });

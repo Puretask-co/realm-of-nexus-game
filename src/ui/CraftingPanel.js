@@ -234,6 +234,9 @@ export class CraftingPanel {
     //  OPEN / HIDE
     // ─────────────────────────────────────────────────────────────
 
+    // Alias for UIFramework.showPanel() compatibility.
+    show(data) { return this.open(data); }
+
     async open(data = {}) {
         this._stationId = data?.stationId || null;
         this._selectedRecipe = null;
