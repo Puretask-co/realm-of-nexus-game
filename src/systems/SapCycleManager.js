@@ -265,6 +265,19 @@ export default class SapCycleManager {
     }
 
     /**
+     * Flat DSP cost adjustment applied to every spell this phase.
+     * Canonical values from spells.json resourceSystem.phaseModifiers:
+     * Crimson +5 (magic is costlier), Silver -5 (cheaper), Blue 0.
+     */
+    getDspCostModifier() {
+        switch (this.currentPhase) {
+            case 'crimson': return 5;
+            case 'silver':  return -5;
+            default:        return 0;
+        }
+    }
+
+    /**
      * Get blended modifier during transitions.
      */
     getBlendedModifier(spell) {

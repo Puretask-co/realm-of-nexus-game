@@ -286,15 +286,21 @@ export default class EditorScene extends Phaser.Scene {
             height: 720 - this.layout.toolbarH - this.layout.consoleH - this.layout.paletteH
         });
 
-        // When hierarchy selection changes, update inspector
-        EventBus.on('hierarchy:selected', (data) => {
+        // When hierarchy selection changes, update inspector. Track the
+        // unsubscribe so toggling the editor (F2) doesn't leak listeners.
+        (this._unsubs ||= []).push(EventBus.on('hierarchy:selected', (data) => {
             if (data.gameObject) {
                 this.selectedObject = data.gameObject;
                 if (this.inspectorPanel) {
                     this.inspectorPanel.show(data.gameObject);
                 }
             }
-        });
+        }));
+    }
+
+    shutdown() {
+        if (this._unsubs) this._unsubs.forEach((fn) => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
     }
 
     // ----------------------------------------------------------------

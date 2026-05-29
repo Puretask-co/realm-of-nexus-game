@@ -88,6 +88,28 @@ export class QuestSystem {
     this.eventBus.on('spell:learned', (data) => this.onSpellLearned(data));
     this.eventBus.on('player:levelUp', (data) => this.onLevelUp(data));
     this.eventBus.on('sapCycle:phaseChanged', (data) => this.onSapPhaseChanged(data));
+    this.eventBus.on('game:reset', () => this.reset());
+  }
+
+  /**
+   * Clear quest/achievement progress for a new game. Keeps registered quest
+   * and achievement *definitions* (re-registered each GameScene) and the
+   * event listeners; only playthrough progress is wiped.
+   */
+  reset() {
+    this.activeQuests = new Map();
+    this.completedQuests = new Set();
+    this.failedQuests = new Set();
+    this.unlockedAchievements = new Set();
+    this.achievementProgress = new Map();
+    this.unlockedItems = new Set();
+    if (this.playerStats) {
+      this.playerStats.level = 1;
+      this.playerStats.experience = 0;
+      this.playerStats.totalExperience = 0;
+      this.playerStats.skillPoints = 0;
+      this.playerStats.statPoints = 0;
+    }
   }
 
   // ─── Quest Definitions ───────────────────────────────────────────
@@ -252,7 +274,10 @@ export class QuestSystem {
     const rewards = quest.definition.rewards;
     if (rewards) {
       if (rewards.experience) {
+        // Track internally (quest-level prereqs) AND route to the real
+        // progression system via the canonical XP event.
         this.addExperience(rewards.experience);
+        this.eventBus.emit('player:addExperience', { amount: rewards.experience, source: `quest:${questId}` });
       }
       if (rewards.items) {
         for (const item of rewards.items) {
@@ -348,26 +373,16 @@ export class QuestSystem {
   }
 
   checkLevelUp() {
-    const config = this.getProgressionConfig();
-    if (!config) return;
+    // ProgressionSystem is the single source of truth for player level/XP.
+    // QuestSystem no longer runs its own level curve or emits player:levelUp
+    // (doing so previously double-leveled the player on a conflicting curve).
+    // We keep playerStats.level only as a mirror for quest level-prereqs,
+    // synced from progression:levelUp.
+  }
 
-    while (this.playerStats.level < config.maxLevel) {
-      const requiredXP = config.experiencePerLevel[this.playerStats.level] || Infinity;
-      if (this.playerStats.experience >= requiredXP) {
-        this.playerStats.experience -= requiredXP;
-        this.playerStats.level++;
-        this.playerStats.skillPoints += config.skillPointsPerLevel;
-        this.playerStats.statPoints += config.statPointsPerLevel;
-
-        this.eventBus.emit('player:levelUp', {
-          level: this.playerStats.level,
-          skillPoints: this.playerStats.skillPoints,
-          statPoints: this.playerStats.statPoints
-        });
-      } else {
-        break;
-      }
-    }
+  /** Mirror the authoritative level for quest 'level' prerequisites. */
+  syncLevel(level) {
+    if (typeof level === 'number') this.playerStats.level = level;
   }
 
   getProgressionConfig() {
@@ -661,6 +676,7 @@ export class QuestSystem {
   }
 
   onLevelUp(data) {
+    this.syncLevel(data?.level);
     this.checkAchievements();
   }
 

@@ -37,15 +37,20 @@ export default class CharacterSheetScene extends Phaser.Scene {
 
         this._buildPanel();
 
-        // Listen for live updates while the scene is visible
-        EventBus.on('player-stats-updated', (data) => {
-            Object.assign(this._playerStats, data || {});
-            if (this._activeTab === 0) this._drawTab(0);
-        });
-        EventBus.on('spellbook:equipped', ({ slotIndex, spellId }) => {
-            this._equippedSpells[slotIndex] = spellId;
-            if (this._activeTab === 2) this._drawTab(2);
-        });
+        // Listen for live updates while the scene is visible. Store the
+        // unsubscribe fns and remove them in shutdown() — this scene is
+        // launched/stopped repeatedly (C key), so leaving them attached would
+        // accumulate handlers that redraw a stopped scene.
+        this._unsubs = [
+            EventBus.on('player-stats-updated', (data) => {
+                Object.assign(this._playerStats, data || {});
+                if (this._activeTab === 0) this._drawTab(0);
+            }),
+            EventBus.on('spellbook:equipped', ({ slotIndex, spellId }) => {
+                this._equippedSpells[slotIndex] = spellId;
+                if (this._activeTab === 2) this._drawTab(2);
+            }),
+        ];
 
         // Pull initial state
         this._playerStats = {
@@ -59,6 +64,11 @@ export default class CharacterSheetScene extends Phaser.Scene {
         // ESC / C to close
         this.input.keyboard.on('keydown-ESC', () => this.scene.stop());
         this.input.keyboard.on('keydown-C',   () => this.scene.stop());
+    }
+
+    shutdown() {
+        if (this._unsubs) this._unsubs.forEach((fn) => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
     }
 
     // ────────────────────────────────────────────────────────────────────────
