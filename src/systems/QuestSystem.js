@@ -88,6 +88,28 @@ export class QuestSystem {
     this.eventBus.on('spell:learned', (data) => this.onSpellLearned(data));
     this.eventBus.on('player:levelUp', (data) => this.onLevelUp(data));
     this.eventBus.on('sapCycle:phaseChanged', (data) => this.onSapPhaseChanged(data));
+    this.eventBus.on('game:reset', () => this.reset());
+  }
+
+  /**
+   * Clear quest/achievement progress for a new game. Keeps registered quest
+   * and achievement *definitions* (re-registered each GameScene) and the
+   * event listeners; only playthrough progress is wiped.
+   */
+  reset() {
+    this.activeQuests = new Map();
+    this.completedQuests = new Set();
+    this.failedQuests = new Set();
+    this.unlockedAchievements = new Set();
+    this.achievementProgress = new Map();
+    this.unlockedItems = new Set();
+    if (this.playerStats) {
+      this.playerStats.level = 1;
+      this.playerStats.experience = 0;
+      this.playerStats.totalExperience = 0;
+      this.playerStats.skillPoints = 0;
+      this.playerStats.statPoints = 0;
+    }
   }
 
   // ─── Quest Definitions ───────────────────────────────────────────

@@ -64,8 +64,16 @@ export class DSPSystem {
     // Listen for events
     this.eventBus.on('quest:completed', () => this.onQuestCompleted());
     this.eventBus.on('sap-day-passed', (data) => this.onDayPassed(data));
+    this.eventBus.on('game:reset', () => this.reset());
 
     DSPSystem.instance = this;
+  }
+
+  /** Restore DSP to its starting value for a new game. */
+  reset() {
+    const dspCfg = dataManager.getConfig('balance.dsp') || {};
+    this.current = dspCfg.startingValue ?? this.max;
+    this._previousThreshold = this.getCurrentThreshold();
   }
 
   /**
