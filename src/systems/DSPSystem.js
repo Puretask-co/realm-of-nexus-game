@@ -81,6 +81,11 @@ export class DSPSystem {
    * @param {number} amount - DSP to spend
    * @returns {boolean} Whether the spend was successful
    */
+  /** Whether the shared pool can currently cover a cost. */
+  canAfford(amount) {
+    return amount <= 0 || this.current >= amount;
+  }
+
   spend(amount) {
     if (amount <= 0) return true;
     if (this.current < amount) {

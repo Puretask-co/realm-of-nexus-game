@@ -312,6 +312,9 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('quest:completed', (data) => { this._onQuestCompleted(data); this._refreshQuestBeacons(); }),
             EventBus.on('quest:objectiveCompleted', () => this._refreshQuestBeacons()),
             EventBus.on('player:addExperience', (data) => this._onAddExperience(data)),
+            // ProgressionSystem owns level/XP; react to its level-up to apply
+            // class growth + spell unlocks to the player sprite's stats.
+            EventBus.on('progression:levelUp', (data) => this._onProgressionLevelUp(data?.level)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
             EventBus.on('moral:choiceMade', (data) => this._onMoralChoice(data)),
@@ -1145,6 +1148,11 @@ export default class GameScene extends Phaser.Scene {
         // Apply Pure / Blighted variant visuals
         this._applyVariantVisuals();
 
+        // Sync level/XP from ProgressionSystem (the single source of truth).
+        // On a loaded save its deserialize() has already restored these.
+        this.player.stats.level = this.progression.level;
+        this.player.stats.experience = this.progression.experience;
+
         // Emit initial stats
         EventBus.emit('player-stats-updated', this.player.stats);
         EventBus.emit('class:applied', {
@@ -1356,7 +1364,6 @@ export default class GameScene extends Phaser.Scene {
         }
 
         if (result === 'victory' && rewards) {
-            this.player.stats.experience += rewards.experience || 0;
             (rewards.loot || []).forEach(drop => {
                 EventBus.emit('inventory:addItem', { itemId: drop.itemId, quantity: drop.quantity || 1, itemData: dataManager.getItem(drop.itemId) });
             });
@@ -1364,7 +1371,10 @@ export default class GameScene extends Phaser.Scene {
                 if (e._hpBar) e._hpBar.destroy();
                 e.destroy();
             });
+            // ProgressionSystem.onCombatEnded awards the XP from rewards; we
+            // just mirror its value onto player.stats for the HUD.
             EventBus.emit('combat:ended', { result: 'victory', rewards });
+            this.player.stats.experience = this.progression.experience;
         } else {
             this._tacticalOverworldEnemies.forEach(e => {
                 e.setVisible(true);
@@ -1974,10 +1984,18 @@ export default class GameScene extends Phaser.Scene {
         const cd = this.player.stats.cooldowns[spell.id];
         if (cd && now < cd) return;
 
-        // Sap cost check
-        if (this.player.stats.sap < spell.sapCost) return;
+        // ── Resource: DSP only (the shared world pool). spells.json declares
+        // DSP as the single casting resource; phase modifiers adjust DSP cost
+        // (Crimson +5, Silver -5). Personal "Sap" is no longer a casting gate.
+        const baseDspCost = spell.dspCost ?? spell.sapCost ?? 0;
+        const phaseDspMod = this.sapCycle.getDspCostModifier?.() ?? 0;
+        const dspCost = Math.max(0, baseDspCost + phaseDspMod);
+        if (!this.dspSystem.canAfford(dspCost)) {
+            this.damageNumbers.show(this.player.x, this.player.y - 30, 'Not enough DSP', 0x66ccff);
+            return;
+        }
 
-        // Apply phase modifier
+        // Apply phase modifier to damage
         const modifier = this.sapCycle.getBlendedModifier(spell);
         let baseDmg = spell.baseDamage ?? spell.damage ?? 0;
         if (typeof baseDmg === 'string' && baseDmg.includes('d')) {
@@ -1987,9 +2005,7 @@ export default class GameScene extends Phaser.Scene {
         }
         const damage = Math.round(baseDmg * modifier);
 
-        // Consume sap (personal) and DSP (world resource)
-        this.player.stats.sap -= spell.sapCost;
-        const dspCost = spell.dspCost || spell.sapCost;
+        // Drain the shared world pool. Casting costs the world, not the caster.
         this.dspSystem.drain(dspCost, `spell:${spell.id}`);
 
         // Set cooldown
@@ -2032,9 +2048,8 @@ export default class GameScene extends Phaser.Scene {
             const validation = this.attackTypeSystem.validateAttack(this.player, targetEnemy, weaponData);
 
             if (!validation.canAttack) {
-                // Show floating "Out of range!" text and bail without consuming sap.
-                // Refund the sap we already deducted above.
-                this.player.stats.sap += spell.sapCost;
+                // Out of range — refund the DSP we drained above.
+                this.dspSystem.recover(dspCost, `refund:${spell.id}`);
                 this.damageNumbers.show(
                     this.player.x, this.player.y - 30,
                     validation.reason,
@@ -2342,10 +2357,13 @@ export default class GameScene extends Phaser.Scene {
         // Destroy HP bar
         if (enemy._hpBar) { enemy._hpBar.destroy(); enemy._hpBar = null; }
 
-        // Award XP
-        const xpReward = (enemy._state.definition?.baseStats?.hp || 50) / 2;
-        this.player.stats.experience += xpReward;
-        this.damageNumbers.show(enemy.x, enemy.y - 30, `+${Math.round(xpReward)} XP`, 0x44ff88);
+        // Award XP through ProgressionSystem (single source of truth for
+        // level/XP). It emits player-stats-updated{type:levelUp} which we
+        // apply to player.stats in _onProgressionEvent.
+        const xpReward = Math.round((enemy._state.definition?.baseStats?.hp || 50) / 2);
+        this.progression.awardExperience(xpReward);
+        this.player.stats.experience = this.progression.experience;
+        this.damageNumbers.show(enemy.x, enemy.y - 30, `+${xpReward} XP`, 0x44ff88);
 
         // Award gold (Sap Cycle: lootRateMultiplier affects economy)
         const lootTable = enemy._state.definition?.lootTable;
@@ -2409,7 +2427,6 @@ export default class GameScene extends Phaser.Scene {
 
         const _doDestroy = () => {
             if (enemy?.active) enemy.destroy();
-            this._checkLevelUp();
             EventBus.emit('player-stats-updated', this.player.stats);
             this.time.delayedCall(15000, () => this._respawnEnemy(enemy._state?.definition, zoneId));
         };
@@ -2424,55 +2441,45 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    _checkLevelUp() {
-        // Max level 10 per design docs (config.json balance.progression.maxLevel)
-        const xpTable = [0, 100, 250, 500, 850, 1300, 1900, 2600, 3500, 5000];
-        const currentLevel = this.player.stats.level;
-        const requiredXP = xpTable[currentLevel] || 5000;
+    /**
+     * Apply a ProgressionSystem level-up to the player sprite's stats.
+     * ProgressionSystem owns level/XP and the XP curve; this handler reacts to
+     * its `player-stats-updated{type:levelUp}` event and applies the
+     * class-specific growth, spell unlocks, and level-up feedback to
+     * player.stats (which the HUD and combat read).
+     */
+    _onProgressionLevelUp(level) {
+        if (!this.player?.stats) return;
+        this.player.stats.level = level;
 
-        if (this.player.stats.experience >= requiredXP && currentLevel < 10) {
-            this.player.stats.experience -= requiredXP;
-            this.player.stats.level++;
+        const classDef = this.classSystem.getCurrentClass();
+        if (classDef) {
+            const newStats = this.classSystem.applyLevelUpGrowth(this.player.stats, level);
+            Object.assign(this.player.stats, newStats);
 
-            const classDef = this.classSystem.getCurrentClass();
-            if (classDef) {
-                // Apply class-specific stat growth
-                const newStats = this.classSystem.applyLevelUpGrowth(this.player.stats, this.player.stats.level);
-                Object.assign(this.player.stats, newStats);
-
-                // Unlock new class spells at milestone levels
-                const availableSpells = this.classSystem.getAvailableSpells(this.player.stats.level);
-                for (const spellId of availableSpells) {
-                    if (!this.player.stats.spells.find(s => s.id === spellId)) {
-                        const spell = dataManager.getSpell(spellId);
-                        if (spell) {
-                            this.player.stats.spells.push(spell);
-                            EventBus.emit('spell:unlocked', { spell });
-                            console.log(`[Spell Unlocked] ${spell.name}`);
-                        }
+            // Unlock new class spells available at this level.
+            const availableSpells = this.classSystem.getAvailableSpells(level);
+            for (const spellId of availableSpells) {
+                if (!this.player.stats.spells.find(s => s.id === spellId)) {
+                    const spell = dataManager.getSpell(spellId);
+                    if (spell) {
+                        this.player.stats.spells.push(spell);
+                        EventBus.emit('spell:unlocked', { spell });
                     }
                 }
-
-                // Update passives
-                this.player.stats.passives = this.classSystem.getActivePassives(this.player.stats.level);
-            } else {
-                // Fallback flat growth
-                this.player.stats.maxHp += 15;
-                this.player.stats.hp = this.player.stats.maxHp;
-                this.player.stats.maxSap += 10;
-                this.player.stats.sap = this.player.stats.maxSap;
             }
-
-            this.cameraSystem.shake('medium');
-            this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
-
-            // Award attribute point per level (design doc: balance.progression.perLevelRewards)
-            this.attributeSystem.addAttributePoints(1);
-
-            EventBus.emit('player:levelUp', { level: this.player.stats.level });
-            EventBus.emit('player-stats-updated', this.player.stats);
-            console.log(`[Level Up] ${this.player.stats.className} is now level ${this.player.stats.level}`);
+            this.player.stats.passives = this.classSystem.getActivePassives(level);
+        } else {
+            // Fallback flat growth.
+            this.player.stats.maxHp += 15;
+            this.player.stats.hp = this.player.stats.maxHp;
         }
+
+        this.cameraSystem.shake('medium');
+        this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
+        EventBus.emit('player:levelUp', { level });
+        EventBus.emit('player-stats-updated', this.player.stats);
+        console.log(`[Level Up] ${this.player.stats.className} is now level ${level}`);
     }
 
     _onDialogueStart(data) {
@@ -2494,7 +2501,9 @@ export default class GameScene extends Phaser.Scene {
     _onAddExperience(data) {
         const amount = data?.amount || 0;
         if (!amount || !this.player?.stats) return;
-        this.player.stats.experience = (this.player.stats.experience || 0) + amount;
+        // Route through ProgressionSystem (single source of truth); mirror back.
+        this.progression.awardExperience(amount);
+        this.player.stats.experience = this.progression.experience;
         this.damageNumbers?.show?.(this.player.x, this.player.y - 28, `+${amount} XP`, 0x44ff88);
         EventBus.emit('player-stats-updated', this.player.stats);
     }

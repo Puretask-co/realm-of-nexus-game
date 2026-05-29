@@ -187,6 +187,9 @@ export class ProgressionSystem {
       guardBonus: this.guardBonusPerLevel,
       attributePoints: this.attributePointsPerLevel
     });
+    // Dedicated level-up event consumed by GameScene to apply class growth
+    // and spell unlocks to the player sprite's stats.
+    this.eventBus.emit('progression:levelUp', { level: this.level });
 
     this.checkAchievements('level', this.level);
   }

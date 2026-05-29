@@ -109,12 +109,12 @@ Legend: ✅ **Have** (in main play path) · 🟡 **Partial** (exists; UI/balance
 🟡 crafting stations UI · 🟡 shop buy/sell loop · 🟡 quest journal clarity · 🟡 DSP/world-health readout.
 
 ### Content (in `data/*.json`, verified counts)
-classes **5** · ancestries **3** *(PRD targets 5 — gap)* · spells (6 class pools) · enemies **88** ·
+classes **5** · ancestries **5** · spells **101** (DSP-costed) · enemies **88** ·
 quests **50** · locations **27** · dialogues **52** · veilkeepers **5** · companions **(defined)** ·
 recipes **42** · acts **3**.
 
 **The 5 classes:** Bloomguard · Thornbinder · Emerald Mystic · Wildkin Ranger · Sporecaller.
-**Ancestries:** Human · Soulborn · Half-Abyss.
+**Ancestries:** Human · Soulborn · Half-Abyss · Stonekin · Wispkin.
 **Veilkeepers:** Sylthara · Morvein · Elduin · Kaelthas · Virelda.
 
 ---
@@ -138,10 +138,25 @@ the current Sap phase visibly changes the fight; one enemy defeat grants XP+loot
 
 ---
 
-## 7. Known inconsistencies to resolve (decisions needed)
+## 7. Resolved determinations (2026-05-29)
 
-- **DSP vs personal Sap** — unify into one resource story, or formally document the hybrid.
-- **Two spell-cast paths** — keep `GameScene._castSpell`, delete/retire `SpellSystem.beginCast`, or unify so both drain DSP.
-- **Two level systems** — pick `ProgressionSystem` (maxLevel 10) or `QuestSystem` counter; align XP curve.
-- **Ancestry count** — 3 in data vs 5 in PRD: add two or revise the target.
-- **Max level** — docs say 10; confirm and enforce one number.
+These were the open design questions; all are now decided and implemented.
+
+- **Magic resource → DSP only.** `spells.json` declares DSP as the single casting
+  resource (every spell has `dspCost`+`apCost`; none have `sapCost`), and tactical combat
+  already spent DSP. Overworld casting (`_castSpell`) now gates on DSP, applies the phase
+  DSP-cost modifier (Crimson +5 / Silver −5 via `SapCycleManager.getDspCostModifier`), and
+  refunds DSP on a missed cast. Personal "Sap" is no longer a casting gate; the redundant
+  HUD Sap bar was removed (the DSP bar is authoritative).
+- **One spell-cast path.** `GameScene._castSpell` is the single overworld path; the dead
+  `SpellSystem.beginCast` (never called) is left unused and slated for deletion.
+- **Leveling → ProgressionSystem only (max level 10).** XP from kills, tactical victories,
+  and quests all route through `ProgressionSystem.awardExperience`. It emits
+  `progression:levelUp`, which GameScene consumes to apply class growth + spell unlocks to
+  the player sprite. The GameScene inline `_checkLevelUp` and QuestSystem's competing level
+  curve were removed; QuestSystem now only mirrors the authoritative level for quest
+  prerequisites. Max level **10** (from `config.json balance.progression.maxLevel`).
+- **Ancestries → 5.** Added **Stonekin** (tanky: +2 Res/+1 Might/−1 Agi, Guard + phys/fire
+  resist) and **Wispkin** (skirmisher/caster: +2 Agi/+1 Ins/−1 Might, evasion + −2 DSP cost)
+  with full lore/customization matching the existing schema.
+- **Max level → 10**, enforced everywhere via ProgressionSystem + config.
