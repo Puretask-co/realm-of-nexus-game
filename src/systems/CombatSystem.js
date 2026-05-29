@@ -232,8 +232,9 @@ export class CombatSystem {
     for (const enemy of this.enemies) {
       totalXP += enemy.experienceReward || 0;
 
-      if (enemy.lootTable) {
-        for (const drop of enemy.lootTable) {
+      const lootItems = Array.isArray(enemy.lootTable) ? enemy.lootTable : enemy.lootTable?.items || [];
+      if (lootItems.length) {
+        for (const drop of lootItems) {
           if (Math.random() < (drop.dropChance * (this.difficultyMultipliers.dropRateMultiplier || 1.0))) {
             const qty = Math.floor(
               Math.random() * (drop.maxQuantity - drop.minQuantity + 1)

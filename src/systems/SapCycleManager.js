@@ -28,7 +28,14 @@ import dataManager from './DataManager.js';
  *   'sap-hour-passed'   ({ hour, day, phase })
  */
 export default class SapCycleManager {
+    static instance = null;
+
+    static getInstance() {
+        return SapCycleManager.instance;
+    }
+
     constructor(scene) {
+        SapCycleManager.instance = this;
         this.scene = scene;
 
         // Read config from data

@@ -806,7 +806,7 @@ export class TacticalCombatSystem {
     const adj = this.getAdjacentTiles(defender.gridX, defender.gridY);
     for (const t of adj) {
       const occ = this.grid[t.x][t.y]?.occupant;
-      if (occ && occ.side === defender.side && occ.stats?.hp > 0) count++;
+      if (occ && occ.side !== defender.side && occ.stats?.hp > 0) count++;
     }
     return count;
   }

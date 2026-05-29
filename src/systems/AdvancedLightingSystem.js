@@ -42,6 +42,7 @@ export default class AdvancedLightingSystem {
         this.lightingRT.setDepth(9998);
         this.lightingRT.setBlendMode(Phaser.BlendModes.MULTIPLY);
         this.lightingRT.setScrollFactor(0);
+        this.lightingRT.fill(0xffffff, 1);
 
         this.volumetricRT = this.scene.add.renderTexture(0, 0, w, h);
         this.volumetricRT.setDepth(9999);

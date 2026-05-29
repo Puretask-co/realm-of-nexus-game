@@ -235,7 +235,7 @@
             "fastTravelNode": false,
             "discoverable": true,
             "requirements": {
-                "quest": "intro_to_veilkeepers"
+                "quest": "veilkeeper_initiation"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The Veil is transparent. Prophecies are clear and consultations are reliable.", "accuracyModifier": 1.0 },
@@ -704,7 +704,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 5,
-                "quest": "seek_the_echoes"
+                "quest": "spirits_of_the_old_grove"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "Echoes are faint but clear. Careful study reveals historical truths.", "echoClarity": 1.0 },
@@ -753,7 +753,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 6,
-                "quest": "march_to_the_border"
+                "quest": "captain_briaras_charge"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The camp operates under standard protocols. Resupply shipments arrive on schedule.", "supplyModifier": 1.0 },
@@ -846,7 +846,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 7,
-                "quest": "breach_the_quarantine"
+                "quest": "the_keepers_seal"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The wards hold. Corruption is contained but heavy. Environmental damage is steady.", "environmentalDamage": 1.0 },
@@ -938,7 +938,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 7,
-                "quest": "secrets_of_the_unbinding"
+                "quest": "the_worldroot_fragment"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The ritual scars glow faintly. Memory fragments drift lazily through the air.", "loreAccessLevel": 1.0 },
@@ -972,7 +972,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 7,
-                "quest": "veil_tear_investigation"
+                "quest": "the_veilbound_path"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The rift is stable. Standard procedural layout and enemy spawns.", "riftInstability": 1.0 },
@@ -1006,7 +1006,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 8,
-                "quest": "veil_tear_investigation"
+                "quest": "the_veilbound_path"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The mirror dimensions hold steady. Navigation is disorienting but manageable.", "riftInstability": 1.0 },
@@ -1040,7 +1040,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 9,
-                "quest": "veil_tear_investigation"
+                "quest": "the_binding_ritual"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The rift barely holds together. Even in calm conditions, this is the deadliest location in Verdance.", "riftInstability": 2.0 },
@@ -1086,7 +1086,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 9,
-                "quest": "assault_on_the_scar"
+                "quest": "the_guardians_last_stand"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The Scar pulses slowly. A rhythm like breathing. The darkness is patient.", "abyssalIntensity": 1.0 },
@@ -1130,7 +1130,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 10,
-                "quest": "heart_of_the_world"
+                "quest": "the_final_convergence"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "The Heart beats steadily. The world is sustained. The Spirit of Verdance speaks in gentle tones.", "worldPulse": "steady" },
@@ -1173,7 +1173,7 @@
             "discoverable": false,
             "requirements": {
                 "level": 10,
-                "quest": "final_confrontation",
+                "quest": "the_final_convergence",
                 "ending_path": "any"
             },
             "sapPhaseEffects": {
@@ -1216,7 +1216,7 @@
             "discoverable": true,
             "requirements": {
                 "level": 8,
-                "quest": "ascend_the_canopy"
+                "quest": "skyreach_canopy"
             },
             "sapPhaseEffects": {
                 "calm": { "description": "A breathtaking panorama of green and gold. The world looks at peace from up here.", "visibilityRange": "full" },

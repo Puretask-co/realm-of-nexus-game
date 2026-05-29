@@ -183,9 +183,15 @@ export class HUDPanel {
     this.sapPhaseText.setText(phaseNames[phase] || phase);
     this.sapPhaseText.setColor(phaseColors[phase] || '#ffffff');
 
-    // Update sap bar color based on phase
     const barColors = { blue: 0x4a9eff, crimson: 0xff4a4a, silver: 0xccccee };
-    // Will need to re-render bar with new color
+    const newColor = barColors[phase] || 0x4a9eff;
+    if (this.sapBar?.setBarColor) {
+      this.sapBar.setBarColor(newColor);
+    } else if (this.sapBar?.bar) {
+      this.sapBar.bar.clear();
+      this.sapBar.bar.fillStyle(newColor, 1);
+      this.sapBar.bar.fillRoundedRect(2, 2, this.sapBar._lastWidth || 216, 14, 3);
+    }
   }
 
   updateQuestTracker(data) {

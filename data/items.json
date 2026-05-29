@@ -2973,6 +2973,176 @@
       }
     },
     {
+      "_comment": "=== ACCESSORIES (5) ==="
+    },
+    {
+      "id": "silver_moss_ring",
+      "name": "Silver Moss Ring",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "common",
+      "description": "A ring woven from silver moss and enchanted thread that subtly boosts resilience and slows poison effects on the wearer.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 2,
+        "maxHp": 10,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "poisonResist": 0.15
+      },
+      "value": 60,
+      "level": 2,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 2
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "emerald_amulet",
+      "name": "Emerald Amulet",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "uncommon",
+      "description": "An amulet set with a faceted emerald, amplifying nature spells and granting passive DSP regeneration to its wearer.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 1,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 3,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 10,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "dspRegenPerTurn": 1,
+        "natureDamage": 2
+      },
+      "value": 150,
+      "level": 4,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "void_pendant",
+      "name": "Void Pendant",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "A pendant that resonates with void energy, storing excess DSP and releasing it on command. Pulses faintly with a dark inner light.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 2,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 5,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 20,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "dspStorage": 15,
+        "voidDamage": 2
+      },
+      "value": 350,
+      "level": 7,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 7
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "nexus_focus_ring",
+      "name": "Nexus Focus Ring",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "rare",
+      "description": "A ring carved from pure nexus shard, focusing magical energy to increase spell critical hit chance. Hums with concentrated power.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 2,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 4,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 15,
+        "speed": 0,
+        "critChance": 0.08
+      },
+      "effects": {
+        "spellCritBonus": 0.1
+      },
+      "value": 400,
+      "level": 9,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 9
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "living_root_band",
+      "name": "Living Root Band",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "uncommon",
+      "description": "A bracelet of intertwined living roots that actively draws in nature energy, boosting HP regeneration outside of combat.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 1,
+        "maxHp": 15,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "hpRegenOutOfCombat": 3
+      },
+      "value": 120,
+      "level": 4,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
       "_comment": "=== CRAFTING MATERIALS (15) ==="
     },
     {
@@ -3214,6 +3384,1760 @@
       "stats": {
         "value": 110
       }
+    },
+    {
+      "_comment": "=== ENEMY LOOT MATERIALS/DROPS ==="
+    },
+    {
+      "id": "wolf_pelt",
+      "name": "Wolf Pelt",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A thick, coarse pelt stripped from a forest wolf. Useful for crafting warm clothing and light armor padding.",
+      "effects": {},
+      "value": 8,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 8
+      }
+    },
+    {
+      "id": "root_fiber",
+      "name": "Root Fiber",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "Tough, fibrous strands pulled from the roots of Everwood undergrowth. A versatile binding material for basic crafting.",
+      "effects": {},
+      "value": 5,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 5
+      }
+    },
+    {
+      "id": "sprite_dust",
+      "name": "Sprite Dust",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Glittering residue left behind by forest sprites. Shimmers with faint magical energy and is prized by enchanters.",
+      "effects": {},
+      "value": 15,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 15
+      }
+    },
+    {
+      "id": "beetle_shell",
+      "name": "Beetle Shell",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A hard, iridescent shell fragment from a giant forest beetle. Lightweight yet durable, suitable for reinforcing armor.",
+      "effects": {},
+      "value": 7,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 7
+      }
+    },
+    {
+      "id": "spider_silk",
+      "name": "Spider Silk",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Strong, elastic silk harvested from the webs of Everwood spiders. Valued for its tensile strength in bowstring and armor crafting.",
+      "effects": {},
+      "value": 12,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 12
+      }
+    },
+    {
+      "id": "venom_sac",
+      "name": "Venom Sac",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A bulbous sac of potent venom extracted from venomous forest creatures. Handle with care; useful in alchemy and poisoncraft.",
+      "effects": {},
+      "value": 14,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 14
+      }
+    },
+    {
+      "id": "slime_residue",
+      "name": "Slime Residue",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A viscous, gelatinous residue left behind by forest slimes. Surprisingly useful as an alchemical binding agent.",
+      "effects": {},
+      "value": 5,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 5
+      }
+    },
+    {
+      "id": "spore_cap",
+      "name": "Spore Cap",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "The dried cap of a large forest mushroom, still dusted with potent spores. A staple ingredient in Sporecaller recipes.",
+      "effects": {},
+      "value": 6,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 6
+      }
+    },
+    {
+      "id": "corrupted_bark",
+      "name": "Corrupted Bark",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Dark, twisted bark peeled from a corruption-tainted tree. Pulses with unstable void energy and must be handled with gloves.",
+      "effects": {},
+      "value": 18,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 18
+      }
+    },
+    {
+      "id": "dark_sap",
+      "name": "Dark Sap",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Thick, blackened sap that seeps from corrupted trees. Radiates a faint aura of wrongness but holds potent alchemical properties.",
+      "effects": {},
+      "value": 16,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 16
+      }
+    },
+    {
+      "id": "fungal_extract",
+      "name": "Fungal Extract",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A concentrated liquid drawn from deep-forest fungi through careful alchemical processing. Essential for nature-based potions.",
+      "effects": {},
+      "value": 14,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 14
+      }
+    },
+    {
+      "id": "resonant_gem",
+      "name": "Resonant Gem",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A small crystalline gem that hums when held near sources of Sap energy. Resonates with the Veil and amplifies enchantments.",
+      "effects": {},
+      "value": 22,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 22
+      }
+    },
+    {
+      "id": "serpent_scale",
+      "name": "Serpent Scale",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A tough, overlapping scale shed by the giant serpents of the Everwood river system. Excellent for reinforcing leather armor.",
+      "effects": {},
+      "value": 9,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 9
+      }
+    },
+    {
+      "id": "river_pearl",
+      "name": "River Pearl",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A lustrous pearl found in the freshwater mussels of Verdance rivers. Prized by jewelers and enchanters alike.",
+      "effects": {},
+      "value": 20,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 20
+      }
+    },
+    {
+      "id": "wraith_vine",
+      "name": "Wraith Vine",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A ghostly, translucent vine that grows in areas where the Veil is thin. Phases in and out of visibility and is difficult to harvest.",
+      "effects": {},
+      "value": 18,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 18
+      }
+    },
+    {
+      "id": "hollow_plate",
+      "name": "Hollow Plate",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A plate of hardened chitin taken from a Hollow Knight. Surprisingly light and strong, infused with residual shadow energy.",
+      "effects": {},
+      "value": 20,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 20
+      }
+    },
+    {
+      "id": "knight_sigil",
+      "name": "Knight Sigil",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A small metal sigil torn from the armor of a fallen hollow knight. Carries faint echoes of duty and resolve.",
+      "effects": {},
+      "value": 15,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 15
+      }
+    },
+    {
+      "id": "imp_horn",
+      "name": "Imp Horn",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A small, curved horn snapped from a forest imp. Hard as bone and warm to the touch, used in minor alchemical recipes.",
+      "effects": {},
+      "value": 7,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 7
+      }
+    },
+    {
+      "id": "abyssal_ember",
+      "name": "Abyssal Ember",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A smoldering fragment of void-touched flame that never fully extinguishes. Radiates both heat and an unsettling chill.",
+      "effects": {},
+      "value": 25,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 25
+      }
+    },
+    {
+      "id": "ancient_heartwood",
+      "name": "Ancient Heartwood",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Dense heartwood from one of the oldest trees in the Everwood. Rings with centuries of stored Sap energy when struck.",
+      "effects": {},
+      "value": 22,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 22
+      }
+    },
+    {
+      "id": "elderroot_sap",
+      "name": "Elderroot Sap",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Golden sap harvested from the ancient elderroot trees. Thick and aromatic, it possesses strong restorative properties.",
+      "effects": {},
+      "value": 18,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 18
+      }
+    },
+    {
+      "id": "shadow_thread",
+      "name": "Shadow Thread",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Thread spun from condensed shadow essence by Hollow Court weavers. Nearly invisible in dim light and supernaturally strong.",
+      "effects": {},
+      "value": 20,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 20
+      }
+    },
+    {
+      "id": "weavers_eye",
+      "name": "Weaver's Eye",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A crystallized eye harvested from a giant shadow weaver spider. Gleams with residual perception magic.",
+      "effects": {},
+      "value": 22,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 22
+      }
+    },
+    {
+      "id": "bloodthorn_spike",
+      "name": "Bloodthorn Spike",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A razor-sharp thorn from the bloodthorn brambles that grow near corruption sites. Stained permanently red from the blood of unwary travelers.",
+      "effects": {},
+      "value": 15,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 15
+      }
+    },
+    {
+      "id": "beast_fang",
+      "name": "Beast Fang",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A large, curved fang pulled from a predatory forest beast. Strong enough to be fashioned into crude weapons or jewelry.",
+      "effects": {},
+      "value": 8,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 8
+      }
+    },
+    {
+      "id": "deeproot_core",
+      "name": "Deeproot Core",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "The dense, energy-rich core extracted from the deepest taproots of ancient Everwood trees. Thrums with concentrated life force.",
+      "effects": {},
+      "value": 24,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 24
+      }
+    },
+    {
+      "id": "petrified_bark",
+      "name": "Petrified Bark",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Bark from a tree that has turned entirely to stone over centuries. Incredibly hard and useful for crafting heavy armor and shields.",
+      "effects": {},
+      "value": 18,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 18
+      }
+    },
+    {
+      "id": "sentinel_crystal",
+      "name": "Sentinel Crystal",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A crystal shard recovered from a fallen forest sentinel. Hums with a protective ward that lingers even after the sentinel has fallen.",
+      "effects": {},
+      "value": 22,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 22
+      }
+    },
+    {
+      "id": "prismatic_shard",
+      "name": "Prismatic Shard",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A brilliant shard that refracts light into a dazzling spectrum of colors. Radiates immense Nexus energy and is coveted by master enchanters.",
+      "effects": {},
+      "value": 80,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 10,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "mycelium_crown",
+      "name": "Mycelium Crown",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A crown-like fungal growth harvested from the Spore Lord. Pulses with the collective consciousness of the fungal network.",
+      "effects": {},
+      "value": 120,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 120
+      }
+    },
+    {
+      "id": "sporelord_staff",
+      "name": "Sporelord's Staff",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A gnarled staff recovered from the defeated Spore Lord. Still sprouts tiny mushrooms along its length and emanates spore clouds.",
+      "effects": {},
+      "value": 150,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 150
+      }
+    },
+    {
+      "id": "fungal_heart",
+      "name": "Fungal Heart",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "The pulsing core of a massive fungal entity, still beating with bioluminescent life. A powerful reagent for nature magic.",
+      "effects": {},
+      "value": 130,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 130
+      }
+    },
+    {
+      "id": "hollow_crown",
+      "name": "Hollow Crown",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "The shadowy crown of the Hollow King, wrought from solidified darkness. Whispers of forgotten oaths echo from within.",
+      "effects": {},
+      "value": 160,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 160
+      }
+    },
+    {
+      "id": "kings_greatsword",
+      "name": "King's Greatsword",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "The massive greatsword of the Hollow King, too heavy for most mortals to wield. Its blade is forged from pure shadow steel.",
+      "effects": {},
+      "value": 180,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 180
+      }
+    },
+    {
+      "id": "royal_sigil",
+      "name": "Royal Sigil",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A sigil of the old Hollow Court royalty, stamped in shadow-forged metal. Proof of dominion over the court and its secrets.",
+      "effects": {},
+      "value": 140,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 140
+      }
+    },
+    {
+      "id": "abyssal_aegis",
+      "name": "Abyssal Aegis",
+      "type": "material",
+      "slot": null,
+      "rarity": "legendary",
+      "description": "A shield fragment torn from the Abyssal Guardian, forged from void-hardened metal. Absorbs light and magic in equal measure.",
+      "effects": {},
+      "value": 250,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 250
+      }
+    },
+    {
+      "id": "wardens_mantle",
+      "name": "Warden's Mantle",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A tattered cloak worn by the ancient Forest Warden. Woven from living vines that still shift and grow even in death.",
+      "effects": {},
+      "value": 140,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 140
+      }
+    },
+    {
+      "id": "nexus_heart",
+      "name": "Nexus Heart",
+      "type": "material",
+      "slot": null,
+      "rarity": "legendary",
+      "description": "The crystallized heart of pure Nexus energy, pulsing with the lifeblood of Verdance itself. An artifact of unimaginable power.",
+      "effects": {},
+      "value": 500,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 500
+      }
+    },
+    {
+      "id": "guardian_plate",
+      "name": "Guardian Plate",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A heavy plate of enchanted armor torn from a fallen grove guardian. Still hums with protective wards that never faded.",
+      "effects": {},
+      "value": 120,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 120
+      }
+    },
+    {
+      "id": "thornback_pelt",
+      "name": "Thornback Pelt",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A thick pelt covered in natural thorn-like protrusions, stripped from a thornback beast. Excellent for crafting spiked armor.",
+      "effects": {},
+      "value": 16,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 16
+      }
+    },
+    {
+      "id": "bear_claw",
+      "name": "Bear Claw",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A massive curved claw from an Everwood bear. Sharp enough to score ironwood and valued by weapon crafters.",
+      "effects": {},
+      "value": 10,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "chitin_fragment",
+      "name": "Chitin Fragment",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A piece of hardened chitin from a large forest insect. Light and tough, commonly used to reinforce leather armor.",
+      "effects": {},
+      "value": 6,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 6
+      }
+    },
+    {
+      "id": "corrupted_heartwood",
+      "name": "Corrupted Heartwood",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Heartwood twisted and darkened by void corruption. Pulses with a sickly purple light and is dangerously unstable.",
+      "effects": {},
+      "value": 24,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 24
+      }
+    },
+    {
+      "id": "dryad_tear",
+      "name": "Dryad Tear",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A crystallized tear shed by a forest dryad. Glows with soft green light and holds deep nature magic within its facets.",
+      "effects": {},
+      "value": 22,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 22
+      }
+    },
+    {
+      "id": "oakfather_staff",
+      "name": "Oakfather's Staff",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A staff of ancient oak imbued with the essence of the Oakfather treant. Still sprouts leaves and channels nature magic.",
+      "effects": {},
+      "value": 140,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 140
+      }
+    },
+    {
+      "id": "blighted_bark",
+      "name": "Blighted Bark",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Bark blackened and warped by a creeping blight. Crumbles at the edges but its core is surprisingly hard and saturated with dark energy.",
+      "effects": {},
+      "value": 15,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 15
+      }
+    },
+    {
+      "id": "ancient_sap_crystal",
+      "name": "Ancient Sap Crystal",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "A large crystal formed from sap that has been crystallizing for millennia. Contains an enormous reservoir of stored spiritual energy.",
+      "effects": {},
+      "value": 150,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 150
+      }
+    },
+    {
+      "id": "crimson_heart",
+      "name": "Crimson Heart",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "The molten core of a crimson fire elemental, still burning with eternal flame. Contained in a heat-resistant crystalline shell.",
+      "effects": {},
+      "value": 160,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 160
+      }
+    },
+    {
+      "id": "abyssal_crown",
+      "name": "Abyssal Crown",
+      "type": "material",
+      "slot": null,
+      "rarity": "legendary",
+      "description": "A crown forged in the deepest void, taken from an abyssal lord. Warps reality around itself and whispers dark promises to those nearby.",
+      "effects": {},
+      "value": 300,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 300
+      }
+    },
+    {
+      "id": "veil_dust",
+      "name": "Veil Dust",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "Fine, shimmering dust that collects where the Veil between worlds grows thin. Dissolves on contact with skin, leaving a tingling sensation.",
+      "effects": {},
+      "value": 18,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 18
+      }
+    },
+    {
+      "id": "ember_ash",
+      "name": "Ember Ash",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "Fine ash left behind by extinguished fire elementals. Still warm to the touch and useful in fire-aspected alchemical recipes.",
+      "effects": {},
+      "value": 8,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 8
+      }
+    },
+    {
+      "id": "moss_heart",
+      "name": "Moss Heart",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "The dense, spongy core of an animated moss creature. Saturated with moisture and regenerative energy from the forest floor.",
+      "effects": {},
+      "value": 14,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 14
+      }
+    },
+    {
+      "id": "thorn_cluster",
+      "name": "Thorn Cluster",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "A dense cluster of razor-sharp thorns broken from a thornbeast. Can be fashioned into crude caltrops or woven into defensive gear.",
+      "effects": {},
+      "value": 7,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 7
+      }
+    },
+    {
+      "id": "blight_gland",
+      "name": "Blight Gland",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A pulsating gland extracted from a blighted creature. Oozes a toxic, corrosive substance that eats through leather but has alchemical uses.",
+      "effects": {},
+      "value": 16,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 16
+      }
+    },
+    {
+      "id": "ancient_seed",
+      "name": "Ancient Seed",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A seed from one of the Everwood's oldest trees, dormant for centuries. Contains the potential for immense growth and powerful nature magic.",
+      "effects": {},
+      "value": 20,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 20
+      }
+    },
+    {
+      "id": "warden_helm",
+      "name": "Warden Helm",
+      "type": "material",
+      "slot": null,
+      "rarity": "epic",
+      "description": "The battered helm of a fallen grove warden, still etched with protective runes. A testament to the warden's unwavering vigilance.",
+      "effects": {},
+      "value": 110,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 110
+      }
+    },
+    {
+      "id": "sap_crystal",
+      "name": "Sap Crystal",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A small crystal of solidified sap energy, naturally formed at Veil convergence points. A common but useful reagent for enchanting.",
+      "effects": {},
+      "value": 15,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 15
+      }
+    },
+    {
+      "_comment": "=== QUEST REWARD ITEMS ==="
+    },
+    {
+      "id": "bloomguard_insignia",
+      "name": "Bloomguard Insignia",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "An official insignia of the Bloomguard order, awarded for distinguished service. Its enchantment bolsters the wearer's resolve.",
+      "stats": {
+        "might": 1,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 0,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 3,
+        "maxHp": 15,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {},
+      "value": 150,
+      "level": 3,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 3
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "beast_leather",
+      "name": "Beast Leather",
+      "type": "material",
+      "slot": null,
+      "rarity": "common",
+      "description": "Tanned leather crafted from the hides of Everwood beasts. Supple yet strong, suitable for a wide range of armor and equipment.",
+      "effects": {},
+      "value": 10,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "bloomguard_captain_cloak",
+      "name": "Bloomguard Captain's Cloak",
+      "type": "armor",
+      "armorClass": "light",
+      "slot": "chest",
+      "rarity": "rare",
+      "description": "A flowing green cloak worn by Bloomguard captains. Enchanted to deflect arrows and bolster leadership on the field.",
+      "stats": {
+        "might": 0,
+        "agility": 1,
+        "resilience": 1,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 12,
+        "maxHp": 20,
+        "maxSap": 0,
+        "speed": 3,
+        "critChance": 0
+      },
+      "effects": {
+        "projectileResist": 3
+      },
+      "value": 300,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "thornmaw_fang_necklace",
+      "name": "Thornmaw Fang Necklace",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "A necklace strung with fangs from a slain Thornmaw beast. Grants the wearer a predator's aggression in combat.",
+      "stats": {
+        "might": 2,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 5,
+        "magicAttack": 0,
+        "defense": 0,
+        "maxHp": 10,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0.03
+      },
+      "effects": {
+        "bonusDamageVsBeasts": 2
+      },
+      "value": 200,
+      "level": 4,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "coven_blessing_amulet",
+      "name": "Coven Blessing Amulet",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "An amulet blessed by the forest coven, pulsing with gentle healing magic. Slowly mends wounds over time.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 1,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 3,
+        "defense": 2,
+        "maxHp": 10,
+        "maxSap": 10,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "hpRegen": 1
+      },
+      "value": 250,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "sporecaller_formula",
+      "name": "Sporecaller Formula",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A carefully transcribed alchemical formula used by the Sporecallers to brew their signature concoctions. The ink smells of mushrooms.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "expedition_map",
+      "name": "Expedition Map",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A detailed map charting unexplored regions of the Everwood, annotated with warnings and points of interest by a seasoned scout.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "keeper_sealing_stone",
+      "name": "Keeper Sealing Stone",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A smooth, rune-carved stone used by Veilkeepers to seal breaches in the Veil. Warm to the touch and hums when near corruption.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "marens_family_ring",
+      "name": "Maren's Family Ring",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "rare",
+      "description": "A simple gold ring engraved with the name Maren. Carrying it brings a sense of warmth and determination to protect what matters.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 2,
+        "maxHp": 15,
+        "maxSap": 5,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {},
+      "value": 180,
+      "level": 3,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 3
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "spirit_blessed_vial",
+      "name": "Spirit-Blessed Vial",
+      "type": "consumable",
+      "subtype": "potion",
+      "slot": "quickSlot",
+      "rarity": "rare",
+      "description": "A vial of luminescent liquid blessed by forest spirits. Fully restores health and removes all negative effects when consumed.",
+      "effect": {
+        "hp": 100,
+        "buff": "cleanse"
+      },
+      "duration": 0,
+      "effects": {
+        "fullHeal": true,
+        "cleanse": true
+      },
+      "value": 150,
+      "level": 5,
+      "stackable": true,
+      "maxStack": 3,
+      "stats": {
+        "heal": 100,
+        "value": 150
+      }
+    },
+    {
+      "id": "crystal_edge_blade",
+      "name": "Crystal Edge Blade",
+      "type": "weapon",
+      "weaponType": "sword",
+      "slot": "weapon",
+      "rarity": "rare",
+      "description": "A blade forged with a crystalline edge that channels Nexus energy. Each strike leaves a faint trail of sparkling light.",
+      "damage": "1d8+4",
+      "attackType": "melee",
+      "attackRange": 40,
+      "stats": {
+        "might": 1,
+        "agility": 1,
+        "resilience": 0,
+        "insight": 1,
+        "charisma": 0,
+        "physicalAttack": 18,
+        "magicAttack": 4,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 10,
+        "speed": 0,
+        "critChance": 0.05
+      },
+      "effects": {
+        "natureDamage": 3
+      },
+      "value": 380,
+      "level": 6,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 6
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "crystal_core",
+      "name": "Crystal Core",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A dense core of pure crystallized energy extracted from a Nexus formation. Radiates a steady, soothing warmth.",
+      "effects": {},
+      "value": 25,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 25
+      }
+    },
+    {
+      "id": "spore_lord_crown",
+      "name": "Spore Lord Crown",
+      "type": "armor",
+      "armorClass": "light",
+      "slot": "head",
+      "rarity": "epic",
+      "description": "A grotesque crown of living fungi torn from the Spore Lord. Grants dominion over spore magic and heightened awareness of the fungal network.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 3,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 8,
+        "defense": 8,
+        "maxHp": 15,
+        "maxSap": 20,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "spellBoost": 3,
+        "poisonResist": 5
+      },
+      "value": 500,
+      "level": 7,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 7
+      },
+      "stackable": false,
+      "upgradeable": true,
+      "specialAbility": {
+        "id": "spore_dominion",
+        "name": "Spore Dominion",
+        "description": "Spore-based spells deal 25% increased damage.",
+        "trigger": "passive",
+        "effect": {
+          "type": "sporeDamageBonus",
+          "value": 0.25
+        }
+      }
+    },
+    {
+      "id": "mycelium_essence",
+      "name": "Mycelium Essence",
+      "type": "material",
+      "slot": null,
+      "rarity": "uncommon",
+      "description": "A thick, luminescent extract drawn from the mycelium network beneath the Everwood. Pulses gently with fungal life energy.",
+      "effects": {},
+      "value": 20,
+      "level": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 20
+      }
+    },
+    {
+      "id": "shadow_cloak",
+      "name": "Shadow Cloak",
+      "type": "armor",
+      "armorClass": "light",
+      "slot": "chest",
+      "rarity": "rare",
+      "description": "A cloak woven from shadow threads that shifts and blurs the wearer's outline. Grants enhanced stealth and evasion.",
+      "stats": {
+        "might": 0,
+        "agility": 2,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 9,
+        "maxHp": 10,
+        "maxSap": 0,
+        "speed": 5,
+        "critChance": 0.03
+      },
+      "effects": {
+        "stealthBonus": 4
+      },
+      "value": 280,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "skyfeather_charm",
+      "name": "Skyfeather Charm",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "A charm crafted from the feather of a sky raptor, enchanted with wind magic. The wearer feels lighter on their feet.",
+      "stats": {
+        "might": 0,
+        "agility": 2,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 1,
+        "maxHp": 5,
+        "maxSap": 0,
+        "speed": 8,
+        "critChance": 0.02
+      },
+      "effects": {
+        "evasionBonus": 2
+      },
+      "value": 220,
+      "level": 4,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "seers_circlet",
+      "name": "Seer's Circlet",
+      "type": "armor",
+      "armorClass": "light",
+      "slot": "head",
+      "rarity": "rare",
+      "description": "A delicate circlet worn by Veilkeeper seers during divination rituals. Enhances magical perception and spell potency.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 2,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 5,
+        "defense": 5,
+        "maxHp": 5,
+        "maxSap": 15,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "spellBoost": 2
+      },
+      "value": 300,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": true
+    },
+    {
+      "id": "veilkeeper_focus",
+      "name": "Veilkeeper Focus",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "rare",
+      "description": "A crystalline focus ring used by Veilkeepers to channel spiritual energy. Enhances DSP regeneration and spell accuracy.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 2,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 4,
+        "defense": 0,
+        "maxHp": 0,
+        "maxSap": 15,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "dspRegenPerTurn": 1
+      },
+      "value": 250,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "wildkin_totem",
+      "name": "Wildkin Totem",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "A carved bone totem gifted by the Wildkin elders. Strengthens the bond with beast companions and enhances survival instincts.",
+      "stats": {
+        "might": 1,
+        "agility": 1,
+        "resilience": 0,
+        "insight": 0,
+        "charisma": 1,
+        "physicalAttack": 3,
+        "magicAttack": 0,
+        "defense": 2,
+        "maxHp": 10,
+        "maxSap": 0,
+        "speed": 3,
+        "critChance": 0
+      },
+      "effects": {
+        "companionBoost": 3
+      },
+      "value": 230,
+      "level": 4,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 4
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "bloomguard_honour_medal",
+      "name": "Bloomguard Honour Medal",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "epic",
+      "description": "The highest honor bestowed by the Bloomguard. This enchanted medal inspires allies and strengthens the wearer's resolve in battle.",
+      "stats": {
+        "might": 1,
+        "agility": 0,
+        "resilience": 2,
+        "insight": 0,
+        "charisma": 2,
+        "physicalAttack": 3,
+        "magicAttack": 0,
+        "defense": 5,
+        "maxHp": 25,
+        "maxSap": 0,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "allyMoraleBoost": 2
+      },
+      "value": 450,
+      "level": 7,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 7
+      },
+      "stackable": false,
+      "upgradeable": false,
+      "specialAbility": {
+        "id": "bloomguard_honour",
+        "name": "Bloomguard Honour",
+        "description": "Nearby allies gain +2 to all attributes while in combat.",
+        "trigger": "passive",
+        "effect": {
+          "type": "allyAttributeAura",
+          "value": 2,
+          "radius": 150
+        }
+      }
+    },
+    {
+      "id": "worldroot_splinter",
+      "name": "Worldroot Splinter",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A splinter from the Worldroot, the mythical tree said to anchor Verdance to reality. Hums with a deep, resonant energy.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "mirror_realm_key",
+      "name": "Mirror Realm Key",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A crystalline key that reflects an impossible image in its facets. Opens the passage between the material world and the Mirror Realm.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "ritual_focus",
+      "name": "Ritual Focus",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A carved wooden focus used to channel energy during Veilkeeper rituals. Essential for performing the sealing ceremony.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "guardian_sigil",
+      "name": "Guardian Sigil",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A sigil imbued with the essence of a grove guardian. Required to activate ancient protective wards throughout the Everwood.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "veilbound_amulet",
+      "name": "Veilbound Amulet",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "epic",
+      "description": "An amulet bound to the Veil itself, allowing the wearer to sense disturbances in the spiritual boundary. Grants powerful magical protection.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 3,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 6,
+        "defense": 4,
+        "maxHp": 10,
+        "maxSap": 25,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "dspRegenPerTurn": 2,
+        "veilsightRange": 100
+      },
+      "value": 480,
+      "level": 7,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 7
+      },
+      "stackable": false,
+      "upgradeable": false,
+      "specialAbility": {
+        "id": "veil_attunement",
+        "name": "Veil Attunement",
+        "description": "Sense all hidden enemies within 100 pixels and gain +10% spell resistance.",
+        "trigger": "passive",
+        "effect": {
+          "type": "veilsight",
+          "range": 100,
+          "spellResist": 0.1
+        }
+      }
+    },
+    {
+      "id": "veil_shard",
+      "name": "Veil Shard",
+      "type": "quest",
+      "slot": null,
+      "rarity": "common",
+      "description": "A fragment of crystallized Veil energy that shimmers between visibility and transparency. Needed to repair breaches in the spiritual boundary.",
+      "effects": {},
+      "value": 0,
+      "level": 1,
+      "stackable": false,
+      "stats": {
+        "value": 0
+      }
+    },
+    {
+      "id": "veilguard_armor",
+      "name": "Veilguard Armor",
+      "type": "armor",
+      "armorClass": "medium",
+      "slot": "chest",
+      "rarity": "epic",
+      "description": "Armor forged by the Veilguard order, infused with protective Veil energy. Shimmers between the physical and spiritual planes.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 3,
+        "insight": 2,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 0,
+        "defense": 18,
+        "maxHp": 30,
+        "maxSap": 15,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "spellResist": 5,
+        "evasionPenalty": -1
+      },
+      "value": 520,
+      "level": 8,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": true,
+      "specialAbility": {
+        "id": "veilguard_ward",
+        "name": "Veilguard Ward",
+        "description": "Absorb the first 8 points of spell damage from each attack.",
+        "trigger": "passive",
+        "effect": {
+          "type": "spellDamageShield",
+          "value": 8
+        }
+      }
+    },
+    {
+      "id": "nexus_crown",
+      "name": "Nexus Crown",
+      "type": "armor",
+      "armorClass": "light",
+      "slot": "head",
+      "rarity": "epic",
+      "description": "A crown fashioned from pure Nexus crystal that amplifies all magical abilities. The air around it crackles with raw energy.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 4,
+        "charisma": 1,
+        "physicalAttack": 0,
+        "magicAttack": 10,
+        "defense": 6,
+        "maxHp": 10,
+        "maxSap": 30,
+        "speed": 0,
+        "critChance": 0.05
+      },
+      "effects": {
+        "spellBoost": 4,
+        "allSpellCostReduction": 1
+      },
+      "value": 600,
+      "level": 8,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 8
+      },
+      "stackable": false,
+      "upgradeable": true,
+      "specialAbility": {
+        "id": "nexus_amplification",
+        "name": "Nexus Amplification",
+        "description": "All spells deal 15% increased damage while wearing this crown.",
+        "trigger": "passive",
+        "effect": {
+          "type": "spellboost",
+          "value": 0.15
+        }
+      }
+    },
+    {
+      "id": "sap_charm",
+      "name": "Sap Charm",
+      "type": "accessory",
+      "slot": "amulet",
+      "rarity": "rare",
+      "description": "A small charm carved from crystallized blue sap. Enhances the wearer's connection to the Sap network and boosts energy recovery.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 0,
+        "insight": 1,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 2,
+        "defense": 1,
+        "maxHp": 5,
+        "maxSap": 12,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "dspRegenPerTurn": 1
+      },
+      "value": 180,
+      "level": 3,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 3
+      },
+      "stackable": false,
+      "upgradeable": false
+    },
+    {
+      "id": "sporecaller_focus",
+      "name": "Sporecaller Focus",
+      "type": "accessory",
+      "slot": "ring",
+      "rarity": "rare",
+      "description": "A ring grown from living fungal tissue by the Sporecallers. Enhances spore-based magic and grants resistance to toxins.",
+      "stats": {
+        "might": 0,
+        "agility": 0,
+        "resilience": 1,
+        "insight": 1,
+        "charisma": 0,
+        "physicalAttack": 0,
+        "magicAttack": 4,
+        "defense": 1,
+        "maxHp": 5,
+        "maxSap": 10,
+        "speed": 0,
+        "critChance": 0
+      },
+      "effects": {
+        "sporeDamageBonus": 3,
+        "poisonResist": 3
+      },
+      "value": 240,
+      "level": 5,
+      "upgradeLevel": 0,
+      "requirements": {
+        "level": 5
+      },
+      "stackable": false,
+      "upgradeable": false
     }
   ]
 }
