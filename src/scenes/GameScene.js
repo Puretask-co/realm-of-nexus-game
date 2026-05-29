@@ -281,8 +281,9 @@ export default class GameScene extends Phaser.Scene {
             }),
             EventBus.on('dialogue:start', (data) => this._onDialogueStart(data)),
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
-            EventBus.on('quest:started', (data) => this._onQuestStarted(data)),
-            EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
+            EventBus.on('quest:started', (data) => { this._onQuestStarted(data); this._refreshQuestBeacons(); }),
+            EventBus.on('quest:completed', (data) => { this._onQuestCompleted(data); this._refreshQuestBeacons(); }),
+            EventBus.on('quest:objectiveCompleted', () => this._refreshQuestBeacons()),
             EventBus.on('player:addExperience', (data) => this._onAddExperience(data)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
@@ -413,6 +414,11 @@ export default class GameScene extends Phaser.Scene {
         // ---- Playtime tracking (restored/extended by the save system) ----
         this._loadedPlaytime = this._loadedPlaytime || 0;
         this._playStartTs = Date.now();
+
+        // ---- Quest interaction beacons ----
+        this._questBeacons = [];
+        this.input.keyboard.on('keydown-E', () => this._tryActivateQuestBeacon());
+        this._refreshQuestBeacons();
 
         // ---- Death state ----
         this.isDead = false;
@@ -1356,6 +1362,102 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
     // NPCs
     // ----------------------------------------------------------------
+
+    // ----------------------------------------------------------------
+    // Quest interaction beacons
+    //
+    // 'interact' objectives and 'travel' objectives whose target is not a real
+    // zone have no natural world trigger. For each active quest's current such
+    // objective we drop a glowing beacon in the current zone; pressing E near it
+    // fulfils the objective. Real-zone travel completes on entry (no beacon).
+    // ----------------------------------------------------------------
+
+    _zoneIds() {
+        if (!this._zoneIdSet) this._zoneIdSet = new Set((this.zones || []).map(z => z.id));
+        return this._zoneIdSet;
+    }
+
+    _currentObjectiveFor(quest) {
+        const objs = [...(quest.definition?.objectives || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+        for (const o of objs) {
+            const p = quest.objectiveProgress?.get(o.id);
+            if (!p || !p.completed) return o;
+        }
+        return null;
+    }
+
+    _clearQuestBeacons() {
+        for (const b of (this._questBeacons || [])) {
+            try { b.gfx?.destroy(); b.label?.destroy(); b.prompt?.destroy(); } catch (_) {}
+        }
+        this._questBeacons = [];
+    }
+
+    _refreshQuestBeacons() {
+        if (!this.questSystem?.activeQuests) return;
+        this._clearQuestBeacons();
+        const zone = (this.zones || []).find(z => z.id === this.currentZone);
+        if (!zone) return;
+        const zoneIds = this._zoneIds();
+
+        let slot = 0;
+        for (const [questId, quest] of this.questSystem.activeQuests) {
+            const obj = this._currentObjectiveFor(quest);
+            if (!obj) continue;
+            const isInteract = obj.type === 'interact';
+            const isAbstractTravel = obj.type === 'travel' && !zoneIds.has(obj.target);
+            if (!isInteract && !isAbstractTravel) continue;
+
+            // Spread beacons across the zone so multiple don't overlap.
+            const bx = zone.bounds.x + zone.bounds.w * (0.3 + 0.18 * (slot % 3));
+            const by = zone.bounds.y + zone.bounds.h * (0.35 + 0.16 * Math.floor(slot / 3));
+            slot++;
+
+            const gfx = this.add.graphics().setDepth(7);
+            gfx.fillStyle(isInteract ? 0xffcc44 : 0x66ccff, 0.85);
+            gfx.fillCircle(bx, by, 12);
+            gfx.lineStyle(2, 0xffffff, 0.7);
+            gfx.strokeCircle(bx, by, 12);
+            this.tweens.add({ targets: gfx, alpha: 0.35, duration: 700, yoyo: true, repeat: -1 });
+
+            const label = this.add.text(bx, by - 26, obj.description || 'Quest objective', {
+                fontFamily: 'Open Sans', fontSize: '12px', color: '#ffeeaa',
+                stroke: '#000', strokeThickness: 3, align: 'center', wordWrap: { width: 220 }
+            }).setOrigin(0.5).setDepth(11);
+
+            const prompt = this.add.text(bx, by + 20, '[E] Interact', {
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#ffffff',
+                stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5).setDepth(11).setVisible(false);
+
+            this._questBeacons.push({ questId, objectiveId: obj.id, type: obj.type, target: obj.target, x: bx, y: by, gfx, label, prompt });
+        }
+    }
+
+    _updateQuestBeacons() {
+        if (!this._questBeacons?.length || !this.player) return;
+        for (const b of this._questBeacons) {
+            const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, b.x, b.y);
+            b.prompt?.setVisible(d < 70);
+        }
+    }
+
+    _tryActivateQuestBeacon() {
+        if (!this._questBeacons?.length || !this.player) return;
+        for (const b of this._questBeacons) {
+            const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, b.x, b.y);
+            if (d < 70) {
+                if (b.type === 'interact') {
+                    EventBus.emit('quest:interact', { target: b.target });
+                } else {
+                    EventBus.emit('location:discovered', { locationId: b.target });
+                }
+                EventBus.emit('ui:notification', { message: `Objective complete: ${b.target}`, color: '#ffcc44', duration: 2000 });
+                // _refreshQuestBeacons fires via quest:objectiveCompleted.
+                return;
+            }
+        }
+    }
 
     _spawnNPCs() {
         this.npcs = [];
@@ -2576,6 +2678,9 @@ export default class GameScene extends Phaser.Scene {
         if (this.zoneContentManager) {
             this.zoneContentManager.enterZone(locationId);
         }
+
+        // Re-place quest beacons for the new zone.
+        this._refreshQuestBeacons();
     }
 
     /**
@@ -3078,6 +3183,9 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
+        // Quest interaction beacons (interact / abstract-travel objectives)
+        this._updateQuestBeacons();
+
         // Lighting
         this.profiler.begin('lighting');
         if (this.playerLight) {
@@ -3304,6 +3412,7 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.destroy();
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
+        this._clearQuestBeacons();
         // Clean up systems that subscribe to EventBus (prevents ghost listeners on scene restart)
         this.sapCycle?.destroy?.();
         this.portalSystem?.destroy();
