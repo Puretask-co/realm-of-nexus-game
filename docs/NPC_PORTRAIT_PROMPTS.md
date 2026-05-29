@@ -54,12 +54,21 @@ so the portrait's palette can be tied to the dialogue UI.
 > - **Verdant Consortium** (merchants/industry): ornate trade finery, brass, gilding,
 >   ledgers and coin, polished mercantile sheen.
 >
-> **Ancestry cues (when relevant):**
-> - *Sylvan:* radiant humanoid, petal-like hair, sun-warmed glowing skin.
-> - *Soulborn:* dusky twilight skin, shadow affinity, faintly smoking edges.
-> - *Stoneborn:* stocky, bark-like skin with embedded mineral/crystal deposits.
-> - *Emberkin:* small fae with smoldering ember wings, fiery eyes.
-> - *Echo:* spectral, partially translucent, ethereal dead-that-linger.
+> **Ancestry cues (the 6 playable ancestries — use when relevant):**
+> - *Human:* ordinary mortal features, no innate glow; adaptable, determined, versatile.
+> - *Soulborn:* born of the Everwood's soul magic; faintly luminous skin, soul-resonant
+>   eyes that glow with inner DSP light, subtle drifting soul-motes.
+> - *Half-Abyss:* corruption carried but mastered; a streak of dark void-crystal or
+>   purple-black veining on otherwise mortal features, one faintly void-touched eye.
+> - *Sylvan:* the Verdance's most numerous folk — bark-like skin, leaf- or petal-hair,
+>   blossoms and lichen, a deep bond to plant life.
+> - *Stoneborn:* mountain-born; mineral-veined skin, embedded crystalline growths,
+>   hardy and patient, naturally corruption-resistant.
+> - *Emberkin:* descendants of fire spirits — warm glowing skin, ember-flecked eyes,
+>   smoldering accents, fiery temperament (thrive in the Crimson Sap phase).
+>
+> *(NPCs have no fixed ancestry in the data; the ancestry called out in each prompt is a
+> styling suggestion drawn from these six — swap freely.)*
 >
 > **Negative / avoid:** no text, no watermark, no logos, no modern/sci-fi objects, no
 > frame borders, no extra limbs, no harsh flat lighting, consistent single art style
@@ -341,7 +350,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Crystal Singer — Crystal Mystic
 **Faction:** Emerald Coven · **Location:** Glinting Groves · **UI accent:** `#aaccff`
 > ¾ bust portrait of the **Crystal Singer**, an ethereal mystic who sings to sap-crystals.
-> Translucent-skinned Echo/Sylvan, hair like spun glass, eyes glowing pale blue, mouth
+> Translucent-skinned Soulborn, hair like spun glass, eyes glowing pale blue, mouth
 > mid-note. Robes of resonant crystal facets and pale silk, floating singing-crystals
 > orbiting the head. Background: the Glinting Groves — a cavern of giant glowing crystals.
 > Icy **`#aaccff` glow**. Luminous, harmonic, song-mystic energy.
@@ -700,7 +709,7 @@ These appear in location rosters and quests; each has a concise but complete pro
   a glowing-glyph sanctum; cyan glow; soul-scribe energy.
 
 **Whispering Veil**
-- **Warden of Threads** *(fate-weaver)* — ¾ bust of an enigmatic Echo warden; translucent
+- **Warden of Threads** *(fate-weaver)* — ¾ bust of an enigmatic spectral Soulborn warden; translucent
   form, hands holding glowing fate-threads, a serene cryptic face; a veil of woven light;
   silver-blue glow; thread-warden energy.
 
