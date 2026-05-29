@@ -352,6 +352,124 @@
                     ]
                 }
             }
+        },
+        {
+            "id": "stonekin",
+            "name": "Stonekin",
+            "description": "Living statues quickened by the Everwood's deep roots. Stonekin are slow to move and slow to anger, but nearly impossible to break. Their bodies are grown stone laced with living sapwood.",
+            "lore": "When the Everwood's roots wind around the buried megaliths of the old world, the stone sometimes wakes. Stonekin emerge from quarries and ruined foundations over decades, mineral bodies threaded with green sapwood that pulses like a slow heartbeat. They speak rarely and remember everything, serving the Bloomguard as immovable bulwarks and the Emerald Coven as patient archivists. Fire and decay trouble them little, but the Abyss's hollowing whispers can crack even stone given time. A Stonekin's word, once given, is said to outlast the mountains it was carved from.",
+            "attributeModifiers": [
+                { "attribute": "Resilience", "value": 2, "description": "+2 Resilience — a body of living stone shrugs off blows that would fell others" },
+                { "attribute": "Might", "value": 1, "description": "+1 Might — immense mineral mass behind every strike" },
+                { "attribute": "Agility", "value": -1, "description": "-1 Agility — stone does not move quickly" }
+            ],
+            "specialAbility": {
+                "id": "stonekin_endurance",
+                "name": "Stone Endurance",
+                "description": "Innate durability of a living statue: bonus starting Guard and resistance to physical and fire damage, offset by slower movement.",
+                "abilities": [
+                    { "id": "living_bulwark", "name": "Living Bulwark", "description": "Start each combat with +3 Guard. Stonekin weather the opening blows of any fight.", "effect": { "type": "guard_bonus", "value": 3, "passive": true } },
+                    { "id": "weathered_hide", "name": "Weathered Hide", "description": "25% reduced physical and fire damage taken; -10% movement speed.", "effect": { "type": "damage_resistance", "value": 0.25, "appliesTo": ["physical", "fire"], "movementPenalty": 0.10, "passive": true } }
+                ],
+                "passive": true
+            },
+            "unlockCondition": null,
+            "availableAtStart": true,
+            "customizationOptions": {
+                "bodyTypes": [
+                    { "id": "body_lean", "name": "Carved", "description": "A narrow, chiseled frame like a temple pillar." },
+                    { "id": "body_athletic", "name": "Hewn", "description": "A balanced megalithic build of fitted stone and sapwood." },
+                    { "id": "body_heavy", "name": "Monolithic", "description": "A towering boulder of a body, grown over centuries." }
+                ],
+                "skinTones": [
+                    { "id": "skin_01", "name": "Granite Grey", "hexColor": "#8A8D8F" },
+                    { "id": "skin_02", "name": "Sandstone", "hexColor": "#D8C19A" },
+                    { "id": "skin_03", "name": "Slate", "hexColor": "#5A6066" },
+                    { "id": "skin_04", "name": "Mossed Stone", "hexColor": "#6E7B5A" },
+                    { "id": "skin_05", "name": "Iron Ore", "hexColor": "#4A4640" },
+                    { "id": "skin_06", "name": "Marble White", "hexColor": "#E8E6DF" },
+                    { "id": "skin_07", "name": "Basalt", "hexColor": "#2E2C2A" },
+                    { "id": "skin_08", "name": "Copper Vein", "hexColor": "#9C6B4A" }
+                ],
+                "hairStyles": [
+                    { "id": "hair_style_01", "name": "Crystal Crest" },
+                    { "id": "hair_style_02", "name": "Moss Mantle" },
+                    { "id": "hair_style_03", "name": "Bare Crag" },
+                    { "id": "hair_style_04", "name": "Vine-Wrapped" },
+                    { "id": "hair_style_05", "name": "Geode Spikes" }
+                ],
+                "hairColors": {
+                    "natural": [
+                        { "id": "hair_color_01", "name": "Lichen Green", "hexColor": "#6B8E23" },
+                        { "id": "hair_color_02", "name": "Quartz White", "hexColor": "#E0E0E0" },
+                        { "id": "hair_color_03", "name": "Iron Grey", "hexColor": "#6E6E6E" },
+                        { "id": "hair_color_04", "name": "Amber Vein", "hexColor": "#C9930A" }
+                    ],
+                    "magical": [
+                        { "id": "hair_color_05", "name": "Sapglow Emerald", "hexColor": "#1FA055", "unlockCondition": "Reach Honored with the Emerald Coven" },
+                        { "id": "hair_color_06", "name": "Heartstone Gold", "hexColor": "#FFD700", "unlockCondition": "Survive a Crimson Sap phase without falling in combat" }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "wispkin",
+            "name": "Wispkin",
+            "description": "Veil-born fae of light and breath. Wispkin are quick, perceptive, and frail — flickers of the Veil given a mortal shape. They sense the unseen and dart where others lumber.",
+            "lore": "Where the Veil grows thin, motes of stray light sometimes refuse to fade. Given enough quiet years near a Veil-tear, they cohere into Wispkin: slight, luminous folk who seem half-here and half-elsewhere. They make peerless scouts and messengers, slipping through the Gloamwood where heavier folk would crash and blunder. The Veilkeepers favor them as students, for a Wispkin can hear the Veil's whisper without a Keeper's mediation. But their borrowed bodies are fragile, and a hard blow can scatter them like a snuffed candle — so they fight with wit, distance, and footwork rather than force.",
+            "attributeModifiers": [
+                { "attribute": "Agility", "value": 2, "description": "+2 Agility — Wispkin move like blown light" },
+                { "attribute": "Insight", "value": 1, "description": "+1 Insight — they perceive the Veil's currents directly" },
+                { "attribute": "Might", "value": -1, "description": "-1 Might — a body of light carries little force" }
+            ],
+            "specialAbility": {
+                "id": "wispkin_flicker",
+                "name": "Veil Flicker",
+                "description": "Innate fae mobility and perception: improved evasion and movement, and reduced spell costs — at the price of a frailer body.",
+                "abilities": [
+                    { "id": "fleetstep", "name": "Fleetstep", "description": "+10% movement speed and improved evasion; Wispkin are hard to pin down.", "effect": { "type": "evasion_bonus", "value": 0.10, "movementBonus": 0.10, "passive": true } },
+                    { "id": "veil_attunement", "name": "Veil Attunement", "description": "Spells cost 2 less DSP (minimum 0). Wispkin draw on the Veil more efficiently than flesh-and-blood casters.", "effect": { "type": "dsp_cost_reduction", "value": 2, "passive": true } }
+                ],
+                "passive": true
+            },
+            "unlockCondition": null,
+            "availableAtStart": true,
+            "customizationOptions": {
+                "bodyTypes": [
+                    { "id": "body_lean", "name": "Mote", "description": "A barely-there wisp of a frame, light as breath." },
+                    { "id": "body_athletic", "name": "Flame", "description": "A flickering, dancer's build with luminous edges." },
+                    { "id": "body_heavy", "name": "Lantern", "description": "A fuller glow, brighter and a touch more grounded." }
+                ],
+                "skinTones": [
+                    { "id": "skin_01", "name": "Dawnlight", "hexColor": "#FBE9C0" },
+                    { "id": "skin_02", "name": "Veil Blue", "hexColor": "#AEC6E8" },
+                    { "id": "skin_03", "name": "Wisp Violet", "hexColor": "#C8B0E8" },
+                    { "id": "skin_04", "name": "Emberglow", "hexColor": "#F0A878" },
+                    { "id": "skin_05", "name": "Moonpale", "hexColor": "#E8E8F0" },
+                    { "id": "skin_06", "name": "Seafoam Glow", "hexColor": "#A8E0D0" },
+                    { "id": "skin_07", "name": "Twilight", "hexColor": "#7B7BA8" },
+                    { "id": "skin_08", "name": "Gloam Grey", "hexColor": "#9090A0" }
+                ],
+                "hairStyles": [
+                    { "id": "hair_style_01", "name": "Wisp Trail" },
+                    { "id": "hair_style_02", "name": "Halo Drift" },
+                    { "id": "hair_style_03", "name": "Spark Crop" },
+                    { "id": "hair_style_04", "name": "Ribbon Light" },
+                    { "id": "hair_style_05", "name": "Ember Crown" }
+                ],
+                "hairColors": {
+                    "natural": [
+                        { "id": "hair_color_01", "name": "Candleflame", "hexColor": "#FFD27F" },
+                        { "id": "hair_color_02", "name": "Veilglow Blue", "hexColor": "#8FB8E8" },
+                        { "id": "hair_color_03", "name": "Wisp Silver", "hexColor": "#DCDCE8" },
+                        { "id": "hair_color_04", "name": "Soft Violet", "hexColor": "#B89BD8" }
+                    ],
+                    "magical": [
+                        { "id": "hair_color_05", "name": "Veilfire White", "hexColor": "#F5F8FF", "unlockCondition": "Consult all 5 Veilkeepers" },
+                        { "id": "hair_color_06", "name": "Riftlight Prism", "hexColor": "#7B68EE", "unlockCondition": "Seal a Veil-tear rift" }
+                    ]
+                }
+            }
         }
     ]
 }

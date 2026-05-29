@@ -95,8 +95,14 @@ export class FactionSystem {
     this.eventBus.on('faction:reputationChange', (data) => {
       this.changeReputation(data.faction, data.change, data.source);
     });
+    this.eventBus.on('game:reset', () => this.reset());
 
     FactionSystem.instance = this;
+  }
+
+  /** Reset all faction reputations to neutral for a new game. */
+  reset() {
+    for (const faction of this.factions.values()) faction.reputation = 0;
   }
 
   /**

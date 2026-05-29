@@ -190,7 +190,8 @@ export default class ContentInitializer {
         const {
             questSystem, dialogueSystem, progressionSystem, inventoryPanel, skillTreePanel,
             dspSystem, factionSystem, narrativeSystem, moralChoiceSystem,
-            companionSystem, attributeSystem, veilkeeperSystem, skillCheckSystem
+            companionSystem, attributeSystem, veilkeeperSystem, skillCheckSystem,
+            sapCycleManager
         } = systems;
         const classSystem = PlayerClassSystem.getInstance();
 
@@ -201,7 +202,8 @@ export default class ContentInitializer {
             if (progressionSystem?.serialize) saveData.progression = progressionSystem.serialize();
             if (inventoryPanel) saveData.inventory = inventoryPanel.saveState();
             if (skillTreePanel) saveData.skills = skillTreePanel.saveState();
-            saveData.playerClass = classSystem.serialize();
+            if (sapCycleManager?.serialize) saveData.sapCycle = sapCycleManager.serialize();
+            if (classSystem?.serialize) saveData.playerClass = classSystem.serialize();
 
             // New systems
             if (dspSystem?.saveState) saveData.dsp = dspSystem.saveState();
@@ -220,7 +222,8 @@ export default class ContentInitializer {
             if (saveData.progression && progressionSystem?.deserialize) progressionSystem.deserialize(saveData.progression);
             if (saveData.inventory && inventoryPanel) inventoryPanel.loadState(saveData.inventory);
             if (saveData.skills && skillTreePanel) skillTreePanel.loadState(saveData.skills);
-            if (saveData.playerClass) classSystem.deserialize(saveData.playerClass);
+            if (saveData.sapCycle && sapCycleManager?.deserialize) sapCycleManager.deserialize(saveData.sapCycle);
+            if (saveData.playerClass && classSystem?.deserialize) classSystem.deserialize(saveData.playerClass);
 
             // New systems
             if (saveData.dsp && dspSystem?.loadState) dspSystem.loadState(saveData.dsp);

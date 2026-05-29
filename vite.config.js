@@ -7,8 +7,10 @@ export default defineConfig({
         assetsDir: 'assets',
         rollupOptions: {
             output: {
-                manualChunks: {
-                    phaser: ['phaser']
+                // Vite 8 / Rollup 4 only accept the function form of
+                // manualChunks (the object form throws at build time).
+                manualChunks(id) {
+                    if (id.includes('node_modules/phaser')) return 'phaser';
                 }
             }
         }

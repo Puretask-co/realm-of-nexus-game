@@ -274,18 +274,8 @@ export default class UIScene extends Phaser.Scene {
             fontFamily: 'Open Sans', fontSize: '13px', color: '#ffaaaa'
         }).setOrigin(0.5).setDepth(10001);
 
-        // Sap bar
-        this.uiElements.sapLabel = this.add.text(x, y + 18, 'SAP', {
-            fontFamily: 'Open Sans', fontSize: '15px', color: '#66aaff'
-        }).setDepth(10000);
-
-        this.uiElements.sapBarBg = this.add.graphics().setDepth(10000);
-        this.uiElements.sapBarBg.fillStyle(0x112233, 0.7);
-        this.uiElements.sapBarBg.fillRect(x + 30, y + 19, 150, 12);
-
-        this.uiElements.sapBarFill = this.add.graphics().setDepth(10000);
-        this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
-        this.uiElements.sapBarFill.fillRect(x + 31, y + 20, 148, 10);
+        // (Personal "Sap" bar removed — DSP is the single casting resource and
+        // is shown by its own bar below. See _createDSPBar.)
 
         // Class name
         this.uiElements.classText = this.add.text(x, y + 38, '', {
@@ -395,22 +385,7 @@ export default class UIScene extends Phaser.Scene {
             this.uiElements.hpText.setText(`${Math.ceil(stats.hp)}/${stats.maxHp}`);
         }
 
-        // Sap
-        if (stats.sap !== undefined && stats.maxSap) {
-            const ratio = Math.max(0, stats.sap / stats.maxSap);
-            if (this._paintedBars) {
-                const c = this._sapChannel;
-                this.uiElements.sapDeplete.clear();
-                if (ratio < 1) {
-                    this.uiElements.sapDeplete.fillStyle(0x050a1a, 0.7);
-                    this.uiElements.sapDeplete.fillRect(c.x + c.w * ratio, c.y, c.w * (1 - ratio), c.h);
-                }
-            } else {
-                this.uiElements.sapBarFill.clear();
-                this.uiElements.sapBarFill.fillStyle(0x4488ff, 0.9);
-                this.uiElements.sapBarFill.fillRect(x + 31, 40, 148 * ratio, 10);
-            }
-        }
+        // (The second HUD bar shows DSP, painted by _updateDSPBar.)
 
         // Level & XP
         if (stats.level !== undefined) {
@@ -637,6 +612,16 @@ export default class UIScene extends Phaser.Scene {
         }
         if (this.uiElements.dspWarning) {
             this.uiElements.dspWarning.setText(warningText).setColor(warningColor);
+        }
+
+        // When the painterly HUD is active, the second painted bar shows DSP.
+        if (this._paintedBars && this.uiElements.sapDeplete && this._sapChannel) {
+            const c = this._sapChannel;
+            this.uiElements.sapDeplete.clear();
+            if (pct < 1) {
+                this.uiElements.sapDeplete.fillStyle(0x050a1a, 0.7);
+                this.uiElements.sapDeplete.fillRect(c.x + c.w * pct, c.y, c.w * (1 - pct), c.h);
+            }
         }
     }
 
