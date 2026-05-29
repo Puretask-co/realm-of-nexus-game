@@ -73,9 +73,18 @@ export class QuestSystem {
 
   setupEventListeners() {
     this.eventBus.on('enemy:defeated', (data) => this.onEnemyDefeated(data));
+    // 'collect' objectives — the world emits item:pickup; keep item:collected for compatibility.
     this.eventBus.on('item:collected', (data) => this.onItemCollected(data));
+    this.eventBus.on('item:pickup', (data) => this.onItemCollected(data));
+    // 'travel' objectives — match against any zone-entry/discovery event.
     this.eventBus.on('location:discovered', (data) => this.onLocationDiscovered(data));
+    this.eventBus.on('zone:discovered', (data) => this.onLocationDiscovered(data));
+    this.eventBus.on('zone:changed', (data) => this.onLocationDiscovered(data));
+    // 'dialogue' objectives — completed by talking to the named NPC.
     this.eventBus.on('dialogue:choiceMade', (data) => this.onDialogueChoice(data));
+    this.eventBus.on('npc-dialogue-complete', (data) => this.onNpcTalked(data));
+    // 'interact' objectives — completed by activating a world object/event.
+    this.eventBus.on('quest:interact', (data) => this.onInteract(data));
     this.eventBus.on('spell:learned', (data) => this.onSpellLearned(data));
     this.eventBus.on('player:levelUp', (data) => this.onLevelUp(data));
     this.eventBus.on('sapCycle:phaseChanged', (data) => this.onSapPhaseChanged(data));
@@ -592,11 +601,13 @@ export class QuestSystem {
   }
 
   onLocationDiscovered(data) {
-    this.playerStats.locationsDiscovered.add(data.locationId);
+    const locationId = data.locationId || data.zoneId || data.id;
+    if (!locationId) return;
+    this.playerStats.locationsDiscovered.add(locationId);
 
     for (const [questId, quest] of this.activeQuests) {
       for (const objective of quest.definition.objectives) {
-        if (objective.type === 'visit' && objective.target === data.locationId) {
+        if ((objective.type === 'travel' || objective.type === 'visit') && objective.target === locationId) {
           this.completeObjective(questId, objective.id);
         }
       }
@@ -608,7 +619,36 @@ export class QuestSystem {
   onDialogueChoice(data) {
     for (const [questId, quest] of this.activeQuests) {
       for (const objective of quest.definition.objectives) {
-        if (objective.type === 'talk' && objective.target === data.dialogueId) {
+        if ((objective.type === 'dialogue' || objective.type === 'talk') && objective.target === data.dialogueId) {
+          this.completeObjective(questId, objective.id);
+        }
+      }
+    }
+  }
+
+  // Complete 'dialogue' objectives that target an NPC (by id/normalized name)
+  // when the player finishes talking to that NPC.
+  onNpcTalked(data) {
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const npcKey = norm(data.npc || data.name || data.npcId);
+    if (!npcKey) return;
+    for (const [questId, quest] of this.activeQuests) {
+      for (const objective of quest.definition.objectives) {
+        if ((objective.type === 'dialogue' || objective.type === 'talk') &&
+            norm(objective.target) === npcKey) {
+          this.completeObjective(questId, objective.id);
+        }
+      }
+    }
+  }
+
+  // Complete 'interact' objectives when a world object/event is activated.
+  onInteract(data) {
+    const target = data.target || data.targetId || data.objectId;
+    if (!target) return;
+    for (const [questId, quest] of this.activeQuests) {
+      for (const objective of quest.definition.objectives) {
+        if (objective.type === 'interact' && objective.target === target) {
           this.completeObjective(questId, objective.id);
         }
       }

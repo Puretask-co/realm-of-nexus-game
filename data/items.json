@@ -1,6 +1,6 @@
 {
   "version": "2.1.0",
-  "lastModified": "2026-03-29T00:00:00Z",
+  "lastModified": "2026-05-29T01:37:41.054Z",
   "equipmentSlots": [
     "weapon",
     "offhand",
@@ -5138,6 +5138,342 @@
       },
       "stackable": false,
       "upgradeable": false
+    },
+    {
+      "id": "deep_sap",
+      "name": "Deep Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Deep Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "expedition_journal",
+      "name": "Expedition Journal",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Expedition Journal. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "healing_herb",
+      "name": "Healing Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Healing Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "iron_ore",
+      "name": "Iron Ore",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Iron Ore. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "ironbark_shard",
+      "name": "Ironbark Shard",
+      "type": "quest",
+      "rarity": "uncommon",
+      "description": "Ironbark Shard. A key item tied to the fate of the Verdance.",
+      "value": 33,
+      "level": 4,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 33
+      }
+    },
+    {
+      "id": "lore_fragment",
+      "name": "Lore Fragment",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Lore Fragment. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "lost_scroll",
+      "name": "Lost Scroll",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Lost Scroll. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moonbloom_herb",
+      "name": "Moonbloom Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonbloom Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moonpetal",
+      "name": "Moonpetal",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonpetal. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "moonpetal_blossom",
+      "name": "Moonpetal Blossom",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Moonpetal Blossom. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "pure_rootsap",
+      "name": "Pure Rootsap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Pure Rootsap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "resonance_stone",
+      "name": "Resonance Stone",
+      "type": "quest",
+      "rarity": "rare",
+      "description": "Resonance Stone. A key item tied to the fate of the Verdance.",
+      "value": 80,
+      "level": 8,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 80
+      }
+    },
+    {
+      "id": "sabotage_evidence",
+      "name": "Sabotage Evidence",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sabotage Evidence. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sealing_reagent",
+      "name": "Sealing Reagent",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sealing Reagent. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "sporecaller_log",
+      "name": "Sporecaller Log",
+      "type": "quest",
+      "rarity": "common",
+      "description": "Sporecaller Log. A key item tied to the fate of the Verdance.",
+      "value": 0,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 5,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "thorn_needle",
+      "name": "Thorn Needle",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Thorn Needle. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "veil_herb",
+      "name": "Veil Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Veil Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "veil_touched_herb",
+      "name": "Veil Touched Herb",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Veil Touched Herb. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_blue_sap",
+      "name": "Volatile Blue Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Blue Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_crimson_sap",
+      "name": "Volatile Crimson Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Crimson Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
+    },
+    {
+      "id": "volatile_silver_sap",
+      "name": "Volatile Silver Sap",
+      "type": "crafting",
+      "rarity": "common",
+      "description": "Volatile Silver Sap. A material gathered from the Verdance, used in crafting and trade.",
+      "value": 10,
+      "level": 1,
+      "effects": {},
+      "slot": null,
+      "stackable": true,
+      "maxStack": 20,
+      "stats": {
+        "value": 10
+      }
     }
   ]
 }

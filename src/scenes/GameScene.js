@@ -279,7 +279,7 @@ export default class GameScene extends Phaser.Scene {
         this._inventoryCache = {};
 
         // ---- EventBus listeners ----
-        this._unsubs.push(...
+        this._unsubs.push(
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
             EventBus.on('combat:effectApplied', (data) => this._onCombatEffectApplied(data)),
@@ -303,8 +303,9 @@ export default class GameScene extends Phaser.Scene {
             }),
             EventBus.on('dialogue:start', (data) => this._onDialogueStart(data)),
             EventBus.on('quest:start', (data) => this._onQuestStart(data)),
-            EventBus.on('quest:started', (data) => this._onQuestStarted(data)),
-            EventBus.on('quest:completed', (data) => this._onQuestCompleted(data)),
+            EventBus.on('quest:started', (data) => { this._onQuestStarted(data); this._refreshQuestBeacons(); }),
+            EventBus.on('quest:completed', (data) => { this._onQuestCompleted(data); this._refreshQuestBeacons(); }),
+            EventBus.on('quest:objectiveCompleted', () => this._refreshQuestBeacons()),
             EventBus.on('player:addExperience', (data) => this._onAddExperience(data)),
             EventBus.on('dsp:thresholdChanged', (data) => this._onDSPThresholdChanged(data)),
             EventBus.on('faction:reputationChanged', (data) => this._onFactionRepChanged(data)),
@@ -375,9 +376,43 @@ export default class GameScene extends Phaser.Scene {
             }),
             EventBus.on('save-collect', (saveData) => {
                 saveData.discoveredZones = [...this._discoveredZones];
+                // Player position, current zone, and live vitals — without
+                // these a load respawns at the default zone with default HP.
+                saveData.location = this.currentZone || 'canopy_of_life';
+                if (this.player) {
+                    saveData.playerPosition = { x: Math.round(this.player.x), y: Math.round(this.player.y) };
+                    saveData.playerVitals = {
+                        hp:  this.player.stats?.hp,
+                        sap: this.player.stats?.sap,
+                    };
+                }
+                saveData.playtime = (this._loadedPlaytime || 0) + (Date.now() - (this._playStartTs || Date.now()));
             }),
             EventBus.on('save-restore', (saveData) => {
                 this._discoveredZones = new Set(saveData.discoveredZones || ['canopy_of_life']);
+                this._loadedPlaytime = saveData.playtime || 0;
+                this._playStartTs = Date.now();
+
+                const targetZone = saveData.location;
+                const pos = saveData.playerPosition;
+                const vitals = saveData.playerVitals;
+
+                // Apply after the synchronous restore listeners have run, so
+                // progression/equipment have set maxHp/maxSap before we clamp.
+                this.time.delayedCall(0, () => {
+                    if (targetZone && this.zoneContentManager) {
+                        this._onWorldMapTravelTo({ locationId: targetZone });
+                    }
+                    if (pos && this.player) {
+                        this.player.setPosition(pos.x, pos.y);
+                        if (this.cameraSystem?.camera) this.cameraSystem.camera.centerOn(pos.x, pos.y);
+                    }
+                    if (vitals && this.player?.stats) {
+                        if (vitals.hp != null)  this.player.stats.hp  = Math.min(vitals.hp,  this.player.stats.maxHp  ?? vitals.hp);
+                        if (vitals.sap != null) this.player.stats.sap = Math.min(vitals.sap, this.player.stats.maxSap ?? vitals.sap);
+                        EventBus.emit('player-stats-updated', this.player.stats);
+                    }
+                });
             })
         );
 
@@ -392,6 +427,15 @@ export default class GameScene extends Phaser.Scene {
         this.time.delayedCall(3000, () => {
             if (!this._veilChoiceShown) this._presentVeilChoice();
         });
+
+        // ---- Playtime tracking (restored/extended by the save system) ----
+        this._loadedPlaytime = this._loadedPlaytime || 0;
+        this._playStartTs = Date.now();
+
+        // ---- Quest interaction beacons ----
+        this._questBeacons = [];
+        this.input.keyboard.on('keydown-E', () => this._tryActivateQuestBeacon());
+        this._refreshQuestBeacons();
 
         // ---- Death state ----
         this.isDead = false;
@@ -1125,8 +1169,6 @@ export default class GameScene extends Phaser.Scene {
         if (this.inTacticalCombat || overworldEnemies.length === 0) return;
         this._tacticalOverworldEnemies = overworldEnemies;
 
-        const defs = overworldEnemies.map(e => e._state?.definition).filter(Boolean);
-        const isBoss = defs.some(d => (d.tier || 1) >= 4) || defs.length >= 4;
         // Enemy definitions live on _state.definition (e.data may be null for
         // painterly sprites). Filter out any without a definition.
         const defs = overworldEnemies.map(e => e._state?.definition || e.data?.definition).filter(Boolean);
@@ -1338,6 +1380,102 @@ export default class GameScene extends Phaser.Scene {
     // NPCs
     // ----------------------------------------------------------------
 
+    // ----------------------------------------------------------------
+    // Quest interaction beacons
+    //
+    // 'interact' objectives and 'travel' objectives whose target is not a real
+    // zone have no natural world trigger. For each active quest's current such
+    // objective we drop a glowing beacon in the current zone; pressing E near it
+    // fulfils the objective. Real-zone travel completes on entry (no beacon).
+    // ----------------------------------------------------------------
+
+    _zoneIds() {
+        if (!this._zoneIdSet) this._zoneIdSet = new Set((this.zones || []).map(z => z.id));
+        return this._zoneIdSet;
+    }
+
+    _currentObjectiveFor(quest) {
+        const objs = [...(quest.definition?.objectives || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+        for (const o of objs) {
+            const p = quest.objectiveProgress?.get(o.id);
+            if (!p || !p.completed) return o;
+        }
+        return null;
+    }
+
+    _clearQuestBeacons() {
+        for (const b of (this._questBeacons || [])) {
+            try { b.gfx?.destroy(); b.label?.destroy(); b.prompt?.destroy(); } catch (_) {}
+        }
+        this._questBeacons = [];
+    }
+
+    _refreshQuestBeacons() {
+        if (!this.questSystem?.activeQuests) return;
+        this._clearQuestBeacons();
+        const zone = (this.zones || []).find(z => z.id === this.currentZone);
+        if (!zone) return;
+        const zoneIds = this._zoneIds();
+
+        let slot = 0;
+        for (const [questId, quest] of this.questSystem.activeQuests) {
+            const obj = this._currentObjectiveFor(quest);
+            if (!obj) continue;
+            const isInteract = obj.type === 'interact';
+            const isAbstractTravel = obj.type === 'travel' && !zoneIds.has(obj.target);
+            if (!isInteract && !isAbstractTravel) continue;
+
+            // Spread beacons across the zone so multiple don't overlap.
+            const bx = zone.bounds.x + zone.bounds.w * (0.3 + 0.18 * (slot % 3));
+            const by = zone.bounds.y + zone.bounds.h * (0.35 + 0.16 * Math.floor(slot / 3));
+            slot++;
+
+            const gfx = this.add.graphics().setDepth(7);
+            gfx.fillStyle(isInteract ? 0xffcc44 : 0x66ccff, 0.85);
+            gfx.fillCircle(bx, by, 12);
+            gfx.lineStyle(2, 0xffffff, 0.7);
+            gfx.strokeCircle(bx, by, 12);
+            this.tweens.add({ targets: gfx, alpha: 0.35, duration: 700, yoyo: true, repeat: -1 });
+
+            const label = this.add.text(bx, by - 26, obj.description || 'Quest objective', {
+                fontFamily: 'Open Sans', fontSize: '12px', color: '#ffeeaa',
+                stroke: '#000', strokeThickness: 3, align: 'center', wordWrap: { width: 220 }
+            }).setOrigin(0.5).setDepth(11);
+
+            const prompt = this.add.text(bx, by + 20, '[E] Interact', {
+                fontFamily: 'Open Sans', fontSize: '11px', color: '#ffffff',
+                stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5).setDepth(11).setVisible(false);
+
+            this._questBeacons.push({ questId, objectiveId: obj.id, type: obj.type, target: obj.target, x: bx, y: by, gfx, label, prompt });
+        }
+    }
+
+    _updateQuestBeacons() {
+        if (!this._questBeacons?.length || !this.player) return;
+        for (const b of this._questBeacons) {
+            const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, b.x, b.y);
+            b.prompt?.setVisible(d < 70);
+        }
+    }
+
+    _tryActivateQuestBeacon() {
+        if (!this._questBeacons?.length || !this.player) return;
+        for (const b of this._questBeacons) {
+            const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, b.x, b.y);
+            if (d < 70) {
+                if (b.type === 'interact') {
+                    EventBus.emit('quest:interact', { target: b.target });
+                } else {
+                    EventBus.emit('location:discovered', { locationId: b.target });
+                }
+                EventBus.emit('ui:notification', { message: `Objective complete: ${b.target}`, color: '#ffcc44', duration: 2000 });
+                // _refreshQuestBeacons fires via quest:objectiveCompleted.
+                return;
+            }
+        }
+    }
+
     _spawnNPCs() {
         this.npcs = [];
 
@@ -1418,7 +1556,33 @@ export default class GameScene extends Phaser.Scene {
             // ---- Veilkeeper — near world center ----
             { name: 'Sylara', role: 'veilkeeper', x: 800, y: 500, zoneId: 'canopy_of_life',
               dialogue: ['The Veil whispers your name. What do you seek to know?'],
-              dialogueId: 'sylara_greeting', keeperId: 'sylthara', interactRadius: 70 }
+              dialogueId: 'sylara_greeting', keeperId: 'sylthara', interactRadius: 70 },
+
+            // ---- Quest-giver NPCs referenced by dialogue objectives ----
+            // Placed so their quests' "speak to X" objectives can complete.
+            { name: 'Faction Leaders', role: 'quest', x: 380, y: 420, zoneId: 'canopy_of_life',
+              dialogue: ['The council has gathered.', 'The factions are divided on how to face the Veil.', 'Your voice may sway the outcome.'], interactRadius: 70 },
+            { name: 'Healer Mora', role: 'quest', x: 520, y: 480, zoneId: 'canopy_of_life',
+              dialogue: ['So many wounded come to me now.', 'I am low on healing herbs.', 'Bless you for helping.'], interactRadius: 60 },
+            { name: 'Keeper Lynn', role: 'quest', x: 620, y: 520, zoneId: 'canopy_of_life',
+              dialogue: ['The archives hold answers, if you can find them.', 'A lost scroll troubles me.', 'Knowledge must not be forgotten.'], interactRadius: 60 },
+            { name: 'Veil Watcher', role: 'quest', x: 180, y: 520, zoneId: 'canopy_of_life',
+              dialogue: ['I watch the Veil for tears.', 'Something stirs beyond the threshold.', 'Stay vigilant.'], interactRadius: 60 },
+            { name: 'Watcher Cole', role: 'quest', x: 260, y: 600, zoneId: 'canopy_of_life',
+              dialogue: ['I have seen things on the borders.', 'A warning must reach the Bloomguard.', 'Time is short.'], interactRadius: 60 },
+            { name: 'Sap Weaver', role: 'quest', x: 680, y: 360, zoneId: 'canopy_of_life',
+              dialogue: ['I weave charms from living Sap.', 'Bring me what I need and I will craft you one.', 'The Sap remembers its shape.'], interactRadius: 60 },
+            { name: 'Consortium Director Orin', role: 'quest', x: 120, y: 480, zoneId: 'canopy_of_life',
+              dialogue: ['The Consortium values efficiency.', 'A blight infestation threatens our workshop.', 'Clear it and you will be rewarded.'], interactRadius: 60 },
+            { name: 'Elder Thornwick', role: 'quest', x: 340, y: 560, zoneId: 'canopy_of_life',
+              dialogue: ['The Veil grows thin, young one.', 'I have studied its tears for decades.', 'Help me, and I will teach you what I know.'],
+              dialogueId: 'elder_thornwick_quest1', interactRadius: 65 },
+            { name: 'Scout Brin', role: 'quest', x: 240, y: 1020, zoneId: 'spindlewood_forest',
+              dialogue: ['I scout the forest paths.', 'My recon route needs covering.', 'Eyes open out there.'], interactRadius: 60 },
+            { name: 'Shadowmaster Kael', role: 'quest', x: 780, y: 200, zoneId: 'hollowroot_catacombs',
+              dialogue: ['You walk in shadow as I do.', 'My past haunts these tunnels.', 'Perhaps you can help me face it.'], interactRadius: 60 },
+            { name: 'Alchemist Ferment', role: 'quest', x: 840, y: 1300, zoneId: 'mycelium_nexus',
+              dialogue: ['Decay is just transformation, friend.', 'I need a moss heart for my brew.', 'Fetch it and we both profit.'], interactRadius: 60 }
         ];
 
         for (const def of npcDefs) {
@@ -1736,7 +1900,8 @@ export default class GameScene extends Phaser.Scene {
 
             const atk = this.player.stats.attack ?? this.player.stats.might ?? 0;
             const finalDmg = Math.max(1, damage + atk);
-            targetEnemy._state.hp -= finalDmg;
+            targetEnemy._state.hp = Math.max(0, targetEnemy._state.hp - finalDmg);
+            if (targetEnemy.data) targetEnemy.data.hp = targetEnemy._state.hp;
 
             // Hit flash + knockback
             this._flashEnemyHit(targetEnemy);
@@ -1950,8 +2115,8 @@ export default class GameScene extends Phaser.Scene {
         let sprite = null;
         if (this.player && (this.player.stats?.name === tName || tName === 'Player')) {
             sprite = this.player;
-        } else if (Array.isArray(this.enemies)) {
-            sprite = this.enemies.find(e => e?._state?.definition?.name === tName) || null;
+        } else if (this.enemies) {
+            sprite = this.enemies.children.entries.find(e => e?._state?.definition?.name === tName) || null;
         }
         if (!sprite) return;
 
@@ -2540,6 +2705,9 @@ export default class GameScene extends Phaser.Scene {
         if (this.zoneContentManager) {
             this.zoneContentManager.enterZone(locationId);
         }
+
+        // Re-place quest beacons for the new zone.
+        this._refreshQuestBeacons();
     }
 
     /**
@@ -3045,6 +3213,9 @@ export default class GameScene extends Phaser.Scene {
             }
         }
 
+        // Quest interaction beacons (interact / abstract-travel objectives)
+        this._updateQuestBeacons();
+
         // Lighting
         this.profiler.begin('lighting');
         if (this.playerLight) {
@@ -3271,8 +3442,9 @@ export default class GameScene extends Phaser.Scene {
         this.minimap.destroy();
         this.saveManager.shutdown();
         for (const npc of this.npcs) npc.destroy();
+        this._clearQuestBeacons();
         // Clean up systems that subscribe to EventBus (prevents ghost listeners on scene restart)
-        this.sapCycle?.destroy();
+        this.sapCycle?.destroy?.();
         this.portalSystem?.destroy();
         this.zoneContentManager?.destroy?.();
         // Cleanup particle effects, audio, and physics
