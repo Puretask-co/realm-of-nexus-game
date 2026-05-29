@@ -55,10 +55,10 @@ so the portrait's palette can be tied to the dialogue UI.
 >   ledgers and coin, polished mercantile sheen.
 >
 > **Ancestry cues (when relevant):**
-> - *Sunpetal:* radiant humanoid, petal-like hair, sun-warmed glowing skin.
-> - *Shadeborn:* dusky twilight skin, shadow affinity, faintly smoking edges.
-> - *Stoneblood:* stocky, bark-like skin with embedded mineral/crystal deposits.
-> - *Emberfae:* small fae with smoldering ember wings, fiery eyes.
+> - *Sylvan:* radiant humanoid, petal-like hair, sun-warmed glowing skin.
+> - *Soulborn:* dusky twilight skin, shadow affinity, faintly smoking edges.
+> - *Stoneborn:* stocky, bark-like skin with embedded mineral/crystal deposits.
+> - *Emberkin:* small fae with smoldering ember wings, fiery eyes.
 > - *Echo:* spectral, partially translucent, ethereal dead-that-linger.
 >
 > **Negative / avoid:** no text, no watermark, no logos, no modern/sci-fi objects, no
@@ -71,7 +71,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Elder Thalos — Elder Sage & Wisdom Keeper
 **Faction:** Emerald Coven · **Location:** Canopy of Life / Canopy Overlook · **UI accent:** `#44ff88`
-> ¾ bust portrait of **Elder Thalos**, an ancient, kindly Sunpetal sage and keeper of
+> ¾ bust portrait of **Elder Thalos**, an ancient, kindly Sylvan sage and keeper of
 > Verdance's wisdom. Deeply lined, sun-warmed face framed by a long silver-green beard
 > braided with tiny living leaves and budding white flowers; petal-textured white hair.
 > Heavy emerald-and-moss Coven robe with woven-bark shoulder mantle and a carved
@@ -83,7 +83,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Lyra the Herbalist — Herbalist & Healer
 **Faction:** Emerald Coven · **Location:** Canopy of Life · **UI accent:** `#88ff44`
-> ¾ bust portrait of **Lyra the Herbalist**, a warm, capable young Sunpetal healer.
+> ¾ bust portrait of **Lyra the Herbalist**, a warm, capable young Sylvan healer.
 > Freckled sun-warmed skin, leaf-green eyes, hair the green of new shoots tied back with
 > a vine and tucked with sprigs of medicinal herbs. Layered apothecary garb — linen
 > tunic, leather satchel of glass vials and dried bundles, mortar-and-pestle at the hip,
@@ -94,7 +94,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Archivist Kael — Knowledge & Lore Keeper
 **Faction:** Emerald Coven · **Location:** Canopy of Life · **UI accent:** `#4488ff`
-> ¾ bust portrait of **Archivist Kael**, a scholarly Shadeborn lore-keeper. Dusky
+> ¾ bust portrait of **Archivist Kael**, a scholarly Soulborn lore-keeper. Dusky
 > twilight skin, sharp intelligent eyes lit faint blue, dark hair streaked with grey,
 > ink-stained fingertips. Deep-blue scholar's robe over a buttoned vest, a bandolier of
 > rolled scrolls, brass-rimmed reading lenses pushed up on the brow. Holding an open,
@@ -105,7 +105,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Merchant Orla — Trader
 **Faction:** Verdant Consortium · **Location:** Canopy of Life · **UI accent:** `#ffaa44`
-> ¾ bust portrait of **Merchant Orla**, a shrewd, jovial Stoneblood trader. Stocky,
+> ¾ bust portrait of **Merchant Orla**, a shrewd, jovial Stoneborn trader. Stocky,
 > bark-textured skin with small amber-mineral flecks at the temples, hearty grin, gold
 > tooth, eyes quick with appraisal. Ornate Consortium merchant finery — embroidered
 > coat with brass buttons, jingling coin-pouches, rings, a fur-trimmed collar. One hand
@@ -115,7 +115,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Commander Briara — Military Leader
 **Faction:** Bloomguard · **Location:** Canopy of Life / Bloomguard Barracks · **UI accent:** `#44cc44`
-> ¾ bust portrait (slight heroic low angle) of **Commander Briara**, a stern Sunpetal
+> ¾ bust portrait (slight heroic low angle) of **Commander Briara**, a stern Sylvan
 > Bloomguard commander. Strong jaw, battle-scarred cheek, close-cropped golden-green
 > hair, resolute glowing eyes. Radiant living-wood plate armor in green-and-gold with a
 > flowering crest at the shoulder, a Bloomguard tabard, blooming pauldrons. One gauntleted
@@ -127,7 +127,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Archdruid Veyla — High Druid / Nature Magic
 **Faction:** Emerald Coven (leader) · **Location:** Canopy of Life / Emerald Sanctum · **UI accent:** `#66aaff`
 > ¾ bust portrait of **Archdruid Veyla**, the serene and powerful high priestess of the
-> Everwood. Ageless Sunpetal features, luminous blue-green eyes, flowing hair like living
+> Everwood. Ageless Sylvan features, luminous blue-green eyes, flowing hair like living
 > moss woven with blossoms and antler-like branch ornaments crowning her head. Ceremonial
 > Archdruid vestments of deep emerald and silver, glowing sap-glyphs spiraling up her arms,
 > a circlet of light. Hands cupped around a hovering orb of green Everwood energy.
@@ -147,7 +147,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Seer Althea — Diviner / Future Sight
 **Faction:** Mystic (Veil) · **Location:** Canopy of Life / Whispering Veil · **UI accent:** `#cc66ff`
-> ¾ bust portrait (slight high angle) of **Seer Althea**, an enigmatic Shadeborn
+> ¾ bust portrait (slight high angle) of **Seer Althea**, an enigmatic Soulborn
 > oracle. Smoky violet-tinged skin, eyes pure swirling starlight with no pupils, dark
 > hair drifting as if underwater. Diaphanous violet seer's veils and layered shawls
 > stitched with constellation thread, a third-eye gem on the brow. Hands hovering over a
@@ -158,7 +158,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Smith Garon — Blacksmith / Equipment Crafter
 **Faction:** Craftsman (neutral) · **Location:** Canopy of Life · **UI accent:** `#cc6644`
-> ¾ bust portrait of **Smith Garon**, a gruff, powerful Stoneblood blacksmith. Broad,
+> ¾ bust portrait of **Smith Garon**, a gruff, powerful Stoneborn blacksmith. Broad,
 > bark-skinned, soot-streaked, with glowing-ember mineral veins along thick forearms, a
 > singed beard, heavy brow, no-nonsense scowl. Leather apron over a sleeveless tunic,
 > heat-scarred gloves, hammer over one shoulder, tongs at the belt. Backlit by a forge.
@@ -180,7 +180,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Trainer Borsk — Combat Trainer
 **Faction:** Military affiliate · **Location:** Canopy of Life · **UI accent:** `#cc8866`
 > ¾ bust portrait of **Trainer Borsk**, a stern veteran combat instructor. Scarred,
-> weather-beaten Stoneblood with a broken-and-healed nose, grey-bristle hair, a hard
+> weather-beaten Stoneborn with a broken-and-healed nose, grey-bristle hair, a hard
 > appraising stare. Practical training leathers and a padded gambeson, a wooden practice
 > sword across the back, bracers worn from use. Arms crossed, judging your stance.
 > Background: a training yard with weapon racks, straw dummies, dusty light. Muted
@@ -189,7 +189,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Innkeeper Maren — Tavern Keeper
 **Faction:** Neutral · **Location:** Canopy of Life · **UI accent:** `#ffcc88`
 > ¾ bust portrait of **Innkeeper Maren**, a warm, hospitable tavern keeper. Rosy-cheeked
-> Sunpetal with laugh lines, hair in a practical bun with a flower tucked behind the ear,
+> Sylvan with laugh lines, hair in a practical bun with a flower tucked behind the ear,
 > sleeves rolled up. Apron over a homespun dress, a dish-towel over one shoulder,
 > presenting a foaming tankard of glowing sap-ale. Welcoming, motherly smile.
 > Background: a cozy inn interior of warm living-wood, a crackling hearth, hanging mugs,
@@ -207,7 +207,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Merchant Lirel — Trader
 **Faction:** Verdant Consortium · **Location:** Canopy of Life / Verdant Exchange · **UI accent:** `#ffaa44`
-> ¾ bust portrait of **Merchant Lirel**, a slick, fast-talking Shadeborn trader. Dusky
+> ¾ bust portrait of **Merchant Lirel**, a slick, fast-talking Soulborn trader. Dusky
 > skin, a thin moustache, a perpetual sly grin, darting eyes. Fashionable Consortium
 > coat with too many rings, a coin-counting abacus-charm, silk scarf. Fanning out
 > glowing trade-gems with theatrical flourish. Background: the Verdant Exchange trading
@@ -217,7 +217,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Drillmaster Torvak — Combat Instruction
 **Faction:** Bloomguard · **Location:** Bloomguard Barracks · **UI accent:** `#44cc44`
 > ¾ bust portrait of **Drillmaster Torvak**, a barrel-chested, bellowing drill master.
-> Stoneblood with a square jaw, shaved head, a thick neck and a permanent shout half-formed
+> Stoneborn with a square jaw, shaved head, a thick neck and a permanent shout half-formed
 > on his face. Bloomguard barracks armor, sleeves cut to show bark-mineral forearms, a
 > drill-baton in hand. Background: the barracks drill yard, recruits in soft focus,
 > dusty gold light. Verdant **`#44cc44` glow**. Loud, disciplined, no-excuses energy.
@@ -225,7 +225,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Acolyte Ferrin — Apprentice Scholar
 **Faction:** Emerald Coven · **Location:** Emerald Sanctum · **UI accent:** `#66aaff`
 > ¾ bust portrait of **Acolyte Ferrin**, an eager, wide-eyed young Coven acolyte.
-> Youthful Sunpetal face, hopeful glowing eyes, neatly combed sprout-green hair, a few
+> Youthful Sylvan face, hopeful glowing eyes, neatly combed sprout-green hair, a few
 > nervous freckles. Simple novice's emerald robe slightly too big, a satchel of study
 > scrolls clutched to the chest, a single faint sap-glyph on one hand. Earnest,
 > over-eager smile. Background: the Emerald Sanctum's study cloister, glowing vines,
@@ -233,7 +233,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Keeper of Echoes — Mysterious Memory Keeper
 **Faction:** Veil order · **Location:** Whispering Veil · **UI accent:** `#aabbdd`
-> ¾ bust portrait of the **Keeper of Echoes**, a cryptic, half-faded Echo ancestry
+> ¾ bust portrait of the **Keeper of Echoes**, a cryptic, half-faded Soulborn spirit-
 > figure. Partially translucent pale-grey form, hollow luminous eyes, a face that seems
 > to flicker between expressions, wisps of memory-light trailing from the edges. Tattered
 > pale-grey ceremonial robes hung with hundreds of tiny memory-bells and suspended
@@ -254,7 +254,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Trader Boskyn — Secondary Merchant
 **Faction:** Verdant Consortium · **Location:** Verdant Exchange · **UI accent:** `#ffaa44`
 > ¾ bust portrait of **Trader Boskyn**, a heavyset, gruff-but-fair caravan merchant.
-> Stoneblood with a thick grey beard, a leather eyepatch, a careful negotiator's frown.
+> Stoneborn with a thick grey beard, a leather eyepatch, a careful negotiator's frown.
 > Travel-worn but sturdy Consortium coat, a strongbox under one arm, a coin-scale in hand.
 > Background: a loaded trade caravan at the Exchange, crates and pack-beasts in soft focus.
 > Warm **`#ffaa44` amber glow**. Seasoned, blunt, road-merchant energy.
@@ -266,7 +266,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Archivist Scroll — Records Keeper
 **Faction:** Emerald Coven · **UI accent:** `#4488ff`
 > ¾ bust portrait of **Archivist Scroll**, a fussy, meticulous record-keeper. Thin
-> Shadeborn with pinched features, half-moon reading lenses, ink-stained cuffs, hair
+> Soulborn with pinched features, half-moon reading lenses, ink-stained cuffs, hair
 > escaping a tight knot. Blue archivist's robe layered with quill-holsters and a
 > bandolier of labelled scroll-tubes; a self-inking quill floats beside the head. Peering
 > disapprovingly over the lenses. Background: towering record-stacks, ladder rails,
@@ -275,7 +275,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Herbalist Tansy — Herbalist
 **Faction:** Emerald Coven · **UI accent:** `#88ff44`
 > ¾ bust portrait of **Herbalist Tansy**, a cheerful, chatty young herb-grower.
-> Round Sunpetal face, dirt-smudged cheeks, flower-crown of real blossoms, bright grin.
+> Round Sylvan face, dirt-smudged cheeks, flower-crown of real blossoms, bright grin.
 > Gardening smock with seed-pockets, a trowel and a potted glowing seedling cradled in
 > the arms. Background: a terraced canopy garden bursting with luminous flowers, butterflies.
 > Bright **`#88ff44` glow**. Bubbly, green-thumbed, gardener energy.
@@ -283,7 +283,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Director Orin — Consortium Director
 **Faction:** Verdant Consortium (leader) · **Location:** Canopy / Sapling Plantation · **UI accent:** `#cc9944`
 > ¾ bust portrait (slight low angle) of **Director Orin**, a cold, polished corporate
-> magnate of the Consortium. Sleek Shadeborn, immaculate, calculating amber eyes, oiled
+> magnate of the Consortium. Sleek Soulborn, immaculate, calculating amber eyes, oiled
 > dark hair, a thin diplomat's smile that never reaches the eyes. Expensive gilded
 > business-robes with a director's medallion, gloved hands steepled, a glowing ledger-orb
 > hovering nearby. Background: a lavish plantation office of dark wood and gold, a window
@@ -293,7 +293,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Sentinel Ash — Guardian Sentinel
 **Faction:** Bloomguard / Wildkin watch · **UI accent:** `#668844`
 > ¾ bust portrait of **Sentinel Ash**, a silent, statue-still forest guardian. Tall
-> Stoneblood with moss-grown bark armor fused to the skin, glowing slit eyes, a stoic
+> Stoneborn with moss-grown bark armor fused to the skin, glowing slit eyes, a stoic
 > face half-covered by a leaf-iron helm. Living-wood pauldrons, a longbow and a tall
 > shield. Background: a misty boundary-watchtower among ancient trunks. Olive **`#668844`
 > glow**. Stoic, immovable, watchman energy.
@@ -309,7 +309,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Grove Tender — Grove Caretaker
 **Faction:** Emerald Coven · **UI accent:** `#44aa66`
 > ¾ bust portrait of the **Grove Tender**, a gentle caretaker of sacred groves. Soft-
-> featured Sunpetal with moss-green hair full of growing sprouts, soil under the nails,
+> featured Sylvan with moss-green hair full of growing sprouts, soil under the nails,
 > a peaceful half-smile. Simple green tender's wrap, pruning shears, a watering-gourd of
 > glowing sap. Background: a sunlit sacred grove of blossoming saplings. Mossy **`#44aa66`
 > glow**. Patient, nurturing, gardener-monk energy.
@@ -317,7 +317,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Ironbark Smith — Armorer
 **Faction:** Craftsman · **UI accent:** `#aa6644`
 > ¾ bust portrait of the **Ironbark Smith**, a master armorer who forges living-wood
-> plate. Burly Stoneblood, bark-and-iron skin, a leather mask pushed up, a proud scowl.
+> plate. Burly Stoneborn, bark-and-iron skin, a leather mask pushed up, a proud scowl.
 > Heavy apron, ironbark gauntlets, a glowing-edged forging chisel. Background: an armory
 > forge hung with living-wood breastplates. Rust-copper **`#aa6644` glow**. Sturdy,
 > proud, armorer energy.
@@ -325,7 +325,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Sap Weaver — Sap Artisan
 **Faction:** Emerald Coven · **UI accent:** `#66aacc`
 > ¾ bust portrait of the **Sap Weaver**, a delicate artisan who spins liquid sap into
-> light-thread. Slender Sunpetal with luminous threadwork tattoos on the hands,
+> light-thread. Slender Sylvan with luminous threadwork tattoos on the hands,
 > calm focused eyes. Pale teal robes, finger-mounted spindles drawing glowing sap into
 > floating ribbons of light. Background: a workshop strung with shimmering sap-tapestries.
 > Cool **`#66aacc` glow**. Graceful, meditative, weaver energy.
@@ -333,7 +333,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Thorn Sentinel — Thornbinder Guard
 **Faction:** Thornbinder · **UI accent:** `#88aa44`
 > ¾ bust portrait of the **Thorn Sentinel**, a coiled, dangerous thorn-guard. Lean
-> Shadeborn, half-masked, narrowed eyes, thorn-vine tattoos creeping up the neck. Dark
+> Soulborn, half-masked, narrowed eyes, thorn-vine tattoos creeping up the neck. Dark
 > mossy-green leathers studded with real thorns, a barbed glaive. Background: an
 > overgrown thorn-wall safehouse entry, deep shadow. Acid-green **`#88aa44` glow**.
 > Tense, lethal, sentinel-assassin energy.
@@ -341,7 +341,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Crystal Singer — Crystal Mystic
 **Faction:** Emerald Coven · **Location:** Glinting Groves · **UI accent:** `#aaccff`
 > ¾ bust portrait of the **Crystal Singer**, an ethereal mystic who sings to sap-crystals.
-> Translucent-skinned Echo/Sunpetal, hair like spun glass, eyes glowing pale blue, mouth
+> Translucent-skinned Echo/Sylvan, hair like spun glass, eyes glowing pale blue, mouth
 > mid-note. Robes of resonant crystal facets and pale silk, floating singing-crystals
 > orbiting the head. Background: the Glinting Groves — a cavern of giant glowing crystals.
 > Icy **`#aaccff` glow**. Luminous, harmonic, song-mystic energy.
@@ -349,7 +349,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Moss Elder — Ancient Caretaker
 **Faction:** Emerald Coven · **UI accent:** `#559966`
 > ¾ bust portrait of the **Moss Elder**, an immensely old, half-plant elder. Bark-skinned
-> Stoneblood so ancient that moss and tiny ferns grow from the shoulders and brow; slow,
+> Stoneborn so ancient that moss and tiny ferns grow from the shoulders and brow; slow,
 > deep-set glowing eyes. A robe indistinguishable from forest floor, a root-staff.
 > Background: a primordial moss-cloaked hollow. Deep **`#559966` glow**. Venerable,
 > earthen, tree-elder energy.
@@ -365,7 +365,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Root Speaker — Earth Communer
 **Faction:** Wildkin / Coven · **UI accent:** `#776633`
 > ¾ bust portrait of the **Root Speaker**, a mud-caked mystic who listens to the roots.
-> Earth-toned Stoneblood, clay-painted face, eyes closed in listening, roots braided into
+> Earth-toned Stoneborn, clay-painted face, eyes closed in listening, roots braided into
 > the hair. Simple root-fiber robes, hands pressed to a glowing root bundle. Background:
 > a dim under-root chamber threaded with glowing rootlight. Brown **`#776633` glow**.
 > Grounded, oracular, root-mystic energy.
@@ -389,7 +389,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Ember Guard — Fire-Warden
 **Faction:** Bloomguard / volcanic watch · **UI accent:** `#cc6644`
 > ¾ bust portrait of the **Ember Guard**, a fierce warden of the volcanic sap-vents.
-> Emberfae-touched, ember-glowing eyes, smoldering crack-lines across dark skin, short
+> Emberkin, ember-glowing eyes, smoldering crack-lines across dark skin, short
 > singed hair. Heat-blackened plate with glowing seams, a brazier-tipped poleaxe.
 > Background: glowing lava-sap vents, drifting embers. Hot **`#cc6644` ember glow**.
 > Fiery, vigilant, fire-warden energy.
@@ -404,7 +404,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Bark Carver — Woodcraft Artisan
 **Faction:** Craftsman · **UI accent:** `#996633`
 > ¾ bust portrait of the **Bark Carver**, a focused craftsman of carved living-wood.
-> Stoneblood with sawdust in the beard, squinting concentration, wood-shaving flecks.
+> Stoneborn with sawdust in the beard, squinting concentration, wood-shaving flecks.
 > Carver's apron, chisels in a chest-roll, holding a half-finished glowing wood-totem.
 > Background: a workshop of carved masks and totems. Warm **`#996633` glow**. Skilled,
 > absorbed, carver energy.
@@ -412,7 +412,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Vine Tender — Vine Caretaker
 **Faction:** Emerald Coven · **UI accent:** `#66aa77`
 > ¾ bust portrait of the **Vine Tender**, a caretaker who trains the living vines. Lithe
-> Sunpetal, vine-wrapped forearms, leaf-green eyes, a gentle focused look. Green tender's
+> Sylvan, vine-wrapped forearms, leaf-green eyes, a gentle focused look. Green tender's
 > garb, a pruning hook, glowing vine-tendrils curling toward the hands. Background: a
 > hanging-garden wall of luminous vines. Green **`#66aa77` glow**. Caring, deft, vine-
 > tender energy.
@@ -420,7 +420,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Shadow Scribe — Secret Keeper
 **Faction:** Thornbinder · **UI accent:** `#554466`
 > ¾ bust portrait of the **Shadow Scribe**, a secretive recorder of Thornbinder
-> contracts. Hooded Shadeborn, only the lower face visible, a faint cold smile, smoke
+> contracts. Hooded Soulborn, only the lower face visible, a faint cold smile, smoke
 > curling from the sleeves. Dark violet-black robes, a black quill and a cipher-ledger
 > glowing faint purple. Background: a candle-starved hidden archive. Dim **`#554466`
 > glow**. Shadowy, clandestine, secret-keeper energy.
@@ -428,7 +428,7 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Bloom Herald — Bloomguard Messenger
 **Faction:** Bloomguard · **UI accent:** `#ccff88`
 > ¾ bust portrait of the **Bloom Herald**, a bright ceremonial Bloomguard herald. Radiant
-> Sunpetal, flower-petal hair, a beaming proclaiming expression. Ornate white-and-green
+> Sylvan, flower-petal hair, a beaming proclaiming expression. Ornate white-and-green
 > herald's tabard, a flowering trumpet-horn raised, a banner behind. Background: a sunlit
 > ceremonial plaza, falling petals. Bright **`#ccff88` glow**. Triumphant, ceremonial,
 > herald energy.
@@ -436,20 +436,20 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Warden Echo — Echo-Bound Warden
 **Faction:** Veil order · **UI accent:** `#aabbcc`
 > ¾ bust portrait of **Warden Echo**, a duty-bound, partly-spectral warden. Half-translucent
-> Echo ancestry, pale armor showing the dim glow within, a solemn resolute face. Pale
+> Soulborn spirit, pale armor showing the dim glow within, a solemn resolute face. Pale
 > grey-blue veil-warden plate, a spectral spear. Background: an echoing veil-hall of
 > mirrored light. Faint **`#aabbcc` glow**. Solemn, eternal, sentinel-spirit energy.
 
 ### Merchant Ferren — Trader
 **Faction:** Verdant Consortium · **UI accent:** `#ffbb44`
-> ¾ bust portrait of **Merchant Ferren**, a flamboyant, lucky-charm peddler. Sunpetal
+> ¾ bust portrait of **Merchant Ferren**, a flamboyant, lucky-charm peddler. Sylvan
 > with a waxed moustache, a feathered cap, a dazzling grin. Garish bright-gold trade coat
 > covered in trinkets and charms, presenting a glowing curio. Background: a curio stall
 > crammed with oddities. Bright **`#ffbb44` glow**. Flashy, glib, peddler energy.
 
 ### Healer Mora — Healer
 **Faction:** Emerald Coven · **UI accent:** `#88ffaa`
-> ¾ bust portrait of **Healer Mora**, a calm, reassuring field healer. Soft Sunpetal
+> ¾ bust portrait of **Healer Mora**, a calm, reassuring field healer. Soft Sylvan
 > features, tied-back mint-green hair, gentle steady eyes. White-and-green healer's robe
 > with a glowing-cross-leaf sigil, a satchel of remedies, hands wreathed in soft healing
 > light. Background: a sunlit infirmary alcove, hanging herbs. Soft **`#88ffaa` glow**.
@@ -465,13 +465,13 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Keeper Lynn — Shrine Keeper
 **Faction:** Veil / Coven · **UI accent:** `#aa88cc`
 > ¾ bust portrait of **Keeper Lynn**, a soft-spoken keeper of a quiet shrine. Gentle
-> Shadeborn, lavender-tinted skin, kind violet eyes, hair in a simple wrap. Lilac shrine-
+> Soulborn, lavender-tinted skin, kind violet eyes, hair in a simple wrap. Lilac shrine-
 > keeper robes, a glowing votive-lantern. Background: a small candlelit veil-shrine.
 > Lavender **`#aa88cc` glow**. Quiet, devout, shrine-keeper energy.
 
 ### Forger Del — Weaponsmith
 **Faction:** Craftsman · **UI accent:** `#bb7744`
-> ¾ bust portrait of **Forger Del**, a brash young weaponsmith. Stoneblood, soot-flecked,
+> ¾ bust portrait of **Forger Del**, a brash young weaponsmith. Stoneborn, soot-flecked,
 > a cocky grin, ember-mineral knuckles. Sleeveless leather, a glowing freshly-forged blade
 > held up to inspect. Background: a busy forge, sparks. Copper **`#bb7744` glow**.
 > Confident, energetic, weaponsmith energy.
@@ -485,7 +485,7 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ### Singer Aria — Bard
 **Faction:** Neutral · **UI accent:** `#cc88aa`
-> ¾ bust portrait of **Singer Aria**, a charismatic travelling bard. Striking Sunpetal,
+> ¾ bust portrait of **Singer Aria**, a charismatic travelling bard. Striking Sylvan,
 > rose-petal hair, expressive eyes, a captivating smile mid-song. Colorful performer's
 > garb, a glowing-stringed living-wood lute, ribbons of light from the strings. Background:
 > a lantern-lit tavern stage, soft crowd bokeh. Rose **`#cc88aa` glow**. Magnetic,
@@ -501,14 +501,14 @@ so the portrait's palette can be tied to the dialogue UI.
 ### Sylara — Mysterious Wanderer
 **Faction:** Unaffiliated / Veil-touched · **UI accent:** `#cc99ff`
 > ¾ bust portrait of **Sylara**, an alluring, secretive wanderer touched by the Veil.
-> Shadeborn, violet-glowing eyes, dark hair streaked with starlight, a faint enigmatic
+> Soulborn, violet-glowing eyes, dark hair streaked with starlight, a faint enigmatic
 > smile. Layered traveller's silks in deep purple with veil-thread embroidery, a glowing
 > pendant. Background: a moonlit veil-shrouded path. Violet **`#cc99ff` glow**.
 > Mysterious, magnetic, wanderer energy.
 
 ### Elder Thornwick — Village Elder
 **Faction:** Emerald Coven / village · **UI accent:** `#88cc66`
-> ¾ bust portrait of **Elder Thornwick**, a kindly rural village elder. Old Stoneblood
+> ¾ bust portrait of **Elder Thornwick**, a kindly rural village elder. Old Stoneborn
 > with bark-creased skin, a long mossy beard, twinkling green eyes, a warm crinkled smile.
 > Homespun green elder's robe, a gnarled thornwood cane, a pipe. Background: a cozy
 > village green under great boughs. Soft **`#88cc66` glow**. Folksy, warm, village-elder
@@ -518,87 +518,60 @@ so the portrait's palette can be tied to the dialogue UI.
 
 ## 3. COMPANIONS (recruitable allies — `data/companions.json`)
 
-### Vaeril — Defected Thornbinder Assassin (Companion)
-**Class:** Thornbinder · **Ancestry:** Shadeborn
-> ¾ bust portrait of **Vaeril**, a haunted Shadeborn assassin seeking redemption. Dusky
-> twilight skin faintly smoking at the edges, sharp guarded eyes shadowed by guilt, dark
-> hair half-hiding old scars. Dark thornbinder leathers, hood lowered, thorn-vine tattoos
-> down one arm, twin concealed blades. Conflicted, watchful, protective expression.
-> Background: a shadowed thornbinder safehouse, deep greens and blacks. Muted thorn-green
-> rim glow. Brooding, redemptive, fallen-killer energy.
+> The five companions are the player's recruitable party members. Ancestry is not fixed
+> in the data — a suggested ancestry is given for styling; swap freely.
 
-### Aeliana — Devout Emerald Mystic Healer (Companion)
-**Class:** Emerald Mystic · **Ancestry:** Sunpetal
-> ¾ bust portrait of **Aeliana**, a radiant, faithful Emerald Mystic healer. Glowing
-> sun-warmed Sunpetal skin, petal-like golden hair haloed in soft light, serene devoted
-> eyes. White-and-emerald mystic vestments with Everwood sigils, hands cupped around a
-> warm healing light. Hopeful, unshakeable, compassionate expression. Background: a
-> sunlit sanctum, the Everwood's glow. Warm gold-green halo glow. Devout, luminous,
-> believer-healer energy.
+### Vaeril — Steadfast Bloomguard Warrior (Companion)
+**Class:** Bloomguard · **Suggested ancestry:** Stoneborn · **Combat role:** front-line protector
+> ¾ bust portrait (slight heroic angle) of **Vaeril**, a steadfast Bloomguard warrior who
+> believes in duty above all else. Honorable, disciplined Stoneborn features — a strong
+> mineral-veined jaw, a few honest battle-scars, steady resolute eyes, close-cropped hair.
+> Polished green-and-gold living-wood plate with a flowering Bloomguard crest; his famous
+> **ironbark shield** — visibly notched from turning aside a thousand blows — held at the
+> ready. Formal, protective, unshakeable bearing. Background: a sunlit Bloomguard rampart,
+> banners, dappled gold light. Verdant-gold rim glow. Loyal, dutiful, paladin-knight energy.
 
-### Emberfae — Sporecaller Fae (Companion)
-**Class:** Sporecaller · **Ancestry:** Emberfae
-> ¾ bust portrait of **Emberfae**, a small fiery fae sporecaller. Tiny fae with
-> smoldering ember wings, glowing-coal eyes, a hot-tempered smirk, ember-flecked skin.
-> Olive-and-ember spore-shaman garb, a glowing spore-and-cinder pouch. Background: a
-> volcanic sap-vent cavern with drifting embers and spores. Ember-orange glow. Fierce,
-> spry, ember-fae energy.
+### Sylor — Cunning Thornbinder (Companion)
+**Class:** Thornbinder · **Suggested ancestry:** Human/Half-Abyss · **Combat role:** mobile burst striker
+> ¾ bust portrait of **Sylor**, a cunning Thornbinder who walks the line between justice
+> and revenge. Lean, quick-eyed, a sardonic smirk that hides old pain, dark hair half over
+> the face, perhaps a faint half-abyss vein at one temple. Dark mossy-green-and-black
+> thornbinder leathers studded with real thorns, a hood lowered, twin thorn-laced blades
+> drawn and reversed in a duelist's grip. Clever, guarded, morally-flexible expression.
+> Background: a shadowed thorn-walled alley, deep greens and blacks. Acid-green rim glow.
+> Roguish, witty, shadow-blade energy.
 
-### Echo of Kaelen — Spectral Wildkin Ranger (Companion)
-**Class:** Wildkin Ranger · **Ancestry:** Echo
-> ¾ bust portrait of **Echo of Kaelen**, the lingering spirit of a fallen ranger.
-> Partly translucent Echo, pale-blue ghost-light within, a resolute melancholic face,
-> spectral hair drifting. Faded ranger leathers and a ghostly bow, a translucent
-> spirit-beast at the shoulder. Background: a moonlit hunting ground, mist. Pale-blue
-> spectral glow. Sorrowful, loyal, ghost-ranger energy.
+### Aeliana — Curious Emerald Mystic (Companion)
+**Class:** Emerald Mystic · **Suggested ancestry:** Soulborn · **Combat role:** healer / DSP caster
+> ¾ bust portrait of **Aeliana**, a warm, idealistic Emerald Coven mystic with a gift for
+> healing and an insatiable curiosity about the Sap's mysteries. Luminous Soulborn skin
+> with soul-resonant eyes glowing soft green-gold, petal-and-leaf-strewn hair, an open
+> inquisitive smile. White-and-emerald mystic vestments traced with Everwood sigils, a
+> satchel of sample-vials, hands cupped around a warm orb of healing soul-light. Hopeful,
+> inquisitive, compassionate expression. Background: a sunlit Emerald Sanctum, the
+> Everwood's glow, drifting pollen-light. Warm gold-green halo glow. Idealistic, luminous,
+> scholar-healer energy.
 
-### The Hollow One — Void-Touched Companion
-**Class:** Hollowed · **Ancestry:** Void
-> ¾ bust portrait of **The Hollow One**, a void-corrupted enigma. A humanoid silhouette
-> of living darkness shot through with void-purple cracks, a featureless face with two
-> cold pinpoint lights, drifting void-motes. Ragged dark wrappings, corruption crystals
-> at the shoulders. Background: a rift of swallowing void. Cold void-purple glow.
-> Eerie, ambiguous, abyssal energy.
+### Mycon — Network-Bound Sporecaller (Companion)
+**Class:** Sporecaller · **Suggested ancestry:** Sylvan/Half-Abyss · **Combat role:** battlefield controller
+> ¾ bust portrait of **Mycon**, a Sporecaller slowly merging with the fungal networks
+> beneath the Verdance. Pale, half-translucent skin webbed with glowing mycelial veins,
+> mismatched calm faraway eyes, a living mushroom-cap cowl and tiny luminous fungi
+> sprouting along the collar and brow. Olive-and-violet spore-shaman robes, spore-pouches,
+> a bracket-fungus staff, a slow drift of glowing spores from one open hand. Cryptic,
+> serene, increasingly-detached-from-humanity expression (speaks as "we"). Background: the
+> glowing Mycelium Nexus, pulsing fungal light-networks. Bio-luminous spore glow. Alien,
+> symbiotic, hive-mind-mystic energy.
 
-### Seraphine — Bloomguard Paladin (Companion)
-**Class:** Bloomguard · **Ancestry:** Sunpetal
-> ¾ bust portrait (slight heroic angle) of **Seraphine**, a noble Bloomguard paladin.
-> Radiant Sunpetal, golden petal-hair, valiant glowing eyes, a confident righteous smile.
-> Gleaming green-and-gold living-wood plate with a flowering crest, a blooming greatsword.
-> Background: a sunlit field of flowers, banners. Gold-green glow. Heroic, devout,
-> paladin energy.
-
-### Korrath — Stoneblood Wildkin Warrior (Companion)
-**Class:** Wildkin Ranger · **Ancestry:** Stoneblood
-> ¾ bust portrait of **Korrath**, a hulking stone-skinned beast-warrior. Massive
-> Stoneblood with crystal-veined bark skin, a heavy brow, tusk-like markings, a stoic
-> grimace. Bone-and-hide armor, a great stone axe, a low-slung beast-companion. Background:
-> a rugged mountain forest. Earthy crystal glow. Mighty, taciturn, juggernaut energy.
-
-### Grimvel — Shadeborn Bloomguard (Companion)
-**Class:** Bloomguard · **Ancestry:** Shadeborn
-> ¾ bust portrait of **Grimvel**, a grim dusk-skinned Bloomguard knight. Shadeborn with
-> a stern scarred face, twilight skin, hard eyes. Dark-green-and-iron Bloomguard plate
-> dimmed for stealth, a flanged mace, a half-wilted crest. Background: a stormy rampart
-> at dusk. Muted green-violet glow. Severe, dutiful, dark-paladin energy.
-
-### Mossback — Stoneblood Thornbinder (Companion)
-**Class:** Thornbinder · **Ancestry:** Stoneblood
-> ¾ bust portrait of **Mossback**, a moss-grown, patient ambusher. Broad Stoneblood
-> whose bark skin is carpeted in moss and lichen for camouflage, slow watchful eyes, a
-> faint grin. Earth-and-thorn leathers, a long thorn-dagger, a coil of barbed wire-vine.
-> Background: a moss-choked forest hide. Mossy green glow. Patient, sturdy, ambusher
-> energy.
-
-### Nyx — Shadeborn Emerald Mystic (Companion)
-**Class:** Emerald Mystic · **Ancestry:** Shadeborn
-> ¾ bust portrait of **Nyx**, a sardonic twilight mystic. Shadeborn with deep-dusk skin,
-> silver-violet eyes, sleek dark hair, an arch knowing smirk, faint shadow-smoke. Dark-
-> emerald mystic robes with violet sap-glyphs, a floating shadow-orb of green-violet
-> energy. Background: a moonlit grove, deep shadow. Violet-green glow. Witty, arcane,
-> shadow-mystic energy.
-
----
+### Kaelen — Spirit-Bonded Wildkin Ranger (Companion)
+**Class:** Wildkin Ranger · **Suggested ancestry:** Sylvan · **Combat role:** ranged / beast-companion
+> ¾ bust portrait of **Kaelen**, a quiet Wildkin Ranger bonded with a ghostly hawk spirit,
+> seeing the world through the eyes of nature itself. Weathered Sylvan features — faint
+> bark-grain skin, leaf-and-feather-woven braided hair, observant far-seeing eyes, calm
+> sparse expression. Mottled leaf-leather ranger garb, claw and bone jewelry, a living-wood
+> longbow; a **translucent glowing-blue spectral hawk** perched on the raised forearm or
+> wheeling just behind the shoulder. Background: a dappled wild forest at dusk, mist, soft
+> light. Pale-blue spirit glow against forest green. Watchful, serene, spirit-ranger energy.
 
 ## 4. MENTOR SPIRITS — Veilkeepers (profile-card versions)
 
@@ -650,28 +623,28 @@ These appear in location rosters and quests; each has a concise but complete pro
 
 **Canopy of Life — town & services**
 - **Shadowmaster Kael** *(Thornbinder leader, Thornbinder Safehouse)* — ¾ bust of a
-  cold, commanding Shadeborn guildmaster; hooded black-violet leathers, thorn-crown
+  cold, commanding Soulborn guildmaster; hooded black-violet leathers, thorn-crown
   motif, twin daggers, a calculating stare; shadowed safehouse background; violet-green
   rim glow; spymaster energy.
 - **Courier Swift** *(messenger)* — ¾ bust of a breathless, wiry young runner; light
   travel garb, a satchel of letters, wind-blown hair, eager grin; a canopy road behind;
   green glow; courier energy.
-- **Stable Master Holt** *(beast handler)* — ¾ bust of a burly, calm Stoneblood ostler;
+- **Stable Master Holt** *(beast handler)* — ¾ bust of a burly, calm Stoneborn ostler;
   hay-flecked leathers, a lead-rope, a glowing-eyed mount nuzzling in; stable background;
   amber glow; horseman energy.
-- **Chef Bramble** *(cook)* — ¾ bust of a rotund, jolly Sunpetal cook; flour-dusted apron,
+- **Chef Bramble** *(cook)* — ¾ bust of a rotund, jolly Sylvan cook; flour-dusted apron,
   a ladle, a flower behind the ear, hearty laugh; a steaming kitchen behind; warm glow;
   cook energy.
-- **Tailor Silk** *(clothier)* — ¾ bust of an elegant, fussy Shadeborn tailor; fine
+- **Tailor Silk** *(clothier)* — ¾ bust of an elegant, fussy Soulborn tailor; fine
   shimmer-thread garb, pin-cushion bracer, measuring vine-tape, a poised smile; a draped
   workshop behind; teal glow; couturier energy.
-- **Jeweler Glint** *(gem-cutter)* — ¾ bust of a sharp-eyed Stoneblood jeweler; loupe at
+- **Jeweler Glint** *(gem-cutter)* — ¾ bust of a sharp-eyed Stoneborn jeweler; loupe at
   the eye, gilt finery, holding a glowing cut sap-gem; a velvet-and-brass shop; gold glow;
   gemcutter energy.
 - **Alchemist Ferment** *(alchemist)* — ¾ bust of a wild-haired, slightly-singed alchemist;
   stained robe, goggles, a bubbling glowing flask; a cluttered lab of vials; green-violet
   glow; mad-alchemist energy.
-- **Bard Melody** *(performer)* — ¾ bust of a radiant Sunpetal singer; colorful garb, a
+- **Bard Melody** *(performer)* — ¾ bust of a radiant Sylvan singer; colorful garb, a
   glowing harp, mid-performance; a tavern-stage bokeh; rose glow; bard energy.
 - **Beggar Dusty** *(beggar)* — ¾ bust of a ragged, weary but sharp-eyed vagrant; patched
   cloak, an upturned cup, a knowing look that hints at hidden info; an alley under canopy
@@ -681,23 +654,23 @@ These appear in location rosters and quests; each has a concise but complete pro
   energy.
 - **Town Crier Bellows** *(announcer)* — ¾ bust of a red-faced, big-lunged crier; civic
   tabard, a hand-bell raised, mid-shout; a plaza behind; gold glow; crier energy.
-- **Diplomat Grace** *(envoy)* — ¾ bust of a poised, elegant Shadeborn diplomat; refined
+- **Diplomat Grace** *(envoy)* — ¾ bust of a poised, elegant Soulborn diplomat; refined
   robes with faction sigils, a sealed accord, a measured smile; a council-hall behind;
   cool glow; envoy energy.
-- **Banker Vault** *(banker)* — ¾ bust of a stern, precise Stoneblood banker; severe
+- **Banker Vault** *(banker)* — ¾ bust of a stern, precise Stoneborn banker; severe
   gilt-trimmed coat, a locked coffer, spectacles, a flat appraising look; a vault behind;
   gold glow; banker energy.
 - **Postmaster Seal** *(post)* — ¾ bust of a tidy, officious postmaster; ink-cuffed
   uniform, a wax-seal stamp, a wall of pigeonholes behind; teal glow; clerk energy.
-- **Gardener Bloom** *(gardener)* — ¾ bust of a sun-freckled Sunpetal gardener; soil-
+- **Gardener Bloom** *(gardener)* — ¾ bust of a sun-freckled Sylvan gardener; soil-
   smudged smock, a flowering shrub in arms, a contented smile; a terraced garden; bright
   green glow; gardener energy.
-- **Night Watch Shade** *(night guard)* — ¾ bust of a shadowy, quiet Shadeborn night-
+- **Night Watch Shade** *(night guard)* — ¾ bust of a shadowy, quiet Soulborn night-
   watcher; dark watch-cloak, a hooded lantern, alert violet eyes; a foggy night street;
   violet glow; night-watch energy.
 
 **Verdant Exchange — market underworld**
-- **Rare Dealer Vashti** *(exotics)* — ¾ bust of an exotic, jewel-bedecked Shadeborn
+- **Rare Dealer Vashti** *(exotics)* — ¾ bust of an exotic, jewel-bedecked Soulborn
   dealer; silk veils, rings, a glowing rare artifact presented; a curtained back-stall;
   violet-gold glow; black-market dealer energy.
 - **Fence Nighthollow** *(fence)* — ¾ bust of a furtive, hawk-faced fence; dark hooded
@@ -708,7 +681,7 @@ These appear in location rosters and quests; each has a concise but complete pro
   auctioneer energy.
 
 **Bloomguard Barracks**
-- **Quartermaster Hessa** *(supply officer)* — ¾ bust of a brisk, organized Stoneblood
+- **Quartermaster Hessa** *(supply officer)* — ¾ bust of a brisk, organized Stoneborn
   quartermaster; Bloomguard fatigues, a supply-ledger and crate, a no-nonsense look; an
   armory behind; green glow; quartermaster energy.
 - **Recruit Eldon** *(new soldier)* — ¾ bust of a nervous, fresh-faced young recruit;
@@ -716,10 +689,10 @@ These appear in location rosters and quests; each has a concise but complete pro
   behind; green glow; rookie energy.
 
 **Emerald Sanctum**
-- **Lorekeeper Ashara** *(senior scholar)* — ¾ bust of a dignified elder Sunpetal
+- **Lorekeeper Ashara** *(senior scholar)* — ¾ bust of a dignified elder Sylvan
   lorekeeper; rich emerald robes, an ancient glowing tome, serene wisdom; a grand library
   behind; blue-green glow; lorekeeper energy.
-- **Healer Brynn** *(infirmarian)* — ¾ bust of a gentle, tired Sunpetal healer; white-
+- **Healer Brynn** *(infirmarian)* — ¾ bust of a gentle, tired Sylvan healer; white-
   green robe, a healing-light poultice, kind weary eyes; an infirmary behind; soft green
   glow; healer energy.
 - **Soul Scribe Daleth** *(soul records)* — ¾ bust of an austere, otherworldly scribe;
@@ -753,7 +726,7 @@ These appear in location rosters and quests; each has a concise but complete pro
   archway; teal-green glow; gatekeeper energy.
 
 **Thornbinder Safehouse**
-- **Broker Silka** *(contract broker)* — ¾ bust of a coolly elegant Shadeborn broker;
+- **Broker Silka** *(contract broker)* — ¾ bust of a coolly elegant Soulborn broker;
   dark refined leathers, a contract-scroll, a razor smile; a shadowed back-room; violet
   glow; broker energy.
 - **Poisoner Vetch** *(toxin-maker)* — ¾ bust of a gaunt, gleeful poisoner; stained
@@ -772,7 +745,7 @@ These appear in location rosters and quests; each has a concise but complete pro
   harvester energy.
 
 **Glinting Groves**
-- **Crystal Harvester Pria** *(miner)* — ¾ bust of a sturdy Stoneblood crystal-miner;
+- **Crystal Harvester Pria** *(miner)* — ¾ bust of a sturdy Stoneborn crystal-miner;
   dust-caked gear, a glowing pick, a crystal shard, a determined look; a crystal cavern;
   icy-blue glow; miner energy.
 - **Geological Researcher Quartz** *(scholar)* — ¾ bust of a precise, curious researcher;
@@ -780,7 +753,7 @@ These appear in location rosters and quests; each has a concise but complete pro
   glow; geologist energy.
 
 **Thornbinder Training Grounds**
-- **Blademaster Sirath** *(master)* — ¾ bust of a lethal, composed Shadeborn blademaster;
+- **Blademaster Sirath** *(master)* — ¾ bust of a lethal, composed Soulborn blademaster;
   sleek dark training leathers, twin glowing-edged blades crossed, a cold focused stare;
   a thorn-walled dojo; green-violet glow; blademaster energy.
 - **Trap Instructor Nettle** *(trapper)* — ¾ bust of a wiry, smirking trap-instructor;
