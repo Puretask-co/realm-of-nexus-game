@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * WikiCodexScene.js
  * Full-screen in-game codex/wiki for Realm of Nexus: Verdance.

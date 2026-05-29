@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import dataManager from '../systems/DataManager.js';
 import SapCycleManager from '../systems/SapCycleManager.js';
@@ -1238,7 +1239,7 @@ export default class GameScene extends Phaser.Scene {
             enemy._state._encounterCooldown = true;
             this.time.delayedCall(2000, () => { if (enemy.active && enemy._state) enemy._state._encounterCooldown = false; });
 
-            const nearby = this.enemies.children.entries.filter(e =>
+            const nearby = this.enemies.getChildren().filter(e =>
                 e.active && Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y) < 180
             );
             const encounterEnemies = nearby.slice(0, 4);
@@ -1249,7 +1250,7 @@ export default class GameScene extends Phaser.Scene {
     /** Destroy all overworld enemies (and their HP bars) for the current zone. */
     _clearZoneEnemies() {
         if (!this.enemies) return;
-        this.enemies.children.entries.slice().forEach((enemy) => {
+        this.enemies.getChildren().slice().forEach((enemy) => {
             try { enemy._hpBar?.destroy(); } catch (_) {}
             try { enemy.destroy(); } catch (_) {}
         });
@@ -2031,7 +2032,7 @@ export default class GameScene extends Phaser.Scene {
         // Find nearest enemy in range (cursor-aimed)
         let targetEnemy = null;
         let closestDist = 300;
-        this.enemies.children.entries.forEach((e) => {
+        this.enemies.getChildren().forEach((e) => {
             if (!e.active) return;
             const d = Phaser.Math.Distance.Between(worldPoint.x, worldPoint.y, e.x, e.y);
             if (d < closestDist) {
@@ -2294,7 +2295,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.player && (this.player.stats?.name === tName || tName === 'Player')) {
             sprite = this.player;
         } else if (this.enemies) {
-            sprite = this.enemies.children.entries.find(e => e?._state?.definition?.name === tName) || null;
+            sprite = this.enemies.getChildren().find(e => e?._state?.definition?.name === tName) || null;
         }
         if (!sprite) return;
 
@@ -3234,7 +3235,7 @@ export default class GameScene extends Phaser.Scene {
     _updateEnemyAI(delta) {
         const dt = delta / 1000;
 
-        this.enemies.children.entries.forEach((enemy) => {
+        this.enemies.getChildren().forEach((enemy) => {
             if (!enemy.active || !enemy._state) return;
 
             const d = enemy._state;
@@ -3374,7 +3375,7 @@ export default class GameScene extends Phaser.Scene {
         if (!this.isDead && !this.dialogueSystem.isActive()) {
             this._updateEnemyAI(delta);
         } else if (!this.isDead && this.dialogueSystem.isActive()) {
-            this.enemies.children.entries.forEach((enemy) => {
+            this.enemies.getChildren().forEach((enemy) => {
                 if (enemy?.active && enemy.body) enemy.setVelocity(0, 0);
             });
         }

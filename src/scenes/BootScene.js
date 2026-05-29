@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import dataManager from '../systems/DataManager.js';
 import EventBus from '../core/EventBus.js';
 import MainMenuScene from './MainMenuScene.js';

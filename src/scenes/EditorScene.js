@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import dataManager from '../systems/DataManager.js';
 import { Logger } from '../engine/Logger.js';

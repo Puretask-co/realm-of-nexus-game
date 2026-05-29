@@ -1,3 +1,11 @@
+import Phaser from 'phaser';
+
+// WebGL-only base. Under the Canvas renderer (no GPU / headless software
+// fallback) Phaser.Renderer.WebGL is undefined, so extend a dummy base to keep
+// the module importable. Phaser never instantiates post-FX pipelines in Canvas
+// mode, so the dummy is never actually constructed.
+const PostFXBase = Phaser.Renderer?.WebGL?.Pipelines?.PostFXPipeline || class {};
+
 /**
  * NormalMapPipeline — Custom WebGL pipeline for normal-mapped 2D sprites.
  *
@@ -19,7 +27,7 @@
  *
  * Note: Falls back gracefully to standard rendering in Canvas mode.
  */
-export default class NormalMapPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
+export default class NormalMapPipeline extends PostFXBase {
     constructor(game) {
         super({
             game,

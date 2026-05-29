@@ -1,3 +1,9 @@
+import Phaser from 'phaser';
+
+// WebGL-only base (see NormalMapPipeline). Falls back to a dummy class under
+// the Canvas renderer so the module stays importable; never constructed there.
+const PostFXBase = Phaser.Renderer?.WebGL?.Pipelines?.PostFXPipeline || class {};
+
 /**
  * PostProcessingPipeline — Fullscreen post-processing effects.
  *
@@ -14,7 +20,7 @@
  *   pp.setPhase('crimson');
  *   pp.setVignetteStrength(0.4);
  */
-export default class PostProcessingPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
+export default class PostProcessingPipeline extends PostFXBase {
     constructor(game) {
         super({
             game,
