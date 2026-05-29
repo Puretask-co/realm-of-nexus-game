@@ -1344,8 +1344,14 @@ export default class GameScene extends Phaser.Scene {
                 maxGuard: d.baseStats?.guard ?? 10,
                 might: d.baseStats?.might ?? 2,
                 agility: d.baseStats?.agility ?? 2,
+                insight: d.baseStats?.insight ?? 2,
                 speed: d.baseStats?.speed ?? 3
             },
+            // Resolve the enemy's spell ids to full spell defs so the tactical
+            // AI can actually cast them; tag the behaviour pattern.
+            spells: (d.spells || []).map(id => dataManager.getSpell(id)).filter(Boolean),
+            aiPattern: d.aiPattern || 'aggressive',
+            tier: d.tier || 1,
             experienceReward: d.experienceReward || 30,
             lootTable: d.lootTable
         }));

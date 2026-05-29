@@ -964,7 +964,82 @@ export class TacticalCombatSystem {
   }
 
   /**
-   * Simple enemy AI.
+   * Classify a spell for AI decision-making.
+   */
+  _spellKind(sp) {
+    if (!sp) return 'other';
+    if (sp.healAmount != null || /heal|mend|bloom|cure/i.test(sp.id || '')) return 'heal';
+    if (/guard|shield|ward|soul_shield/i.test(sp.id || '') || sp.statusEffect?.guardBonus != null) return 'guard';
+    if (sp.damage != null) return 'damage';
+    if (sp.statusEffect?.type) return 'control';
+    return 'other';
+  }
+
+  _affordable(sp) {
+    const dsp = DSPSystem.getInstance();
+    return this.currentAP >= (sp.apCost || 1) && (dsp.current ?? 0) >= (sp.dspCost || 0);
+  }
+
+  _spellsOfKind(enemy, kind) {
+    return (enemy.spells || []).filter(sp => this._spellKind(sp) === kind && this._affordable(sp));
+  }
+
+  /** Lowest-HP living ally on the enemy's own side (for support healing). */
+  _woundedAlly(enemy) {
+    const mates = (enemy.side === 'enemy' ? this.enemies : this.allies)
+      .filter(e => e.stats.hp > 0);
+    let worst = null, worstPct = 1;
+    for (const m of mates) {
+      const pct = m.stats.hp / (m.stats.maxHp || 1);
+      if (pct < worstPct) { worstPct = pct; worst = m; }
+    }
+    return worstPct < 0.6 ? worst : null;
+  }
+
+  /**
+   * Pattern-aware behaviour. Returns true if it performed an action (the
+   * caller then re-evaluates remaining AP). Returns false to fall through to
+   * the default move/melee logic.
+   */
+  _enemyTryBehaviour(enemy, nearest, pattern, dist) {
+    const hpPct = enemy.stats.hp / (enemy.stats.maxHp || 1);
+
+    // SUPPORT: heal a badly wounded ally (or self) when possible.
+    if (pattern === 'support') {
+      const heals = this._spellsOfKind(enemy, 'heal');
+      const patient = this._woundedAlly(enemy);
+      if (heals.length && patient) {
+        const r = this.castSpell(heals[0], patient.gridX, patient.gridY);
+        if (r.success) return true;
+      }
+    }
+
+    // DEFENSIVE: shield/guard up when hurt.
+    if (pattern === 'defensive' && hpPct < 0.6) {
+      const guards = this._spellsOfKind(enemy, 'guard');
+      if (guards.length) {
+        const r = this.castSpell(guards[0], enemy.gridX, enemy.gridY);
+        if (r.success) return true;
+      }
+    }
+
+    // CASTER-ish (tactical/balanced/support/skirmisher): throw a damage or
+    // control spell at the nearest target if it's in range.
+    const wantsToCast = ['tactical', 'balanced', 'support', 'skirmisher', 'aggressive'].includes(pattern);
+    if (wantsToCast) {
+      const offensive = [...this._spellsOfKind(enemy, 'damage'), ...this._spellsOfKind(enemy, 'control')];
+      // Prefer a spell whose range reaches the target.
+      const inRange = offensive.find(sp => (sp.range ?? 0) >= dist && (sp.range ?? 0) > 0);
+      if (inRange) {
+        const r = this.castSpell(inRange, nearest.gridX, nearest.gridY);
+        if (r.success) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Enemy AI — behaviour-driven (aiPattern), uses spells when sensible.
    */
   _runEnemyAI(enemy) {
     // Telegraph intent (design: enemy intent telegraphed)
@@ -981,30 +1056,33 @@ export class TacticalCombatSystem {
       if (d < nearestDist) { nearestDist = d; nearest = t; }
     }
 
-    // Use AP
-    while (this.currentAP > 0) {
+    // Use AP — behaviour-driven (aiPattern). Guard against an infinite loop
+    // by bailing if an iteration makes no progress.
+    const pattern = enemy.aiPattern || 'aggressive';
+    let safety = 8;
+    while (this.currentAP > 0 && safety-- > 0) {
+      const apBefore = this.currentAP;
       const dist = this.getDistance(enemy.gridX, enemy.gridY, nearest.gridX, nearest.gridY);
 
-      if (dist <= 1 && this.currentAP >= 1) {
-        // In melee range — attack
+      if (this._enemyTryBehaviour(enemy, nearest, pattern, dist)) {
+        if (this.currentAP === apBefore) break; // action consumed no AP → avoid spin
+        continue;
+      }
+
+      // Fallback: melee if adjacent, else advance toward the nearest target.
+      if (dist <= 1) {
         this.attackAction(nearest);
-      } else if (this.currentAP >= 1) {
-        // Move toward target
+      } else {
         const reachable = this.getReachableTiles(enemy.gridX, enemy.gridY, enemy.stats.speed || 3);
-        let bestTile = null;
-        let bestDist = Infinity;
+        let bestTile = null, bestDist = Infinity;
         for (const tile of reachable) {
           const d = this.getDistance(tile.x, tile.y, nearest.gridX, nearest.gridY);
           if (d < bestDist) { bestDist = d; bestTile = tile; }
         }
-        if (bestTile) {
-          this.moveAction(bestTile.x, bestTile.y);
-        } else {
-          break; // Can't move
-        }
-      } else {
-        break;
+        if (bestTile && (bestTile.x !== enemy.gridX || bestTile.y !== enemy.gridY)) this.moveAction(bestTile.x, bestTile.y);
+        else break;
       }
+      if (this.currentAP === apBefore) break;
     }
 
     // After acting: if this is a boss, roll next turn's intent for the player to react to
