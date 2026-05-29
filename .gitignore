@@ -17,3 +17,7 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Transient scratch files (e.g. from automated review/audit agents)
+/_*.txt
+/audit_*.txt
