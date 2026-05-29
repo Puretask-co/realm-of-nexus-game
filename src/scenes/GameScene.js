@@ -515,9 +515,17 @@ export default class GameScene extends Phaser.Scene {
         }
         this._zoneTilemaps = [];
         if (this._activeZoneObjects) {
-            for (const o of this._activeZoneObjects) { try { o.destroy(); } catch (_) {} }
+            for (const o of this._activeZoneObjects) {
+                // Kill any infinite (repeat:-1) sway/drift tweens first, else
+                // they linger in the tween manager after the target is gone.
+                try { this.tweens.killTweensOf(o); } catch (_) {}
+                try { o.destroy(); } catch (_) {}
+            }
         }
         this._activeZoneObjects = [];
+
+        // Refresh the single ambient zone light to the new zone's mood colour.
+        this._applyZoneAmbientLight(loc);
 
         // ── Painterly backdrop floor: assemble the realm's panels into a grid
         // filling the zone. Panels overlap their neighbours and the seams are
@@ -1692,7 +1700,10 @@ export default class GameScene extends Phaser.Scene {
     /** Destroy the currently spawned NPCs (called on zone change). */
     _clearZoneNPCs() {
         for (const npc of (this.npcs || [])) { try { npc.destroy(); } catch (_) {} }
-        this.npcs = [];
+        // Mutate in place — the minimap captured this array by reference at
+        // bind time, so reassigning would orphan it and freeze its NPC dots.
+        if (this.npcs) this.npcs.length = 0;
+        else this.npcs = [];
     }
 
     /**
@@ -1880,20 +1891,28 @@ export default class GameScene extends Phaser.Scene {
             flicker: { speed: 3, amount: 0.08 }
         });
 
-        // Ambient lights per zone
-        for (const zone of this.zones) {
-            const color = parseInt((zone.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
-            const cx = zone.bounds.x + zone.bounds.w / 2;
-            const cy = zone.bounds.y + zone.bounds.h / 2;
+        // Single ambient light for the active zone (only one zone is on screen
+        // at a time). Refreshed on travel via _applyZoneAmbientLight.
+        const startLoc = (this.zones || []).find(z => z.id === this.currentZone);
+        this._applyZoneAmbientLight(startLoc);
+    }
 
-            this.lighting.addLight(cx, cy, {
-                type: 'point',
-                color,
-                intensity: 0.5,
-                radius: 200,
-                pulse: { speed: 0.3, min: 0.3, max: 0.7 }
-            });
+    /** Place/refresh the one ambient light for the currently active zone. */
+    _applyZoneAmbientLight(loc) {
+        if (!this.lighting) return;
+        if (this._zoneAmbientLight) {
+            try { this.lighting.removeLight(this._zoneAmbientLight); } catch (_) {}
+            this._zoneAmbientLight = null;
         }
+        const b = this._activeBounds || { x: 0, y: 0, w: GameScene.ACTIVE_W, h: GameScene.ACTIVE_H };
+        const color = parseInt((loc?.environment?.ambientColor || '0x336633').replace('0x', ''), 16);
+        this._zoneAmbientLight = this.lighting.addLight(b.x + b.w / 2, b.y + b.h / 2, {
+            type: 'point',
+            color,
+            intensity: 0.5,
+            radius: Math.max(b.w, b.h) * 0.6,
+            pulse: { speed: 0.3, min: 0.3, max: 0.7 }
+        });
     }
 
     // ----------------------------------------------------------------
