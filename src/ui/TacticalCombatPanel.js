@@ -73,10 +73,11 @@ export class TacticalCombatPanel {
         this.container.add(this.intentText);
 
         const btnY = panelY + 88;
-        const btnW = 90;
+        const btnW = 84;
         const btnH = 28;
-        const gap = 10;
-        let bx = (W - (btnW * 4 + gap * 3)) / 2 + btnW / 2 + gap / 2;
+        const gap = 9;
+        const nBtns = 5;
+        let bx = (W - (btnW * nBtns + gap * (nBtns - 1))) / 2 + btnW / 2;
 
         this.attackBtn = this._makeButton(bx, btnY, btnW, btnH, 'Attack', 0xcc4444, () => {
             const r = this.tactical.attackNearestEnemy();
@@ -84,6 +85,12 @@ export class TacticalCombatPanel {
             else this._refresh();
         });
         this.container.add(this.attackBtn.container);
+        bx += btnW + gap;
+
+        this.castBtn = this._makeButton(bx, btnY, btnW, btnH, 'Cast', 0x9955cc, () => {
+            this._toggleSpellMenu();
+        });
+        this.container.add(this.castBtn.container);
         bx += btnW + gap;
 
         this.defendBtn = this._makeButton(bx, btnY, btnW, btnH, 'Defend', 0x4488cc, () => {
@@ -94,6 +101,7 @@ export class TacticalCombatPanel {
         bx += btnW + gap;
 
         this.endTurnBtn = this._makeButton(bx, btnY, btnW, btnH, 'End Turn', 0x6666aa, () => {
+            this._closeSpellMenu();
             this.tactical.endTurn();
             this._refresh();
         });
@@ -105,6 +113,11 @@ export class TacticalCombatPanel {
             this._refresh();
         });
         this.container.add(this.undoBtn.container);
+
+        // Spell menu container (populated on demand, hidden by default).
+        this._spellMenu = this.scene.add.container(0, 0).setDepth(16000).setScrollFactor(0);
+        this._spellMenu.setVisible(false);
+        this.container.add(this._spellMenu);
 
         // ---- Boss Intent Bar (hidden by default) ----
         this._buildBossIntentBar(W, panelY);
@@ -206,10 +219,89 @@ export class TacticalCombatPanel {
         this.turnText.setText(isPlayer ? `Your turn: ${data.entity?.name || 'Ally'}` : `Enemy turn: ${data.entity?.name || 'Enemy'}`);
         this.apText.setText(`AP: ${data.ap ?? 0}/${data.ap ?? 0}`);
         this.attackBtn?.setEnabled?.(isPlayer);
+        this.castBtn?.setEnabled?.(isPlayer);
         this.defendBtn?.setEnabled?.(isPlayer);
         this.endTurnBtn?.setEnabled?.(isPlayer);
         this.undoBtn?.setEnabled?.(isPlayer);
+        this._closeSpellMenu();
         this._refresh();
+    }
+
+    // ----------------------------------------------------------------
+    // Spell casting menu
+    // ----------------------------------------------------------------
+
+    _toggleSpellMenu() {
+        if (this._spellMenuOpen) { this._closeSpellMenu(); return; }
+        const actor = this.tactical.currentActor;
+        if (!actor || actor.side !== 'ally') { this._showFloat('Not your turn'); return; }
+        const spells = actor.entity?.spells || [];
+        if (!spells.length) { this._showFloat('No spells known'); return; }
+
+        const W = this.scene.scale.width;
+        const rowH = 30;
+        const menuW = 320;
+        const menuH = Math.min(spells.length, 6) * rowH + 12;
+        const menuX = (W - menuW) / 2;
+        const menuY = this.scene.scale.height - 150 - menuH;
+
+        this._spellMenu.removeAll(true);
+        const bg = this.scene.add.graphics();
+        bg.fillStyle(0x0a0a1a, 0.96); bg.fillRoundedRect(menuX, menuY, menuW, menuH, 8);
+        bg.lineStyle(2, 0x9955cc, 0.8); bg.strokeRoundedRect(menuX, menuY, menuW, menuH, 8);
+        this._spellMenu.add(bg);
+
+        spells.slice(0, 6).forEach((sp, i) => {
+            const ry = menuY + 6 + i * rowH;
+            const apCost = sp.apCost || 1;
+            const affordable = this.tactical.currentAP >= apCost;
+            const label = `${sp.name}   ${apCost}AP / ${sp.dspCost ?? 0}DSP` +
+                (sp.damage ? `   ⚔${sp.damage}` : sp.healAmount ? `   ✚${sp.healAmount}` : '');
+            const row = this.scene.add.text(menuX + 12, ry, label, {
+                fontFamily: 'Open Sans', fontSize: '14px',
+                color: affordable ? '#e8d8ff' : '#776688'
+            }).setInteractive({ useHandCursor: true });
+            row.on('pointerdown', () => this._beginCast(sp));
+            this._spellMenu.add(row);
+        });
+
+        this._spellMenu.setVisible(true);
+        this._spellMenuOpen = true;
+    }
+
+    _closeSpellMenu() {
+        if (!this._spellMenu) return;
+        this._spellMenu.setVisible(false);
+        this._spellMenuOpen = false;
+        this.scene.tacticalGridRenderer?.cancelTargeting?.();
+    }
+
+    /** Selected a spell → enter targeting (or self-cast immediately). */
+    _beginCast(spell) {
+        const apCost = spell.apCost || 1;
+        if (this.tactical.currentAP < apCost) { this._showFloat('Not enough AP'); return; }
+        // Hide the menu but keep any targeting we're about to start.
+        this._spellMenu.setVisible(false);
+        this._spellMenuOpen = false;
+
+        const grid = this.scene.tacticalGridRenderer;
+        const range = spell.range ?? 0;
+        const selfOnly = range === 0 || spell.targetType === 'self';
+
+        if (selfOnly || !grid?.enterTargeting) {
+            const actor = this.tactical.currentActor?.entity;
+            const r = this.tactical.castSpell(spell, actor?.gridX, actor?.gridY);
+            this._showFloat(r.success ? `${spell.name}!` : (r.reason || 'Cast failed'));
+            this._refresh();
+            return;
+        }
+
+        this._showFloat(`Select a target for ${spell.name}`);
+        grid.enterTargeting(spell, (cell) => {
+            const r = this.tactical.castSpell(spell, cell.x, cell.y);
+            this._showFloat(r.success ? `${spell.name}!` : (r.reason || 'Cast failed'));
+            this._refresh();
+        });
     }
 
     _onEnemyIntent(data) {

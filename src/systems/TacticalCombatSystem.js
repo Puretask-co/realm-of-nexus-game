@@ -342,9 +342,18 @@ export class TacticalCombatSystem {
 
     const current = this.turnOrder[this.currentTurnIndex];
     this.currentActor = current;
-
-    // Reset AP
     const entity = current.entity;
+
+    // Process active status effects at the start of this entity's turn
+    // (poison ticks, durations decrement, expired effects drop off).
+    this._tickEffects(entity);
+    if (entity.stats.hp <= 0) {
+      this._onCombatantDefeated(entity, null);
+      if (this._checkCombatEnd()) return;
+      return this.endTurn();
+    }
+
+    // Reset AP (a rooted entity still acts but can't move — see moveAction).
     entity.stats.ap = entity.stats.maxAP;
     this.currentAP = entity.stats.ap;
     this.undoStack = [];
@@ -391,6 +400,7 @@ export class TacticalCombatSystem {
     if (!this.currentActor || this.currentAP < 1) return { success: false, reason: 'No AP' };
 
     const entity = this.currentActor.entity;
+    if (this._isRooted(entity)) return { success: false, reason: 'Rooted!' };
     const reachable = this.getReachableTiles(entity.gridX, entity.gridY, entity.stats.speed || 4);
     const target = reachable.find(t => t.x === targetX && t.y === targetY);
 
@@ -512,13 +522,42 @@ export class TacticalCombatSystem {
    * Cast a spell/ability.
    * AP cost varies by spell tier.
    */
+  /**
+   * Roll a dice/flat damage value. Accepts a number (flat) or a string like
+   * "1d8" / "2d6+3". Returns an integer.
+   */
+  _rollAmount(val) {
+    if (typeof val === 'number') return val;
+    if (typeof val !== 'string') return 0;
+    const m = val.match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+    if (!m) { const n = parseInt(val, 10); return Number.isFinite(n) ? n : 0; }
+    const count = parseInt(m[1], 10), sides = parseInt(m[2], 10), mod = m[3] ? parseInt(m[3], 10) : 0;
+    let total = mod;
+    for (let i = 0; i < count; i++) total += Math.floor(Math.random() * sides) + 1;
+    return total;
+  }
+
+  /**
+   * Cast a spell from our data schema (spells.json):
+   *   { apCost, dspCost, damage, healAmount, element, range, targetType,
+   *     statusEffect:{ type, duration, ... } }
+   * Costs AP + DSP, validates range, and applies damage / heal / guard / status.
+   */
   castSpell(spellDef, targetX, targetY) {
     if (!this.currentActor) return { success: false, reason: 'No active actor' };
+    const caster = this.currentActor.entity;
 
     const apCost = spellDef.apCost || 1;
     if (this.currentAP < apCost) return { success: false, reason: 'Insufficient AP' };
 
-    // DSP cost
+    // Range check (0 = self).
+    const range = spellDef.range ?? 0;
+    if (range > 0 && targetX != null) {
+      const d = this.getDistance(caster.gridX, caster.gridY, targetX, targetY);
+      if (d > range) return { success: false, reason: 'Out of range' };
+    }
+
+    // DSP cost (the world pays for magic). spend() returns false if unaffordable.
     const dspCost = spellDef.dspCost || 0;
     if (dspCost > 0) {
       const dsp = DSPSystem.getInstance();
@@ -526,55 +565,116 @@ export class TacticalCombatSystem {
     }
 
     this.currentAP -= apCost;
-    this.currentActor.entity.stats.ap = this.currentAP;
+    caster.stats.ap = this.currentAP;
 
-    // Find target at position
     const tile = this.getTile(targetX, targetY);
     const target = tile?.occupant || null;
+    const result = { success: true, spellName: spellDef.name };
 
-    // Apply spell effect based on type
-    const caster = this.currentActor.entity;
-    let result = { success: true, spellName: spellDef.name };
+    // Determine intent from the data, not a missing `type` field.
+    const isHeal = spellDef.healAmount != null || /heal|bloom|mend|cure/i.test(spellDef.id || '');
+    const isGuard = /guard|shield|ward|soul_shield/i.test(spellDef.id || '') ||
+                    spellDef.statusEffect?.guardBonus != null;
+    const dealsDamage = spellDef.damage != null;
+    const diff = DifficultySystem.getInstance();
 
-    if (spellDef.type === 'active' && target && target.side !== caster.side) {
-      // Offensive spell
-      let damage = spellDef.damage || (spellDef.tier || 1) * 8;
-      const diff = DifficultySystem.getInstance();
+    if (dealsDamage && target && target.side !== caster.side) {
+      let damage = this._rollAmount(spellDef.damage);
+      damage = Math.round(damage * (1 + (caster.stats.insight || 0) * 0.05)); // Insight scales magic
       if (caster.side === 'ally') damage = Math.round(damage * diff.getModifier('playerDamageMultiplier'));
+      else damage = Math.round(damage * diff.getModifier('enemyDamageMultiplier'));
 
       const dmgResult = this._applyDamage(target, damage, caster);
       result.damage = dmgResult.totalDamage;
+      result.guardAbsorbed = dmgResult.guardAbsorbed;
       result.target = target.name;
-
+      result.targetId = target.id;
+      this._applyStatusFromSpell(spellDef, target);
       this._log(`${caster.name} cast ${spellDef.name} on ${target.name} for ${dmgResult.totalDamage} damage`);
-
-      if (target.stats.hp <= 0) {
-        this._onCombatantDefeated(target, caster);
-      }
-    } else if (spellDef.type === 'healing' || spellDef.id?.includes('heal') || spellDef.id?.includes('bloom')) {
-      // Healing spell
-      const healTarget = target || caster;
-      const healAmount = spellDef.healAmount || spellDef.damage || 15;
+      if (target.stats.hp <= 0) this._onCombatantDefeated(target, caster);
+    } else if (isHeal) {
+      const healTarget = (target && target.side === caster.side) ? target : caster;
+      const healAmount = this._rollAmount(spellDef.healAmount ?? spellDef.damage ?? 15);
       healTarget.stats.hp = Math.min(healTarget.stats.maxHp, healTarget.stats.hp + healAmount);
       result.healed = healAmount;
       result.target = healTarget.name;
+      result.targetId = healTarget.id;
       this._log(`${caster.name} cast ${spellDef.name}, healing ${healTarget.name} for ${healAmount}`);
-    } else if (spellDef.description?.includes('Guard') || spellDef.description?.includes('shield')) {
-      // Guard/shield spell
-      const guardTarget = target || caster;
-      const guardAmount = spellDef.guardAmount || 10;
-      guardTarget.stats.guard = Math.min(guardTarget.stats.maxGuard + guardAmount, guardTarget.stats.guard + guardAmount);
+    } else if (isGuard) {
+      const guardTarget = (target && target.side === caster.side) ? target : caster;
+      const guardAmount = spellDef.statusEffect?.guardBonus || spellDef.guardAmount || 5;
+      guardTarget.stats.guard = (guardTarget.stats.guard || 0) + guardAmount;
+      guardTarget.stats.maxGuard = Math.max(guardTarget.stats.maxGuard || 0, guardTarget.stats.guard);
       result.guardGained = guardAmount;
+      result.target = guardTarget.name;
+      result.targetId = guardTarget.id;
+      this._applyStatusFromSpell(spellDef, guardTarget);
       this._log(`${caster.name} cast ${spellDef.name}, granting ${guardAmount} Guard`);
+    } else if (target) {
+      // Pure status/control spell (root, poison, etc.) on a target.
+      this._applyStatusFromSpell(spellDef, target);
+      result.target = target.name;
+      result.targetId = target.id;
+      this._log(`${caster.name} cast ${spellDef.name} on ${target.name}`);
+    } else {
+      // No valid target for a targeted spell — refund and report.
+      this.currentAP += apCost;
+      caster.stats.ap = this.currentAP;
+      if (dspCost > 0) DSPSystem.getInstance().recover?.(dspCost, 'spell-refund');
+      return { success: false, reason: 'No valid target' };
     }
 
     this.eventBus.emit('tactical:spellCast', {
       caster: caster.id, spell: spellDef,
-      targetX, targetY, apCost, dspCost,
-      ...result
+      targetX, targetY, apCost, dspCost, ...result
     });
-
     return result;
+  }
+
+  /**
+   * Apply a spell's statusEffect (root/poison/buff/etc.) to a combatant as a
+   * timed active effect. Stored on entity.activeEffects; consumed elsewhere.
+   */
+  _applyStatusFromSpell(spellDef, entity) {
+    const se = spellDef.statusEffect;
+    if (!se || !se.type || !entity) return;
+    if (!entity.activeEffects) entity.activeEffects = [];
+    entity.activeEffects.push({
+      type: se.type,
+      duration: se.duration ?? spellDef.duration ?? 2,
+      value: se.value ?? se.damage ?? se.amount ?? 0,
+      source: spellDef.id,
+    });
+    this.eventBus.emit('tactical:statusApplied', {
+      target: entity.id, status: se.type, duration: se.duration ?? spellDef.duration ?? 2
+    });
+  }
+
+  /**
+   * Process an entity's active status effects at the start of its turn:
+   * poison/burn/bleed deal damage-over-time, durations decrement, expired
+   * effects drop off.
+   */
+  _tickEffects(entity) {
+    if (!entity?.activeEffects?.length) return;
+    const remaining = [];
+    for (const eff of entity.activeEffects) {
+      if ((eff.type === 'poison' || eff.type === 'burn' || eff.type === 'bleed') && eff.value > 0) {
+        const dmg = this._rollAmount(eff.value);
+        entity.stats.hp = Math.max(0, entity.stats.hp - dmg);
+        this.eventBus.emit('tactical:effectTick', { target: entity.id, type: eff.type, damage: dmg, hp: entity.stats.hp });
+        this._log(`${entity.name} suffers ${dmg} ${eff.type} damage`);
+      }
+      eff.duration -= 1;
+      if (eff.duration > 0) remaining.push(eff);
+      else this.eventBus.emit('tactical:effectExpired', { target: entity.id, type: eff.type });
+    }
+    entity.activeEffects = remaining;
+  }
+
+  /** True if the entity is currently rooted/held (cannot move this turn). */
+  _isRooted(entity) {
+    return !!entity?.activeEffects?.some(e => e.type === 'root' || e.type === 'stun' || e.type === 'snare');
   }
 
   /**
