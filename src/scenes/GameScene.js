@@ -1325,6 +1325,9 @@ export default class GameScene extends Phaser.Scene {
             // Carry the player's known spells into tactical combat so the
             // Cast action has something to offer.
             spells: (allyStats.spells || []).slice(),
+            // Class full-body art for the combat token (falls back in renderer).
+            spriteKey: (this.classSystem.getCurrentClass()?.id
+                ? `art_companion_${this.classSystem.getCurrentClass().id}` : null),
             variant: this.registry.get('selectedVariant') || 'pure'
         }];
 
@@ -1352,6 +1355,9 @@ export default class GameScene extends Phaser.Scene {
             spells: (d.spells || []).map(id => dataManager.getSpell(id)).filter(Boolean),
             aiPattern: d.aiPattern || 'aggressive',
             tier: d.tier || 1,
+            // Painterly art for the combat token (renderer falls back to a
+            // circle if the texture isn't loaded).
+            spriteKey: PAINTERLY_ENEMY_MAP[d.id] || null,
             experienceReward: d.experienceReward || 30,
             lootTable: d.lootTable
         }));

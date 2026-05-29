@@ -1219,13 +1219,17 @@ export class TacticalCombatSystem {
       allies: this.allies.map(a => ({
         id: a.id, name: a.name, hp: a.stats.hp, maxHp: a.stats.maxHp,
         guard: a.stats.guard, maxGuard: a.stats.maxGuard,
-        gridX: a.gridX, gridY: a.gridY, alive: a.stats.hp > 0
+        gridX: a.gridX, gridY: a.gridY, alive: a.stats.hp > 0,
+        spriteKey: a.spriteKey || null,
+        effects: (a.activeEffects || []).map(e => e.type)
       })),
       enemies: this.enemies.map(e => ({
         id: e.id, name: e.name, hp: e.stats.hp, maxHp: e.stats.maxHp,
         guard: e.stats.guard, maxGuard: e.stats.maxGuard,
         gridX: e.gridX, gridY: e.gridY, alive: e.stats.hp > 0,
-        intent: e.nextIntent || null
+        intent: e.nextIntent || null,
+        spriteKey: e.spriteKey || null,
+        effects: (e.activeEffects || []).map(ef => ef.type)
       })),
       grid: this._serializeGrid(),
       canUndo: this.canUndo,

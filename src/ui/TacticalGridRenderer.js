@@ -307,13 +307,27 @@ export class TacticalGridRenderer {
         const cy = y + cell / 2;
         const r = Math.max(8, cell * 0.34);
 
-        const tg = this.scene.add.graphics();
-        // Body
-        tg.fillStyle(bodyColor, 0.95);
-        tg.fillCircle(cx, cy - 2, r);
-        tg.lineStyle(2, 0x000000, 0.5);
-        tg.strokeCircle(cx, cy - 2, r);
+        // Sprite art if available, else a colored circle token.
+        const hasArt = unit.spriteKey && this.scene.textures.exists(unit.spriteKey);
+        if (hasArt) {
+            // Colored base ring marks side under the sprite.
+            const ring = this.scene.add.graphics();
+            ring.fillStyle(bodyColor, 0.35);
+            ring.fillCircle(cx, cy + cell * 0.18, r * 0.9);
+            this.tokenLayer.add(ring);
+            const img = this.scene.add.image(cx, cy - 2, unit.spriteKey)
+                .setDisplaySize(cell * 0.9, cell * 0.9).setOrigin(0.5, 0.5);
+            this.tokenLayer.add(img);
+        } else {
+            const tg0 = this.scene.add.graphics();
+            tg0.fillStyle(bodyColor, 0.95);
+            tg0.fillCircle(cx, cy - 2, r);
+            tg0.lineStyle(2, 0x000000, 0.5);
+            tg0.strokeCircle(cx, cy - 2, r);
+            this.tokenLayer.add(tg0);
+        }
 
+        const tg = this.scene.add.graphics();
         // HP bar under the token.
         const barW = cell - 10;
         const barX = x + 5;
@@ -347,6 +361,21 @@ export class TacticalGridRenderer {
                 stroke: '#000', strokeThickness: 2
             }).setOrigin(0.5, 0);
             this.tokenLayer.add(it);
+        }
+
+        // Active status-effect dots (poison=green, root=brown, buff=cyan).
+        const fx = unit.effects || [];
+        if (fx.length) {
+            const colorFor = (t) => t === 'poison' || t === 'burn' || t === 'bleed' ? '#66dd44'
+                : t === 'root' || t === 'snare' || t === 'stun' ? '#cc9944'
+                : t === 'buff' ? '#66ddff' : '#dd66dd';
+            fx.slice(0, 4).forEach((t, i) => {
+                const dot = this.scene.add.text(x + 4 + i * 9, y + cell - 18, '●', {
+                    fontFamily: 'Open Sans', fontSize: '10px', color: colorFor(t),
+                    stroke: '#000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                this.tokenLayer.add(dot);
+            });
         }
     }
 
