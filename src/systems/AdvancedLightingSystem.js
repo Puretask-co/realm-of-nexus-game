@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * 2D lighting engine layered on top of Phaser's renderer.
  *

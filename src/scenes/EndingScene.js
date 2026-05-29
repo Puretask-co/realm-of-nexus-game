@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * EndingScene — Full-screen narrative ending presentation.
  *

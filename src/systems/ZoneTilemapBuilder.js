@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * ZoneTilemapBuilder — Renders each zone as a proper tilemap using Kenney/CC0 tilesets.
  *

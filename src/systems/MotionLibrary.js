@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * MotionLibrary — procedural Phaser tween "motions" for single-image
  * painterly sprites. All animation in this game is tween-based (the art is

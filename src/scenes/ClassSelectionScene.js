@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import { PlayerClassSystem } from '../systems/PlayerClassSystem.js';
 

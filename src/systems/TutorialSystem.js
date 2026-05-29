@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 /**
  * TutorialSystem.js
  * Step-by-step tutorial overlay for new players in Realm of Nexus: Verdance.

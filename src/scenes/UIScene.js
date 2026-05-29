@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import { UIFramework } from '../ui/UIFramework.js';
 import { TacticalCombatPanel } from '../ui/TacticalCombatPanel.js';

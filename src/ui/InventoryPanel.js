@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { EventBus } from '../core/EventBus.js';
 import { GameConfig } from '../core/GameConfig.js';
 import { EquipmentSystem } from '../systems/EquipmentSystem.js';
