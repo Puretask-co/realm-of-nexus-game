@@ -150,25 +150,10 @@ export default class MinimapRenderer {
     // ----------------------------------------------------------------
 
     _renderZones(g) {
-        // Six zones arranged in a 3×2 grid across the 3200×3200 world
-        const zoneLayout = [
-            { x: 0,    y: 0,    w: 1067, h: 1067 },  // canopy_of_life (top-left)
-            { x: 1067, y: 0,    w: 1067, h: 1067 },  // spindlewood_forest (top-center)
-            { x: 2134, y: 0,    w: 1066, h: 1067 },  // hollowroot_catacombs (top-right)
-            { x: 0,    y: 1067, w: 1067, h: 1066 },  // emerald_cascades (bottom-left)
-            { x: 1067, y: 1067, w: 1067, h: 1066 },  // glinting_groves (bottom-center)
-            { x: 2134, y: 1067, w: 1066, h: 1066 },  // mycelium_nexus (bottom-right)
-        ];
-
+        // One zone is on screen at a time, so the minimap is a local radar of
+        // the active zone's bounds — just frame the whole map area.
         g.lineStyle(1, 0x334466, 0.35);
-        for (const z of zoneLayout) {
-            g.strokeRect(
-                this.x + z.x * this.scaleX,
-                this.y + z.y * this.scaleY,
-                z.w * this.scaleX,
-                z.h * this.scaleY
-            );
-        }
+        g.strokeRect(this.x, this.y, this.width, this.height);
     }
 
     // ----------------------------------------------------------------

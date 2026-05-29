@@ -28,9 +28,12 @@ export default class BootScene extends Phaser.Scene {
         GameArt.preload(this);
 
         // ── Player ─────────────────────────────────────────────────────
-        // Green mage spritesheet: 6 cols × 18 rows, 256px per frame
+        // Green mage spritesheet: 6 cols × 18 rows. The source sheet is
+        // 1596×4788, so each frame is 266px (NOT 256) — slicing at 256
+        // misaligned every frame and made the player render as a broken
+        // floating fragment.
         this.load.spritesheet('player', 'assets/sprites/player.png', {
-            frameWidth: 256, frameHeight: 256
+            frameWidth: 266, frameHeight: 266
         });
 
         // ── Enemies ────────────────────────────────────────────────────

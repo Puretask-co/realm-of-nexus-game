@@ -138,7 +138,11 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Renderers ----
         this.damageNumbers = new DamageNumberRenderer(this);
-        this.minimap = new MinimapRenderer(this);
+        // Minimap maps the single active-zone bounds (one zone on screen).
+        this.minimap = new MinimapRenderer(this, {
+            worldWidth: GameScene.ACTIVE_W,
+            worldHeight: GameScene.ACTIVE_H,
+        });
 
         // ---- Content Registration ----
         ContentInitializer.registerQuests();
@@ -355,14 +359,14 @@ export default class GameScene extends Phaser.Scene {
         );
 
         // ---- Track current location ----
-        this.currentLocationId = 'canopy_of_life';
-        this._emitLocationDiscovery('canopy_of_life');
+        this.currentLocationId = this.currentZone || 'canopy_of_life';
+        this._emitLocationDiscovery(this.currentLocationId);
 
-        // ---- Fog of War ----
-        // canopy_of_life is the starting zone — always visible.
-        this._discoveredZones = new Set(['canopy_of_life']);
-        // Fog layer sits above zone graphics (depth 0) but below sprites (depth 4+).
-        this._fogLayer = this.add.graphics().setDepth(5);
+        // ---- Fog of War (world-map only) ----
+        // Only one zone is built on-screen at a time, so the in-world fog
+        // overlay is no longer used (it would black out the active zone). We
+        // still track discovered zones for the world map / minimap.
+        this._discoveredZones = new Set([this.currentLocationId]);
         // Additional fog-related EventBus wiring (travel discover handled in _onWorldMapTravelTo).
         this._unsubs.push(
             EventBus.on('zone:discovered', (data) => {
@@ -463,107 +467,142 @@ export default class GameScene extends Phaser.Scene {
     // World building — distinct zones per location
     // ----------------------------------------------------------------
 
+    // One zone is active at a time. It occupies a single screen-filling rect
+    // at the world origin; travelling tears the current zone down and rebuilds
+    // the destination in place. This keeps each zone large and readable instead
+    // of cramming all 27 into one giant scrolling grid.
+    static ACTIVE_W = 1280;
+    static ACTIVE_H = 720;
+
     _buildWorld() {
-        const locations  = dataManager.getAllLocations();
-        const ZONE_COLS  = 3;
-        const ZONE_W     = 800;
-        const ZONE_H     = 900;
-        const rowCount   = Math.ceil(locations.length / ZONE_COLS);
-        const worldWidth  = ZONE_COLS * ZONE_W;
-        const worldHeight = rowCount   * ZONE_H;
+        const locations = dataManager.getAllLocations();
+        const W = GameScene.ACTIVE_W;
+        const H = GameScene.ACTIVE_H;
 
-        this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
-        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+        // Single fixed bounds shared by every zone — the camera is locked to
+        // this rect so the active zone always fills the screen.
+        this._activeBounds = { x: 0, y: 0, w: W, h: H };
+        this.physics.world.setBounds(0, 0, W, H);
+        this.cameras.main.setBounds(0, 0, W, H);
 
-        this._zoneLabels  = [];
-        this._zoneTilemaps = [];   // keep refs so we can destroy them on shutdown
-        this.zones = [];
+        this._zoneTilemaps = [];        // current zone's tilemaps (destroyed on travel)
+        this._activeZoneObjects = [];   // display objects owned by the active zone
 
-        locations.forEach((loc, i) => {
-            const col  = i % ZONE_COLS;
-            const row  = Math.floor(i / ZONE_COLS);
-            const zoneX = col * ZONE_W;
-            const zoneY = row * ZONE_H;
+        // Zone metadata for the rest of the game (fog discovery, quest beacons,
+        // minimap). Every zone shares the same on-screen bounds because only
+        // one is ever built at a time.
+        this.zones = locations.map(loc => ({ ...loc, bounds: this._activeBounds }));
 
-            const zone = { ...loc, bounds: { x: zoneX, y: zoneY, w: ZONE_W, h: ZONE_H } };
-            this.zones.push(zone);
+        // Determine and build the starting zone.
+        const startId = this._resumeZone || this.currentZone || 'canopy_of_life';
+        const startLoc = this.zones.find(z => z.id === startId) || this.zones[0];
+        this.currentZone = startLoc.id;
+        this.currentLocationId = startLoc.id;
+        this._buildActiveZone(startLoc);
+    }
 
-            // ── Painterly backdrop floor: assemble the realm's panels into a
-            // grid filling the zone (6 panels = 3x2, 4 = 2x2). ──
-            const grid = ZoneBackdrops.gridFor(loc.id, this);
-            const hasBackdrop = !!grid;
-            if (grid) {
-                const cellW = ZONE_W / grid.cols;
-                const cellH = ZONE_H / grid.rows;
-                grid.keys.forEach((key, idx) => {
-                    const cx = idx % grid.cols;
-                    const cy = Math.floor(idx / grid.cols);
-                    this.add.image(zoneX + cx * cellW, zoneY + cy * cellH, key)
-                        .setOrigin(0, 0)
-                        .setDisplaySize(cellW + 1, cellH + 1) // +1 hides hairline seams
-                        .setDepth(0.1);
-                });
-            } else {
-                // No painterly floor — fall back to the old tilemap graphics.
-                const result = ZoneTilemapBuilder.buildZone(this, zoneX, zoneY, ZONE_W, ZONE_H, loc);
-                this._zoneTilemaps.push(...result.tilemaps);
+    /**
+     * Tear down the previously built zone and build the given one in place at
+     * the shared active bounds. Tracks every created display object so the next
+     * travel can dispose of it cleanly.
+     */
+    _buildActiveZone(loc) {
+        const { x: zx, y: zy, w: W, h: H } = this._activeBounds;
+
+        // ── Teardown previous zone visuals ───────────────────────────────
+        if (this._zoneTilemaps) {
+            for (const m of this._zoneTilemaps) { try { m.destroy(); } catch (_) {} }
+        }
+        this._zoneTilemaps = [];
+        if (this._activeZoneObjects) {
+            for (const o of this._activeZoneObjects) { try { o.destroy(); } catch (_) {} }
+        }
+        this._activeZoneObjects = [];
+
+        // ── Painterly backdrop floor: assemble the realm's panels into a grid
+        // filling the zone. Panels overlap their neighbours and the seams are
+        // hidden under blended feather strips so the floor reads as one paint. ─
+        const grid = ZoneBackdrops.gridFor(loc.id, this);
+        const hasBackdrop = !!grid;
+        if (grid) {
+            const cellW = W / grid.cols;
+            const cellH = H / grid.rows;
+            // Overlap each panel into its neighbours so there are no hard seams.
+            const overlap = Math.max(24, Math.round(Math.min(cellW, cellH) * 0.08));
+            grid.keys.forEach((key, idx) => {
+                const cx = idx % grid.cols;
+                const cy = Math.floor(idx / grid.cols);
+                const img = this.add.image(zx + cx * cellW + cellW / 2, zy + cy * cellH + cellH / 2, key)
+                    .setOrigin(0.5, 0.5)
+                    .setDisplaySize(cellW + overlap, cellH + overlap)
+                    .setDepth(0.1);
+                this._track(img);
+            });
+            // Soft feather strips painted over the interior seams to blend the
+            // overlapping panels into one another.
+            this._blendBackdropSeams(zx, zy, W, H, grid, cellW, cellH);
+        } else {
+            // No painterly floor — fall back to the old tilemap graphics.
+            const result = ZoneTilemapBuilder.buildZone(this, zx, zy, W, H, loc);
+            this._zoneTilemaps.push(...result.tilemaps);
+        }
+
+        // ── Per-zone atmospheric tint overlay. ───────────────────────────
+        this._applyZoneTheme(zx, zy, W, H, loc, hasBackdrop ? 0.10 : 1.0);
+
+        // ── Zone name label ──────────────────────────────────────────────
+        const color = parseInt((loc.environment?.ambientColor || '0x44aa44').replace('0x', ''), 16);
+        const hexStr = '#' + color.toString(16).padStart(6, '0');
+        this._track(this.add.text(zx + W / 2, zy + 16, loc.name.toUpperCase(), {
+            fontFamily: 'Open Sans', fontSize: '22px', color: hexStr,
+            stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.85));
+        this._track(this.add.text(zx + W / 2, zy + 40, `Lv.${loc.level} — ${loc.type}`, {
+            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaaaa',
+            stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.7));
+
+        // ── Weather ──────────────────────────────────────────────────────
+        if (loc.environment?.weather === 'fog') this._addFogEffect(zx, zy, W, H);
+
+        // ── Decorations (trees, props) ───────────────────────────────────
+        this._addZoneDecorations(zx, zy, W, H, loc);
+    }
+
+    /** Track a display object as owned by the active zone (destroyed on travel). */
+    _track(obj) {
+        if (obj && this._activeZoneObjects) this._activeZoneObjects.push(obj);
+        return obj;
+    }
+
+    /**
+     * Paint soft translucent strips over the interior panel seams so the
+     * overlapping backdrop panels blend instead of showing a hard edge.
+     */
+    _blendBackdropSeams(zx, zy, W, H, grid, cellW, cellH) {
+        const feather = this.add.graphics().setDepth(0.15);
+        const band = Math.max(20, Math.round(Math.min(cellW, cellH) * 0.06));
+        // Vertical seams between columns.
+        for (let c = 1; c < grid.cols; c++) {
+            const sx = zx + c * cellW;
+            for (let s = 0; s < band; s++) {
+                const a = 0.06 * (1 - s / band);
+                feather.fillStyle(0x000000, a);
+                feather.fillRect(sx - s, zy, 1, H);
+                feather.fillRect(sx + s, zy, 1, H);
             }
-
-            // ── Per-zone atmospheric tint overlay. With a painterly floor we
-            // use a much lighter tint so the art reads; otherwise full tint. ──
-            this._applyZoneTheme(zoneX, zoneY, ZONE_W, ZONE_H, loc, hasBackdrop ? 0.10 : 1.0);
-
-            // ── Zone name label (above all tile layers) ───────────────
-            const color = parseInt((loc.environment?.ambientColor || '0x44aa44').replace('0x', ''), 16);
-            const hexStr = '#' + color.toString(16).padStart(6, '0');
-
-            const label = this.add.text(zoneX + ZONE_W / 2, zoneY + 20, loc.name.toUpperCase(), {
-                fontFamily: 'Open Sans',
-                fontSize: '20px',
-                color: hexStr,
-                stroke: '#000000',
-                strokeThickness: 3
-            }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.85);
-            this._zoneLabels.push(label);
-
-            this.add.text(zoneX + ZONE_W / 2, zoneY + 38, `Lv.${loc.level} — ${loc.type}`, {
-                fontFamily: 'Open Sans',
-                fontSize: '14px',
-                color: '#aaaaaa',
-                stroke: '#000000',
-                strokeThickness: 2
-            }).setOrigin(0.5, 0).setDepth(10).setAlpha(0.7);
-
-            // ── Weather ────────────────────────────────────────────────
-            if (loc.environment?.weather === 'fog') {
-                this._addFogEffect(zoneX, zoneY, ZONE_W, ZONE_H);
+        }
+        // Horizontal seams between rows.
+        for (let r = 1; r < grid.rows; r++) {
+            const sy = zy + r * cellH;
+            for (let s = 0; s < band; s++) {
+                const a = 0.06 * (1 - s / band);
+                feather.fillStyle(0x000000, a);
+                feather.fillRect(zx, sy - s, W, 1);
+                feather.fillRect(zx, sy + s, W, 1);
             }
-
-            // ── Decorations (trees, props) ─────────────────────────────
-            this._addZoneDecorations(zoneX, zoneY, ZONE_W, ZONE_H, loc);
-
-            // ── Camera zone ────────────────────────────────────────────
-            this.cameraSystem.addZone(
-                { x: zoneX, y: zoneY, width: ZONE_W, height: ZONE_H },
-                {
-                    zoom: loc.environment?.cameraZoom || 1.0,
-                    priority: i,
-                    onEnter: () => {
-                        if (this.currentLocationId !== loc.id) {
-                            this.currentLocationId = loc.id;
-                            this._emitLocationDiscovery(loc.id);
-                            EventBus.emit('zone-entered', { locationId: loc.id, name: loc.name });
-                            this._playZoneEnterTransition(loc);
-                            console.log(`[Zone] Entered: ${loc.name}`);
-                        }
-                    },
-                    onExit: () => console.log(`[Zone] Exited: ${loc.name}`)
-                }
-            );
-        });
-
-        // Connection paths between zones
-        this._drawZoneConnections(locations);
+        }
+        this._track(feather);
     }
 
     _addFogEffect(x, y, w, h) {
@@ -573,6 +612,7 @@ export default class GameScene extends Phaser.Scene {
             const fog = this.add.graphics().setDepth(3).setAlpha(0.15);
             fog.fillStyle(0xaabbcc, 1);
             fog.fillCircle(fogX, fogY, Phaser.Math.Between(40, 80));
+            this._track(fog);
 
             // Animate fog drift
             this.tweens.add({
@@ -610,6 +650,7 @@ export default class GameScene extends Phaser.Scene {
                         .setDepth(2)
                         .setScale(Phaser.Math.FloatBetween(0.4, 0.7))
                         .setAlpha(0.9);
+                    this._track(tree);
                     // Subtle sway tween
                     this.tweens.add({
                         targets: tree,
@@ -623,6 +664,7 @@ export default class GameScene extends Phaser.Scene {
                     const gfx = this.add.graphics().setDepth(1);
                     gfx.fillStyle(color, 0.5);
                     gfx.fillCircle(dx, dy, Phaser.Math.Between(8, 18));
+                    this._track(gfx);
                 }
             } else {
                 // Dungeon: use cave/crystal graphics
@@ -631,6 +673,7 @@ export default class GameScene extends Phaser.Scene {
                 gfx.fillStyle(color, 0.6);
                 const size = Phaser.Math.Between(4, 14);
                 gfx.fillTriangle(dx, dy - size * 2, dx - size, dy, dx + size, dy);
+                this._track(gfx);
             }
         }
     }
@@ -814,11 +857,13 @@ export default class GameScene extends Phaser.Scene {
         const overlay = this.add.graphics().setDepth(0.2);
         overlay.fillStyle(tint, alpha * alphaMul);
         overlay.fillRect(x, y, w, h);
+        this._track(overlay);
 
-        // Subtle border framing so adjacent zones read as separate "rooms".
+        // Subtle border framing so the zone reads as a framed "room".
         const border = this.add.graphics().setDepth(0.3);
         border.lineStyle(3, tint, 0.55);
         border.strokeRect(x + 2, y + 2, w - 4, h - 4);
+        this._track(border);
     }
 
     /**
@@ -891,6 +936,7 @@ export default class GameScene extends Phaser.Scene {
                 .setScale(scale)
                 .setAlpha(Phaser.Math.FloatBetween(0.75, 0.95))
                 .setOrigin(0.5, 0.85);
+            this._track(prop);
             // Foliage sways; only a third get motion to keep it cheap.
             if (/tree|bush|fern|flower|willow|greenery|grass/.test(key) && Math.random() < 0.35) {
                 MotionLibrary.apply(this, prop, 'idle-sway', { amount: Phaser.Math.Between(2, 4), duration: 2400 + Math.random() * 1200 });
@@ -932,6 +978,7 @@ export default class GameScene extends Phaser.Scene {
             .setScale(0.7)
             .setAlpha(0.95)
             .setOrigin(0.5, 0.85);
+        this._track(landmark);
 
         // Subtle glow pulse so the player can spot landmarks from afar.
         this.tweens.add({
@@ -977,13 +1024,29 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     _createPlayer() {
-        const startX = 400;
-        const startY = 450;
+        const b = this._activeBounds || { x: 0, y: 0, w: GameScene.ACTIVE_W, h: GameScene.ACTIVE_H };
+        const startX = b.x + b.w / 2;
+        const startY = b.y + b.h * 0.7;
+
+        // Reconcile the chosen class from the registry if the class system
+        // wasn't told directly (e.g. skipToGame / loaded save). The chosen
+        // class drives both stats and the in-world sprite.
+        if (!this.classSystem.getCurrentClass()) {
+            const regClass = this.registry?.get('selectedClass');
+            if (regClass) this.classSystem.selectClass(regClass);
+        }
         const classDef = this.classSystem.getCurrentClass();
 
-        // Use class sprite if available
-        const spriteKey = classDef?.sprite && this.textures.exists(classDef.sprite)
-            ? classDef.sprite : 'player';
+        // Pick the player's in-world sprite. Each of the 5 classes has a
+        // full-body painterly sprite loaded as art_companion_<classId>
+        // (clean 512×512 images). The chosen class IS the chosen character,
+        // so the look matches the picked class. Fall back to the legacy
+        // animated 'player' sheet only if the class art isn't loaded.
+        const classArtKey = classDef?.id ? `art_companion_${classDef.id}` : null;
+        const useClassArt = !!(classArtKey && this.textures.exists(classArtKey));
+        const explicitSprite = classDef?.sprite && this.textures.exists(classDef.sprite);
+        const spriteKey = useClassArt ? classArtKey
+            : (explicitSprite ? classDef.sprite : 'player');
 
         this.player = this.physics.add.sprite(startX, startY, spriteKey);
         this.player.setDepth(5);
@@ -991,13 +1054,24 @@ export default class GameScene extends Phaser.Scene {
         this.player.setDamping(true);
         this.player.setDrag(0.85);
         this.player.setMaxVelocity(250);
-        // Scale 256px frame down to 64px display size
-        this.player.setDisplaySize(64, 64);
-        // Physics body sized to match display, not raw frame
-        this.player.body.setSize(40, 40);
-        this.player.body.setOffset(108, 140);
-        // Start idle animation
-        if (this.anims.exists('player-idle')) this.player.play('player-idle');
+
+        if (useClassArt) {
+            // Static painterly full-body art: scale to a readable in-world
+            // size and centre the physics body on the texture's own pixels.
+            this.player._staticArt = true;
+            this.player.setDisplaySize(72, 72);
+            const tw = this.player.width, th = this.player.height;
+            this.player.body.setSize(tw * 0.4, th * 0.4);
+            this.player.body.setOffset(tw * 0.3, th * 0.45);
+            // Gentle idle "breathing" so the static sprite feels alive.
+            MotionLibrary.apply(this, this.player, 'idle-breathe', { duration: 1800 });
+        } else {
+            // Legacy animated sheet (266px frames) → 64px display size.
+            this.player.setDisplaySize(64, 64);
+            this.player.body.setSize(40, 40);
+            this.player.body.setOffset(113, 145);
+            if (this.anims.exists('player-idle')) this.player.play('player-idle');
+        }
 
         // Complete stat defaults — guaranteed baseline regardless of class system
         const STAT_DEFAULTS = {
@@ -1130,24 +1204,14 @@ export default class GameScene extends Phaser.Scene {
     _spawnEnemies() {
         this.enemies = this.physics.add.group();
 
-        // Spawn enemies per zone based on location data
-        for (const zone of this.zones) {
-            const enemyIds = zone.enemies || [];
-            const spawnCount = zone.type === 'boss' ? 4 : 3;
-
-            for (let i = 0; i < spawnCount; i++) {
-                const enemyId = enemyIds[i % enemyIds.length];
-                if (!enemyId) continue;
-
-                const def = dataManager.getEnemy(enemyId);
-                if (!def) continue;
-
-                const ex = zone.bounds.x + Phaser.Math.Between(60, zone.bounds.w - 60);
-                const ey = zone.bounds.y + Phaser.Math.Between(80, zone.bounds.h - 60);
-
-                this._spawnSingleEnemy(def, ex, ey, zone.id);
-            }
-        }
+        // Enemies belong to the active zone only. ZoneContentManager emits
+        // zone:clearEnemies / zone:spawnEnemies on every zone entry; we spawn
+        // and despawn in response so each zone has its own population instead
+        // of every zone's enemies existing at once.
+        this._unsubs.push(
+            EventBus.on('zone:clearEnemies', () => this._clearZoneEnemies()),
+            EventBus.on('zone:spawnEnemies', (data) => this._spawnZoneEnemies(data))
+        );
 
         // Player-enemy overlap: start tactical encounter (design: tactical as main combat)
         this.physics.add.overlap(this.player, this.enemies, (player, enemy) => {
@@ -1163,6 +1227,38 @@ export default class GameScene extends Phaser.Scene {
             const encounterEnemies = nearby.slice(0, 4);
             this._startTacticalEncounter(encounterEnemies);
         });
+    }
+
+    /** Destroy all overworld enemies (and their HP bars) for the current zone. */
+    _clearZoneEnemies() {
+        if (!this.enemies) return;
+        this.enemies.children.entries.slice().forEach((enemy) => {
+            try { enemy._hpBar?.destroy(); } catch (_) {}
+            try { enemy.destroy(); } catch (_) {}
+        });
+        this.enemies.clear(true, true);
+    }
+
+    /**
+     * Spawn the active zone's enemies. Driven by zone:spawnEnemies from
+     * ZoneContentManager; placed within the shared on-screen bounds.
+     */
+    _spawnZoneEnemies({ enemyIds, bounds } = {}) {
+        if (!this.enemies || !enemyIds || enemyIds.length === 0) return;
+        const b = bounds || this._activeBounds;
+        const zoneId = this.currentZone;
+        const isBossZone = (this.zones || []).find(z => z.id === zoneId)?.type === 'boss';
+        const spawnCount = isBossZone ? 4 : 3;
+
+        for (let i = 0; i < spawnCount; i++) {
+            const enemyId = enemyIds[i % enemyIds.length];
+            if (!enemyId) continue;
+            const def = dataManager.getEnemy(enemyId);
+            if (!def) continue;
+            const ex = b.x + Phaser.Math.Between(80, b.w - 80);
+            const ey = b.y + Phaser.Math.Between(120, b.h - 80);
+            this._spawnSingleEnemy(def, ex, ey, zoneId);
+        }
     }
 
     _startTacticalEncounter(overworldEnemies) {
@@ -1585,9 +1681,35 @@ export default class GameScene extends Phaser.Scene {
               dialogue: ['Decay is just transformation, friend.', 'I need a moss heart for my brew.', 'Fetch it and we both profit.'], interactRadius: 60 }
         ];
 
-        for (const def of npcDefs) {
+        // Keep the full roster; spawn only the active zone's NPCs at a time.
+        this._npcDefs = npcDefs;
+        this._spawnZoneNPCs(this.currentZone);
+
+        // Override NPC E-key to use DialogueSystem for richer dialogues
+        this._wireNPCDialogues();
+    }
+
+    /** Destroy the currently spawned NPCs (called on zone change). */
+    _clearZoneNPCs() {
+        for (const npc of (this.npcs || [])) { try { npc.destroy(); } catch (_) {} }
+        this.npcs = [];
+    }
+
+    /**
+     * Spawn the NPCs belonging to a zone. Authored coordinates predate the
+     * single-screen layout and are often off-screen or in the wrong band, so
+     * each NPC is mapped deterministically into the active on-screen bounds.
+     */
+    _spawnZoneNPCs(zoneId) {
+        if (!this._npcDefs) return;
+        this._clearZoneNPCs();
+        const b = this._activeBounds;
+        const defs = this._npcDefs.filter(d => (d.zoneId || 'canopy_of_life') === zoneId);
+
+        defs.forEach((def, i) => {
+            const { x, y } = this._placeInBounds(def, i, b);
             const visual = this._pickNpcVisual(def);
-            const npc = new NPC(this, def.x, def.y, {
+            const npc = new NPC(this, x, y, {
                 name: def.name,
                 role: def.role,
                 dialogue: def.dialogue || [],
@@ -1601,10 +1723,31 @@ export default class GameScene extends Phaser.Scene {
                 tint: visual.tint,
             });
             this.npcs.push(npc);
-        }
+        });
+    }
 
-        // Override NPC E-key to use DialogueSystem for richer dialogues
-        this._wireNPCDialogues();
+    /**
+     * Map an NPC's authored position into the active bounds. If it already
+     * fits on screen (with margin) it's kept; otherwise NPCs are laid out on a
+     * deterministic grid so they never pile up or fall off-screen.
+     */
+    _placeInBounds(def, index, b) {
+        const margin = 90;
+        const inX = def.x >= b.x + margin && def.x <= b.x + b.w - margin;
+        const inY = def.y >= b.y + margin && def.y <= b.y + b.h - margin;
+        if (inX && inY) return { x: def.x, y: def.y };
+
+        // Deterministic fallback grid (4 columns), starting below the labels.
+        const cols = 4;
+        const cellW = (b.w - margin * 2) / cols;
+        const rows = Math.max(1, Math.ceil((this._npcDefs?.length || 1) / cols));
+        const cellH = (b.h - margin * 2 - 60) / Math.min(rows, 4);
+        const c = index % cols;
+        const r = Math.floor(index / cols) % 4;
+        return {
+            x: b.x + margin + cellW * (c + 0.5),
+            y: b.y + margin + 60 + cellH * (r + 0.5),
+        };
     }
 
     /**
@@ -1884,7 +2027,7 @@ export default class GameScene extends Phaser.Scene {
             // Play sword animation for melee attacks, projectile event for ranged/magic
             if (weaponData.attackType === 'melee') {
                 const playerSprite = this.player.sprite ?? this.player;
-                if (playerSprite?.anims && this.anims.exists('player-sword')) {
+                if (playerSprite?.anims && !playerSprite._staticArt && this.anims.exists('player-sword')) {
                     playerSprite.play('player-sword', true);
                     playerSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                         if (playerSprite.active) playerSprite.play('player-idle', true);
@@ -1993,7 +2136,7 @@ export default class GameScene extends Phaser.Scene {
         const target = data?.target;
 
         // Play player cast animation if the caster is the player.
-        if (caster === this.player && this.anims.exists('player-cast')) {
+        if (caster === this.player && !this.player._staticArt && this.anims.exists('player-cast')) {
             const wasPlaying = this.player.anims?.currentAnim?.key;
             this.player.play('player-cast', true);
             // Auto-return to idle/walk after the cast plays out.
@@ -2667,44 +2810,46 @@ export default class GameScene extends Phaser.Scene {
 
     _onWorldMapTravelTo({ locationId }) {
         if (!locationId) return;
-        this.currentZone = locationId;
-        console.log(`[WorldMap] Travelling to zone: ${locationId}`);
-        if (this.player) {
-            const ZONE_SPAWNS = {
-                canopy_of_life: { x: 640, y: 360 }, verdant_exchange: { x: 580, y: 400 },
-                bloomguard_barracks: { x: 700, y: 400 }, emerald_sanctum: { x: 620, y: 450 },
-                whispering_veil: { x: 660, y: 450 }, hollowroot_catacombs: { x: 580, y: 520 },
-                spindlewood_forest: { x: 360, y: 360 }, mycelium_nexus: { x: 580, y: 600 },
-                thornbinder_safehouse: { x: 260, y: 420 }, emerald_cascades: { x: 820, y: 380 },
-                glinting_groves: { x: 450, y: 280 }, thornbinder_training_grounds: { x: 300, y: 300 },
-                wildkin_hunting_grounds: { x: 240, y: 380 }, sporecaller_labs: { x: 620, y: 660 },
-                veil_echo_chamber: { x: 870, y: 480 }, abyss_forward_camp: { x: 920, y: 420 },
-                hollow_tree_grove: { x: 860, y: 560 }, corruption_quarantine_zone: { x: 740, y: 620 },
-                sapling_plantation: { x: 500, y: 240 }, ancient_unbinding_site: { x: 960, y: 540 },
-                veil_tear_rift_alpha: { x: 1000, y: 460 }, veil_tear_rift_beta: { x: 1060, y: 520 },
-                veil_tear_rift_gamma: { x: 1100, y: 580 }, the_scar: { x: 1050, y: 380 },
-                everwood_heart: { x: 640, y: 700 }, void_nexus: { x: 1140, y: 660 },
-                canopy_overlook: { x: 700, y: 200 },
-            };
-            const spawn = ZONE_SPAWNS[locationId] || { x: 640, y: 360 };
-            this.player.setPosition(spawn.x, spawn.y);
-            const cam = this.cameras?.main;
-            if (cam && cam._bounds) {
-                cam.centerOn(spawn.x, spawn.y);
-            } else if (cam) {
-                cam.scrollX = spawn.x - cam.width / 2;
-                cam.scrollY = spawn.y - cam.height / 2;
-            }
-        }
-        // Fog of War: reveal the travel destination immediately
         const destZone = this.zones?.find(z => z.id === locationId);
+        if (!destZone) { console.warn(`[WorldMap] Unknown zone: ${locationId}`); return; }
+        if (locationId === this.currentZone && this._activeZoneObjects?.length) {
+            // Already here and built — nothing to rebuild.
+            return;
+        }
+        console.log(`[WorldMap] Travelling to zone: ${locationId}`);
+        this.currentZone = locationId;
+        this.currentLocationId = locationId;
+
+        // Rebuild the active zone in place (tears down the previous one).
+        this._buildActiveZone(destZone);
+
+        // Re-home the player to the centre of the on-screen bounds.
+        if (this.player) {
+            const b = this._activeBounds;
+            const spawnX = b.x + b.w / 2;
+            const spawnY = b.y + b.h * 0.7;
+            this.player.setPosition(spawnX, spawnY);
+            const cam = this.cameras?.main;
+            if (cam && cam._bounds) cam.centerOn(spawnX, spawnY);
+            else if (cam) { cam.scrollX = spawnX - cam.width / 2; cam.scrollY = spawnY - cam.height / 2; }
+        }
+
+        // Repopulate this zone's NPCs.
+        this._spawnZoneNPCs(locationId);
+
+        // Fog of War: reveal the travel destination immediately
         this._discoverZone(locationId, destZone?.name || locationId);
         EventBus.emit('zone:changed', { locationId });
 
-        // Zone content: update visuals, enemies, and music mood
+        // Zone content: update visuals, enemies, and music mood. This emits
+        // zone:clearEnemies + zone:spawnEnemies which we handle to swap the
+        // overworld enemy population.
         if (this.zoneContentManager) {
             this.zoneContentManager.enterZone(locationId);
         }
+
+        // Banner + flash for the new zone.
+        this._playZoneEnterTransition(destZone);
 
         // Re-place quest beacons for the new zone.
         this._refreshQuestBeacons();
@@ -3029,8 +3174,9 @@ export default class GameScene extends Phaser.Scene {
     _respawnPlayer() {
         this.isDead = false;
 
-        // Respawn at Verdant Grove start
-        this.player.setPosition(400, 450);
+        // Respawn at the centre of the current active zone.
+        const b = this._activeBounds || { x: 0, y: 0, w: GameScene.ACTIVE_W, h: GameScene.ACTIVE_H };
+        this.player.setPosition(b.x + b.w / 2, b.y + b.h * 0.7);
         this.player.setAlpha(1);
         this.player.stats.hp = Math.round(this.player.stats.maxHp * 0.5);
         this.player.stats.sap = Math.round(this.player.stats.maxSap * 0.5);
@@ -3039,7 +3185,6 @@ export default class GameScene extends Phaser.Scene {
         const goldLoss = Math.floor(this.player.stats.gold * 0.1);
         this.player.stats.gold = Math.max(0, this.player.stats.gold - goldLoss);
 
-        this.currentLocationId = 'canopy_of_life';
         EventBus.emit('player-stats-updated', this.player.stats);
 
         // Brief invincibility flash
@@ -3317,18 +3462,22 @@ export default class GameScene extends Phaser.Scene {
 
         this.physicsSystem.applyPlayerMovement(this.player, ix, iy, this.player.stats.speed);
 
-        // Animation + facing — switch walk/idle and flip on horizontal input.
-        // Skip if a cast animation is currently playing (it'll auto-return).
-        const current = this.player.anims?.currentAnim?.key;
-        const isCasting = current === 'player-cast' && this.player.anims?.isPlaying;
-        if (!isCasting) {
-            const moving = ix !== 0 || iy !== 0;
-            const target = moving ? 'player-walk' : 'player-idle';
-            if (this.anims.exists(target) && current !== target) {
-                this.player.play(target, true);
+        // Facing flip on horizontal input (applies to both sprite types).
+        if (ix < 0) this.player.setFlipX(true);
+        else if (ix > 0) this.player.setFlipX(false);
+
+        // Animation — only the legacy animated sheet has walk/idle frames.
+        // Static painterly art keeps its idle-breathe tween instead.
+        if (!this.player._staticArt) {
+            const current = this.player.anims?.currentAnim?.key;
+            const isCasting = current === 'player-cast' && this.player.anims?.isPlaying;
+            if (!isCasting) {
+                const moving = ix !== 0 || iy !== 0;
+                const target = moving ? 'player-walk' : 'player-idle';
+                if (this.anims.exists(target) && current !== target) {
+                    this.player.play(target, true);
+                }
             }
-            if (ix < 0) this.player.setFlipX(true);
-            else if (ix > 0) this.player.setFlipX(false);
         }
     }
 
@@ -3399,27 +3548,11 @@ export default class GameScene extends Phaser.Scene {
      *   - If the player physically walks into an undiscovered zone it is auto-revealed.
      */
     _updateFog() {
-        if (!this._fogLayer || !this.zones) return;
-
-        this._fogLayer.clear();
-
-        for (const zone of this.zones) {
-            const { x, y, w, h } = zone.bounds;
-
-            // Auto-discover zone when player physically walks into it
-            if (!this._discoveredZones.has(zone.id) && this.player) {
-                const px = this.player.x;
-                const py = this.player.y;
-                if (px >= x && px <= x + w && py >= y && py <= y + h) {
-                    this._discoverZone(zone.id, zone.name);
-                }
-            }
-
-            // Draw fog over undiscovered zones
-            if (!this._discoveredZones.has(zone.id)) {
-                this._fogLayer.fillStyle(0x000000, 0.75);
-                this._fogLayer.fillRect(x, y, w, h);
-            }
+        // With a single on-screen zone there is no in-world fog overlay; the
+        // active zone is always the discovered one. Kept as a no-op so callers
+        // and the minimap's discovery tracking stay intact.
+        if (this.currentZone && !this._discoveredZones?.has(this.currentZone)) {
+            this._discoverZone(this.currentZone, this.currentLocationId);
         }
     }
 
@@ -3456,6 +3589,11 @@ export default class GameScene extends Phaser.Scene {
             for (const map of this._zoneTilemaps) {
                 try { map.destroy(); } catch (_) {}
             }
+        }
+        // Destroy active-zone display objects (backdrop, decor, labels).
+        if (this._activeZoneObjects) {
+            for (const o of this._activeZoneObjects) { try { o.destroy(); } catch (_) {} }
+            this._activeZoneObjects = [];
         }
         this.scene.stop('UIScene');
     }
