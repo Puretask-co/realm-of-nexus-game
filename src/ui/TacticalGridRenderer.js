@@ -56,7 +56,8 @@ export class TacticalGridRenderer {
             this.eventBus.on('tactical:combatEnded', () => this.hide()),
             this.eventBus.on('tactical:turnStart', (d) => this._onTurnStart(d)),
             this.eventBus.on('tactical:moved', () => this._redraw()),
-            this.eventBus.on('tactical:attacked', () => this._redraw()),
+            this.eventBus.on('tactical:attacked', (d) => { this._onAttacked(d); this._redraw(); }),
+            this.eventBus.on('tactical:attackMissed', (d) => this._onMissed(d)),
             this.eventBus.on('tactical:defended', () => this._redraw()),
             this.eventBus.on('tactical:spellCast', () => this._redraw()),
             this.eventBus.on('tactical:combatantDefeated', () => this._redraw()),
@@ -193,6 +194,7 @@ export class TacticalGridRenderer {
     _redraw() {
         if (!this.visible) return;
         const state = this.tactical.getCombatState();
+        if (!state.inCombat) return; // combat ended; hide() will clear us
         const g = this.gridGfx;
         g.clear();
         this.tokenLayer.removeAll(true);
@@ -304,6 +306,48 @@ export class TacticalGridRenderer {
     _short(name) {
         const s = String(name || '');
         return s.length > 9 ? s.slice(0, 8) + '…' : s;
+    }
+
+    // ----------------------------------------------------------------
+    // Hit feedback
+    // ----------------------------------------------------------------
+
+    /** Find a unit's current grid cell by id, from live combat state. */
+    _cellOf(unitId) {
+        const s = this.tactical.getCombatState();
+        const u = [...s.allies, ...s.enemies].find(x => x.id === unitId);
+        return u ? { x: u.gridX, y: u.gridY } : null;
+    }
+
+    _onAttacked(d) {
+        if (!this.visible || !d) return;
+        const cell = this._cellOf(d.defender);
+        if (!cell) return;
+        if (d.hit === false) { this._floatText(cell, 'miss', '#cfd6e0'); return; }
+        const dmg = d.damage ?? 0;
+        const crit = d.criticalHit;
+        this._floatText(cell, (crit ? '★' : '') + (dmg > 0 ? `-${dmg}` : '0'),
+            crit ? '#ffd34d' : '#ff6b6b', crit ? 22 : 16);
+        if (d.guardAbsorbed > 0) this._floatText(cell, `🛡${d.guardAbsorbed}`, '#6cf', 12, 14);
+    }
+
+    _onMissed(d) {
+        if (!this.visible || !d) return;
+        const cell = this._cellOf(d.defender);
+        if (cell) this._floatText(cell, 'miss', '#cfd6e0');
+    }
+
+    /** Rising, fading combat text anchored to a grid cell. */
+    _floatText(cell, text, color, size = 16, yOffset = 0) {
+        const { x, y } = this._cellToScreen(cell.x, cell.y);
+        const t = this.scene.add.text(x + this._cell / 2, y + this._cell / 2 + yOffset, text, {
+            fontFamily: 'Open Sans', fontSize: `${size}px`, color,
+            stroke: '#000', strokeThickness: 3, fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(14050).setScrollFactor(0);
+        this.scene.tweens.add({
+            targets: t, y: t.y - 36, alpha: 0, duration: 900, ease: 'Cubic.easeOut',
+            onComplete: () => t.destroy()
+        });
     }
 
     _flash(cell, color) {

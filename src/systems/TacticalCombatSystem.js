@@ -1003,9 +1003,14 @@ export class TacticalCombatSystem {
 
   _serializeGrid() {
     const data = [];
+    // Grid is cleared to [] on combat end; guard so getCombatState() is safe
+    // to call afterwards (UI listeners can fire as combat resolves).
+    if (!this.grid || !this.grid.length) return data;
     for (let x = 0; x < this.gridWidth; x++) {
+      if (!this.grid[x]) continue;
       for (let y = 0; y < this.gridHeight; y++) {
         const tile = this.grid[x][y];
+        if (!tile) continue;
         if (tile.terrain !== 'open' || tile.elevation > 0 || tile.occupant) {
           data.push({
             x, y, terrain: tile.terrain, elevation: tile.elevation,
