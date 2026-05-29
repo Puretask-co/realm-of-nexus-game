@@ -600,13 +600,26 @@ export class SpellbookPanel {
         this._vfxPrevGfx.fillStyle(color, 0.7);
 
         if (type === 'shield' || type === 'nova') {
+            this._vfxPrevGfx.lineStyle(2, color, 0.9);
             this._vfxPrevGfx.strokeCircle(vx, vy, r * 0.7);
         } else if (type === 'beam') {
             this._vfxPrevGfx.fillRect(vx - 3, vy - r, 6, r * 2);
         } else if (type === 'projectile') {
             this._vfxPrevGfx.fillTriangle(vx, vy - r * 0.8, vx - 6, vy + r * 0.6, vx + 6, vy + r * 0.6);
         } else if (type === 'summon') {
-            this._vfxPrevGfx.fillStar(vx, vy, 5, r * 0.5, r * 0.2);
+            const outerR = r * 0.5, innerR = r * 0.2, points = 5;
+            for (let i = 0; i < points; i++) {
+                const aOuter = (i / points) * Math.PI * 2 - Math.PI / 2;
+                const aInner = aOuter + Math.PI / points;
+                const ox = vx + Math.cos(aOuter) * outerR;
+                const oy = vy + Math.sin(aOuter) * outerR;
+                const ix = vx + Math.cos(aInner) * innerR;
+                const iy = vy + Math.sin(aInner) * innerR;
+                const aNext = ((i + 1) / points) * Math.PI * 2 - Math.PI / 2;
+                const nx = vx + Math.cos(aNext) * outerR;
+                const ny = vy + Math.sin(aNext) * outerR;
+                this._vfxPrevGfx.fillTriangle(ox, oy, ix, iy, nx, ny);
+            }
         } else if (type === 'channel') {
             for (let i = 0; i < 4; i++) {
                 const a = (i / 4) * Math.PI * 2;

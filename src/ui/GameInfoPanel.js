@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import dataManager from '../systems/DataManager.js';
 
@@ -775,7 +776,9 @@ export default class GameInfoPanel {
                     this._currentZone = data.locationId;
                 }
             }),
-            EventBus.on('sap-cycle-tick', (phase, progress) => {
+            EventBus.on('sap-cycle-tick', (data) => {
+                const phase = typeof data === 'string' ? data : data?.phase;
+                const progress = typeof data === 'string' ? undefined : data?.progress;
                 this._sapPhase = phase;
                 this._sapProgress = progress;
                 if (this.visible && this._activeTab === 2) this._refreshTab(2);

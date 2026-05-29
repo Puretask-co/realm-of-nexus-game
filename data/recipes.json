@@ -512,7 +512,7 @@
       "id": "recipe_silver_moss_ring",
       "name": "Silver Moss Ring",
       "category": "accessories",
-      "resultItemId": "iron_chain",
+      "resultItemId": "silver_moss_ring",
       "resultQuantity": 1,
       "materials": [
         { "itemId": "silver_moss", "quantity": 4 },
@@ -529,7 +529,7 @@
       "id": "recipe_emerald_amulet",
       "name": "Emerald Amulet",
       "category": "accessories",
-      "resultItemId": "moss_shield",
+      "resultItemId": "emerald_amulet",
       "resultQuantity": 1,
       "materials": [
         { "itemId": "emerald_dust", "quantity": 4 },
@@ -547,7 +547,7 @@
       "id": "recipe_void_pendant",
       "name": "Void Pendant",
       "category": "accessories",
-      "resultItemId": "sap_capacitor_totem",
+      "resultItemId": "void_pendant",
       "resultQuantity": 1,
       "materials": [
         { "itemId": "void_fragment", "quantity": 2 },
@@ -565,7 +565,7 @@
       "id": "recipe_nexus_focus_ring",
       "name": "Nexus Focus Ring",
       "category": "accessories",
-      "resultItemId": "crystal_shield",
+      "resultItemId": "nexus_focus_ring",
       "resultQuantity": 1,
       "materials": [
         { "itemId": "nexus_shard", "quantity": 1 },
@@ -583,7 +583,7 @@
       "id": "recipe_living_root_band",
       "name": "Living Root Band",
       "category": "accessories",
-      "resultItemId": "wooden_shield",
+      "resultItemId": "living_root_band",
       "resultQuantity": 1,
       "materials": [
         { "itemId": "living_root", "quantity": 3 },

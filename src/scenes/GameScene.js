@@ -67,7 +67,29 @@ export default class GameScene extends Phaser.Scene {
         super({ key: 'GameScene' });
     }
 
+    init(data) {
+        this._resumeZone = data?.resumeZone || null;
+    }
+
     create() {
+        try {
+            this._create();
+        } catch (err) {
+            console.error('[GameScene] FATAL create() error:', err);
+            const { width, height } = this.scale;
+            this.add.rectangle(width / 2, height / 2, width, height, 0x110022).setScrollFactor(0);
+            this.add.text(width / 2, height / 2 - 40, 'GameScene failed to load', {
+                fontSize: '24px', color: '#ff4444', fontFamily: 'monospace'
+            }).setOrigin(0.5).setScrollFactor(0);
+            this.add.text(width / 2, height / 2 + 10, err.message, {
+                fontSize: '14px', color: '#ffaaaa', fontFamily: 'monospace', wordWrap: { width: width - 40 }
+            }).setOrigin(0.5, 0).setScrollFactor(0);
+        }
+    }
+
+    _create() {
+        this._unsubs = [];
+
         // ---- Core Systems ----
         this.sapCycle = new SapCycleManager(this);
         this.lighting = new AdvancedLightingSystem(this);
@@ -151,7 +173,7 @@ export default class GameScene extends Phaser.Scene {
         // ---- Zone Content Manager (per-zone visuals, enemies, music mood) ----
         this.zoneContentManager = new ZoneContentManager(this);
         // Initial zone entered after world is built; deferred so _unsubs is set up first
-        this._pendingInitialZone = this.currentZone || 'canopy_of_life';
+        this._pendingInitialZone = this._resumeZone || this.currentZone || 'canopy_of_life';
 
         // ---- Player ----
         this._createPlayer();
@@ -257,7 +279,7 @@ export default class GameScene extends Phaser.Scene {
         this._inventoryCache = {};
 
         // ---- EventBus listeners ----
-        this._unsubs = [
+        this._unsubs.push(
             EventBus.on('spell-cast', (data) => this._onSpellCast(data)),
             EventBus.on('enemy-defeated', (data) => this._onEnemyDefeated(data)),
             EventBus.on('combat:effectApplied', (data) => this._onCombatEffectApplied(data)),
@@ -305,11 +327,6 @@ export default class GameScene extends Phaser.Scene {
             EventBus.on('worldmap:travelTo', (data) => this._onWorldMapTravelTo(data)),
             // ---- Portal system ----
             EventBus.on('portal:enter', (data) => this._onPortalEnter(data)),
-            // ---- Homebase exit (return from HomeBaseScene) ----
-            EventBus.on('homebase:exit', (data) => {
-                const zone = data?.returnZone || this.currentZone || 'canopy_of_life';
-                this._onWorldMapTravelTo({ locationId: zone });
-            }),
             // ---- Equipment stat bonuses ----
             EventBus.on('equipment:changed', (data) => this._onEquipmentChanged(data)),
             // ---- Zone content: show zone name toast on entry ----
@@ -322,7 +339,7 @@ export default class GameScene extends Phaser.Scene {
                     });
                 }
             })
-        ];
+        );
 
         // ---- Fire initial zone entry now that listeners are wired ----
         if (this._pendingInitialZone && this.zoneContentManager) {
@@ -440,7 +457,7 @@ export default class GameScene extends Phaser.Scene {
         }
 
         console.log('[GameScene] Created — all content wired');
-    }
+    } // end _create
 
     // ----------------------------------------------------------------
     // World building — distinct zones per location
@@ -1642,9 +1659,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _wireNPCDialogues() {
-        // When an NPC completes its basic dialogue, check if it has a dialogueId
-        // for the full DialogueSystem
-        EventBus.on('npc-dialogue-complete', (data) => {
+        const unsub = EventBus.on('npc-dialogue-complete', (data) => {
             const npc = this.npcs.find(n => n.name === data.npc);
             if (!npc) return;
 
@@ -1666,6 +1681,7 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         });
+        this._unsubs.push(unsub);
     }
 
     _getDefaultShopInventory(shopId) {
@@ -1800,7 +1816,12 @@ export default class GameScene extends Phaser.Scene {
 
         // Apply phase modifier
         const modifier = this.sapCycle.getBlendedModifier(spell);
-        const baseDmg = spell.baseDamage ?? spell.damage ?? 0;
+        let baseDmg = spell.baseDamage ?? spell.damage ?? 0;
+        if (typeof baseDmg === 'string' && baseDmg.includes('d')) {
+            const [count, sides] = baseDmg.split('d').map(Number);
+            baseDmg = 0;
+            for (let i = 0; i < (count || 1); i++) baseDmg += Math.floor(Math.random() * (sides || 6)) + 1;
+        }
         const damage = Math.round(baseDmg * modifier);
 
         // Consume sap (personal) and DSP (world resource)
@@ -2667,7 +2688,13 @@ export default class GameScene extends Phaser.Scene {
             };
             const spawn = ZONE_SPAWNS[locationId] || { x: 640, y: 360 };
             this.player.setPosition(spawn.x, spawn.y);
-            if (this.cameraSystem?.camera) this.cameraSystem.camera.centerOn(spawn.x, spawn.y);
+            const cam = this.cameras?.main;
+            if (cam && cam._bounds) {
+                cam.centerOn(spawn.x, spawn.y);
+            } else if (cam) {
+                cam.scrollX = spawn.x - cam.width / 2;
+                cam.scrollY = spawn.y - cam.height / 2;
+            }
         }
         // Fog of War: reveal the travel destination immediately
         const destZone = this.zones?.find(z => z.id === locationId);
@@ -3088,7 +3115,9 @@ export default class GameScene extends Phaser.Scene {
                         enemy.setVelocity(0, 0);
                         d.attackCooldown -= dt;
                         if (d.attackCooldown <= 0) {
-                            const damage = d.definition?.baseStats?.damage ?? d.definition?.baseStats?.atk ?? 5;
+                            const might = d.definition?.baseStats?.might ?? d.definition?.might ?? 0;
+                            const tier = d.definition?.tier ?? 1;
+                            const damage = Math.max(1, might + tier * 2);
                             this.player.stats.hp = Math.max(0, this.player.stats.hp - damage);
                             // Play attack animation if available (reverts to walk anim automatically)
                             const ATTACK_ANIM = {
@@ -3147,6 +3176,7 @@ export default class GameScene extends Phaser.Scene {
     // ----------------------------------------------------------------
 
     update(time, delta) {
+        if (!this.profiler) return;
         this._frameCount++;
         this.profiler.begin('total');
 

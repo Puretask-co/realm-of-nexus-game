@@ -20,7 +20,14 @@ import EventBus from '../core/EventBus.js';
  *   cooldownManager.isReady('azure_bolt'); // true
  */
 export default class CooldownManager {
+    static instance = null;
+
+    static getInstance() {
+        return CooldownManager.instance;
+    }
+
     constructor() {
+        CooldownManager.instance = this;
         this.cooldowns = new Map();
     }
 
