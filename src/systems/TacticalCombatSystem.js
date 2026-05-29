@@ -266,6 +266,22 @@ export class TacticalCombatSystem {
       acted: false
     }));
 
+    // Neutral combatants — hostile to ALL sides (e.g. summoned vermin).
+    // Usually empty at start; spawned mid-fight by lairs.
+    this.neutrals = (config.neutrals || []).map((n, i) => ({
+      ...n, side: 'neutral',
+      stats: { ...n.stats, guard: n.stats?.guard || 0, maxGuard: n.stats?.maxGuard || 0,
+        ap: n.stats?.ap || 1, maxAP: n.stats?.ap || 1 },
+      facing: 'left', activeEffects: [], acted: false
+    }));
+
+    // Lairs — passive grid hazards that summon neutrals when a combatant comes
+    // within triggerRadius, or when a matching spell element is cast nearby.
+    // { id, name, x, y, triggerRadius, spawn:{ name, count, stats, spells? },
+    //   triggerElements?:[], triggered:false }
+    this.lairs = (config.lairs || []).map(l => ({ triggered: false, triggerRadius: 2, ...l }));
+    this._neutralSeq = 0;
+
     // Place combatants on grid
     this.allies.forEach((a, i) => {
       this.placeCombatant(a, 1, 2 + i * 2);
@@ -273,6 +289,16 @@ export class TacticalCombatSystem {
     this.enemies.forEach((e, i) => {
       this.placeCombatant(e, this.gridWidth - 2, 2 + i * 2);
     });
+    this.neutrals.forEach((n, i) => {
+      const ny = n.gridY ?? (1 + i * 2);
+      const nx = n.gridX ?? Math.floor(this.gridWidth / 2);
+      this.placeCombatant(n, nx, ny);
+    });
+    // Mark lair tiles so the renderer can show them.
+    for (const lair of this.lairs) {
+      const t = this.getTile(lair.x, lair.y);
+      if (t) { t.terrain = 'lair'; t.lairId = lair.id; }
+    }
 
     // Calculate initiative
     this._rollInitiative();
@@ -281,8 +307,76 @@ export class TacticalCombatSystem {
     this.eventBus.emit('tactical:combatStarted', {
       allies: this.allies.map(a => ({ id: a.id, name: a.name })),
       enemies: this.enemies.map(e => ({ id: e.id, name: e.name })),
+      neutrals: this.neutrals.map(n => ({ id: n.id, name: n.name })),
       grid: this._serializeGrid()
     });
+  }
+
+  /**
+   * Spawn neutral units from a lair near its tile and splice them into the
+   * turn order. Hostile to everyone. Returns the spawned units.
+   */
+  _spawnFromLair(lair) {
+    if (!lair || lair.triggered) return [];
+    lair.triggered = true;
+    const spawned = [];
+    const count = lair.spawn?.count || 2;
+    for (let i = 0; i < count; i++) {
+      const n = {
+        id: `neutral_${lair.id}_${this._neutralSeq++}`,
+        name: lair.spawn?.name || 'Vermin',
+        side: 'neutral',
+        stats: {
+          hp: lair.spawn?.stats?.hp || 12, maxHp: lair.spawn?.stats?.hp || 12,
+          guard: 0, maxGuard: 0,
+          might: lair.spawn?.stats?.might ?? 2, agility: lair.spawn?.stats?.agility ?? 3,
+          speed: lair.spawn?.stats?.speed ?? 3, ap: lair.spawn?.stats?.ap || 1, maxAP: lair.spawn?.stats?.ap || 1
+        },
+        spells: lair.spawn?.spells || [],
+        spriteKey: lair.spawn?.spriteKey || null,
+        facing: 'left', activeEffects: [], acted: false
+      };
+      // Place on a free tile adjacent to the lair (spiral out).
+      const spot = this._freeTileNear(lair.x, lair.y) || { x: lair.x, y: lair.y };
+      this.placeCombatant(n, spot.x, spot.y);
+      this.neutrals.push(n);
+      this.turnOrder.push({ entity: n, side: 'neutral', initiative: 5 });
+      spawned.push(n);
+    }
+    this.eventBus.emit('tactical:lairTriggered', {
+      lairId: lair.id, name: lair.name,
+      spawned: spawned.map(s => ({ id: s.id, name: s.name, gridX: s.gridX, gridY: s.gridY }))
+    });
+    this._log(`The ${lair.name} stirs — ${spawned.length} ${lair.spawn?.name || 'creatures'} emerge!`);
+    return spawned;
+  }
+
+  /** First walkable, unoccupied tile near (x,y), searched in rings. */
+  _freeTileNear(x, y) {
+    for (let r = 1; r <= 3; r++) {
+      for (let dx = -r; dx <= r; dx++) {
+        for (let dy = -r; dy <= r; dy++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const nx = x + dx, ny = y + dy;
+          if (this.isTileWalkable(nx, ny)) return { x: nx, y: ny };
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check every untriggered lair against a position (and optional spell
+   * element). Spawns neutrals from any lair whose trigger condition is met.
+   */
+  _checkLairTriggers(x, y, element = null) {
+    if (!this.lairs?.length) return;
+    for (const lair of this.lairs) {
+      if (lair.triggered) continue;
+      const near = this.getDistance(x, y, lair.x, lair.y) <= (lair.triggerRadius ?? 2);
+      const byElement = element && Array.isArray(lair.triggerElements) && lair.triggerElements.includes(element);
+      if (near || byElement) this._spawnFromLair(lair);
+    }
   }
 
   /**
@@ -291,7 +385,8 @@ export class TacticalCombatSystem {
   _rollInitiative() {
     const all = [
       ...this.allies.map(a => ({ entity: a, side: 'ally' })),
-      ...this.enemies.map(e => ({ entity: e, side: 'enemy' }))
+      ...this.enemies.map(e => ({ entity: e, side: 'enemy' })),
+      ...(this.neutrals || []).map(n => ({ entity: n, side: 'neutral' }))
     ];
 
     for (const entry of all) {
@@ -367,10 +462,48 @@ export class TacticalCombatSystem {
       gridY: entity.gridY
     });
 
-    // If enemy, run AI
+    // AI sides act automatically. Neutrals are hostile to everyone.
     if (current.side === 'enemy') {
       this._runEnemyAI(entity);
+    } else if (current.side === 'neutral') {
+      this._runNeutralAI(entity);
     }
+  }
+
+  /**
+   * Neutral AI — hostile to ALL. Charges and melees the nearest living
+   * combatant of any other side.
+   */
+  _runNeutralAI(entity) {
+    const everyoneElse = [...this.allies, ...this.enemies]
+      .filter(c => c.stats.hp > 0);
+    if (everyoneElse.length === 0) { setTimeout(() => this.endTurn(), 300); return; }
+
+    let nearest = everyoneElse[0], nd = Infinity;
+    for (const t of everyoneElse) {
+      const d = this.getDistance(entity.gridX, entity.gridY, t.gridX, t.gridY);
+      if (d < nd) { nd = d; nearest = t; }
+    }
+
+    let safety = 6;
+    while (this.currentAP > 0 && safety-- > 0) {
+      const apBefore = this.currentAP;
+      const dist = this.getDistance(entity.gridX, entity.gridY, nearest.gridX, nearest.gridY);
+      if (dist <= 1) {
+        this.attackAction(nearest);
+      } else {
+        const reachable = this.getReachableTiles(entity.gridX, entity.gridY, entity.stats.speed || 3);
+        let best = null, bd = Infinity;
+        for (const tile of reachable) {
+          const d = this.getDistance(tile.x, tile.y, nearest.gridX, nearest.gridY);
+          if (d < bd) { bd = d; best = tile; }
+        }
+        if (best && (best.x !== entity.gridX || best.y !== entity.gridY)) this.moveAction(best.x, best.y);
+        else break;
+      }
+      if (this.currentAP === apBefore) break;
+    }
+    setTimeout(() => this.endTurn(), 400);
   }
 
   /**
@@ -424,6 +557,8 @@ export class TacticalCombatSystem {
     });
 
     this._log(`${entity.name} moved to (${targetX}, ${targetY})`);
+    // Moving close to a lair can rouse it.
+    this._checkLairTriggers(targetX, targetY);
     return { success: true };
   }
 
@@ -628,6 +763,8 @@ export class TacticalCombatSystem {
       caster: caster.id, spell: spellDef,
       targetX, targetY, apCost, dspCost, ...result
     });
+    // Loud/elemental magic near a lair can rouse it.
+    if (targetX != null) this._checkLairTriggers(targetX, targetY, spellDef.element);
     return result;
   }
 
@@ -1115,13 +1252,15 @@ export class TacticalCombatSystem {
   _checkCombatEnd() {
     const alliesAlive = this.allies.filter(a => a.stats.hp > 0);
     const enemiesAlive = this.enemies.filter(e => e.stats.hp > 0);
+    const neutralsAlive = (this.neutrals || []).filter(n => n.stats.hp > 0);
 
-    if (enemiesAlive.length === 0) {
-      this._endCombat('victory');
-      return true;
-    }
     if (alliesAlive.length === 0) {
       this._endCombat('defeat');
+      return true;
+    }
+    // Victory only once BOTH hostile factions are cleared.
+    if (enemiesAlive.length === 0 && neutralsAlive.length === 0) {
+      this._endCombat('victory');
       return true;
     }
     return false;
@@ -1147,6 +1286,8 @@ export class TacticalCombatSystem {
     this.currentTurnIndex = -1;
     this.currentActor = null;
     this.grid = [];
+    this.neutrals = [];
+    this.lairs = [];
   }
 
   _calculateRewards() {
@@ -1230,6 +1371,17 @@ export class TacticalCombatSystem {
         intent: e.nextIntent || null,
         spriteKey: e.spriteKey || null,
         effects: (e.activeEffects || []).map(ef => ef.type)
+      })),
+      neutrals: (this.neutrals || []).map(n => ({
+        id: n.id, name: n.name, hp: n.stats.hp, maxHp: n.stats.maxHp,
+        guard: n.stats.guard, maxGuard: n.stats.maxGuard,
+        gridX: n.gridX, gridY: n.gridY, alive: n.stats.hp > 0,
+        spriteKey: n.spriteKey || null,
+        effects: (n.activeEffects || []).map(ef => ef.type)
+      })),
+      lairs: (this.lairs || []).map(l => ({
+        id: l.id, name: l.name, x: l.x, y: l.y, triggered: l.triggered,
+        triggerRadius: l.triggerRadius
       })),
       grid: this._serializeGrid(),
       canUndo: this.canUndo,

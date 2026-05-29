@@ -310,9 +310,23 @@ export class TacticalGridRenderer {
             g.strokeRect(x + 1, y + 1, cell - 3, cell - 3);
         }
 
+        // ── Lairs (untriggered) — pulsing hazard marker ──────────────
+        for (const lair of (state.lairs || [])) {
+            if (lair.triggered) continue;
+            const { x, y } = this._cellToScreen(lair.x, lair.y);
+            g.fillStyle(0xaa7722, 0.55); g.fillRect(x + 3, y + 3, cell - 6, cell - 6);
+            g.lineStyle(2, 0xffcc44, 0.8); g.strokeRect(x + 3, y + 3, cell - 6, cell - 6);
+            const m = this.scene.add.text(x + cell / 2, y + cell / 2, '☣', {
+                fontFamily: 'Open Sans', fontSize: `${Math.round(cell * 0.4)}px`,
+                color: '#ffdd66', stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5);
+            this.tokenLayer.add(m);
+        }
+
         // ── Tokens ───────────────────────────────────────────────────
         for (const a of state.allies) if (a.alive) this._drawToken(a, 0x4488ff, '#bcd8ff');
         for (const e of state.enemies) if (e.alive) this._drawToken(e, 0xcc4444, '#ffc0c0', e.intent);
+        for (const n of (state.neutrals || [])) if (n.alive) this._drawToken(n, 0xdd8822, '#ffdda0');
     }
 
     _drawToken(unit, bodyColor, labelColor, intent) {

@@ -261,6 +261,9 @@ export default class GameScene extends Phaser.Scene {
                             { id: 'dummy2', name: 'Sap Beetle', stats: { hp: 18, maxHp: 18, guard: 0, might: 2, agility: 3, ap: 2, speed: 3 } },
                         ],
                         gridWidth: 10, gridHeight: 7,
+                        terrain: this._generateCombatTerrain(10, 7),
+                        lairs: [{ id: 'rat_mound', name: 'Rat Mound', x: 5, y: 3, triggerRadius: 2,
+                            spawn: { name: 'Giant Rat', count: 2, stats: { hp: 10, might: 2, agility: 3, speed: 3, ap: 1 } } }],
                     });
                 }
             };
