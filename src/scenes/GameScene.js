@@ -1322,6 +1322,9 @@ export default class GameScene extends Phaser.Scene {
                 maxAP: allyStats.agility >= 4 ? 3 : 2,
                 speed: 4
             },
+            // Carry the player's known spells into tactical combat so the
+            // Cast action has something to offer.
+            spells: (allyStats.spells || []).slice(),
             variant: this.registry.get('selectedVariant') || 'pure'
         }];
 

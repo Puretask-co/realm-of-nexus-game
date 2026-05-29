@@ -147,10 +147,48 @@ export class TacticalGridRenderer {
     // Input → actions
     // ----------------------------------------------------------------
 
+    /**
+     * Enter spell-targeting mode. While active, the next grid click resolves
+     * the spell via onPick(cell) instead of move/attack. Highlights tiles in
+     * range. Returns nothing; call cancelTargeting() to abort.
+     */
+    enterTargeting(spell, onPick) {
+        this._targeting = { spell, onPick };
+        const actor = this.tactical.currentActor?.entity;
+        const range = spell.range ?? 0;
+        this._targetTiles = [];
+        if (actor && range > 0) {
+            for (let gx = 0; gx < this._cols; gx++) {
+                for (let gy = 0; gy < this._rows; gy++) {
+                    if (this.tactical.getDistance(actor.gridX, actor.gridY, gx, gy) <= range) {
+                        this._targetTiles.push({ x: gx, y: gy });
+                    }
+                }
+            }
+        }
+        this._redraw();
+    }
+
+    cancelTargeting() {
+        this._targeting = null;
+        this._targetTiles = [];
+        this._redraw();
+    }
+
     _handleClick(pointer) {
         if (!this.visible || !this._isPlayerTurn) return;
         const cell = this._screenToCell(pointer.x, pointer.y);
         if (!cell) return;
+
+        // Spell-targeting mode intercepts the click.
+        if (this._targeting) {
+            const t = this._targeting;
+            this._targeting = null;
+            this._targetTiles = [];
+            t.onPick?.(cell);
+            this._afterAction();
+            return;
+        }
 
         const state = this.tactical.getCombatState();
 
@@ -212,11 +250,20 @@ export class TacticalGridRenderer {
             }
         }
 
-        // ── Reachable-move highlight (player turn) ───────────────────
-        if (this._isPlayerTurn) {
+        // ── Reachable-move highlight (player turn, not while targeting) ──
+        if (this._isPlayerTurn && !this._targeting) {
             for (const t of this._reachable) {
                 const { x, y } = this._cellToScreen(t.x, t.y);
                 g.fillStyle(0x3388ff, 0.22);
+                g.fillRect(x, y, cell - 1, cell - 1);
+            }
+        }
+
+        // ── Spell-targeting range highlight (purple) ─────────────────
+        if (this._targeting) {
+            for (const t of (this._targetTiles || [])) {
+                const { x, y } = this._cellToScreen(t.x, t.y);
+                g.fillStyle(0xbb66ff, 0.28);
                 g.fillRect(x, y, cell - 1, cell - 1);
             }
         }
