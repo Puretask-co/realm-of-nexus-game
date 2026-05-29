@@ -248,7 +248,21 @@ export default class GameScene extends Phaser.Scene {
                         EventBus.emit('dsp:changed', this.dspSystem.getStatus());
                     }
                 },
-                getState: () => window.__gameState
+                getState: () => window.__gameState,
+                // Force a tactical encounter for testing the grid renderer.
+                startTacticalDemo: () => {
+                    const live = this.enemies.getChildren().filter(e => e.active).slice(0, 3);
+                    if (live.length) this._startTacticalEncounter(live);
+                    else this.tacticalCombat.startCombat({
+                        allies: [{ id: 'player', name: this.player.stats?.name || 'Hero',
+                            stats: { hp: this.player.stats.hp, maxHp: this.player.stats.maxHp, guard: 0, maxGuard: 10, might: 3, agility: 3, ap: 2, speed: 4 } }],
+                        enemies: [
+                            { id: 'dummy1', name: 'Thornling', stats: { hp: 24, maxHp: 24, guard: 0, might: 2, agility: 2, ap: 2, speed: 3 } },
+                            { id: 'dummy2', name: 'Sap Beetle', stats: { hp: 18, maxHp: 18, guard: 0, might: 2, agility: 3, ap: 2, speed: 3 } },
+                        ],
+                        gridWidth: 10, gridHeight: 7,
+                    });
+                }
             };
             // Also expose dataManager for debug convenience
             window.__dataManager = window.__dataManager || {};

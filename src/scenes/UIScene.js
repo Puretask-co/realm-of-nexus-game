@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 import { UIFramework } from '../ui/UIFramework.js';
 import { TacticalCombatPanel } from '../ui/TacticalCombatPanel.js';
+import { TacticalGridRenderer } from '../ui/TacticalGridRenderer.js';
 import { ShopPanel } from '../ui/ShopPanel.js';
 import { CraftingPanel } from '../ui/CraftingPanel.js';
 import { MoralChoicePanel } from '../ui/MoralChoicePanel.js';
@@ -49,6 +50,9 @@ export default class UIScene extends Phaser.Scene {
         this._createQuestTracker();
         this._createQuestJournal();
         this._createLocationIndicator();
+
+        this.tacticalGridRenderer = new TacticalGridRenderer(this);
+        this.tacticalGridRenderer.create();
 
         this.tacticalCombatPanel = new TacticalCombatPanel(this);
         this.tacticalCombatPanel.create();
