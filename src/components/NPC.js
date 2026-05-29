@@ -106,6 +106,7 @@ export default class NPC {
 
     update(delta, player) {
         if (!player) return;
+        if (!this.sprite || !this.sprite.body) return; // destroyed / body removed
         const dt = delta / 1000;
 
         // Idle bob

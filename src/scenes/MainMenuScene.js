@@ -345,6 +345,10 @@ export default class MainMenuScene extends Phaser.Scene {
 
     _onNewGame() {
         this._clearModal();
+        // Wipe persistent singleton state (progression, quests, factions, DSP)
+        // so a new game started in the same session doesn't inherit the last
+        // playthrough's level/quests/reputation.
+        EventBus.emit('game:reset');
         this.scene.start('ClassSelectionScene');
     }
 

@@ -6,17 +6,16 @@
  */
 
 // Realm -> ordered panel letters that exist, plus grid layout.
+// Only realms that ZONE_REALM actually maps a zone to are listed — otherwise
+// their panel textures would be preloaded but never used.
 const REALM_GRID = {
   heights:     { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
-  archive:     { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
   crimsonmire: { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
   gloamwood:   { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
   spire:       { panels: ['A', 'B', 'C', 'D', 'E', 'F'], cols: 3, rows: 2 },
-  witherlands: { panels: ['B', 'C', 'D', 'E'],            cols: 2, rows: 2 },
   catacombs:   { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
   scar:        { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
   tideflow:    { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
-  frostmere:   { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
   veil:        { panels: ['A', 'B', 'C', 'D'],            cols: 2, rows: 2 },
 };
 

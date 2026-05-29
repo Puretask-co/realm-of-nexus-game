@@ -276,7 +276,8 @@ export default class GameScene extends Phaser.Scene {
             companionSystem: this.companionSystem,
             attributeSystem: this.attributeSystem,
             veilkeeperSystem: this.veilkeeperSystem,
-            skillCheckSystem: this.skillCheckSystem
+            skillCheckSystem: this.skillCheckSystem,
+            sapCycleManager: this.sapCycle
         });
 
         // ---- Inventory cache (used by CraftingPanel for material checks) ----

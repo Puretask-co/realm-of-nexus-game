@@ -74,8 +74,23 @@ export class ProgressionSystem {
     this.eventBus.on('data-reloaded', (data) => {
       if (data?.key === 'config') this.applyConfig(data.data);
     });
+    // Reset progression when a brand-new game starts (singletons persist
+    // across scene restarts, so without this a new game keeps the old level).
+    this.eventBus.on('game:reset', () => this.reset());
 
     ProgressionSystem.instance = this;
+  }
+
+  /** Clear playthrough progression for a new game (keeps config/listeners). */
+  reset() {
+    this.level = 1;
+    this.experience = 0;
+    this.totalExperience = 0;
+    this.talentPoints = 0;
+    this.unlockedTalents = new Set();
+    this.secondaryClass = null;
+    this.multiclassAvailable = false;
+    this.achievements = new Map();
   }
 
   applyConfig(config) {
@@ -306,6 +321,7 @@ export class ProgressionSystem {
     if (data.unlockedTalents) this.unlockedTalents = new Set(data.unlockedTalents);
     this.secondaryClass = data.secondaryClass || null;
     this.multiclassAvailable = data.multiclassAvailable || false;
+    if (data.achievements) this.achievements = new Map(Object.entries(data.achievements));
   }
 }
 
