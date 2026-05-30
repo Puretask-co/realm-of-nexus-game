@@ -248,32 +248,127 @@ class DataManager {
     }
 
     checkReferences() {
+        // Build id sets once per call.
         const spellIds = new Set(this.data.spells.map((s) => s.id));
+        const enemyIds = new Set(this.data.enemies.map((e) => e.id));
+        const itemIds = new Set(this.data.items.map((i) => i.id));
+        const locationIds = new Set(this.data.locations.map((l) => l.id));
+        const questIds = new Set((this.data.quests || []).map((q) => q.id));
+        const dialogueIds = new Set(
+            ((this.data.dialogues && (this.data.dialogues.dialogues || [])) || [])
+                .map((d) => d.id)
+        );
 
-        // Spell combo references
+        const err = (type, id, msg) => this.validationErrors.push({ type, id, errors: [msg] });
+
+        // ── Spells: combos must resolve ───────────────────────────────
         this.data.spells.forEach((spell) => {
             (spell.combosWith || []).forEach((comboId) => {
-                if (!spellIds.has(comboId)) {
-                    this.validationErrors.push({
-                        type: 'spell',
-                        id: spell.id,
-                        errors: [`References unknown spell in combos: ${comboId}`]
-                    });
+                if (!spellIds.has(comboId)) err('spell', spell.id, `combosWith unknown spell: ${comboId}`);
+            });
+        });
+
+        // ── Enemies: spells + lootTable items must resolve ────────────
+        this.data.enemies.forEach((enemy) => {
+            (enemy.spells || []).forEach((spellId) => {
+                if (!spellIds.has(spellId)) err('enemy', enemy.id, `unknown spell: ${spellId}`);
+            });
+            const drops = enemy.lootTable?.items || [];
+            drops.forEach((d) => {
+                if (d?.itemId && !itemIds.has(d.itemId)) {
+                    err('enemy', enemy.id, `lootTable item unknown: ${d.itemId}`);
                 }
             });
         });
 
-        // Enemy spell references
-        this.data.enemies.forEach((enemy) => {
-            (enemy.spells || []).forEach((spellId) => {
-                if (!spellIds.has(spellId)) {
-                    this.validationErrors.push({
-                        type: 'enemy',
-                        id: enemy.id,
-                        errors: [`References unknown spell: ${spellId}`]
-                    });
+        // ── Quests: objective targets, rewards, prereqs, chain, dialogue ─
+        (this.data.quests || []).forEach((quest) => {
+            (quest.objectives || []).forEach((o) => {
+                if (!o?.target) return;
+                if (o.type === 'kill'    && !enemyIds.has(o.target))    err('quest', quest.id, `kill objective unknown enemy: ${o.target}`);
+                if (o.type === 'collect' && !itemIds.has(o.target))     err('quest', quest.id, `collect objective unknown item: ${o.target}`);
+                if (o.type === 'travel'  && !locationIds.has(o.target)) err('quest', quest.id, `travel objective unknown location: ${o.target}`);
+                // 'dialogue' targets are NPC display-names — free-text, not validated here.
+                // 'interact' targets are in-world beacon ids — not validated.
+            });
+
+            (quest.prerequisites || []).forEach((p) => {
+                if (p?.type === 'quest' && p.questId && !questIds.has(p.questId)) {
+                    err('quest', quest.id, `prerequisite unknown quest: ${p.questId}`);
                 }
             });
+
+            if (quest.chainQuest && !questIds.has(quest.chainQuest)) {
+                err('quest', quest.id, `chainQuest unknown: ${quest.chainQuest}`);
+            }
+
+            const r = quest.rewards || {};
+            (r.items || []).forEach((it) => {
+                const id = it?.id ?? it?.itemId;
+                if (id && !itemIds.has(id)) err('quest', quest.id, `reward item unknown: ${id}`);
+            });
+            (r.spells || []).forEach((sp) => {
+                if (sp && !spellIds.has(sp)) err('quest', quest.id, `reward spell unknown: ${sp}`);
+            });
+
+            // Dialogue refs are optional content but still tracked so authors
+            // can see what's missing.
+            for (const k of ['dialogueId', 'dialogueOnAccept', 'dialogueOnComplete', 'dialogueOnFail']) {
+                const v = quest[k];
+                if (v && !dialogueIds.has(v)) err('quest', quest.id, `${k} unknown dialogue: ${v}`);
+            }
+        });
+
+        // ── Locations: connections + enemies ─────────────────────────
+        (this.data.locations || []).forEach((loc) => {
+            (loc.connections || []).forEach((c) => {
+                if (c && !locationIds.has(c)) err('location', loc.id, `connection unknown: ${c}`);
+            });
+            (loc.enemies || []).forEach((e) => {
+                if (e && !enemyIds.has(e)) err('location', loc.id, `enemy unknown: ${e}`);
+            });
+        });
+
+        // ── Classes: startingSpells must resolve ─────────────────────
+        const classList = this.data.classes?.classes || [];
+        classList.forEach((cls) => {
+            (cls.startingSpells || []).forEach((sp) => {
+                if (sp && !spellIds.has(sp)) err('class', cls.id, `startingSpell unknown: ${sp}`);
+            });
+        });
+
+        // ── Companions: recruit/personal quests + recruit location ───
+        const compList = this.data.companions?.companions || [];
+        compList.forEach((c) => {
+            for (const k of ['recruitQuest', 'personalQuest']) {
+                const v = c[k];
+                if (v && !questIds.has(v)) err('companion', c.id, `${k} unknown quest: ${v}`);
+            }
+            if (c.recruitLocation && !locationIds.has(c.recruitLocation)) {
+                err('companion', c.id, `recruitLocation unknown: ${c.recruitLocation}`);
+            }
+        });
+
+        // ── Recipes: materials, result, unlock-method ───────────────
+        (this.data.recipes || []).forEach((r) => {
+            (r.materials || []).forEach((m) => {
+                if (m?.itemId && !itemIds.has(m.itemId)) err('recipe', r.id, `material unknown: ${m.itemId}`);
+            });
+            const resultId = r.result?.itemId ?? r.resultItemId;
+            if (resultId && !itemIds.has(resultId)) err('recipe', r.id, `result item unknown: ${resultId}`);
+
+            // unlockMethod can be "find:<location>" — validate the location.
+            if (typeof r.unlockMethod === 'string' && r.unlockMethod.startsWith('find:')) {
+                const loc = r.unlockMethod.slice(5);
+                if (loc && !locationIds.has(loc)) err('recipe', r.id, `unlockMethod location unknown: ${loc}`);
+            }
+        });
+
+        // ── Veilkeepers: memorialBuffs.location ──────────────────────
+        const vkList = this.data.veilkeepers?.veilkeepers || [];
+        vkList.forEach((vk) => {
+            const loc = vk.memorialBuffs?.location;
+            if (loc && !locationIds.has(loc)) err('veilkeeper', vk.id, `memorialBuffs.location unknown: ${loc}`);
         });
     }
 
