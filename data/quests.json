@@ -3037,7 +3037,7 @@
                 { "id": "trespass_sanctum", "type": "travel", "description": "Reach the inner sanctum where the Sap's voice runs strongest", "target": "emerald_sanctum", "count": 1, "required": 1, "order": 1 },
                 { "id": "defeat_guardian", "type": "kill", "description": "Defeat the sanctum guardian", "target": "nexus_guardian", "count": 1, "required": 1, "isBoss": true, "order": 2 }
             ],
-            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [], "spells": ["soul_link"], "reputation": { "aeliana_bond": 50 } },
+            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [], "spells": ["sap_surge"], "reputation": { "aeliana_bond": 50 } },
             "dialogueId": "mysteries_of_the_sap",
             "dialogueOnAccept": "mysteries_of_the_sap",
             "dialogueOnComplete": "mysteries_of_the_sap_complete",
