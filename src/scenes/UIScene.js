@@ -48,6 +48,9 @@ export default class UIScene extends Phaser.Scene {
         this._createMinimap();
         this._createFPSCounter();
         this._createQuestTracker();
+        // Initial paint of the main quest line — empty until quest:started or
+        // narrative:actChanged fires; this avoids a stale blank if no events.
+        this.time?.delayedCall?.(500, () => this._refreshMainQuestLine());
         this._createQuestJournal();
         this._createLocationIndicator();
 
@@ -125,6 +128,7 @@ export default class UIScene extends Phaser.Scene {
             EventBus.on('quest:started', (data) => {
                 this._updateQuestTracker(data);
                 this._showNotification(`Quest Started: ${data.name}`, 0x4488ff);
+                this._refreshMainQuestLine();
             }),
             EventBus.on('quest:objectiveUpdated', (data) => {
                 this._updateQuestObjective(data);
@@ -132,6 +136,11 @@ export default class UIScene extends Phaser.Scene {
             EventBus.on('quest:completed', (data) => {
                 this._showNotification(`Quest Complete: ${data.name}`, 0x44ff44);
                 this._clearQuestTracker();
+                this._refreshMainQuestLine();
+            }),
+            EventBus.on('narrative:actChanged', (data) => {
+                this._showNotification(`${data.title} begins…`, 0xffd66a, true);
+                this._refreshMainQuestLine();
             }),
             EventBus.on('zone-entered', (data) => {
                 this._updateLocation(data.name);
@@ -498,6 +507,13 @@ export default class UIScene extends Phaser.Scene {
         const x = 1280 - 260;
         const y = 160;
 
+        // "Main Quest" line — shows current act + main objective so the
+        // player can always see the story's through-line.
+        this.uiElements.mainQuestLine = this.add.text(x, y - 18, '', {
+            fontFamily: 'Open Sans', fontSize: '13px', color: '#ffd66a',
+            stroke: '#000', strokeThickness: 2
+        }).setDepth(10000);
+
         this.uiElements.questTitle = this.add.text(x, y, '', {
             fontFamily: 'Open Sans', fontSize: '17px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
@@ -556,6 +572,40 @@ export default class UIScene extends Phaser.Scene {
         }
         this._currentQuestData = null;
         if (this._journalVisible) this._refreshJournalDisplay();
+    }
+
+    /**
+     * "Main Quest — Act N: Title — current main objective" line shown above
+     * the quest tracker so the story's through-line is always visible.
+     */
+    _refreshMainQuestLine() {
+        try {
+            const line = this.uiElements.mainQuestLine;
+            if (!line) return;
+            const gs = this.scene.get('GameScene');
+            const QS = gs?.questSystem; const NS = gs?.narrativeSystem;
+            if (!QS || !NS) { line.setText(''); return; }
+            const act = NS.getCurrentAct?.();
+            // Prefer act.title if present (e.g. "Act I — Awakening"); else build one.
+            const actLabel = act ? (act.title || `${act.id?.replace('act_','Act ') || ''} — ${act.name || ''}`).trim() : '';
+
+            // Find the active main quest (any in the act's set that's active).
+            const acts = NS.constructor?.MAIN_QUEST_ACTS || {};
+            let activeMain = null;
+            for (const [qid, aid] of Object.entries(acts)) {
+                if (aid !== NS.currentAct) continue;
+                if (QS.activeQuests?.has?.(qid)) { activeMain = QS.activeQuests.get(qid); break; }
+            }
+            if (activeMain) {
+                const defObjs = activeMain.definition?.objectives || [];
+                const sorted = [...defObjs].sort((a, b) => (a.order || 0) - (b.order || 0));
+                const next = sorted.find(o => !activeMain.objectiveProgress?.get(o.id)?.completed);
+                const goal = next?.description || activeMain.definition?.name || 'in progress';
+                line.setText(`★ ${actLabel}  ·  ${goal}`);
+            } else {
+                line.setText(`★ ${actLabel}  ·  no active main quest`);
+            }
+        } catch (_) { /* HUD nicety, never crash combat */ }
     }
 
     // ----------------------------------------------------------------

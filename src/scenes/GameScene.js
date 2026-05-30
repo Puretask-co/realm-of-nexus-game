@@ -124,6 +124,9 @@ export default class GameScene extends Phaser.Scene {
         this.factionSystem = FactionSystem.getInstance();
         this.veilkeeperSystem = VeilkeeperSystem.getInstance();
         this.narrativeSystem = NarrativeSystem.getInstance();
+        // Give NarrativeSystem a handle to QuestSystem so it can read completed
+        // quests when checking act progression (avoids a circular import).
+        NarrativeSystem.setQuestSystemRef?.(this.questSystem);
         this.moralChoiceSystem = MoralChoiceSystem.getInstance();
         this.companionSystem = CompanionSystem.getInstance();
         this.craftingSystem = CraftingSystem.getInstance();
@@ -2623,6 +2626,18 @@ export default class GameScene extends Phaser.Scene {
         if ((xp || r.gold) && this.player?.stats) {
             EventBus.emit('player-stats-updated', this.player.stats);
         }
+
+        // Reward-summary toast — players were getting silent XP/gold/items.
+        const parts = [];
+        if (xp) parts.push(`+${xp} XP`);
+        if (r.gold) parts.push(`+${r.gold}g`);
+        const itemCount = (r.items || []).reduce((n, it) => n + (it.quantity || 1), 0);
+        if (itemCount) parts.push(`+${itemCount} item${itemCount === 1 ? '' : 's'}`);
+        EventBus.emit('ui:notification', {
+            message: `✓ ${data.name}  ·  ${parts.join('  ·  ') || 'complete'}`,
+            color: '#ffdd66',
+            duration: 4000
+        });
 
         // Check if this is a main quest completion — trigger ending evaluation
         const questDef = this.questSystem?.questDefinitions?.get?.(data.questId);

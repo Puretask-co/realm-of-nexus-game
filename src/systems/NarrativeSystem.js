@@ -51,6 +51,7 @@ export class NarrativeSystem {
     this.eventBus.on('quest:completed', (data) => {
       this._checkEraProgression(data);
       this._onQuestCompletedForEnding(data);
+      this._checkActProgression(data);
     });
     this.eventBus.on('player:levelUp', (data) => this._checkEraProgression(data));
 
@@ -78,6 +79,41 @@ export class NarrativeSystem {
    */
   getCurrentAct() {
     return this.acts.find(a => a.id === this.currentAct) || this.acts[0];
+  }
+
+  /**
+   * Map a main-quest id to its act. Acts in our story are:
+   *   Act 1 — Awakening      (intro through Shadow Threat)
+   *   Act 2 — Descent        (Crimson Rising through Veil Unraveling)
+   *   Act 3 — Revelation     (Siege of Hollowroot through The Unbinding)
+   * Prologue veil quests sit in Act 1.
+   */
+  static MAIN_QUEST_ACTS = {
+    // Act 1 — Awakening
+    awakening: 'act_1',
+    shadow_threat: 'act_1',
+    quest_veil_awakening: 'act_1',
+    quest_veil_first_hollow: 'act_1',
+    quest_veil_ritual: 'act_1',
+    // Act 2 — Descent
+    crimson_rising: 'act_2',
+    nexus_convergence: 'act_2',
+    veil_unraveling: 'act_2',
+    quest_veil_guardian: 'act_2',
+    quest_veil_sealing: 'act_2',
+    // Act 3 — Revelation
+    siege_of_hollowroot: 'act_3',
+    fractured_alliance: 'act_3',
+    the_unbinding: 'act_3',
+  };
+
+  getActForQuest(questId) {
+    return NarrativeSystem.MAIN_QUEST_ACTS[questId] || null;
+  }
+
+  /** Whether a quest id is part of the main story-line (any act). */
+  isMainQuest(questId) {
+    return !!NarrativeSystem.MAIN_QUEST_ACTS[questId];
   }
 
   /**
@@ -169,6 +205,37 @@ export class NarrativeSystem {
       }
     }
   }
+
+  /**
+   * Advance the act when every main quest belonging to the current act has
+   * been completed. Emits narrative:actChanged for the HUD.
+   */
+  _checkActProgression(data) {
+    if (!data?.questId) return;
+    if (this.getActForQuest(data.questId) !== this.currentAct) return;
+    // Lazy import to avoid circular: read completed quests off the QuestSystem singleton.
+    const QS = NarrativeSystem._questSystemRef || null;
+    const completed = QS?.completedQuests;
+    if (!completed) return;
+    const acts = ['act_1', 'act_2', 'act_3'];
+    const idx = acts.indexOf(this.currentAct);
+    if (idx === -1) return;
+    // All main quests for the current act done?
+    const mainOfAct = Object.entries(NarrativeSystem.MAIN_QUEST_ACTS)
+      .filter(([, a]) => a === this.currentAct).map(([id]) => id);
+    const allDone = mainOfAct.every(id => completed.has(id));
+    if (allDone && idx < acts.length - 1) {
+      const previous = this.currentAct;
+      this.currentAct = acts[idx + 1];
+      this.eventBus.emit('narrative:actChanged', {
+        from: previous, to: this.currentAct,
+        title: this.getCurrentAct()?.title || this.currentAct
+      });
+    }
+  }
+
+  /** Inject the QuestSystem singleton ref (avoids module-load cycle). */
+  static setQuestSystemRef(qs) { NarrativeSystem._questSystemRef = qs; }
 
   /**
    * Check if era progression conditions are met.
