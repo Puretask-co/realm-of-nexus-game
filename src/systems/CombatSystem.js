@@ -1,6 +1,7 @@
 import { EventBus } from '../core/EventBus.js';
 import SapCycleManager from './SapCycleManager.js';
 import { AttackTypeSystem } from './AttackTypeSystem.js';
+import { TacticalCombatSystem } from './TacticalCombatSystem.js';
 
 /**
  * CombatSystem - Turn-based tactical combat for Verdance.
@@ -294,10 +295,16 @@ export class CombatSystem {
       : 0;
     const isBlocked = Math.random() < blockChance;
 
-    // Base damage
-    let baseDamage = spell ? spell.damage : (attacker.stats?.atk || 10);
-    if (isPhysical) {
+    // Base damage — physical attacks roll the equipped weapon die on top of atk stat
+    let baseDamage;
+    if (spell) {
+      baseDamage = spell.damage;
+    } else {
       baseDamage = attacker.stats?.atk || 10;
+      // Add weapon die roll when attacker has one (set from EquipmentSystem at combat start)
+      if (attacker.stats?.weaponDie) {
+        baseDamage += TacticalCombatSystem.rollDamageDie(attacker.stats.weaponDie);
+      }
     }
 
     // Apply difficulty multiplier for enemy attackers
