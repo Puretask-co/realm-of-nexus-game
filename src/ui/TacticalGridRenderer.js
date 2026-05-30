@@ -70,6 +70,8 @@ export class TacticalGridRenderer {
             this.eventBus.on('tactical:spellCast', () => this._redraw()),
             this.eventBus.on('tactical:combatantDefeated', () => this._redraw()),
             this.eventBus.on('tactical:undone', () => this._redraw()),
+            this.eventBus.on('tactical:overwatchSet', () => this._redraw()),
+            this.eventBus.on('tactical:overwatchFired', () => this._redraw()),
         ];
     }
 
@@ -532,6 +534,15 @@ export class TacticalGridRenderer {
                 stroke: '#000', strokeThickness: 2
             }).setOrigin(0.5, 0);
             this.tokenLayer.add(it);
+        }
+
+        // Overwatch eye marker — combatant is in reaction-fire state.
+        if (unit.overwatch) {
+            const ow = this.scene.add.text(cx, y + 1, '👁', {
+                fontFamily: 'Open Sans', fontSize: `${Math.round(cell * 0.36)}px`,
+                color: '#ffdd66', stroke: '#000', strokeThickness: 3
+            }).setOrigin(0.5, 0);
+            this.tokenLayer.add(ow);
         }
 
         // Active status-effect dots (poison=green, root=brown, buff=cyan).

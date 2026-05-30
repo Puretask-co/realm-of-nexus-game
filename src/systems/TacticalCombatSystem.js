@@ -442,6 +442,9 @@ export class TacticalCombatSystem {
     // Process active status effects at the start of this entity's turn
     // (poison ticks, durations decrement, expired effects drop off).
     this._tickEffects(entity);
+    // Overwatch was a reservation for "between my turns" — if it survived to
+    // my next turn unspent, drop it now (XCOM behaviour).
+    if (entity._overwatch) entity._overwatch = null;
     if (entity.stats.hp <= 0) {
       this._onCombatantDefeated(entity, null);
       if (this._checkCombatEnd()) return;
@@ -559,6 +562,8 @@ export class TacticalCombatSystem {
     this._log(`${entity.name} moved to (${targetX}, ${targetY})`);
     // Moving close to a lair can rouse it.
     this._checkLairTriggers(targetX, targetY);
+    // Trigger any reaction attacks from hostile watchers on overwatch.
+    this._checkOverwatchReactions(entity, this._sideOf(entity));
     return { success: true };
   }
 
@@ -868,6 +873,123 @@ export class TacticalCombatSystem {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Enter Overwatch (XCOM-style reaction state). Spends all remaining AP and
+   * ends the actor's action phase. When a hostile combatant moves within
+   * overwatch range during a later turn, the actor takes one reaction attack
+   * (at -20% accuracy to mirror XCOM's overwatch aim penalty). Consumed on
+   * fire OR at the start of the actor's next turn.
+   */
+  overwatchAction(range = 4) {
+    if (!this.currentActor || this.currentAP < 1) return { success: false, reason: 'No AP' };
+    const entity = this.currentActor.entity;
+    const spent = this.currentAP;
+    this.currentAP = 0;
+    entity.stats.ap = 0;
+    entity._overwatch = {
+      side: this.currentActor.side,
+      attackerId: entity.id,
+      range,
+      // -20% chance penalty applied at fire time.
+      aimPenalty: 0.20,
+      armedRound: this.roundNumber
+    };
+    this._log(`${entity.name} is on Overwatch.`);
+    this.eventBus.emit('tactical:overwatchSet', {
+      attackerId: entity.id, attackerName: entity.name, range, side: this.currentActor.side
+    });
+    // Auto end turn — overwatch is committal.
+    setTimeout(() => this.endTurn(), 150);
+    return { success: true, apSpent: spent };
+  }
+
+  /**
+   * After a combatant moves, check every overwatch-armed combatant on a
+   * different side for a reaction attack. First eligible watcher fires once,
+   * disarming. Triggered from moveAction (and the AI move paths).
+   */
+  _checkOverwatchReactions(mover, moverSide) {
+    if (!mover || mover.stats?.hp <= 0) return;
+    // Gather all combatants with an active overwatch on a different side.
+    const everyone = [...this.allies, ...this.enemies, ...(this.neutrals || [])];
+    const watchers = everyone.filter(c =>
+      c._overwatch &&
+      c.stats?.hp > 0 &&
+      this._sideOf(c) !== moverSide
+    );
+    for (const watcher of watchers) {
+      const dist = this.getDistance(watcher.gridX, watcher.gridY, mover.gridX, mover.gridY);
+      if (dist > (watcher._overwatch.range || 4)) continue;
+      // Fire one reaction attack with an aim penalty.
+      const ow = watcher._overwatch;
+      watcher._overwatch = null;
+      this._fireOverwatch(watcher, mover, ow);
+      break; // only one watcher reacts per move event
+    }
+  }
+
+  /** Look up an entity's side by checking which array it belongs to. */
+  _sideOf(entity) {
+    if (this.allies.includes(entity)) return 'ally';
+    if (this.enemies.includes(entity)) return 'enemy';
+    if ((this.neutrals || []).includes(entity)) return 'neutral';
+    return entity.side || 'unknown';
+  }
+
+  /** Execute the actual reaction attack (skips AP gating, uses penalised aim). */
+  _fireOverwatch(attacker, defender, overwatch) {
+    // Mirror attackAction's d20 + might vs evasion (10 + agility), with a
+    // probability penalty (effectively -20% chance of hit).
+    const attackRoll = Math.floor(Math.random() * 20) + 1;
+    const attackBonus = (attacker.stats?.might || attacker.stats?.atk || 0);
+    const total = attackRoll + attackBonus;
+    const evasion = 10 + (defender.stats?.agility || defender.stats?.agi || 0);
+    const baseHit = attackRoll === 20 || total >= evasion;
+    // Apply the aim penalty as a probability filter (skip an otherwise-hit
+    // ~aimPenalty of the time). nat-20 ignores the penalty.
+    const penaltyMiss = baseHit && attackRoll !== 20 && Math.random() < (overwatch.aimPenalty || 0.2);
+    const hit = baseHit && !penaltyMiss;
+
+    if (!hit) {
+      this._log(`${attacker.name}'s overwatch missed ${defender.name}.`);
+      this.eventBus.emit('tactical:overwatchFired', {
+        attackerId: attacker.id, attackerName: attacker.name,
+        defenderId: defender.id, defenderName: defender.name,
+        hit: false
+      });
+      return;
+    }
+
+    // Roll damage like attackAction (might + 1d6, +position bonuses).
+    let damage = (attacker.stats?.might || 2) + Math.floor(Math.random() * 6) + 1;
+    if (attackRoll === 20) damage *= 2;
+    const aTile = this.getTile(attacker.gridX, attacker.gridY);
+    const dTile = this.getTile(defender.gridX, defender.gridY);
+    let mod = 1;
+    if (dTile?.terrain === 'cover_high') mod -= 0.50;
+    if (dTile?.terrain === 'cover_low') mod -= 0.25;
+    if (aTile?.elevation > 0) mod += 0.30;
+    damage = Math.max(1, Math.round(damage * mod));
+
+    const result = this._applyDamage(defender, damage, attacker);
+    this._log(`${attacker.name}'s overwatch hit ${defender.name} for ${result.totalDamage} damage.`);
+    this.eventBus.emit('tactical:overwatchFired', {
+      attackerId: attacker.id, attackerName: attacker.name,
+      defenderId: defender.id, defenderName: defender.name,
+      hit: true, criticalHit: attackRoll === 20,
+      damage: result.totalDamage, guardAbsorbed: result.guardAbsorbed,
+      // Re-emit as a tactical:attacked too so the existing damage-float
+      // renderer paints a number on the defender.
+    });
+    this.eventBus.emit('tactical:attacked', {
+      attacker: attacker.id, defender: defender.id,
+      hit: true, criticalHit: attackRoll === 20,
+      damage: result.totalDamage, guardAbsorbed: result.guardAbsorbed,
+      defenderHP: defender.stats.hp, overwatch: true
+    });
+    if (defender.stats.hp <= 0) this._onCombatantDefeated(defender, attacker);
   }
 
   /**
@@ -1416,7 +1538,8 @@ export class TacticalCombatSystem {
         guard: a.stats.guard, maxGuard: a.stats.maxGuard,
         gridX: a.gridX, gridY: a.gridY, alive: a.stats.hp > 0,
         spriteKey: a.spriteKey || null,
-        effects: (a.activeEffects || []).map(e => e.type)
+        effects: (a.activeEffects || []).map(e => e.type),
+        overwatch: !!a._overwatch
       })),
       enemies: this.enemies.map(e => ({
         id: e.id, name: e.name, hp: e.stats.hp, maxHp: e.stats.maxHp,
@@ -1424,7 +1547,8 @@ export class TacticalCombatSystem {
         gridX: e.gridX, gridY: e.gridY, alive: e.stats.hp > 0,
         intent: e.nextIntent || null,
         spriteKey: e.spriteKey || null,
-        effects: (e.activeEffects || []).map(ef => ef.type)
+        effects: (e.activeEffects || []).map(ef => ef.type),
+        overwatch: !!e._overwatch
       })),
       neutrals: (this.neutrals || []).map(n => ({
         id: n.id, name: n.name, hp: n.stats.hp, maxHp: n.stats.maxHp,

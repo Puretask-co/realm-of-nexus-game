@@ -73,10 +73,10 @@ export class TacticalCombatPanel {
         this.container.add(this.intentText);
 
         const btnY = panelY + 88;
-        const btnW = 84;
+        const btnW = 74;
         const btnH = 28;
-        const gap = 9;
-        const nBtns = 5;
+        const gap = 8;
+        const nBtns = 6;
         let bx = (W - (btnW * nBtns + gap * (nBtns - 1))) / 2 + btnW / 2;
 
         this.attackBtn = this._makeButton(bx, btnY, btnW, btnH, 'Attack', 0xcc4444, () => {
@@ -98,6 +98,17 @@ export class TacticalCombatPanel {
             this._refresh();
         });
         this.container.add(this.defendBtn.container);
+        bx += btnW + gap;
+
+        // Overwatch: reserve remaining AP to fire on the next hostile that
+        // moves within range (XCOM-style reaction shot). Ends the turn.
+        this.overwatchBtn = this._makeButton(bx, btnY, btnW, btnH, 'Overwatch', 0xddaa33, () => {
+            this._closeSpellMenu();
+            const r = this.tactical.overwatchAction();
+            this._showFloat(r.success ? 'On Overwatch' : (r.reason || 'Cannot Overwatch'));
+            this._refresh();
+        });
+        this.container.add(this.overwatchBtn.container);
         bx += btnW + gap;
 
         this.endTurnBtn = this._makeButton(bx, btnY, btnW, btnH, 'End Turn', 0x6666aa, () => {
@@ -221,6 +232,7 @@ export class TacticalCombatPanel {
         this.attackBtn?.setEnabled?.(isPlayer);
         this.castBtn?.setEnabled?.(isPlayer);
         this.defendBtn?.setEnabled?.(isPlayer);
+        this.overwatchBtn?.setEnabled?.(isPlayer);
         this.endTurnBtn?.setEnabled?.(isPlayer);
         this.undoBtn?.setEnabled?.(isPlayer);
         this._closeSpellMenu();
