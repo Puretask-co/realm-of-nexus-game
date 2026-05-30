@@ -96,19 +96,16 @@ export default class UIScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-P', () => this.companionPanel.toggle());
         this.input.keyboard.on('keydown-T', () => this.skillTreePanel?.toggle?.());
         this.input.keyboard.on('keydown-I', () => this._toggleInventory());
+        // C opens the character sheet; the sheet's own C handler closes it
+        // (so this scene's listener no-ops when the sheet is already up,
+        // avoiding the double-fire flicker).
         this.input.keyboard.on('keydown-C', () => {
-            if (this.scene.isActive('CharacterSheetScene')) {
-                this.scene.stop('CharacterSheetScene');
-            } else {
-                this.scene.launch('CharacterSheetScene');
-            }
+            if (this.scene.isActive('CharacterSheetScene')) return;
+            this.scene.launch('CharacterSheetScene');
         });
         this.input.keyboard.on('keydown-W', () => {
-            if (this.scene.isActive('WikiCodexScene')) {
-                this.scene.stop('WikiCodexScene');
-            } else {
-                this.scene.launch('WikiCodexScene');
-            }
+            if (this.scene.isActive('WikiCodexScene')) return;
+            this.scene.launch('WikiCodexScene');
         });
 
         // EventBus bindings
@@ -1000,6 +997,21 @@ export default class UIScene extends Phaser.Scene {
     }
 
     shutdown() {
-        if (this._unsubs) this._unsubs.forEach((fn) => fn());
+        if (this._unsubs) this._unsubs.forEach((fn) => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
+        // Tear down every child panel. Without this, panels' own _unsubs
+        // (the EventBus.on cleanups added in PR #31) are never called, so
+        // every scene restart accumulates listeners. Each call is guarded
+        // so a missing panel never breaks the shutdown chain.
+        const panels = [
+            this.tacticalGridRenderer, this.tacticalCombatPanel,
+            this.shopPanel, this.craftingPanel, this.moralChoicePanel,
+            this.veilkeeperPanel, this.spellbookPanel, this.stashPanel,
+            this.inventoryPanel, this.gameInfoPanel, this.companionPanel,
+            this.rewardChestPanel, this.skillTreePanel,
+        ];
+        for (const p of panels) {
+            try { p?.destroy?.(); } catch (_) {}
+        }
     }
 }

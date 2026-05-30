@@ -302,6 +302,10 @@ export default class EditorScene extends Phaser.Scene {
     shutdown() {
         if (this._unsubs) this._unsubs.forEach((fn) => { try { fn(); } catch (_) {} });
         this._unsubs = [];
+        // Tear down child panels (now that they have working destroys).
+        try { this.hierarchyPanel?.destroy?.(); } catch (_) {}
+        try { this.inspectorPanel?.destroy?.(); } catch (_) {}
+        try { this.consolePanel?.destroy?.(); } catch (_) {}
     }
 
     // ----------------------------------------------------------------

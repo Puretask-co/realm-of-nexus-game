@@ -191,6 +191,14 @@ export class SkillCheckSystem {
 
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
+
+  /** Clear playthrough state for a fresh New Game (rank/xp/uses zeroed). */
+  reset() {
+    this.skills = {};
+    for (const id of Object.keys(this.skillDefinitions)) {
+      this.skills[id] = { rank: 0, xp: 0, totalUses: 0 };
+    }
+  }
 }
 
 export default SkillCheckSystem;

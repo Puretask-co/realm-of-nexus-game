@@ -339,6 +339,15 @@ export class PlayerClassSystem {
       this.pureBlightedVariant = data.pureBlightedVariant;
     }
   }
+
+  /**
+   * Clear playthrough state for a fresh New Game. The chosen class +
+   * variant are reset so the next character-creation flow re-picks them.
+   */
+  reset() {
+    this.currentClass = null;
+    this.pureBlightedVariant = null;
+  }
 }
 
 export default PlayerClassSystem;

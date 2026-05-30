@@ -213,6 +213,19 @@ export class EquipmentSystem {
             bonuses: { ...this._totalBonuses },
         });
     }
+
+    /** Clear playthrough state for a fresh New Game (all slots empty). */
+    reset() {
+        this.slots = {
+            head: null, chest: null, weapon: null, offhand: null,
+            boots: null, ring1: null, ring2: null, amulet: null,
+        };
+        this._totalBonuses = EMPTY_BONUSES();
+        this.eventBus.emit('equipment:changed', {
+            slots: { ...this.slots },
+            bonuses: { ...this._totalBonuses },
+        });
+    }
 }
 
 export default EquipmentSystem;

@@ -204,6 +204,15 @@ export class MoralChoiceSystem {
 
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
+
+  /** Clear playthrough state for a fresh New Game. */
+  reset() {
+    this.alignment = { mercy: 0, truth: 0, sacrifice: 0, authority: 0 };
+    this.criminality = 0;
+    this.choiceHistory = [];
+    this.pendingConsequences = [];
+    this.resolvedConsequences = [];
+  }
 }
 
 export default MoralChoiceSystem;

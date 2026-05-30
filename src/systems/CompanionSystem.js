@@ -373,6 +373,21 @@ export class CompanionSystem {
 
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
+
+  /**
+   * Clear playthrough state for a fresh New Game. Resets per-companion
+   * progression fields (recruited / bond / inParty / alive) without touching
+   * the static definition fields (name, baseStats, abilities, etc.).
+   */
+  reset() {
+    for (const c of this.companions.values()) {
+      c.recruited = false;
+      c.bondLevel = 0;
+      c.bondXP = 0;
+      c.inParty = false;
+      c.alive = true;
+    }
+  }
 }
 
 export default CompanionSystem;

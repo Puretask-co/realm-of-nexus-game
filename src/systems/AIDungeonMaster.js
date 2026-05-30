@@ -1414,6 +1414,51 @@ export class AIDungeonMaster {
     // Fallback estimate
     return 0.5;
   }
+
+  /**
+   * Clear playthrough state for a fresh New Game. Keeps config thresholds
+   * and cooldowns; clears the player-performance tracking, adaptive
+   * adjustment, pacing, hints given, tutorial flag, and zone visit set.
+   */
+  reset() {
+    this.playerPerformance.deaths = 0;
+    this.playerPerformance.totalDeaths = 0;
+    this.playerPerformance.combatsWon = 0;
+    this.playerPerformance.combatsLost = 0;
+    this.playerPerformance.averageHpAfterCombat = 1.0;
+    this.playerPerformance.recentHpRatios = [];
+    this.playerPerformance.averageCombatRounds = 0;
+    this.playerPerformance.recentCombatRounds = [];
+    this.playerPerformance.consecutiveDeaths = 0;
+    this.playerPerformance.consecutiveVictories = 0;
+    this.playerPerformance.spellsCast = 0;
+    this.playerPerformance.enemiesDefeated = 0;
+    this.playerPerformance.questsCompleted = 0;
+    this.playerPerformance.zonesVisited = new Set();
+    this.playerPerformance.lastCombatTime = 0;
+    this.playerPerformance.sessionStartTime = Date.now();
+
+    this.adaptiveDifficulty.adjustmentFactor = 0;
+    this.adaptiveDifficulty.encounterDensity = 1.0;
+    this.adaptiveDifficulty.encounterStrength = 1.0;
+    this.adaptiveDifficulty.lastAdjustmentTime = 0;
+
+    this.pacing.mode = 'exploration';
+    this.pacing.combatsSinceRest = 0;
+    this.pacing.timeSinceLastCombat = 0;
+    this.pacing.timeSinceLastStoryBeat = 0;
+    this.pacing.explorationStreak = 0;
+    this.pacing.combatFatigue = 0;
+    this.pacing.storyHunger = 0;
+
+    this.currentZone = null;
+    this.currentPhase = 'crimson';
+    this.playerLevel = 1;
+    this.hintsGiven = new Set();
+    this.tutorialComplete = false;
+    this.sessionEncounterCount = 0;
+    this.lastMiniEventTime = 0;
+  }
 }
 
 export default AIDungeonMaster;

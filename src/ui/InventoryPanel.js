@@ -566,9 +566,10 @@ export class InventoryPanel {
   // ──────────────────────────────────────────────────────────────────
 
   setupEventListeners() {
-    this.eventBus.on('inventory:addItem',    (data) => this.addItem(data));
-    this.eventBus.on('inventory:removeItem', (data) => this.removeItem(data));
-    this.eventBus.on('inventory:update',     ()     => this.refreshDisplay());
+    this._unsubs = this._unsubs || [];
+    this._unsubs.push(this.eventBus.on('inventory:addItem',    (data) => this.addItem(data)));
+    this._unsubs.push(this.eventBus.on('inventory:removeItem', (data) => this.removeItem(data)));
+    this._unsubs.push(this.eventBus.on('inventory:update',     ()     => this.refreshDisplay()));
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -822,6 +823,8 @@ export class InventoryPanel {
   }
 
   destroy() {
+    if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+    this._unsubs = [];
     this._destroyGhost();
     this._destroyHoverTooltip();
     this.panel.destroy(true);
