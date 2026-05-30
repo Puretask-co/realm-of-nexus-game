@@ -51,6 +51,14 @@ export class TacticalGridRenderer {
         this._onPointerDown = (pointer) => this._handleClick(pointer);
         this.scene.input.on('pointerdown', this._onPointerDown);
 
+        // Hover preview: show XCOM-style hit% / damage tooltip over the hovered
+        // enemy or cover hint over a move tile.
+        this._hoverLayer = this.scene.add.container(0, 0).setDepth(14060).setScrollFactor(0);
+        this.container.add(this._hoverLayer);
+        this._onPointerMove = (pointer) => this._handleHover(pointer);
+        this.scene.input.on('pointermove', this._onPointerMove);
+        this._lastHoverCell = null;
+
         this._unsubs = [
             this.eventBus.on('tactical:combatStarted', () => this.show()),
             this.eventBus.on('tactical:combatEnded', () => this.hide()),
@@ -80,6 +88,8 @@ export class TacticalGridRenderer {
         this.visible = false;
         this.container.setVisible(false);
         this._reachable = [];
+        this._clearHover();
+        this._lastHoverCell = null;
     }
 
     /**
@@ -226,6 +236,90 @@ export class TacticalGridRenderer {
     }
 
     // ----------------------------------------------------------------
+    // Hover preview (XCOM-style hit% / cover hint)
+    // ----------------------------------------------------------------
+
+    _handleHover(pointer) {
+        if (!this.visible || !this._isPlayerTurn) { this._clearHover(); return; }
+        const cell = this._screenToCell(pointer.x, pointer.y);
+        if (!cell) { this._clearHover(); this._lastHoverCell = null; return; }
+        if (this._lastHoverCell && this._lastHoverCell.x === cell.x && this._lastHoverCell.y === cell.y) return;
+        this._lastHoverCell = cell;
+        this._clearHover();
+
+        const state = this.tactical.getCombatState();
+        const attacker = this.tactical.currentActor?.entity;
+        if (!attacker) return;
+
+        // Hovering a living enemy → hit% + damage range preview.
+        const liveEnemy = state.enemies.find(e => e.alive && e.gridX === cell.x && e.gridY === cell.y);
+        if (liveEnemy) {
+            const defender = this.tactical.enemies.find(e => e.id === liveEnemy.id);
+            const info = defender ? this.tactical.getHitChance(attacker, defender) : null;
+            if (info) this._drawAttackTooltip(cell, info);
+            return;
+        }
+        // Hovering a reachable move tile → tile preview (cover at destination, dash warning).
+        if (this._reachable.some(t => t.x === cell.x && t.y === cell.y)) {
+            this._drawMoveTooltip(cell);
+        }
+    }
+
+    _clearHover() { this._hoverLayer?.removeAll(true); }
+
+    _drawAttackTooltip(cell, info) {
+        const { x, y } = this._cellToScreen(cell.x, cell.y);
+        const cellSz = this._cell;
+        const hit = Math.round(info.hitChance * 100);
+        const crit = Math.round(info.critChance * 100);
+        // Anchor above the enemy when there's room, else below.
+        const above = y > 70;
+        const tx = x + cellSz / 2;
+        const ty = above ? y - 8 : y + cellSz + 8;
+        const lines = [
+            `${hit}% to hit · ${crit}% crit`,
+            info.inRange ? `${info.dmgMin}–${info.dmgMax} dmg` : `${info.distance} tiles away`,
+        ];
+        const hints = [];
+        if (info.defenderInCover) hints.push('cover');
+        if (info.elevated)        hints.push('high ground +');
+        if (hints.length) lines.push(hints.join(' · '));
+
+        const text = this.scene.add.text(tx, ty, lines.join('\n'), {
+            fontFamily: 'Open Sans', fontSize: '13px',
+            color: info.inRange ? (hit >= 70 ? '#bdf5b0' : hit >= 40 ? '#ffe28a' : '#ffb0a8') : '#aaaaaa',
+            align: 'center', stroke: '#000', strokeThickness: 3,
+            backgroundColor: '#0b0b18cc', padding: { x: 6, y: 4 }
+        }).setOrigin(0.5, above ? 1 : 0);
+        this._hoverLayer.add(text);
+    }
+
+    _drawMoveTooltip(cell) {
+        const { x, y } = this._cellToScreen(cell.x, cell.y);
+        const cellSz = this._cell;
+        const apAfter = (this.tactical.currentAP ?? 0) - 1;
+        const isDash = apAfter < 1;
+        const tile = (this.tactical.getCombatState().grid || []).find(t => t.x === cell.x && t.y === cell.y);
+        // Adjacent cover at the destination?
+        const tileAt = (gx, gy) => (this.tactical.getCombatState().grid || []).find(t => t.x === gx && t.y === gy);
+        const adj = [[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy]) => tileAt(cell.x+dx, cell.y+dy));
+        const hasHigh = adj.some(t => t?.terrain === 'cover_high');
+        const hasLow = adj.some(t => t?.terrain === 'cover_low');
+        const lines = [
+            isDash ? 'DASH (ends turn)' : 'Move (1 AP)',
+            hasHigh ? 'Full cover here' : hasLow ? 'Half cover here' : 'No cover here',
+        ];
+        if (tile?.elevation > 0) lines.push('Elevated +');
+        const text = this.scene.add.text(x + cellSz / 2, y - 6, lines.join('\n'), {
+            fontFamily: 'Open Sans', fontSize: '12px',
+            color: isDash ? '#ffe28a' : '#bcd8ff',
+            align: 'center', stroke: '#000', strokeThickness: 3,
+            backgroundColor: '#0b0b18cc', padding: { x: 5, y: 3 }
+        }).setOrigin(0.5, 1);
+        this._hoverLayer.add(text);
+    }
+
+    // ----------------------------------------------------------------
     // Rendering
     // ----------------------------------------------------------------
 
@@ -236,6 +330,8 @@ export class TacticalGridRenderer {
         const g = this.gridGfx;
         g.clear();
         this.tokenLayer.removeAll(true);
+        this._clearHover();
+        this._lastHoverCell = null;
 
         const cell = this._cell;
         const actor = state.currentActor;
@@ -250,11 +346,17 @@ export class TacticalGridRenderer {
             }
         }
 
-        // ── Reachable-move highlight (player turn, not while targeting) ──
+        // ── Reachable-move highlight, XCOM-style (player turn, not while targeting) ──
+        // BLUE  = move + still have AP to act after (the "free move" tier).
+        // YELLOW = dash — move consumes your last AP; you can't attack/cast.
         if (this._isPlayerTurn && !this._targeting) {
+            const apAfterMove = (this.tactical.currentAP ?? 0) - 1; // every move costs 1 AP
+            const dashing = apAfterMove < 1;
+            const moveColor = dashing ? 0xddcc44 : 0x3388ff;
+            const moveAlpha = dashing ? 0.30 : 0.22;
             for (const t of this._reachable) {
                 const { x, y } = this._cellToScreen(t.x, t.y);
-                g.fillStyle(0x3388ff, 0.22);
+                g.fillStyle(moveColor, moveAlpha);
                 g.fillRect(x, y, cell - 1, cell - 1);
             }
         }
@@ -279,6 +381,9 @@ export class TacticalGridRenderer {
             } else if (t === 'cover_high') {
                 g.fillStyle(0x6a5a2a, 0.6); g.fillRect(x + 5, y + 5, cell - 11, cell - 11);
                 g.lineStyle(1, 0xccaa55, 0.7); g.strokeRect(x + 5, y + 5, cell - 11, cell - 11);
+            } else if (t === 'cover_low') {
+                g.fillStyle(0x5a4a22, 0.45); g.fillRect(x + 7, y + cell * 0.55, cell - 14, cell * 0.30);
+                g.lineStyle(1, 0xaa8844, 0.6); g.strokeRect(x + 7, y + cell * 0.55, cell - 14, cell * 0.30);
             } else if (t === 'forest' || t === 'spore_cloud' || t === 'shadow_veil' || t === 'blight_zone') {
                 // Concealing terrain (shroud) — translucent themed wash.
                 const c = t === 'forest' ? 0x224a22 : t === 'spore_cloud' ? 0x3a4422
@@ -308,6 +413,43 @@ export class TacticalGridRenderer {
             const { x, y } = this._cellToScreen(actor.gridX, actor.gridY);
             g.lineStyle(3, actor.side === 'ally' ? 0x66ccff : 0xff6666, 0.95);
             g.strokeRect(x + 1, y + 1, cell - 3, cell - 3);
+        }
+
+        // ── Cover shield icons (XCOM-style) ──────────────────────────
+        // A tile adjacent to a cover tile gets a shield icon on the edge
+        // facing the cover — full shield for cover_high, half for cover_low.
+        const tileAt = (gx, gy) => (state.grid || []).find(t => t.x === gx && t.y === gy);
+        const dirs = [
+            { dx:  1, dy: 0, side: 'e' }, { dx: -1, dy: 0, side: 'w' },
+            { dx:  0, dy: 1, side: 's' }, { dx:  0, dy:-1, side: 'n' },
+        ];
+        for (let gx = 0; gx < this._cols; gx++) {
+            for (let gy = 0; gy < this._rows; gy++) {
+                const here = tileAt(gx, gy);
+                if (here && (here.terrain === 'wall' || here.terrain === 'cover_high')) continue;
+                for (const d of dirs) {
+                    const nx = gx + d.dx, ny = gy + d.dy;
+                    const t = tileAt(nx, ny);
+                    if (!t) continue;
+                    const isHigh = t.terrain === 'cover_high';
+                    const isLow  = t.terrain === 'cover_low';
+                    if (!isHigh && !isLow) continue;
+                    const { x, y } = this._cellToScreen(gx, gy);
+                    const color = isHigh ? '#ffd84a' : '#a8c8ff';
+                    const glyph = isHigh ? '▮' : '▰'; // full vs half
+                    let tx = x + cell / 2, ty = y + cell / 2;
+                    const pad = Math.round(cell * 0.18);
+                    if (d.side === 'e') tx = x + cell - pad;
+                    else if (d.side === 'w') tx = x + pad;
+                    else if (d.side === 's') ty = y + cell - pad;
+                    else if (d.side === 'n') ty = y + pad;
+                    const lab = this.scene.add.text(tx, ty, glyph, {
+                        fontFamily: 'Open Sans', fontSize: `${Math.round(cell * 0.32)}px`,
+                        color, stroke: '#000', strokeThickness: 3
+                    }).setOrigin(0.5);
+                    this.tokenLayer.add(lab);
+                }
+            }
         }
 
         // ── Lairs (untriggered) — pulsing hazard marker ──────────────
@@ -467,6 +609,7 @@ export class TacticalGridRenderer {
         if (this._unsubs) this._unsubs.forEach((fn) => { try { fn(); } catch (_) {} });
         this._unsubs = [];
         if (this._onPointerDown) this.scene.input.off('pointerdown', this._onPointerDown);
+        if (this._onPointerMove) this.scene.input.off('pointermove', this._onPointerMove);
         this.container?.destroy();
     }
 }

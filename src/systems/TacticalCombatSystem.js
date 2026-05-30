@@ -1342,6 +1342,60 @@ export class TacticalCombatSystem {
   }
 
   /**
+   * Honest XCOM-style preview of an attacker's chance to hit a defender plus
+   * an estimated damage range. Mirrors the real attackAction math (d20 + might
+   * vs 10 + agility; nat-20 always hits) and the position/cover damage
+   * modifiers, so what's shown is what will land.
+   *
+   * Returns: { inRange, hitChance, critChance, dmgMin, dmgMax,
+   *            attackerOn:{terrain,elevation}, defenderOn:{terrain,elevation},
+   *            flanking, elevated }
+   */
+  getHitChance(attacker, defender) {
+    if (!attacker || !defender) return null;
+    const dist = this.getDistance(attacker.gridX, attacker.gridY, defender.gridX, defender.gridY);
+    const inRange = dist <= 1;
+
+    const might = attacker.stats?.might ?? attacker.stats?.atk ?? 0;
+    const agi = defender.stats?.agility ?? defender.stats?.agi ?? 0;
+    // P(d20 + might >= 10 + agi) — 20 outcomes, plus nat-20 always hits.
+    const needRoll = (10 + agi) - might;
+    let hits = 0;
+    for (let r = 1; r <= 20; r++) if (r === 20 || r + might >= 10 + agi) hits++;
+    let hitChance = Math.max(0.05, Math.min(0.95, hits / 20));
+    const critChance = 0.05; // base nat-20 crit; positioning can guarantee
+
+    const aTile = this.getTile(attacker.gridX, attacker.gridY);
+    const dTile = this.getTile(defender.gridX, defender.gridY);
+
+    // Defender on high cover effectively halves incoming damage (positionBonuses.cover = -0.50).
+    // Defender on cover_low gives the attacker -0.25 damage modifier.
+    // Attacker on elevation gives +0.30 damage. We surface these as the dmg
+    // range, and as boolean flags the UI can hint at.
+    const baseLo = 1 + might; // 1d6 base + might (min 1+m)
+    const baseHi = 6 + might; // max 6+m
+    let mod = 1;
+    if (dTile?.terrain === 'cover_high') mod -= 0.50;
+    if (dTile?.terrain === 'cover_low')  mod -= 0.25;
+    if (aTile?.elevation > 0)            mod += 0.30;
+    // Crit doubles base before mod; show the un-crit estimate.
+    const dmgMin = Math.max(1, Math.round(baseLo * mod));
+    const dmgMax = Math.max(1, Math.round(baseHi * mod));
+
+    return {
+      inRange,
+      distance: dist,
+      hitChance,
+      critChance,
+      dmgMin, dmgMax,
+      attackerOn: { terrain: aTile?.terrain || 'open', elevation: aTile?.elevation || 0 },
+      defenderOn: { terrain: dTile?.terrain || 'open', elevation: dTile?.elevation || 0 },
+      elevated: (aTile?.elevation || 0) > (dTile?.elevation || 0),
+      defenderInCover: dTile?.terrain === 'cover_high' || dTile?.terrain === 'cover_low'
+    };
+  }
+
+  /**
    * Get full combat state for UI rendering.
    */
   getCombatState() {
