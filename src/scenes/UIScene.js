@@ -13,6 +13,7 @@ import { InventoryPanel } from '../ui/InventoryPanel.js';
 import GameInfoPanel from '../ui/GameInfoPanel.js';
 import CompanionPanel from '../ui/CompanionPanel.js';
 import { SkillTreePanel } from '../ui/SkillTreePanel.js';
+import { RewardChestPanel } from '../ui/RewardChestPanel.js';
 import { spellIconFor } from './GameArt.js';
 
 /**
@@ -69,6 +70,8 @@ export default class UIScene extends Phaser.Scene {
         this.inventoryPanel = new InventoryPanel(this, this._makeMinimalUI());
         this.gameInfoPanel = new GameInfoPanel(this);
         this.companionPanel = new CompanionPanel(this);
+        // Reward chest — listens to quest:completed and pops a visible modal.
+        this.rewardChestPanel = new RewardChestPanel(this);
 
         // Register all panels with UIFramework so showPanel/hidePanel/hideAllPanels work
         // and ui:menuOpen / ui:menuClose SFX fire correctly via UIFramework.showPanel()
