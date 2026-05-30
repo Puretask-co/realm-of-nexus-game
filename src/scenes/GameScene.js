@@ -261,6 +261,9 @@ export default class GameScene extends Phaser.Scene {
                             { id: 'dummy2', name: 'Sap Beetle', stats: { hp: 18, maxHp: 18, guard: 0, might: 2, agility: 3, ap: 2, speed: 3 } },
                         ],
                         gridWidth: 10, gridHeight: 7,
+                        terrain: this._generateCombatTerrain(10, 7),
+                        lairs: [{ id: 'rat_mound', name: 'Rat Mound', x: 5, y: 3, triggerRadius: 2,
+                            spawn: { name: 'Giant Rat', count: 2, stats: { hp: 10, might: 2, agility: 3, speed: 3, ap: 1 } } }],
                     });
                 }
             };
@@ -1325,6 +1328,9 @@ export default class GameScene extends Phaser.Scene {
             // Carry the player's known spells into tactical combat so the
             // Cast action has something to offer.
             spells: (allyStats.spells || []).slice(),
+            // Class full-body art for the combat token (falls back in renderer).
+            spriteKey: (this.classSystem.getCurrentClass()?.id
+                ? `art_companion_${this.classSystem.getCurrentClass().id}` : null),
             variant: this.registry.get('selectedVariant') || 'pure'
         }];
 
@@ -1344,8 +1350,17 @@ export default class GameScene extends Phaser.Scene {
                 maxGuard: d.baseStats?.guard ?? 10,
                 might: d.baseStats?.might ?? 2,
                 agility: d.baseStats?.agility ?? 2,
+                insight: d.baseStats?.insight ?? 2,
                 speed: d.baseStats?.speed ?? 3
             },
+            // Resolve the enemy's spell ids to full spell defs so the tactical
+            // AI can actually cast them; tag the behaviour pattern.
+            spells: (d.spells || []).map(id => dataManager.getSpell(id)).filter(Boolean),
+            aiPattern: d.aiPattern || 'aggressive',
+            tier: d.tier || 1,
+            // Painterly art for the combat token (renderer falls back to a
+            // circle if the texture isn't loaded).
+            spriteKey: PAINTERLY_ENEMY_MAP[d.id] || null,
             experienceReward: d.experienceReward || 30,
             lootTable: d.lootTable
         }));
@@ -1359,10 +1374,58 @@ export default class GameScene extends Phaser.Scene {
             allies,
             enemies,
             gridWidth,
-            gridHeight
+            gridHeight,
+            terrain: this._generateCombatTerrain(gridWidth, gridHeight)
         });
 
         EventBus.emit('tactical:encounterStarted', { allyCount: allies.length, enemyCount: enemies.length });
+    }
+
+    /**
+     * Build a themed terrain array for the tactical grid based on the current
+     * zone. Returns [{ x, y, terrain?, elevation? }]. The two spawn columns
+     * (x=1 allies, x=gridWidth-2 enemies) and their rows are kept clear so no
+     * one spawns inside a wall.
+     */
+    _generateCombatTerrain(gridWidth, gridHeight) {
+        const zone = (this.zones || []).find(z => z.id === this.currentZone);
+        const id = String(this.currentZone || '').toLowerCase();
+        const tags = (zone?.tags || []).map(t => String(t).toLowerCase());
+        const has = (re) => re.test(id) || tags.some(t => re.test(t));
+
+        // Concealing terrain type by theme (drives Shrouded Strike bonuses).
+        let shroud = 'forest';
+        if (has(/cave|catacomb|hollow|crypt|dungeon|tomb|nexus/)) shroud = 'shadow_veil';
+        else if (has(/spore|fungal|mycel/)) shroud = 'spore_cloud';
+        else if (has(/blight|corrupt|abyss|void|scar|rift/)) shroud = 'blight_zone';
+
+        const spawnCols = new Set([1, gridWidth - 2]);
+        const terrain = [];
+        const used = new Set();
+        const rng = (n) => Math.floor(Math.random() * n);
+
+        const place = (t, count, builder) => {
+            let tries = 0;
+            for (let n = 0; n < count && tries < count * 6; tries++) {
+                const x = 2 + rng(Math.max(1, gridWidth - 4)); // keep edges/spawns freer
+                const y = rng(gridHeight);
+                const key = `${x},${y}`;
+                if (spawnCols.has(x) || used.has(key)) continue;
+                used.add(key);
+                terrain.push(builder(x, y));
+                n++;
+            }
+        };
+
+        // A few impassable walls (cover the centre, never the spawn columns).
+        place('wall', Math.max(1, Math.floor(gridWidth * gridHeight * 0.04)), (x, y) => ({ x, y, terrain: 'wall' }));
+        // Concealing patches for flanking/shroud play.
+        place('shroud', Math.max(2, Math.floor(gridWidth * gridHeight * 0.10)), (x, y) => ({ x, y, terrain: shroud }));
+        // High cover (defensive bonus) and a couple of elevation tiles.
+        place('cover', Math.max(1, Math.floor(gridWidth * gridHeight * 0.05)), (x, y) => ({ x, y, terrain: 'cover_high' }));
+        place('elev', Math.max(1, Math.floor(gridWidth * gridHeight * 0.04)), (x, y) => ({ x, y, terrain: 'open', elevation: 1 }));
+
+        return terrain;
     }
 
     _onTacticalCombatEnded(data) {

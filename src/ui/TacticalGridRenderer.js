@@ -268,12 +268,27 @@ export class TacticalGridRenderer {
             }
         }
 
-        // ── Terrain / cover from the serialized grid ─────────────────
+        // ── Terrain / cover / elevation from the serialized grid ─────
         for (const tile of (state.grid || [])) {
-            if (tile.terrain && tile.terrain !== 'open') {
-                const { x, y } = this._cellToScreen(tile.x, tile.y);
-                g.fillStyle(0x4a3a22, 0.5);
-                g.fillRect(x + 4, y + 4, cell - 9, cell - 9);
+            const { x, y } = this._cellToScreen(tile.x, tile.y);
+            const t = tile.terrain;
+            if (t === 'wall') {
+                // Solid impassable block.
+                g.fillStyle(0x5a5550, 0.95); g.fillRect(x + 2, y + 2, cell - 4, cell - 4);
+                g.lineStyle(2, 0x2a2622, 0.9); g.strokeRect(x + 2, y + 2, cell - 4, cell - 4);
+            } else if (t === 'cover_high') {
+                g.fillStyle(0x6a5a2a, 0.6); g.fillRect(x + 5, y + 5, cell - 11, cell - 11);
+                g.lineStyle(1, 0xccaa55, 0.7); g.strokeRect(x + 5, y + 5, cell - 11, cell - 11);
+            } else if (t === 'forest' || t === 'spore_cloud' || t === 'shadow_veil' || t === 'blight_zone') {
+                // Concealing terrain (shroud) — translucent themed wash.
+                const c = t === 'forest' ? 0x224a22 : t === 'spore_cloud' ? 0x3a4422
+                    : t === 'shadow_veil' ? 0x2a2240 : 0x3a1030;
+                g.fillStyle(c, 0.4); g.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+            }
+            // Elevation marker (works alongside 'open' tiles).
+            if (tile.elevation > 0) {
+                g.fillStyle(0x88aacc, 0.18); g.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+                g.lineStyle(1, 0x88ccff, 0.5); g.strokeRect(x + 3, y + 3, cell - 6, cell - 6);
             }
         }
 
@@ -295,9 +310,23 @@ export class TacticalGridRenderer {
             g.strokeRect(x + 1, y + 1, cell - 3, cell - 3);
         }
 
+        // ── Lairs (untriggered) — pulsing hazard marker ──────────────
+        for (const lair of (state.lairs || [])) {
+            if (lair.triggered) continue;
+            const { x, y } = this._cellToScreen(lair.x, lair.y);
+            g.fillStyle(0xaa7722, 0.55); g.fillRect(x + 3, y + 3, cell - 6, cell - 6);
+            g.lineStyle(2, 0xffcc44, 0.8); g.strokeRect(x + 3, y + 3, cell - 6, cell - 6);
+            const m = this.scene.add.text(x + cell / 2, y + cell / 2, '☣', {
+                fontFamily: 'Open Sans', fontSize: `${Math.round(cell * 0.4)}px`,
+                color: '#ffdd66', stroke: '#000', strokeThickness: 2
+            }).setOrigin(0.5);
+            this.tokenLayer.add(m);
+        }
+
         // ── Tokens ───────────────────────────────────────────────────
         for (const a of state.allies) if (a.alive) this._drawToken(a, 0x4488ff, '#bcd8ff');
         for (const e of state.enemies) if (e.alive) this._drawToken(e, 0xcc4444, '#ffc0c0', e.intent);
+        for (const n of (state.neutrals || [])) if (n.alive) this._drawToken(n, 0xdd8822, '#ffdda0');
     }
 
     _drawToken(unit, bodyColor, labelColor, intent) {
@@ -307,13 +336,27 @@ export class TacticalGridRenderer {
         const cy = y + cell / 2;
         const r = Math.max(8, cell * 0.34);
 
-        const tg = this.scene.add.graphics();
-        // Body
-        tg.fillStyle(bodyColor, 0.95);
-        tg.fillCircle(cx, cy - 2, r);
-        tg.lineStyle(2, 0x000000, 0.5);
-        tg.strokeCircle(cx, cy - 2, r);
+        // Sprite art if available, else a colored circle token.
+        const hasArt = unit.spriteKey && this.scene.textures.exists(unit.spriteKey);
+        if (hasArt) {
+            // Colored base ring marks side under the sprite.
+            const ring = this.scene.add.graphics();
+            ring.fillStyle(bodyColor, 0.35);
+            ring.fillCircle(cx, cy + cell * 0.18, r * 0.9);
+            this.tokenLayer.add(ring);
+            const img = this.scene.add.image(cx, cy - 2, unit.spriteKey)
+                .setDisplaySize(cell * 0.9, cell * 0.9).setOrigin(0.5, 0.5);
+            this.tokenLayer.add(img);
+        } else {
+            const tg0 = this.scene.add.graphics();
+            tg0.fillStyle(bodyColor, 0.95);
+            tg0.fillCircle(cx, cy - 2, r);
+            tg0.lineStyle(2, 0x000000, 0.5);
+            tg0.strokeCircle(cx, cy - 2, r);
+            this.tokenLayer.add(tg0);
+        }
 
+        const tg = this.scene.add.graphics();
         // HP bar under the token.
         const barW = cell - 10;
         const barX = x + 5;
@@ -347,6 +390,21 @@ export class TacticalGridRenderer {
                 stroke: '#000', strokeThickness: 2
             }).setOrigin(0.5, 0);
             this.tokenLayer.add(it);
+        }
+
+        // Active status-effect dots (poison=green, root=brown, buff=cyan).
+        const fx = unit.effects || [];
+        if (fx.length) {
+            const colorFor = (t) => t === 'poison' || t === 'burn' || t === 'bleed' ? '#66dd44'
+                : t === 'root' || t === 'snare' || t === 'stun' ? '#cc9944'
+                : t === 'buff' ? '#66ddff' : '#dd66dd';
+            fx.slice(0, 4).forEach((t, i) => {
+                const dot = this.scene.add.text(x + 4 + i * 9, y + cell - 18, '●', {
+                    fontFamily: 'Open Sans', fontSize: '10px', color: colorFor(t),
+                    stroke: '#000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                this.tokenLayer.add(dot);
+            });
         }
     }
 
