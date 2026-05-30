@@ -81,13 +81,20 @@ export class ShopPanel {
     }
 
     _setupEvents() {
-        EventBus.on('shop-open', (data) => this.open(data));
-        EventBus.on('player-stats-updated', (stats) => {
+        this._unsubs = this._unsubs || [];
+        this._unsubs.push(EventBus.on('shop-open', (data) => this.open(data)));
+        this._unsubs.push(EventBus.on('player-stats-updated', (stats) => {
             if (stats?.gold !== undefined) {
                 this._playerGold = stats.gold;
                 if (this._goldText?.active) this._goldText.setText(`Gold: ${this._playerGold}`);
             }
-        });
+        }));
+    }
+
+    /** Tear down EventBus listeners on scene shutdown. */
+    destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
     }
 
     // Alias for UIFramework.showPanel() compatibility.

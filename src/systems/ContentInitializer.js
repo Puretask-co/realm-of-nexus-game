@@ -191,7 +191,9 @@ export default class ContentInitializer {
             questSystem, dialogueSystem, progressionSystem, inventoryPanel, skillTreePanel,
             dspSystem, factionSystem, narrativeSystem, moralChoiceSystem,
             companionSystem, attributeSystem, veilkeeperSystem, skillCheckSystem,
-            sapCycleManager
+            sapCycleManager,
+            // Previously unwired — their state was silently lost on save/load.
+            craftingSystem, equipmentSystem, difficultySystem, aiDungeonMaster
         } = systems;
         const classSystem = PlayerClassSystem.getInstance();
 
@@ -214,6 +216,11 @@ export default class ContentInitializer {
             if (attributeSystem?.saveState) saveData.attributes = attributeSystem.saveState();
             if (veilkeeperSystem?.saveState) saveData.veilkeepers = veilkeeperSystem.saveState();
             if (skillCheckSystem?.saveState) saveData.skillChecks = skillCheckSystem.saveState();
+            // Previously unwired
+            if (craftingSystem?.serialize) saveData.crafting = craftingSystem.serialize();
+            if (equipmentSystem?.saveState) saveData.equipment = equipmentSystem.saveState();
+            if (difficultySystem?.serialize) saveData.difficulty = difficultySystem.serialize();
+            if (aiDungeonMaster?.serialize) saveData.aiDM = aiDungeonMaster.serialize();
         }));
 
         unsubs.push(EventBus.on('save-restore', (saveData) => {
@@ -234,6 +241,34 @@ export default class ContentInitializer {
             if (saveData.attributes && attributeSystem?.loadState) attributeSystem.loadState(saveData.attributes);
             if (saveData.veilkeepers && veilkeeperSystem?.loadState) veilkeeperSystem.loadState(saveData.veilkeepers);
             if (saveData.skillChecks && skillCheckSystem?.loadState) skillCheckSystem.loadState(saveData.skillChecks);
+            if (saveData.crafting && craftingSystem?.deserialize) craftingSystem.deserialize(saveData.crafting);
+            if (saveData.equipment && equipmentSystem?.loadState) equipmentSystem.loadState(saveData.equipment);
+            if (saveData.difficulty && difficultySystem?.deserialize) difficultySystem.deserialize(saveData.difficulty);
+            if (saveData.aiDM && aiDungeonMaster?.deserialize) aiDungeonMaster.deserialize(saveData.aiDM);
+        }));
+
+        // ── Centralised new-game reset ─────────────────────────────
+        // Only QuestSystem/ProgressionSystem/FactionSystem/DSPSystem implement
+        // their own reset() listener. Cover the rest here so a "New Game" in
+        // the same browser session truly starts fresh — previously the player
+        // kept their class pick, dialogue history, recruited companions,
+        // killed Veilkeepers, narrative flags, attribute points, etc.
+        unsubs.push(EventBus.on('game:reset', () => {
+            // Each call is guarded so a missing system never breaks the loop.
+            try { sapCycleManager?.deserialize?.({}); } catch (_) {}
+            try { classSystem?.deserialize?.({}); } catch (_) {}
+            try { narrativeSystem?.loadState?.({}); } catch (_) {}
+            try { moralChoiceSystem?.loadState?.({}); } catch (_) {}
+            try { companionSystem?.loadState?.({}); } catch (_) {}
+            try { attributeSystem?.loadState?.({}); } catch (_) {}
+            try { veilkeeperSystem?.loadState?.({}); } catch (_) {}
+            try { skillCheckSystem?.loadState?.({}); } catch (_) {}
+            try { dialogueSystem?.loadState?.({}); } catch (_) {}
+            try { craftingSystem?.deserialize?.({}); } catch (_) {}
+            try { equipmentSystem?.loadState?.({}); } catch (_) {}
+            try { difficultySystem?.deserialize?.({}); } catch (_) {}
+            try { aiDungeonMaster?.deserialize?.({}); } catch (_) {}
+            console.log('[ContentInit] game:reset — non-self-resetting systems cleared');
         }));
 
         console.log('[ContentInit] Save system wired (including new systems)');

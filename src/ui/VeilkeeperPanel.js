@@ -416,34 +416,36 @@ export class VeilkeeperPanel {
 
     _setupEvents() {
         const eb = EventBus.getInstance();
+        // Store unsubs so destroy() can clear listeners — previously this
+        // panel leaked 4 handlers on every scene restart.
+        this._unsubs = this._unsubs || [];
 
-        eb.on('veilkeeper-open', (data) => {
+        this._unsubs.push(eb.on('veilkeeper-open', (data) => {
             this.open(data);
-        });
+        }));
 
-        eb.on('veilkeeper-response', (data) => {
-            const { message, warning, keeperId } = data || {};
+        this._unsubs.push(eb.on('veilkeeper-response', (data) => {
+            const { message, warning } = data || {};
             const text = message || warning || 'The Veil is silent.';
             if (this.visible) {
                 this._responseText.setText(`"${text}"`).setVisible(true);
                 this._warningText.setText('').setVisible(false);
                 if (warning) this._showWarning(warning);
             }
-        });
+        }));
 
-        eb.on('veilkeeper:died', (data) => {
+        this._unsubs.push(eb.on('veilkeeper:died', (data) => {
             const { veilkeeperId, name } = data || {};
             if (!veilkeeperId && !name) return;
-            // Mark keeper as dead in the panel
             const slot = this._keeperSlots.find(s =>
                 s.id === veilkeeperId || s.name === name
             );
             if (slot) {
                 this._markKeeperDead(slot);
             }
-        });
+        }));
 
-        eb.on('veilkeeper-state-reply', (data) => {
+        this._unsubs.push(eb.on('veilkeeper-state-reply', (data) => {
             if (!data || data.keeperId !== this._selectedKeeperId) return;
             if (data.alive === false) {
                 this._hollowingLabel.setText('Hollowing: PASSED BEYOND');
@@ -454,7 +456,13 @@ export class VeilkeeperPanel {
             } else {
                 this._hollowingLabel.setText('Hollowing: unknown');
             }
-        });
+        }));
+    }
+
+    /** Clear EventBus listeners when the panel/scene tears down. */
+    destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
     }
 
     _markKeeperDead(slot) {

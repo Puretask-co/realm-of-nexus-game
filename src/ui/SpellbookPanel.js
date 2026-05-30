@@ -318,24 +318,31 @@ export class SpellbookPanel {
     // ────────────────────────────────────────────────────────────────────────
 
     _setupEvents() {
-        EventBus.on('spellbook-open', () => this.show());
-        EventBus.on('class:applied', () => {
+        this._unsubs = this._unsubs || [];
+        this._unsubs.push(EventBus.on('spellbook-open', () => this.show()));
+        this._unsubs.push(EventBus.on('class:applied', () => {
             this._playerClassId = globalThis.__playerClassSystem?.getCurrentClass?.()?.id || null;
             if (this.visible) { this._refreshList(); }
-        });
-        EventBus.on('player:spellsUpdated', (data) => {
+        }));
+        this._unsubs.push(EventBus.on('player:spellsUpdated', (data) => {
             if (data?.spells) {
                 this._knownSpellIds = data.spells;
                 if (this.visible) this._refreshList();
             }
-        });
-        EventBus.on('player-stats-updated', (data) => {
+        }));
+        this._unsubs.push(EventBus.on('player-stats-updated', (data) => {
             if (data?.level) this._playerLevel = data.level;
-        });
+        }));
 
-        this.scene.input.keyboard.on('keydown-ESC', () => {
-            if (this.visible) this.hide();
-        });
+        this._escHandler = () => { if (this.visible) this.hide(); };
+        this.scene.input.keyboard.on('keydown-ESC', this._escHandler);
+    }
+
+    /** Tear down EventBus + keyboard listeners on scene shutdown. */
+    destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
+        if (this._escHandler) this.scene.input.keyboard.off('keydown-ESC', this._escHandler);
     }
 
     // ────────────────────────────────────────────────────────────────────────

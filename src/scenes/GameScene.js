@@ -298,7 +298,12 @@ export default class GameScene extends Phaser.Scene {
             attributeSystem: this.attributeSystem,
             veilkeeperSystem: this.veilkeeperSystem,
             skillCheckSystem: this.skillCheckSystem,
-            sapCycleManager: this.sapCycle
+            sapCycleManager: this.sapCycle,
+            // Previously unwired — their state was silently dropped on save/load.
+            craftingSystem: this.craftingSystem,
+            equipmentSystem: this.equipmentSystem,
+            difficultySystem: this.difficultySystem,
+            aiDungeonMaster: this.dungeonMaster
         });
 
         // ---- Inventory cache (used by CraftingPanel for material checks) ----
@@ -2433,7 +2438,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     _onEnemyDefeated(data) {
-        const { enemy } = data;
+        const enemy = data?.enemy;
+        // Sometimes the event is fired with just an enemyId (e.g. QuestSystem-
+        // facing emit path or a synthetic test). All the sprite cleanup,
+        // particle burst, loot drop and XP grant below rely on a real
+        // overworld sprite with _state.definition — bail safely if absent.
+        if (!enemy || !enemy._state) return;
 
         // Death particles
         this.particles.burst(enemy.x, enemy.y, 'hit_sparks', { count: 20 });

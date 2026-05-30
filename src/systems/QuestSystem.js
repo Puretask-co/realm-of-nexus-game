@@ -73,6 +73,10 @@ export class QuestSystem {
 
   setupEventListeners() {
     this.eventBus.on('enemy:defeated', (data) => this.onEnemyDefeated(data));
+    // The overworld emits 'enemy-defeated' (dash) at most kill sites (spell
+    // hit, companion kill); only the spell-kill→tactical-end path used the
+    // colon form. Listen to both so kill objectives progress on every kill.
+    this.eventBus.on('enemy-defeated', (data) => this.onEnemyDefeated(data));
     // 'collect' objectives — the world emits item:pickup; keep item:collected for compatibility.
     this.eventBus.on('item:collected', (data) => this.onItemCollected(data));
     this.eventBus.on('item:pickup', (data) => this.onItemCollected(data));
@@ -590,13 +594,20 @@ export class QuestSystem {
   // ─── Event Handlers ───────────────────────────────────────────────
 
   onEnemyDefeated(data) {
+    // Normalise: some emit sites send {enemy: <sprite>} instead of {enemyId};
+    // derive the id from the enemy state in that case.
+    const enemyId = data?.enemyId
+      || data?.enemy?._state?.definition?.id
+      || data?.enemy?.definition?.id
+      || null;
+
     this.playerStats.enemiesDefeated++;
-    if (data.enemyId) this.playerStats.bestiary.add(data.enemyId);
+    if (enemyId) this.playerStats.bestiary.add(enemyId);
 
     // Update kill objectives
     for (const [questId, quest] of this.activeQuests) {
       for (const objective of quest.definition.objectives) {
-        if (objective.type === 'kill' && objective.target === data.enemyId) {
+        if (objective.type === 'kill' && objective.target === enemyId) {
           this.updateObjective(questId, objective.id);
         }
       }
