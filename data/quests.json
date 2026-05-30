@@ -2879,6 +2879,249 @@
             "dialogueId": "quest_veil_sealing_complete",
             "dialogueOnComplete": "quest_veil_sealing_complete",
             "tags": ["main_story", "act_1", "veil_chain", "prologue", "branching", "act_1_end"]
+        },
+        {
+            "id": "companion_briara",
+            "title": "The Commander's Oath",
+            "name": "The Commander's Oath",
+            "description": "Commander Briara has been ordered to investigate hollow incursions at the Canopy's eastern gate. She'll vouch for any soldier who fights at her side and proves they fight for more than themselves.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [{ "type": "quest", "questId": "awakening" }],
+            "objectives": [
+                { "id": "speak_briara_recruit", "type": "dialogue", "description": "Speak with Commander Briara at the Canopy of Life", "target": "Commander Briara", "count": 1, "required": 1, "order": 1 },
+                { "id": "fight_with_briara", "type": "kill", "description": "Defeat hollow attackers alongside Briara", "target": "shadow_imp", "count": 3, "required": 3, "order": 2 },
+                { "id": "report_briara", "type": "dialogue", "description": "Report back to Briara — let her judge your conduct", "target": "Commander Briara", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 220, "experience": 220, "gold": 40, "items": [], "reputation": { "bloomguard": 50 } },
+            "dialogueId": "briara_companion_quest",
+            "dialogueOnAccept": "briara_companion_quest",
+            "dialogueOnComplete": "briara_companion_complete",
+            "tags": ["companion", "recruitment", "bloomguard"]
+        },
+        {
+            "id": "companion_veyla",
+            "title": "The Coven's Whisper",
+            "name": "The Coven's Whisper",
+            "description": "Archdruid Veyla senses the Worldroot answering in patterns she does not recognise. She asks for an outside witness — someone whose ear the Coven cannot rewrite — to stand with her at a Sap-channeling rite.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "speak_veyla_recruit", "type": "dialogue", "description": "Meet Archdruid Veyla at the Canopy of Life", "target": "Archdruid Veyla", "count": 1, "required": 1, "order": 1 },
+                { "id": "channel_rite", "type": "interact", "description": "Attend Veyla's channeling rite — bear witness", "target": "veyla_rite", "count": 1, "required": 1, "order": 2 },
+                { "id": "report_veyla", "type": "dialogue", "description": "Speak with Veyla about what the Worldroot showed", "target": "Archdruid Veyla", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 300, "experience": 300, "gold": 50, "items": [], "reputation": { "emerald_coven": 75 } },
+            "dialogueId": "veyla_companion_quest",
+            "dialogueOnAccept": "veyla_companion_quest",
+            "dialogueOnComplete": "veyla_companion_complete",
+            "tags": ["companion", "recruitment", "emerald_coven"]
+        },
+        {
+            "id": "vaeril_recruitment",
+            "title": "An Oath Once Sworn",
+            "name": "An Oath Once Sworn",
+            "description": "A Bloomguard knight named Vaeril holds a road no one travels anymore. He swore he would and he meant it. He may join one whose word he can trust.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "find_vaeril", "type": "travel", "description": "Find the Bloomguard outpost holding the eastern road", "target": "east_gate_ruins", "count": 1, "required": 1, "order": 1 },
+                { "id": "defend_vaeril", "type": "kill", "description": "Hold the line beside Vaeril against hollow incursion", "target": "shadow_imp", "count": 4, "required": 4, "order": 2 }
+            ],
+            "rewards": { "xp": 280, "experience": 280, "gold": 50, "items": [], "reputation": { "bloomguard": 50 } },
+            "dialogueId": "vaeril_recruitment",
+            "dialogueOnAccept": "vaeril_recruitment",
+            "dialogueOnComplete": "vaeril_recruitment_complete",
+            "tags": ["companion", "recruitment", "bloomguard"]
+        },
+        {
+            "id": "oath_of_the_grove",
+            "title": "Oath of the Grove",
+            "name": "Oath of the Grove",
+            "description": "The road Vaeril holds was once protected by an Oath-stone he carved at his knighting. The stone has been taken. Help him retrieve it — and decide what he should do with it now.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "vaeril_recruitment" }],
+            "objectives": [
+                { "id": "track_oathstone", "type": "travel", "description": "Track the Oath-stone to the deep grove clearing", "target": "deep_grove_clearing", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_thief", "type": "kill", "description": "Defeat the corrupted treant guarding the stone", "target": "corrupted_treant", "count": 1, "required": 1, "isBoss": true, "order": 2 },
+                { "id": "return_oathstone", "type": "interact", "description": "Return the Oath-stone with Vaeril", "target": "vaeril_oathstone", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 600, "experience": 600, "gold": 100, "items": [{ "id": "bloomguard_honour_medal", "quantity": 1 }], "reputation": { "vaeril_bond": 50 } },
+            "dialogueId": "oath_of_the_grove",
+            "dialogueOnAccept": "oath_of_the_grove",
+            "dialogueOnComplete": "oath_of_the_grove_complete",
+            "tags": ["companion", "personal_quest", "bloomguard"]
+        },
+        {
+            "id": "sylor_recruitment",
+            "title": "Cut for Cause",
+            "name": "Cut for Cause",
+            "description": "A Thornbinder operating in Hollowroot has a target on his back and a target in his sights. Help him close his business and he may decide your business is worth closing too.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [{ "type": "quest", "questId": "crimson_rising" }],
+            "objectives": [
+                { "id": "meet_sylor", "type": "travel", "description": "Find Sylor in the Hollowroot Catacombs", "target": "hollowroot_catacombs", "count": 1, "required": 1, "order": 1 },
+                { "id": "sylor_contract", "type": "kill", "description": "Eliminate the target Sylor has been tracking", "target": "shadow_assassin", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 380, "experience": 380, "gold": 80, "items": [], "reputation": { "thornbinders": 75 } },
+            "dialogueId": "sylor_recruitment",
+            "dialogueOnAccept": "sylor_recruitment",
+            "dialogueOnComplete": "sylor_recruitment_complete",
+            "tags": ["companion", "recruitment", "thornbinders"]
+        },
+        {
+            "id": "shadows_of_the_past",
+            "title": "Shadows of the Past (Sylor)",
+            "name": "Shadows of the Past",
+            "description": "Sylor's old crew didn't survive their last contract. He has reason to believe the one who set them up still walks. He won't say more — but he'll lead you to where it began.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [{ "type": "quest", "questId": "sylor_recruitment" }],
+            "objectives": [
+                { "id": "find_evidence", "type": "travel", "description": "Search the sealed chamber where the contract went wrong", "target": "hollowroot_sealed_chamber", "count": 1, "required": 1, "order": 1 },
+                { "id": "confront_betrayer", "type": "kill", "description": "Confront the betrayer Sylor has been hunting", "target": "shadow_assassin", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 700, "experience": 700, "gold": 120, "items": [{ "id": "veilkeeper_focus", "quantity": 1 }], "reputation": { "sylor_bond": 50 } },
+            "dialogueId": "shadows_of_the_past",
+            "dialogueOnAccept": "shadows_of_the_past",
+            "dialogueOnComplete": "shadows_of_the_past_complete",
+            "tags": ["companion", "personal_quest", "thornbinders"]
+        },
+        {
+            "id": "aeliana_recruitment",
+            "title": "A Question of Healing",
+            "name": "A Question of Healing",
+            "description": "An Emerald Mystic in the Sanctum has been quietly healing wounds the Coven would prefer were not healed. She is looking for someone to walk with her while she does it.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "meet_aeliana", "type": "travel", "description": "Find Aeliana in the Emerald Sanctum", "target": "emerald_sanctum", "count": 1, "required": 1, "order": 1 },
+                { "id": "protect_patients", "type": "kill", "description": "Defend Aeliana's patients from corruption", "target": "corruption_wraith", "count": 3, "required": 3, "order": 2 }
+            ],
+            "rewards": { "xp": 300, "experience": 300, "gold": 60, "items": [], "reputation": { "emerald_coven": 50 } },
+            "dialogueId": "aeliana_recruitment",
+            "dialogueOnAccept": "aeliana_recruitment",
+            "dialogueOnComplete": "aeliana_recruitment_complete",
+            "tags": ["companion", "recruitment", "emerald_coven"]
+        },
+        {
+            "id": "mysteries_of_the_sap",
+            "title": "Mysteries of the Sap",
+            "name": "Mysteries of the Sap",
+            "description": "Aeliana believes the Sap itself is speaking — not as a force, but as a voice. She wants to reach the place where its voice is loudest. The journey is forbidden; the answer may be worth the trespass.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "aeliana_recruitment" }],
+            "objectives": [
+                { "id": "trespass_sanctum", "type": "travel", "description": "Reach the inner sanctum where the Sap's voice runs strongest", "target": "emerald_sanctum", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_guardian", "type": "kill", "description": "Defeat the sanctum guardian", "target": "nexus_guardian", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [], "spells": ["soul_link"], "reputation": { "aeliana_bond": 50 } },
+            "dialogueId": "mysteries_of_the_sap",
+            "dialogueOnAccept": "mysteries_of_the_sap",
+            "dialogueOnComplete": "mysteries_of_the_sap_complete",
+            "tags": ["companion", "personal_quest", "emerald_coven"]
+        },
+        {
+            "id": "mycon_recruitment",
+            "title": "The Network Calls",
+            "name": "The Network Calls",
+            "description": "A Sporecaller calling himself Mycon claims to speak for a network of fungal minds and not just for himself. He needs help quieting a sister-mind that has gone hostile.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [{ "type": "quest", "questId": "crimson_rising" }],
+            "objectives": [
+                { "id": "meet_mycon", "type": "travel", "description": "Find Mycon at the Mycelium Nexus", "target": "mycelium_nexus", "count": 1, "required": 1, "order": 1 },
+                { "id": "quiet_sister", "type": "kill", "description": "Subdue the hostile sister-mind", "target": "sporelord_mycel", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 420, "experience": 420, "gold": 70, "items": [], "reputation": { "sporecallers": 75 } },
+            "dialogueId": "mycon_recruitment",
+            "dialogueOnAccept": "mycon_recruitment",
+            "dialogueOnComplete": "mycon_recruitment_complete",
+            "tags": ["companion", "recruitment", "sporecallers"]
+        },
+        {
+            "id": "the_network_calls",
+            "title": "The Network Calls (Mycon)",
+            "name": "The Network Calls (Mycon)",
+            "description": "Mycon's network has been answering questions no one asked. He wants to walk its underground arteries to find the source. He warns the network may answer questions you didn't know you were asking either.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [{ "type": "quest", "questId": "mycon_recruitment" }],
+            "objectives": [
+                { "id": "walk_arteries", "type": "travel", "description": "Walk the fungal arteries to find the source", "target": "sporecaller_labs", "count": 1, "required": 1, "order": 1 },
+                { "id": "decide_source", "type": "interact", "description": "Decide what to do with the source-mind", "target": "mycon_source_node", "count": 1, "required": 1, "order": 2 }
+            ],
+            "rewards": { "xp": 700, "experience": 700, "gold": 120, "items": [], "reputation": { "mycon_bond": 50 } },
+            "dialogueId": "the_network_calls",
+            "dialogueOnAccept": "the_network_calls",
+            "dialogueOnComplete": "the_network_calls_complete",
+            "tags": ["companion", "personal_quest", "sporecallers"]
+        },
+        {
+            "id": "kaelen_recruitment",
+            "title": "Tracks Left Behind",
+            "name": "Tracks Left Behind",
+            "description": "A Wildkin Ranger named Kaelen has been tracking corruption through Spindlewood Forest. The tracks lead somewhere no ranger should go alone.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "meet_kaelen", "type": "travel", "description": "Find Kaelen in Spindlewood Forest", "target": "spindlewood_forest", "count": 1, "required": 1, "order": 1 },
+                { "id": "follow_tracks", "type": "kill", "description": "Defeat what's at the end of the trail", "target": "bloodthorn_beast", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 320, "experience": 320, "gold": 60, "items": [], "reputation": { "wildkin_pact": 75 } },
+            "dialogueId": "kaelen_recruitment",
+            "dialogueOnAccept": "kaelen_recruitment",
+            "dialogueOnComplete": "kaelen_recruitment_complete",
+            "tags": ["companion", "recruitment", "wildkin_pact"]
+        },
+        {
+            "id": "call_of_the_wild",
+            "title": "Call of the Wild",
+            "name": "Call of the Wild",
+            "description": "Kaelen's bonded hawk-spirit has gone silent. The Wildkin Pact whispers that a ranger without bond is no ranger at all. Help Kaelen find what the silence is hiding.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "kaelen_recruitment" }],
+            "objectives": [
+                { "id": "find_root_sentinel", "type": "travel", "description": "Reach the Root Sentinel grove where Kaelen's bond was forged", "target": "root_sentinel_grove", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_corrupter", "type": "kill", "description": "Defeat what corrupted the bond", "target": "vine_wraith", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [{ "id": "wildkin_totem", "quantity": 1 }], "reputation": { "kaelen_bond": 50 } },
+            "dialogueId": "call_of_the_wild",
+            "dialogueOnAccept": "call_of_the_wild",
+            "dialogueOnComplete": "call_of_the_wild_complete",
+            "tags": ["companion", "personal_quest", "wildkin_pact"]
         }
     ]
 }
