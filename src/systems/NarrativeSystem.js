@@ -458,6 +458,21 @@ export class NarrativeSystem {
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
 
+  /**
+   * Clear playthrough state for a fresh New Game. Loaded definitions
+   * (eras/acts/questToStoryFlags) are kept; only player-progress fields reset.
+   * Re-resolves currentAct to whatever data/story.json declares as first act.
+   */
+  reset() {
+    this.currentEra = 1;
+    this.currentAct = (this.acts?.[0]?.id) || 'act_1';
+    this.completedEras = new Set();
+    this.choicesMade = new Map();
+    this.discoveredTruths = new Set();
+    this.storyFlags = new Set();
+    this.availableEndings = new Set(['domination', 'harmony', 'sacrifice', 'collapse']);
+  }
+
   loadStoryData(storyData) {
     this.initialize(storyData);
   }
