@@ -137,6 +137,11 @@
         { "id": "watcher_cole", "name": "Watcher Cole", "nameColor": "#4488aa", "voicePitch": 0.85, "textSpeed": 1.0 },
         { "id": "sylara", "name": "Sylara", "nameColor": "#cc99ff", "voicePitch": 0.85, "textSpeed": 0.8 },
         { "id": "elder_thornwick", "name": "Elder Thornwick", "nameColor": "#88cc66", "voicePitch": 0.75, "textSpeed": 0.85 },
+        { "id": "vaeril", "name": "Vaeril", "nameColor": "#88bb66", "voicePitch": 0.8, "textSpeed": 0.95 },
+        { "id": "sylor", "name": "Sylor", "nameColor": "#776688", "voicePitch": 0.9, "textSpeed": 1.05 },
+        { "id": "aeliana", "name": "Aeliana", "nameColor": "#88ddaa", "voicePitch": 1.15, "textSpeed": 0.9 },
+        { "id": "mycon", "name": "Mycon", "nameColor": "#aabb66", "voicePitch": 0.7, "textSpeed": 0.85 },
+        { "id": "kaelen", "name": "Kaelen", "nameColor": "#66aa88", "voicePitch": 0.95, "textSpeed": 1.0 },
         { "id": "player", "name": "You", "nameColor": "#ffffff", "voicePitch": 1.0, "textSpeed": 1.0 }
     ],
     "dialogues": [
@@ -1212,7 +1217,160 @@
                     "emotion": "grateful"
                 }
             ]
-        }
+        },
+        { "id": "kael_mirror_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "The Veilkeepers hid a focus artifact in the Crystal Caverns before we were scattered. I'd written it off as lost. Now a Shadow Weaver carries its resonance — and that means someone is teaching the Weavers how to use what we built. I need it back. I need to know how they found it." }
+        ]},
+        { "id": "kael_mirror_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kael", "text": "The focus is intact. Cold to the touch, but intact. Whoever directed that Weaver knew exactly where to look — which means a Veilkeeper turned, or one of our caches was catalogued by someone who shouldn't have had access. Either way, this is a thread I can pull. Thank you. Genuinely." }
+        ]},
+        { "id": "yenna_herd_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "An elk herd near Spindlewood moves wrong — silent, eyes clouded, walking in a spiral that matches the corruption-pattern from the eastern breach. The pack-bond is gone. Something is wearing them. Help me get close enough to see what, before they turn on the next traveller through there." }
+        ]},
+        { "id": "yenna_herd_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "The herd is at rest. Whatever rode them is gone — back into the Veil, I hope, and not into something else. I've never killed an animal that was already someone else's puppet before. I won't forget the difference. Or that you stood with me through it." }
+        ]},
+        { "id": "althea_sight_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "The visions have stopped fracturing. They've started pointing. There is a place — a mirror of Verdance laid over the Veil itself — and I can almost see how to reach it. I need three Resonance Stones to triangulate the entry. If we find them, we may find the door the Unbinding is trying to open. Or the one we need to close." }
+        ]},
+        { "id": "althea_sight_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "althea", "text": "The stones sing together. I can see the mirror-place now — not in flashes, but as a steady shape. We are not ready to enter it. But we know it is there, and where, and that is more than the Veilkeepers managed in three centuries. Whatever happens next, that matters." }
+        ]},
+        { "id": "briara_honour_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "I have carried the Siege of the East Gate for nine years. Every officer who debriefed me called it bad luck. I called it my failure. Now a witness has surfaced — someone who saw the supply lines cut from the inside. If sabotage took that wall down, I need to know it. I need to look the saboteur in the face. Come with me." }
+        ]},
+        { "id": "briara_honour_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "It was sabotage. I lost my unit to a coin and a closed door, not to my own judgement. That doesn't bring them back — nothing will — but it changes the shape of what I carry. I owe you the rest of my service. Whatever you ask, however long it takes." }
+        ]},
+        { "id": "veyla_root_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "Beneath the Everwood Heart lies the Worldroot — older than the Veil, older than the first druid circle. It remembers the shape of the world before the tear. It has been sleeping since that tear opened. I want to wake it. I cannot do it alone, and I will not do it without someone I trust to pull me back if the communion takes too much." }
+        ]},
+        { "id": "veyla_root_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "It woke. Briefly, but it woke — and what it showed me will take a long time to understand. The world had a shape before the Veil. It can have one after. Thank you for not letting go of my hand. That mattered more than the rite." }
+        ]},
+        { "id": "briara_companion_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "You move like someone who finishes what they start. The Bloomguard taught me to recognise it. I am between postings and I am not built for waiting rooms — let me walk with you. You will not have to ask twice for a shield." }
+        ]},
+        { "id": "briara_companion_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "briara", "text": "Whatever comes next, I am at your side. The Bloomguard discharged me with honour. You can rely on me with the same." }
+        ]},
+        { "id": "veyla_companion_quest", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The grove speaks of you. Not loudly — the grove never does — but consistently. I have walked these paths longer than is sensible, and I would walk them with someone for a change. If you'll have an old druid for company." }
+        ]},
+        { "id": "veyla_companion_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "The roots are settled. I am with you now. Tell me where, and I will find the quiet path there." }
+        ]},
+        { "id": "vaeril_recruitment", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "vaeril", "text": "I hold this road because I swore I would. No one travels it anymore — which is the point. If you intend to break the pattern of small choices that brought us to this Veil, I would rather break it with you than guard a road no one walks." }
+        ]},
+        { "id": "vaeril_recruitment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "vaeril", "text": "The Oath holds. I march under it, and now under your banner as well. Lead, and I will keep the line." }
+        ]},
+        { "id": "oath_of_the_grove", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "vaeril", "text": "The Oath-stone I carved at my knighting is cracked. I felt it before I saw it. If the stone breaks, the oath unbinds — and I will not be the knight I was. Help me find what is feeding on it. I cannot face that alone and remain who I am." }
+        ]},
+        { "id": "oath_of_the_grove_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "vaeril", "text": "The stone is whole. The oath holds, and so do I. I owe you the part of me that almost slipped. That is not a small debt." }
+        ]},
+        { "id": "sylor_recruitment", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sylor", "text": "Look. I'm being hunted and I'm hunting back, and I work better with one good blade beside me than with three nervous ones. You look like one good blade. If you want a Thornbinder who will not flinch when the work gets ugly — I'm here. Travel with me a while." }
+        ]},
+        { "id": "sylor_recruitment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sylor", "text": "Good. We work. I'll keep the knives sharp and the questions to a minimum. You set the pace." }
+        ]},
+        { "id": "shadows_of_the_past", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sylor", "text": "My old crew didn't come back from a contract two winters ago. I have reason to believe the one who sold them out is still drawing breath in Hollowroot. I am going there with or without you. I would prefer with." }
+        ]},
+        { "id": "shadows_of_the_past_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sylor", "text": "It's done. They are answered for. I won't pretend it cost nothing — but I sleep tonight, and that's more than I've had in two years. Thank you for not asking me to be cleaner about it than I could be." }
+        ]},
+        { "id": "aeliana_recruitment", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "aeliana", "text": "I heal what the Coven prefers I didn't. I keep records the Coven prefers I didn't. If you are someone who does not flinch from the Sap when it is honest — even when it asks hard things — I would rather travel with you than write more reports the archive will lose." }
+        ]},
+        { "id": "aeliana_recruitment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "aeliana", "text": "Then we are bound, lightly. The Sap is watching us both now. I will not waste its attention, and I will not waste yours." }
+        ]},
+        { "id": "mysteries_of_the_sap", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "aeliana", "text": "The Sap is speaking. Not as a force — as a voice. I want to reach the place where its voice runs strongest, even though the path is forbidden and the sanctum is guarded. If you come with me, we may hear what the world has been trying to say since the first tear." }
+        ]},
+        { "id": "mysteries_of_the_sap_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "aeliana", "text": "I heard it. I cannot tell you what it said in words you would believe — but I can tell you it changed me, and that I am calmer for it. Take this. Sap Surge. The voice taught it to me. I want you to carry it." }
+        ]},
+        { "id": "mycon_recruitment", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycon", "text": "We are many and we speak with one mouth. We have watched you. You make decisions the network finds interesting. We would walk beside you and listen and, when useful, advise. The Syndicate calls this an experiment. We call it good manners." }
+        ]},
+        { "id": "mycon_recruitment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycon", "text": "Then we walk. The network will hum at the edges of your hearing. Do not be alarmed. It is only us, agreeing." }
+        ]},
+        { "id": "the_network_calls", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycon", "text": "The network is answering questions no one asked. That is not how it works. Something underground has begun to push thoughts upward. We must walk it before it teaches itself to do more than push. Will you come down with us." }
+        ]},
+        { "id": "the_network_calls_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "mycon", "text": "The thing has been removed. The network is its own again. We are quieter for it, and grateful. We will not forget that you walked the deep paths with us when most surface-walkers would have turned at the first taste of dark." }
+        ]},
+        { "id": "kaelen_recruitment", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kaelen", "text": "I've been tracking corruption through Spindlewood for a season. The Pact says the trail is wider than one ranger should walk. I disagree, but I am willing to be wrong with company. Come with me. The forest will tell us both more than it tells me alone." }
+        ]},
+        { "id": "kaelen_recruitment_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kaelen", "text": "Good. We move at first light. Travel light, sleep lighter, and the trees will keep us." }
+        ]},
+        { "id": "call_of_the_wild", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kaelen", "text": "My bonded hawk-spirit has gone silent. Three nights now. The Pact whispers that a ranger without a bond is half a ranger — they don't say it cruelly, they say it as fact. I need to know if she is hurt, or hiding, or gone. Will you find her with me." }
+        ]},
+        { "id": "call_of_the_wild_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kaelen", "text": "She came back. Not the same — quieter, older, but mine. Bonds bend before they break, the elders say. I'll take bent. Thank you for walking the forest until she was ready to be found." }
+        ]},
+        { "id": "elder_awakening_start", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "elder", "text": "You're awake. Good. The Veil has thinned overnight and I have work that won't wait. Walk with me to the grove edge — what you see there will tell you why I sent for you." }
+        ]},
+        { "id": "veyla_veil_dust", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "Veil Dust gathers where the world is thinnest. Bring me what you can carry without it touching skin — wrap it. The dust remembers being part of something larger and resents the loss." }
+        ]},
+        { "id": "lirel_rot_grub", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "lirel", "text": "Rot grubs in my stockroom again. I cannot move barrels with them in the wood. Clear the infestation and I'll halve my prices for you for a season." }
+        ]},
+        { "id": "canopy_stalker_board", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "canopy_scout", "text": "Canopy stalker took two scouts last week. The board's open on it. Bring me proof of the kill and the bounty's yours — and the scouts' families will thank you in their own way." }
+        ]},
+        { "id": "ferment_moss_heart", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "moss_elder", "text": "The moss golem's heart-core has gone sour. Fermenting in place. We need it removed before the rot spreads to the grove floor. The golem will resist. It does not know it is sick." }
+        ]},
+        { "id": "reyla_blight_hound", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "reyla", "text": "Blight hound pack is harrying the patrol routes. Cull them down to a manageable number and the Guard can post the road again. I'll see you paid from the watch fund." }
+        ]},
+        { "id": "veyla_ghost_banish", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veyla", "text": "Sap ghosts are echoes of something that should have moved on. Banishing them is gentle work, not violent — bring them to the cairns and let the cairns finish what was started." }
+        ]},
+        { "id": "yenna_trail_clear", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "yenna", "text": "Thorn harriers have made the trail unwalkable. Clear them. They will return in a season, but a season is enough for the herd to pass through safely." }
+        ]},
+        { "id": "wildkin_trial_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "kaelen", "text": "You stood the Root Sentinel's trial. Few do. The Pact recognises you — quietly, but it recognises you. Carry that as you carry your weapons." }
+        ]},
+        { "id": "veil_watcher_thanks", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "veil_watcher", "text": "The ritual holds because you stood the watch with me. The Veil is no thicker, but it is no thinner either. That is the work. Thank you." }
+        ]},
+        { "id": "garon_ore_order", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "garon", "text": "Ironbark ore. As much as your back will carry and your conscience permits. I'll pay by the pound and throw in a custom edge if you bring the good vein." }
+        ]},
+        { "id": "brin_recon_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "scout_brin", "text": "Clean recon. You've given the Guard eyes where we were blind. Take this — and there will be more work like it, if you've a taste for the quiet kind." }
+        ]},
+        { "id": "mora_herbs_thanks", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "healer_mora", "text": "These herbs are perfect — picked at the right hour, not bruised. You have a gentle hand. The infirmary will run another month because of you." }
+        ]},
+        { "id": "lynn_scroll_thanks", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "keeper_lynn", "text": "The scroll is intact. Do you know what you've recovered? No — and that is fine. The archive knows. That is enough. Take this token of the Keepers' thanks." }
+        ]},
+        { "id": "orin_workshop_clear", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "orin", "text": "Workshop is mine again. Blight hounds are off my floor and out of my plumbing. Director Orin pays his debts — your coin is on the bench, and you are welcome at the forge any time." }
+        ]},
+        { "id": "weaver_charm_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "sap_weaver", "text": "The charm is woven through. It will hold what you ask of it, no more, no less. Use it with intent — the weave dislikes idle hands." }
+        ]},
+        { "id": "cole_warning_complete", "startNode": "start", "nodes": [
+            { "id": "start", "speaker": "watcher_cole", "text": "The warning is delivered. The watch can prepare now. You may have spared us a season of grief — I won't forget it, and the watch keeps its accounts." }
+        ]}
     ]
 }
 
