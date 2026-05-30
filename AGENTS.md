@@ -7,10 +7,11 @@
 | # | Path | Purpose |
 |---|------|---------|
 | 1 | [`docs/CLAUDE_AGENT_GUIDE.md`](docs/CLAUDE_AGENT_GUIDE.md) | **Primary:** architecture, EventBus/save wiring, pitfalls, verification, **copy-paste system prompt** |
-| 2 | [`docs/BUILD_PLAYBOOK_AND_ROADMAP.md`](docs/BUILD_PLAYBOOK_AND_ROADMAP.md) | Vision, phased roadmap (0–8), release criteria |
-| 3 | [`docs/IMPLEMENTATION_AND_PATHS_GUIDE.md`](docs/IMPLEMENTATION_AND_PATHS_GUIDE.md) | Implemented vs partial vs missing; vertical slices A–G; player paths |
-| 4 | [`docs/FEATURE_CHECKLIST.md`](docs/FEATURE_CHECKLIST.md) | Living backlog — update when you ship |
-| 5 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Stack, folders, EventBus table, Sap Cycle, controls |
+| **2** | **[`docs/BEST_PRACTICES.md`](docs/BEST_PRACTICES.md)** | **MUST READ BEFORE EDITING CODE.** Encodes the rules that have prevented (or, when missed, caused) real bugs — EventBus discipline, singleton lifecycle, reset() pattern, panel teardown, hotkey ownership, verification checklist. |
+| 3 | [`docs/BUILD_PLAYBOOK_AND_ROADMAP.md`](docs/BUILD_PLAYBOOK_AND_ROADMAP.md) | Vision, phased roadmap (0–8), release criteria |
+| 4 | [`docs/IMPLEMENTATION_AND_PATHS_GUIDE.md`](docs/IMPLEMENTATION_AND_PATHS_GUIDE.md) | Implemented vs partial vs missing; vertical slices A–G; player paths |
+| 5 | [`docs/FEATURE_CHECKLIST.md`](docs/FEATURE_CHECKLIST.md) | Living backlog — update when you ship |
+| 6 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Stack, folders, EventBus table, Sap Cycle, controls |
 
 **Also useful**
 
