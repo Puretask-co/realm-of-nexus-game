@@ -256,6 +256,12 @@ export class StashPanel {
         }
     }
 
+    /** Tear down EventBus listeners on scene shutdown. */
+    destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
+    }
+
     // ----------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------

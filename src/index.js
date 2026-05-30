@@ -12,7 +12,6 @@ export { default as DataManager } from './systems/DataManager.js';
 
 // Tool 2: Visual Level Editor
 export { InspectorPanel } from './ui/InspectorPanel.js';
-export { HotReloadOverlay } from './ui/HotReloadOverlay.js';
 
 // Tool 3: Advanced Lighting System
 export { default as AdvancedLightingSystem } from './systems/AdvancedLightingSystem.js';
@@ -40,10 +39,8 @@ export { QuestSystem } from './systems/QuestSystem.js';
 
 // Tool 10: UI Framework
 export { UIFramework } from './ui/UIFramework.js';
-export { HUDPanel } from './ui/HUDPanel.js';
 export { InventoryPanel } from './ui/InventoryPanel.js';
 export { SkillTreePanel } from './ui/SkillTreePanel.js';
-export { MainMenuPanel } from './ui/MainMenuPanel.js';
 
 // Player Class System
 export { PlayerClassSystem } from './systems/PlayerClassSystem.js';

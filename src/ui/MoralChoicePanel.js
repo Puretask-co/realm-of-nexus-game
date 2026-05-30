@@ -100,11 +100,13 @@ export class MoralChoicePanel {
     // ----------------------------------------------------------------
 
     _setupEvents() {
-        EventBus.on('moral-choice-present', (data) => this.open(data));
-        EventBus.on('resume-world', () => {
-            // If we were the one that paused, ensure panel is hidden
+        // Store unsubs so destroy() can clear listeners — otherwise scene
+        // restarts (death respawn / new game) accumulate handlers.
+        this._unsubs = this._unsubs || [];
+        this._unsubs.push(EventBus.on('moral-choice-present', (data) => this.open(data)));
+        this._unsubs.push(EventBus.on('resume-world', () => {
             if (this.visible) this.hide();
-        });
+        }));
     }
 
     // ----------------------------------------------------------------
@@ -352,6 +354,8 @@ class ChoiceButton {
     }
 
     destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
         for (const el of this._elements) if (el?.destroy) el.destroy();
         this._elements = [];
     }

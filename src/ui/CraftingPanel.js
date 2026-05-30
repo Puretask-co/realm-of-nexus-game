@@ -187,9 +187,10 @@ export class CraftingPanel {
     // ─────────────────────────────────────────────────────────────
 
     _setupEvents() {
-        EventBus.on('crafting-open', (data) => this.open(data));
+        this._unsubs = this._unsubs || [];
+        this._unsubs.push(EventBus.on('crafting-open', (data) => this.open(data)));
 
-        EventBus.on('crafting:recipeDiscovered', (data) => {
+        this._unsubs.push(EventBus.on('crafting:recipeDiscovered', (data) => {
             if (!data?.recipeId) return;
             const rec = this._allRecipes.find(r => r.id === data.recipeId);
             if (rec) {
@@ -197,9 +198,9 @@ export class CraftingPanel {
                 this._refreshRecipeList();
                 this._showNotification(`New recipe discovered: ${rec.name}!`);
             }
-        });
+        }));
 
-        EventBus.on('inventory:update', (data) => {
+        this._unsubs.push(EventBus.on('inventory:update', (data) => {
             if (data?.items) {
                 for (const [id, qty] of Object.entries(data.items)) {
                     this._inventory[id] = qty;
@@ -209,25 +210,31 @@ export class CraftingPanel {
                 this._refreshRecipeList();
                 this._refreshCenter();
             }
-        });
+        }));
 
         // Legacy incremental events for backward-compat
-        EventBus.on('inventory:addItem', (data) => {
+        this._unsubs.push(EventBus.on('inventory:addItem', (data) => {
             const id = data?.itemId;
             if (id) this._inventory[id] = (this._inventory[id] || 0) + (data.quantity || 1);
             if (this.visible) { this._refreshRecipeList(); this._refreshCenter(); }
-        });
-        EventBus.on('inventory:removeItem', (data) => {
+        }));
+        this._unsubs.push(EventBus.on('inventory:removeItem', (data) => {
             const id = data?.itemId;
             if (id) this._inventory[id] = Math.max(0, (this._inventory[id] || 0) - (data.quantity || 1));
             if (this.visible) { this._refreshRecipeList(); this._refreshCenter(); }
-        });
-        EventBus.on('crafting:inventorySnapshot', (data) => {
+        }));
+        this._unsubs.push(EventBus.on('crafting:inventorySnapshot', (data) => {
             if (data?.items) {
                 for (const [id, qty] of Object.entries(data.items)) this._inventory[id] = qty;
                 if (this.visible) { this._refreshRecipeList(); this._refreshCenter(); }
             }
-        });
+        }));
+    }
+
+    /** Tear down EventBus listeners on scene shutdown. */
+    destroy() {
+        if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+        this._unsubs = [];
     }
 
     // ─────────────────────────────────────────────────────────────
