@@ -84,6 +84,8 @@ export class DifficultySystem {
 
   serialize() { return { difficulty: this.currentDifficulty }; }
   deserialize(data) { if (data?.difficulty) this.currentDifficulty = data.difficulty; }
+  /** Reset to constructor default ('normal') for a fresh New Game. */
+  reset() { this.currentDifficulty = 'normal'; }
 }
 
 export default DifficultySystem;

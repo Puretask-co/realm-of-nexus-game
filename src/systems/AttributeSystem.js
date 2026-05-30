@@ -262,6 +262,12 @@ export class AttributeSystem {
   }
 
   loadState(data) { this.deserialize(data); }
+
+  /** Clear playthrough state for a fresh New Game (definitions retained). */
+  reset() {
+    this.attributes = { might: 0, agility: 0, resilience: 0, insight: 0, charisma: 0 };
+    this.ancestryMods = {};
+  }
 }
 
 export default AttributeSystem;

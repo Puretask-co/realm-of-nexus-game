@@ -740,6 +740,12 @@ export class DialogueSystem {
     this.history = [];
     DialogueSystem.instance = null;
   }
+
+  /** Clear playthrough state for a fresh New Game (definitions retained). */
+  reset() {
+    this.variables = new Map();
+    this.history = [];
+  }
 }
 
 export default DialogueSystem;

@@ -396,4 +396,22 @@ export default class SapCycleManager {
     destroy() {
         if (this._unsubDataReload) { this._unsubDataReload(); this._unsubDataReload = null; }
     }
+
+    /**
+     * Clear playthrough state for a fresh New Game. Returns the calendar to
+     * day 1 of the first phase; phase definitions (loaded from config) are
+     * retained.
+     */
+    reset() {
+        this.currentDay = 1;
+        this.currentHour = 8;
+        this.currentPhaseIndex = 0;
+        this.currentPhase = this.phaseDefinitions[0]?.name?.toLowerCase() || 'crimson';
+        this.dayInPhase = 1;
+        this.elapsed = 0;
+        this._hourAccum = 0;
+        this._transitionTimer = 0;
+        this.transitioning = false;
+        this.nextPhase = null;
+    }
 }

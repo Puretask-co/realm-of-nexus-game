@@ -402,6 +402,17 @@ export class CraftingSystem {
       }
     }
   }
+
+  /**
+   * Clear playthrough state for a fresh New Game. Recipes return to the
+   * five-item starter set; stations return to their constructor defaults
+   * (bloomguard_forge + sapling_workshop unlocked, others locked).
+   */
+  reset() {
+    this.knownRecipes = new Set(['iron_sword', 'minor_health_potion', 'sap_arrows', 'thorn_trap', 'veil_scroll_minor']);
+    const defaultsUnlocked = new Set(['bloomguard_forge', 'sapling_workshop']);
+    for (const [id, s] of this.stations) s.unlocked = defaultsUnlocked.has(id);
+  }
 }
 
 export default CraftingSystem;

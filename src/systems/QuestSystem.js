@@ -89,6 +89,10 @@ export class QuestSystem {
     this.eventBus.on('npc-dialogue-complete', (data) => this.onNpcTalked(data));
     // 'interact' objectives — completed by activating a world object/event.
     this.eventBus.on('quest:interact', (data) => this.onInteract(data));
+    // The world fires 'spell:unlocked' (GameScene + reward path), so use the
+    // canonical name. Keep 'spell:learned' as an alias in case any older
+    // content emits it.
+    this.eventBus.on('spell:unlocked', (data) => this.onSpellLearned(data));
     this.eventBus.on('spell:learned', (data) => this.onSpellLearned(data));
     this.eventBus.on('player:levelUp', (data) => this.onLevelUp(data));
     this.eventBus.on('sapCycle:phaseChanged', (data) => this.onSapPhaseChanged(data));

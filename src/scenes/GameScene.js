@@ -2046,17 +2046,18 @@ export default class GameScene extends Phaser.Scene {
             EventBus.emit('ui:toggleQuestJournal');
         });
 
-        // M → toggle world map overlay
+        // M → open world map overlay. Only fires when the map isn't already
+        // up; otherwise the map's own M handler closes it (avoids both scenes
+        // firing M in the same frame and flickering open/close).
         this.input.keyboard.on('keydown-M', () => {
-            if (!this.scene.isActive('WorldMapScene')) {
-                this.scene.launch('WorldMapScene', { currentZone: this.currentZone || 'canopy_of_life' });
-            } else {
-                this.scene.stop('WorldMapScene');
-            }
+            if (this.scene.isActive('WorldMapScene')) return;
+            this.scene.launch('WorldMapScene', { currentZone: this.currentZone || 'canopy_of_life' });
         });
 
-        // H → enter Home Base (The Verdant Hearth)
+        // H → enter Home Base (The Verdant Hearth). Guarded so a second H
+        // press while inside HomeBase doesn't re-start the scene.
         this.input.keyboard.on('keydown-H', () => {
+            if (this.scene.isActive('HomeBaseScene')) return;
             this.scene.start('HomeBaseScene', { returnZone: this.currentZone || 'canopy_of_life' });
         });
     }
@@ -2572,6 +2573,8 @@ export default class GameScene extends Phaser.Scene {
         this.cameraSystem.shake('medium');
         this.particles.burst(this.player.x, this.player.y, 'hit_sparks', { count: 30 });
         EventBus.emit('player:levelUp', { level });
+        // ProceduralAudio listens to the dash form — emit both so its SFX fires.
+        EventBus.emit('player-levelup', { level });
         EventBus.emit('player-stats-updated', this.player.stats);
         console.log(`[Level Up] ${this.player.stats.className} is now level ${level}`);
     }

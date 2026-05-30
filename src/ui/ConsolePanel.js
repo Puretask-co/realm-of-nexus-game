@@ -53,11 +53,12 @@ export class ConsolePanel {
     this._registerBuiltinCommands();
     this.createPanel();
 
-    // Listen for new log entries
-    this.eventBus.on('logger:entry', (entry) => {
+    // Listen for new log entries — store unsubs for destroy().
+    this._unsubs = this._unsubs || [];
+    this._unsubs.push(this.eventBus.on('logger:entry', (entry) => {
       if (!this.paused) this.onNewEntry(entry);
-    });
-    this.eventBus.on('logger:cleared', () => this.refresh());
+    }));
+    this._unsubs.push(this.eventBus.on('logger:cleared', () => this.refresh()));
   }
 
   createPanel() {
@@ -514,6 +515,8 @@ export class ConsolePanel {
   }
 
   destroy() {
+    if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+    this._unsubs = [];
     if (this.container) this.container.destroy(true);
   }
 }

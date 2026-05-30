@@ -39,11 +39,12 @@ export class HierarchyPanel {
 
     this.createPanel();
 
-    // Listen for ECS changes
-    this.eventBus.on('ecs:entityCreated', () => this.refresh());
-    this.eventBus.on('ecs:entityDestroyed', () => this.refresh());
-    this.eventBus.on('ecs:parentChanged', () => this.refresh());
-    this.eventBus.on('ecs:sceneImported', () => this.refresh());
+    // Listen for ECS changes — store unsubs for destroy().
+    this._unsubs = this._unsubs || [];
+    this._unsubs.push(this.eventBus.on('ecs:entityCreated', () => this.refresh()));
+    this._unsubs.push(this.eventBus.on('ecs:entityDestroyed', () => this.refresh()));
+    this._unsubs.push(this.eventBus.on('ecs:parentChanged', () => this.refresh()));
+    this._unsubs.push(this.eventBus.on('ecs:sceneImported', () => this.refresh()));
   }
 
   createPanel() {
@@ -348,6 +349,8 @@ export class HierarchyPanel {
   }
 
   destroy() {
+    if (this._unsubs) this._unsubs.forEach(fn => { try { fn(); } catch (_) {} });
+    this._unsubs = [];
     if (this.container) this.container.destroy(true);
   }
 }

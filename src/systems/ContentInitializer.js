@@ -249,25 +249,25 @@ export default class ContentInitializer {
 
         // ── Centralised new-game reset ─────────────────────────────
         // Only QuestSystem/ProgressionSystem/FactionSystem/DSPSystem implement
-        // their own reset() listener. Cover the rest here so a "New Game" in
-        // the same browser session truly starts fresh — previously the player
-        // kept their class pick, dialogue history, recruited companions,
-        // killed Veilkeepers, narrative flags, attribute points, etc.
+        // their own reset() listener. Cover the rest here. Each target now has
+        // a real reset() that mirrors its constructor's initial state — the
+        // previous loadState({}) approach was inert because every loader is
+        // defensively written as `if (data.field) ...`.
         unsubs.push(EventBus.on('game:reset', () => {
-            // Each call is guarded so a missing system never breaks the loop.
-            try { sapCycleManager?.deserialize?.({}); } catch (_) {}
-            try { classSystem?.deserialize?.({}); } catch (_) {}
-            try { narrativeSystem?.loadState?.({}); } catch (_) {}
-            try { moralChoiceSystem?.loadState?.({}); } catch (_) {}
-            try { companionSystem?.loadState?.({}); } catch (_) {}
-            try { attributeSystem?.loadState?.({}); } catch (_) {}
-            try { veilkeeperSystem?.loadState?.({}); } catch (_) {}
-            try { skillCheckSystem?.loadState?.({}); } catch (_) {}
-            try { dialogueSystem?.loadState?.({}); } catch (_) {}
-            try { craftingSystem?.deserialize?.({}); } catch (_) {}
-            try { equipmentSystem?.loadState?.({}); } catch (_) {}
-            try { difficultySystem?.deserialize?.({}); } catch (_) {}
-            try { aiDungeonMaster?.deserialize?.({}); } catch (_) {}
+            const targets = [
+                sapCycleManager, classSystem, narrativeSystem, moralChoiceSystem,
+                companionSystem, attributeSystem, veilkeeperSystem, skillCheckSystem,
+                dialogueSystem, craftingSystem, equipmentSystem, difficultySystem,
+                aiDungeonMaster,
+            ];
+            for (const sys of targets) {
+                if (!sys) continue;
+                try {
+                    if (typeof sys.reset === 'function') sys.reset();
+                    else if (typeof sys.deserialize === 'function') sys.deserialize({});
+                    else if (typeof sys.loadState === 'function') sys.loadState({});
+                } catch (_) { /* never break the loop */ }
+            }
             console.log('[ContentInit] game:reset — non-self-resetting systems cleared');
         }));
 

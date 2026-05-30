@@ -313,6 +313,18 @@ export class VeilkeeperSystem {
   saveState() { return this.serialize(); }
   loadState(data) { this.deserialize(data); }
 
+  /**
+   * Clear playthrough state for a fresh New Game. Reloads definitions from
+   * data so per-keeper hollowing/alive flags reset cleanly.
+   */
+  reset() {
+    this.deadVeilkeepers = new Set();
+    this.communionUsed = new Set();
+    this.consultationHistory = [];
+    this.veilkeepers = new Map();
+    this._loadFromData();
+  }
+
   getAliveCount() {
     return this.getLivingVeilkeepers().length;
   }
