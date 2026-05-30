@@ -37,6 +37,20 @@ const ZONE_REALM = {
   the_scar: 'scar', abyss_forward_camp: 'scar',
   corruption_quarantine_zone: 'crimsonmire',
   emerald_cascades: 'tideflow',
+
+  // ── New locations (companion/quest content) ────────────────────────
+  crystal_caverns: 'catacombs',
+  crimson_plateau: 'crimsonmire',
+  nexus_spire: 'spire',
+  sunken_ruins: 'tideflow',
+  hollowroot_sealed_chamber: 'catacombs',
+  east_gate_ruins: 'heights',
+  deep_grove_clearing: 'gloamwood',
+  root_sentinel_grove: 'gloamwood',
+  eastern_canopy: 'heights',
+  deep_woods: 'gloamwood',
+  veil_breach_approach: 'veil',
+  veil_breach: 'veil',
 };
 
 const DEFAULT_REALM = 'gloamwood';

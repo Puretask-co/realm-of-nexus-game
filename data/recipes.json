@@ -70,7 +70,7 @@
       "requiredLevel": 3,
       "craftingTime": 5,
       "description": "An axe with a head reinforced by compressed thornwood bark. The natural barbs on the edge deal additional shredding damage.",
-      "unlockMethod": "find:verdant_grove",
+      "unlockMethod": "find:canopy_of_life",
       "discovered": false
     },
     {
@@ -178,7 +178,7 @@
       "requiredLevel": 8,
       "craftingTime": 10,
       "description": "A massive cleaver forged from volcanic crimson ore. Deals significant fire damage on each hit.",
-      "unlockMethod": "find:crimson_spire_entrance",
+      "unlockMethod": "find:crimson_plateau",
       "discovered": false
     },
     {
@@ -288,7 +288,7 @@
       "requiredLevel": 7,
       "craftingTime": 12,
       "description": "Plates of ironwood bark hardened with ancient resin and reinforced with crystal shards, rivaling metal in durability.",
-      "unlockMethod": "find:deep_everwood",
+      "unlockMethod": "find:everwood_heart",
       "discovered": false
     },
     {
@@ -324,7 +324,7 @@
       "requiredLevel": 9,
       "craftingTime": 14,
       "description": "Heavy plate armor smelted from crimson ore. Grants fire resistance and a chance to retaliate with a burst of flame.",
-      "unlockMethod": "find:crimson_spire_forge",
+      "unlockMethod": "find:crimson_plateau",
       "discovered": false
     },
     {
@@ -396,7 +396,7 @@
       "requiredLevel": 2,
       "craftingTime": 3,
       "description": "Counterintuitively, a small dose of spore extract combined with silver moss neutralizes most poisons.",
-      "unlockMethod": "find:verdant_grove",
+      "unlockMethod": "find:canopy_of_life",
       "discovered": false
     },
     {
@@ -648,7 +648,7 @@
       "requiredLevel": 3,
       "craftingTime": 4,
       "description": "Compress thornwood bark fibers with living root sap under heat to produce hardened resin that approximates ancient-quality material.",
-      "unlockMethod": "find:verdant_grove",
+      "unlockMethod": "find:canopy_of_life",
       "discovered": false
     },
     {
