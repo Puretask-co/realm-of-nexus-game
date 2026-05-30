@@ -278,6 +278,13 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-F2', () => {
             this.scene.switch('EditorScene');
         });
+        // F10 → AdminScene overlay (DEV-only dev/admin panel).
+        if (import.meta.env.DEV) {
+            this.input.keyboard.on('keydown-F10', () => {
+                if (this.scene.isActive('AdminScene')) return;  // sub-scene closes itself
+                this.scene.launch('AdminScene');
+            });
+        }
 
         // ---- Minimap binding ----
         this.minimap.bind(this.player, this.enemies, this.npcs, this.cameras.main);
