@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import EventBus from '../core/EventBus.js';
 
 /**
- * SpellVFXIntegration — Bridges SpellSystem with Phaser scene graphics for spell VFX.
+ * SpellVFXIntegration — Renders spell visuals from EventBus `spell:*` events.
  *
  * Each vfxType is rendered distinctly:
  *   projectile  - Moving orb with trail from caster to target

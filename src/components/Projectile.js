@@ -13,8 +13,7 @@ import EventBus from '../core/EventBus.js';
  *  - Auto-destroy on impact or after max lifetime
  *  - Piercing mode: passes through enemies without stopping
  *
- * Created by the SpellVFXIntegration or CombatSystem when
- * a ranged spell is cast.
+ * Created by the SpellVFXIntegration when a ranged spell is cast.
  */
 export default class Projectile {
     constructor(scene, config) {

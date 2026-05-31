@@ -48,8 +48,6 @@ export { PlayerClassSystem } from './systems/PlayerClassSystem.js';
 // Game Systems
 export { default as SapCycleManager } from './systems/SapCycleManager.js';
 export { default as CooldownManager } from './systems/CooldownManager.js';
-export { CombatSystem } from './systems/CombatSystem.js';
-export { SpellSystem } from './systems/SpellSystem.js';
 export { ProgressionSystem } from './systems/ProgressionSystem.js';
 export { AISystem } from './systems/AISystem.js';
 export { default as SaveManager } from './systems/SaveManager.js';
