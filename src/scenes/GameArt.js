@@ -124,16 +124,23 @@ const SPELL_ICON_FILES = {
 };
 
 // element/keyword fallback so any spell gets a reasonable icon.
+// Order matters — more specific patterns first.
 const SPELL_ICON_FALLBACK = [
   [/fire|flame|burn|inciner|ember|blaze/, 'icon_fireball'],
   [/frost|ice|freeze|cold|chill|blizzard/, 'icon_frostbolt'],
   [/thunder|storm|lightning|shock|spark|bolt/, 'icon_lightning_bolt'],
-  [/heal|cure|bloom|mend|regen|grove|nature|verdant|root|thorn|spore|vine/, 'icon_verdant_bloom'],
+  [/poison|venom|nettle|hemorrhage|toxin|plague|fungal|mushroom/, 'icon_spore_plague'],
+  [/shield|guard|stance|bulwark|ward|fortress|wall|armor|bark/, 'icon_radiant_burst'],
+  [/heal|cure|bloom|mend|regen|grove|nature|verdant|root|thorn|spore|vine|sap|whisper|ancestor|beast|bond|companion/, 'icon_verdant_bloom'],
   [/holy|radiant|divine|light|sanct/, 'icon_radiant_burst'],
-  [/shadow|dark|decay|abyss|void|curse|necro|drain/, 'icon_shadow_strike'],
-  [/crimson|blood|surge|rage|fury/, 'icon_crimson_surge'],
-  [/veil|silver|memory|temporal|step|teleport|sight/, 'icon_veil_step'],
-  [/arcane|azure|magic|bolt|missile|soul/, 'icon_azure_bolt'],
+  [/shadow|dark|decay|abyss|void|curse|necro|drain|hollow|garrote/, 'icon_shadow_strike'],
+  [/trap|snare|web|entangle|caltrop|debilitat/, 'icon_shadow_strike'],
+  [/bash|strike|slash|cleave|blade|hammer|crush|smash|charge/, 'icon_crimson_surge'],
+  [/crimson|blood|surge|rage|fury|berserk/, 'icon_crimson_surge'],
+  [/aim|arrow|shot|piercing|volley|sniper|wind_arrow/, 'icon_arcane_missile'],
+  [/veil|silver|memory|temporal|step|teleport|sight|rift|channel|dash|camouflag|stealth|disengag|hunter|mark|sense|track|harmony/, 'icon_veil_step'],
+  [/crystal|prism|lance|construct|sliver/, 'icon_azure_bolt'],
+  [/arcane|azure|magic|bolt|missile|soul|mana/, 'icon_azure_bolt'],
 ];
 
 export function spellIconFor(spellId, scene) {
