@@ -92,6 +92,9 @@ const COMPANION_FILES = {
 const COMPANION_CLASS = {
   vaeril: 'bloomguard', sylor: 'thornbinder', aeliana: 'emerald_mystic',
   mycon: 'sporecaller', kaelen: 'wildkin_ranger',
+  // Second roster — added with the 10-companion expansion. Mirrors data/companions.json.
+  briara: 'bloomguard', yenna: 'wildkin_ranger', althea: 'emerald_mystic',
+  veyla: 'emerald_mystic', kael: 'thornbinder',
 };
 
 export function companionArtFor(companionId) {
