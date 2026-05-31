@@ -56,12 +56,57 @@ const ZONE_REALM = {
 const DEFAULT_REALM = 'gloamwood';
 const panelKey = (realm, letter) => `bgp_${realm}_${letter}`;
 
+// Zones with dedicated single-image scene art. When set, the scene image
+// renders instead of the realm's tiled multi-panel grid — distinctive
+// landmarks (sanctums, fortresses, rift scenes) read better as one image.
+const ZONE_SCENE = {
+  mycelium_nexus:          'bgs_mycelium',
+  veil_echo_chamber:       'bgs_veil_echo_chamber',
+  veil_tear_rift_alpha:    'bgs_veil_rift',
+  veil_tear_rift_beta:     'bgs_veil_rift2',
+  hollowroot_catacombs:    'bgs_catacombs',
+  bloomguard_barracks:     'bgs_bloomguard_fortress',
+  emerald_sanctum:         'bgs_emerald_sanctum',
+  sporecaller_labs:        'bgs_sporecaller_labs',
+  verdant_exchange:        'bgs_verdant_exchange',
+  wildkin_hunting_grounds: 'bgs_wildkin_hunting',
+  spindlewood_forest:      'bgs_spindlewood_dark',
+  canopy_overlook:         'bgs_verdance_heights',
+  canopy_of_life:          'bgs_verdant_grove',
+  emerald_cascades:        'bgs_tideflow_scene',
+  the_scar:                'bgs_scar_scene',
+  void_nexus:              'bgs_veil_rift2',
+  veil_breach:             'bgs_veil_rift',
+};
+
+// Backdrop-key -> file path. Mirrors filenames in /public/assets/imported/backdrops.
+const ZONE_SCENE_FILES = {
+  bgs_mycelium:            'assets/imported/backdrops/bg_mycelium_scene.png',
+  bgs_veil_echo_chamber:   'assets/imported/backdrops/bg_veil_echo_chamber.png',
+  bgs_veil_rift:           'assets/imported/backdrops/bg_veil_rift_scene.png',
+  bgs_veil_rift2:          'assets/imported/backdrops/bg_veil_rift_scene2.png',
+  bgs_catacombs:           'assets/imported/backdrops/bg_catacombs_scene.png',
+  bgs_bloomguard_fortress: 'assets/imported/backdrops/bg_bloomguard_fortress.png',
+  bgs_emerald_sanctum:     'assets/imported/backdrops/bg_emerald_sanctum.png',
+  bgs_sporecaller_labs:    'assets/imported/backdrops/bg_sporecaller_labs.png',
+  bgs_verdant_exchange:    'assets/imported/backdrops/bg_verdant_exchange.png',
+  bgs_wildkin_hunting:     'assets/imported/backdrops/bg_wildkin_hunting_grounds.png',
+  bgs_spindlewood_dark:    'assets/imported/backdrops/bg_spindlewood_dark.png',
+  bgs_verdance_heights:    'assets/imported/backdrops/bg_verdance_heights.png',
+  bgs_verdant_grove:       'assets/imported/backdrops/bg_verdant_grove.png',
+  bgs_tideflow_scene:      'assets/imported/backdrops/bg_tideflow_scene.png',
+  bgs_scar_scene:          'assets/imported/backdrops/bg_scar_scene.png',
+};
+
 export const ZoneBackdrops = {
   preload(scene) {
     for (const [realm, grid] of Object.entries(REALM_GRID)) {
       for (const letter of grid.panels) {
         scene.load.image(panelKey(realm, letter), `assets/imported/backdrops/bg_${realm}_${letter}.png`);
       }
+    }
+    for (const [key, path] of Object.entries(ZONE_SCENE_FILES)) {
+      scene.load.image(key, path);
     }
   },
 
@@ -71,9 +116,15 @@ export const ZoneBackdrops = {
 
   /**
    * Returns the panel grid for a zone: { keys: [tex keys row-major], cols, rows }
-   * Only includes panels whose texture actually loaded.
+   * Zones with dedicated scene art (ZONE_SCENE) return a single-image 1x1 grid;
+   * otherwise the realm's panel grid is assembled. Only includes panels whose
+   * texture actually loaded.
    */
   gridFor(zoneId, scene) {
+    const sceneKey = ZONE_SCENE[zoneId];
+    if (sceneKey && scene.textures.exists(sceneKey)) {
+      return { keys: [sceneKey], cols: 1, rows: 1 };
+    }
     const realm = this.realmFor(zoneId);
     const grid = REALM_GRID[realm];
     if (!grid) return null;

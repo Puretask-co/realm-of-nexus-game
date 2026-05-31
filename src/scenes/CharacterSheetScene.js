@@ -220,12 +220,8 @@ export default class CharacterSheetScene extends Phaser.Scene {
         const portW = 70,      portH = 88;
         const classHex = this._classHex(classId);
 
-        // Class → portrait key map; add entries as portraits are loaded
-        const CLASS_PORTRAIT = {
-            bloomguard:     'portrait_companion_vaeril',
-            thornbinder:    'portrait_companion_aeliana',
-        };
-        const portraitKey = CLASS_PORTRAIT[classId] || `portrait_${classId}`;
+        // Class id → painterly class portrait (loaded by GameArt.PORTRAIT_FILES).
+        const portraitKey = `art_portrait_${classId}`;
         const hasPortrait = portraitKey && this.textures.exists(portraitKey);
 
         // Colored rect frame (always drawn as background/border)
