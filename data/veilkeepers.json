@@ -1,0 +1,369 @@
+{
+    "version": "2.0.0",
+    "lastModified": "2026-03-14T00:00:00Z",
+    "veilkeepers": [
+        {
+            "id": "sylthara",
+            "name": "Sylthara",
+            "title": "Keeper of Combat Wisdom",
+            "specialization": "combat_wisdom",
+            "description": "A warrior spirit bound to an ancient suit of living armor, Sylthara provides tactical intelligence on enemies, combat strategies, and battlefield analysis. She speaks in clipped military language and has no patience for indecision.",
+            "lore": "Sylthara was once the greatest general of the Bloomguard, centuries before the current order was established. When the Abyss first breached Verdance during the First Incursion, she led the defense that saved the Domain — but at the cost of her physical form. The Everwood preserved her consciousness within a suit of living armor, binding her spirit to the Whispering Veil as the first Veilkeeper. Vines grow through the joints of her armor now, a symbol of the forest claiming what it saved. She retains every tactical memory from her mortal life and has accumulated centuries more, making her an unparalleled source of combat knowledge. She views every consultation as a military briefing and every visitor as a soldier under her command.",
+            "personality": "Direct, no-nonsense, speaks in military terminology. Respects strength and decisiveness, despises cowardice and waste. She calls everyone 'soldier' regardless of their actual role. Beneath her gruff exterior lies genuine protective instinct — she gives her knowledge freely because she cannot bear to see unprepared warriors fall to threats she could have warned them about.",
+            "hollowingThreshold": 10,
+            "currentHollowing": 0,
+            "consultationCost": {
+                "dsp": -10,
+                "hollowingTicks": 1
+            },
+            "crimsonModifier": {
+                "hollowingTicks": 2,
+                "description": "During Crimson Sap phases, each consultation costs +2 Hollowing ticks instead of +1. The corrupted energy accelerates spiritual decay."
+            },
+            "deathConsequences": {
+                "knowledgeDomainLocked": true,
+                "lockedDomain": "combat_wisdom",
+                "lockedAbilities": [
+                    "Cannot learn enemy stats or weaknesses before combat",
+                    "Tactical advice for encounters permanently unavailable",
+                    "Combat buff consultations lost"
+                ],
+                "cascadeEffects": {
+                    "otherVeilkeepersHollowingIncrease": 1,
+                    "dspPenalty": -10,
+                    "reputationPenalty": {
+                        "faction": "emerald_coven",
+                        "value": -15
+                    }
+                },
+                "permanent": true,
+                "description": "Sylthara's death permanently locks all combat wisdom knowledge. Enemy weaknesses, tactical briefings, and pre-combat intelligence can never be accessed again. All surviving Veilkeepers gain +1 Hollowing tick from the spiritual shockwave, the Domain Soul Pool loses 10 DSP, and the Emerald Coven's reputation drops by 15."
+            },
+            "memorialBuffs": {
+                "location": "whispering_veil",
+                "description": "A weapon laid before Sylthara's hollow armor, which stands motionless where she fell.",
+                "offering": "Any weapon item",
+                "effect": {
+                    "name": "Sylthara's Last Order",
+                    "description": "+1 attack bonus for the next 3 combats",
+                    "stat": "attack",
+                    "value": 1,
+                    "duration": {
+                        "type": "combats",
+                        "count": 3
+                    }
+                },
+                "cooldown": "Once per in-game day"
+            },
+            "dialogueStyle": "Clipped, commanding, military jargon. Short declarative sentences. Uses terms like 'intel', 'tactical briefing', 'soldier', 'dismissed', 'the line', 'objective'. Never uses flowery language. Addresses the player as 'Soldier' at all times.",
+            "portrait": "A towering suit of ancient, battle-scarred plate armor standing at attention. The armor is dark iron-green, weathered by centuries of exposure to the Everwood's magic. Living vines snake through the joints and pauldrons, some bearing small white flowers. The visor is open, revealing no face — only a faint amber glow where eyes should be. One gauntleted hand rests on the pommel of a spectral greatsword embedded in the ground. Scars from Abyss corruption mark the breastplate in jagged black lines, healed over by bark-like growth. The cape behind her is tattered and overgrown with moss."
+        },
+        {
+            "id": "morvein",
+            "name": "Morvein",
+            "title": "Keeper of Hidden Paths",
+            "specialization": "hidden_paths",
+            "description": "A hooded enigma whose face is a living, shifting map, Morvein reveals secret passages, hidden treasures, alternate routes, and concealed dangers. She speaks in riddles and metaphors, always with a knowing smile.",
+            "lore": "Before becoming a Veilkeeper, Morvein was a legendary cartographer-thief who mapped every secret passage, hidden room, and forgotten tunnel in Verdance. She discovered places that the Everwood itself had forgotten — or deliberately hidden. Her obsession with the unseen led her to the space between the Veil and the physical world, where she became trapped. The Everwood offered her a choice: fade into nothing, or become a keeper of the paths she loved so much. She chose to stay, and her physical face was replaced by an ever-shifting map of every hidden place she had ever found — and every one she continues to discover. She glows faintly silver, as if permanently touched by the Silver Sap, and no shadow falls where she stands.",
+            "personality": "Cryptic, speaks in riddles and metaphors, always smiling. Finds genuine delight in secrets and the act of revealing them. She treats every hidden path as a gift to be unwrapped and every secret room as a story waiting to be told. She never gives a straight answer when a riddle will do, but her hints are always fair — she wants you to find the treasure, she just wants you to enjoy the search. Playful but never cruel.",
+            "hollowingThreshold": 10,
+            "currentHollowing": 0,
+            "consultationCost": {
+                "dsp": -10,
+                "hollowingTicks": 1
+            },
+            "crimsonModifier": {
+                "hollowingTicks": 2,
+                "description": "During Crimson Sap phases, each consultation costs +2 Hollowing ticks instead of +1. The corrupted energy accelerates spiritual decay."
+            },
+            "deathConsequences": {
+                "knowledgeDomainLocked": true,
+                "lockedDomain": "hidden_paths",
+                "lockedAbilities": [
+                    "Hidden paths and alternate routes become permanently undiscoverable",
+                    "Secret rooms in all areas can no longer be revealed",
+                    "Treasure location hints permanently unavailable",
+                    "Trap warnings from hidden path knowledge lost"
+                ],
+                "cascadeEffects": {
+                    "otherVeilkeepersHollowingIncrease": 1,
+                    "dspPenalty": -10,
+                    "reputationPenalty": {
+                        "faction": "emerald_coven",
+                        "value": -15
+                    }
+                },
+                "permanent": true,
+                "description": "Morvein's death permanently locks all hidden path knowledge. Secret passages, hidden rooms, and concealed treasures can never be revealed through Veilkeeper consultation again. All surviving Veilkeepers gain +1 Hollowing tick, the DSP drops by 10, and the Emerald Coven's reputation decreases by 15."
+            },
+            "memorialBuffs": {
+                "location": "whispering_veil",
+                "description": "A silver coin placed at the base of Morvein's empty hood, which hangs suspended in the air where she once stood.",
+                "offering": "A silver coin or any treasure item",
+                "effect": {
+                    "name": "Morvein's Parting Gift",
+                    "description": "Reveals 1 hidden item in the current area",
+                    "type": "reveal_hidden_item",
+                    "scope": "current_area",
+                    "count": 1
+                },
+                "cooldown": "Once per in-game day"
+            },
+            "dialogueStyle": "Riddles, metaphors, and poetic indirection. Speaks of paths as if they are living things with feelings. Uses phrases like 'the door remembers', 'the wall has a secret it wants to tell', 'the obvious path is just the one that's too tired to hide'. Always warm and inviting. Refers to the player as 'friend' or 'seeker'.",
+            "portrait": "A slender figure draped in a hooded cloak of shifting silver-blue fabric that seems to ripple like water. The hood is deep, and where a face should be, there is instead a luminous, ever-shifting map — topographic lines, tiny pathways, and glowing markers that rearrange themselves constantly. The map-face occasionally forms what looks like a smile. A faint silver glow emanates from within the hood, casting no shadows. The cloak is covered in tiny embroidered doors, each one slightly different. Morvein's hands are slender and translucent, and she often gestures as if tracing invisible paths in the air."
+        },
+        {
+            "id": "elduin",
+            "name": "Elduin",
+            "title": "Keeper of Future Events",
+            "specialization": "future_events",
+            "description": "A child-like figure with ancient, sorrowful eyes, Elduin can preview quest outcomes, warn of upcoming threats, and reveal the consequences of major decisions — at great personal cost. The most fragile of the Veilkeepers.",
+            "lore": "Elduin's origin is the most tragic of all the Veilkeepers. They were once a mortal child who wandered too close to a temporal rift during a catastrophic Silver Sap surge. The rift shattered their experience of time — they now exist in all moments simultaneously, remembering the future and forgetting the past in a never-ending loop. The Everwood took pity on the child and anchored them to the Whispering Veil, giving them stability but not peace. Elduin speaks of tomorrow as if it already happened and yesterday as if it hasn't come yet. Time moves differently in their presence — leaves fall upward, water flows in reverse, and clocks spin backward. Their lower Hollowing threshold of 8 reflects the immense strain that temporal perception places on a mortal spirit. Every answer they give costs them a tomorrow they will never experience.",
+            "personality": "Sad, gentle, speaks of the future as if remembering the past. There is an ancient weariness in their child-like voice that makes every word feel heavy with unseen experience. They are kind but melancholy, genuinely wanting to help but knowing that each revelation brings them closer to an end they have already seen. They sometimes cry for reasons they cannot explain — or rather, for reasons that haven't happened yet. Despite their sorrow, they show courage in sharing their knowledge, choosing to sacrifice their remaining time so others can make better choices.",
+            "hollowingThreshold": 8,
+            "currentHollowing": 0,
+            "consultationCost": {
+                "dsp": -10,
+                "hollowingTicks": 1
+            },
+            "crimsonModifier": {
+                "hollowingTicks": 2,
+                "description": "During Crimson Sap phases, each consultation costs +2 Hollowing ticks instead of +1. Elduin's already fragile temporal anchoring deteriorates rapidly under crimson corruption."
+            },
+            "deathConsequences": {
+                "knowledgeDomainLocked": true,
+                "lockedDomain": "future_events",
+                "lockedAbilities": [
+                    "Consequence previews for major choices permanently unavailable",
+                    "Quest outcome predictions can never be consulted again",
+                    "Upcoming threat warnings from temporal sight lost forever",
+                    "Future quest availability hints permanently hidden"
+                ],
+                "cascadeEffects": {
+                    "otherVeilkeepersHollowingIncrease": 1,
+                    "dspPenalty": -10,
+                    "reputationPenalty": {
+                        "faction": "emerald_coven",
+                        "value": -15
+                    }
+                },
+                "permanent": true,
+                "description": "Elduin's death permanently locks all future event knowledge. Players can no longer preview quest outcomes or receive warnings about upcoming consequences. All surviving Veilkeepers gain +1 Hollowing tick, the DSP drops by 10, and the Emerald Coven's reputation decreases by 15. Elduin's death is particularly devastating because their foresight often prevented the worst outcomes."
+            },
+            "memorialBuffs": {
+                "location": "whispering_veil",
+                "description": "A wilted flower placed where time no longer moves strangely — a small, still pocket of normal time where Elduin once stood.",
+                "offering": "A flower or any natural item",
+                "effect": {
+                    "name": "Elduin's Last Glimpse",
+                    "description": "+1 bonus to the next skill check, as a fading echo of foresight guides your hand",
+                    "stat": "skill_check_bonus",
+                    "value": 1,
+                    "duration": {
+                        "type": "skill_checks",
+                        "count": 1
+                    }
+                },
+                "cooldown": "Once per in-game day"
+            },
+            "dialogueStyle": "Temporal confusion and gentle sadness. Mixes tenses constantly — 'I remember you coming' and 'I will have seen this.' Short, haunting sentences that linger. Uses phrases like 'I remember tomorrow', 'the future already misses you', 'this moment was beautiful when I first recalled it'. Never angry, always kind, always slightly heartbroken. Does not address the player by any title — speaks as if to an old friend meeting for the first time.",
+            "portrait": "A child-like figure of indeterminate age, standing no more than four feet tall, wearing a simple white robe that billows in a wind that doesn't exist. Their eyes are enormous and ancient — deep pools of swirling silver-blue that contain glimpses of events that haven't happened yet. Their hair is pale white and floats upward as if gravity is reversed around their head. Leaves drift upward around them, and tiny motes of light orbit their body like slow-moving stars. Their expression is one of permanent gentle sadness, like someone attending a funeral for a person who hasn't died yet. Small temporal distortions shimmer around them — a butterfly frozen mid-flight, a raindrop hanging in midair."
+        },
+        {
+            "id": "kaelthas",
+            "name": "Kaelthas",
+            "title": "Keeper of Ancient Lore",
+            "specialization": "ancient_lore",
+            "description": "An enormous tree trunk with a carved face that shifts expressions, Kaelthas holds the accumulated knowledge of Verdance's entire history. He identifies artifacts, explains world lore, teaches rituals, and provides historical context for active quests. The most resilient of the Veilkeepers.",
+            "lore": "Kaelthas is the oldest Veilkeeper, having existed since the earliest days of the Domain's recorded history. He was once the head librarian of a great civilization that existed before Verdance — a culture so ancient that even its name has been lost to time. When that civilization fell to an early Abyss incursion, Kaelthas made a desperate bargain with the Everwood: his physical body in exchange for the preservation of all the knowledge he carried. The Everwood accepted, growing a massive tree around his consciousness and imbuing him with the collected memory of the forest itself. Books and scrolls orbit him constantly, each one a fragment of preserved knowledge. His higher Hollowing threshold of 12 reflects the sheer volume of knowledge sustaining his spiritual presence — there is simply more of him to erode. He is passionate about every fact, no matter how obscure, and genuinely cannot understand why others aren't as excited about the migratory patterns of sap-wisps as he is.",
+            "personality": "Scholarly, verbose, loves tangents, becomes excited about obscure facts. Kaelthas is incapable of giving a brief answer — every question reminds him of seven related facts, each of which reminds him of three more. He is warm, enthusiastic, and genuinely delighted by every visitor. He frequently loses his train of thought chasing fascinating tangents, then sheepishly tries to return to the original question. Despite his scattered presentation, his knowledge is devastatingly accurate and comprehensive. He views the Hollowing with academic concern rather than fear, treating his own deterioration as a fascinating (if personally inconvenient) phenomenon to study.",
+            "hollowingThreshold": 12,
+            "currentHollowing": 0,
+            "consultationCost": {
+                "dsp": -10,
+                "hollowingTicks": 1
+            },
+            "crimsonModifier": {
+                "hollowingTicks": 2,
+                "description": "During Crimson Sap phases, each consultation costs +2 Hollowing ticks instead of +1. Even Kaelthas's vast reserves of knowledge cannot fully resist crimson corruption."
+            },
+            "deathConsequences": {
+                "knowledgeDomainLocked": true,
+                "lockedDomain": "ancient_lore",
+                "lockedAbilities": [
+                    "Cannot identify unknown items or artifacts",
+                    "Ritual knowledge permanently inaccessible",
+                    "Historical context for quests can never be consulted again",
+                    "Knowledge about the Unbinding permanently lost",
+                    "World lore and historical records unavailable"
+                ],
+                "cascadeEffects": {
+                    "otherVeilkeepersHollowingIncrease": 1,
+                    "dspPenalty": -10,
+                    "reputationPenalty": {
+                        "faction": "emerald_coven",
+                        "value": -15
+                    }
+                },
+                "permanent": true,
+                "description": "Kaelthas's death permanently locks all ancient lore knowledge. Items can no longer be identified, rituals cannot be learned, and the historical context that illuminated quest decisions is gone forever. All surviving Veilkeepers gain +1 Hollowing tick, the DSP drops by 10, and the Emerald Coven's reputation decreases by 15."
+            },
+            "memorialBuffs": {
+                "location": "whispering_veil",
+                "description": "A page of handwritten notes tucked into the bark of Kaelthas' silent trunk, where his carved face has gone still and the orbiting books have fallen to the ground.",
+                "offering": "A book, scroll, or any written document item",
+                "effect": {
+                    "name": "Kaelthas's Lingering Knowledge",
+                    "description": "Identify 1 unknown item, as if a faint whisper of Kaelthas's encyclopedic memory stirs one last time",
+                    "type": "identify_item",
+                    "count": 1
+                },
+                "cooldown": "Once per in-game day"
+            },
+            "dialogueStyle": "Long-winded, enthusiastic, constantly digressing. Starts sentences with 'Oh!' and 'Now THAT reminds me...' and 'You see, the fascinating thing is...' Frequently interrupts himself with tangents. Uses academic language mixed with childlike wonder. Apologizes for going off-topic but never actually stops doing it. Addresses the player warmly as 'my friend' or 'dear visitor' or simply 'you' with great affection.",
+            "portrait": "An enormous ancient tree trunk, easily ten feet in diameter, with a carved face that shifts expressions like ripples on water. The bark is deep grey-brown, cracked with age and covered in luminous green moss that forms patterns resembling ancient script. The face is kind and animated — bushy bark-eyebrows that raise with excitement, a mouth that curves into delighted smiles, and deep-set eyes that glow with warm amber light. Dozens of books, scrolls, and loose pages orbit the trunk in slow, lazy circles, occasionally drifting closer when Kaelthas references them. Some scrolls are ancient and crumbling; others appear freshly written. Small reading spectacles made of twisted vines perch impossibly on the carved nose. Roots spread in every direction, some of them holding open books like makeshift lecterns."
+        },
+        {
+            "id": "virelda",
+            "name": "Virelda",
+            "title": "Keeper of Corruption & Abyss Intel",
+            "specialization": "corruption_abyss",
+            "description": "Half-consumed by slowly spreading corruption, Virelda fights through constant pain to share critical intelligence about the Abyss, its servants, and the nature of corruption itself. She provides enemy patterns, cure methods, forbidden spell locations, and boss fight strategies.",
+            "lore": "Virelda was once a high-ranking member of the Emerald Coven who volunteered for the most dangerous mission in Verdance's history: to enter the Abyss itself and map its interior. She succeeded — and the knowledge she brought back has saved countless lives. But the Abyss does not let its visitors leave unmarked. Corruption took root in her body during the expedition, and it has been slowly consuming her ever since. The Everwood bound her to the Whispering Veil to slow the corruption's advance, but it could not stop it entirely. Now half her body is consumed by creeping void-corruption — dark crystalline growths that pulse with malevolent energy. One eye is void-black, seeing into the Abyss whether she wants to or not. She endures constant agony but refuses to stop sharing what she knows, because every piece of intelligence she provides is a life potentially saved. She is fighting a war on two fronts: against the Abyss outside, and against the corruption within.",
+            "personality": "Intense, urgent, fights through pain to share knowledge, protective of others. Every word costs her effort, and she resents wasting time on pleasantries when the Abyss is always advancing. She is not rude — she is desperate. She carries guilt for every person who falls to the Abyss without the intelligence she could have provided. Beneath her intensity is a profound tenderness: she endures her suffering specifically so others won't have to face the Abyss unprepared. She is the most openly emotional of the Veilkeepers about the consequences of her eventual death.",
+            "hollowingThreshold": 10,
+            "currentHollowing": 0,
+            "consultationCost": {
+                "dsp": -10,
+                "hollowingTicks": 1
+            },
+            "crimsonModifier": {
+                "hollowingTicks": 2,
+                "description": "During Crimson Sap phases, each consultation costs +2 Hollowing ticks instead of +1. The Crimson Sap resonates with the Abyss corruption already consuming Virelda, accelerating both."
+            },
+            "deathConsequences": {
+                "knowledgeDomainLocked": true,
+                "lockedDomain": "corruption_abyss",
+                "lockedAbilities": [
+                    "No intelligence on Abyss enemy patterns or activities",
+                    "Corruption cure methods permanently lost",
+                    "Forbidden spell locations can never be revealed",
+                    "Boss fight mechanics and strategies permanently unknown",
+                    "Corruption becomes significantly harder to manage"
+                ],
+                "cascadeEffects": {
+                    "otherVeilkeepersHollowingIncrease": 1,
+                    "dspPenalty": -10,
+                    "reputationPenalty": {
+                        "faction": "emerald_coven",
+                        "value": -15
+                    }
+                },
+                "permanent": true,
+                "description": "Virelda's death permanently locks all corruption and Abyss intelligence. Players face Abyss threats blind — no enemy pattern analysis, no corruption cure guidance, and the final boss has completely unknown mechanics. All surviving Veilkeepers gain +1 Hollowing tick, the DSP drops by 10, and the Emerald Coven's reputation decreases by 15. This is arguably the most consequential Veilkeeper death for endgame content."
+            },
+            "memorialBuffs": {
+                "location": "whispering_veil",
+                "description": "A vial of purified sap placed against the corrupted stone where Virelda stood. The corruption has frozen in place, neither advancing nor retreating — a final testament to her resistance.",
+                "offering": "A purified sap vial or any curative item",
+                "effect": {
+                    "name": "Virelda's Defiance",
+                    "description": "+10% corruption resistance for 1 in-game day, as echoes of her unbreakable will reinforce your own",
+                    "stat": "corruption_resistance",
+                    "value": 0.10,
+                    "duration": {
+                        "type": "days",
+                        "count": 1
+                    }
+                },
+                "cooldown": "Once per in-game day"
+            },
+            "dialogueStyle": "Urgent, pained, intense. Short sharp sentences punctuated by moments of vulnerability. Uses phrases like 'listen carefully', 'you NEED this intel', 'the corruption spreads while we talk', 'don't let it be for nothing'. Occasionally breaks through the intensity with raw emotional honesty about her fear and pain. Never self-pitying — always redirects concern back to the mission. Addresses the player directly with no title, treating them as an equal in the fight against the Abyss.",
+            "portrait": "A woman standing rigidly upright despite visible agony. The left half of her body is consumed by dark crystalline corruption — jagged void-black growths that pulse with faint purple-red light, creeping across her skin like frozen lightning. Her left eye is entirely void-black, a window into the Abyss that occasionally shows flickers of distant horrors. Her right eye is fierce and green, burning with determination. Her remaining uncorrupted skin is weathered and scarred from her expedition into the Abyss. She wears the remnants of an Emerald Coven robe, half of it dissolved by corruption, the other half meticulously maintained. Her right hand grips a staff topped with a vial of purified sap — her personal ward against the corruption. Dark veins spread visibly from the corruption boundary, and she is always slightly trembling from the effort of holding it back."
+        }
+    ],
+    "systemRules": {
+        "consultationCost": {
+            "dsp": -10,
+            "hollowingTicks": 1,
+            "crimsonPhaseHollowingTicks": 2,
+            "description": "Each Veilkeeper consultation costs 10 DSP from the Domain Soul Pool and adds 1 Hollowing tick to the consulted Veilkeeper. During Crimson Sap phases, the Hollowing cost doubles to 2 ticks."
+        },
+        "onDeathEffects": {
+            "knowledgeDomainLocked": true,
+            "otherVeilkeepersHollowingIncrease": 1,
+            "dspPenalty": -10,
+            "reputationPenalty": {
+                "faction": "emerald_coven",
+                "value": -15
+            },
+            "permanent": true,
+            "description": "When a Veilkeeper dies, their knowledge domain is locked forever. All remaining Veilkeepers gain +1 Hollowing tick from the spiritual shockwave. The Domain Soul Pool loses 10 DSP and the Emerald Coven reputation drops by 15."
+        },
+        "warningThresholds": [
+            {
+                "percentOfThreshold": 0.50,
+                "level": "low",
+                "message": "The Veilkeeper shows signs of strain. The Hollowing is visible."
+            },
+            {
+                "percentOfThreshold": 0.75,
+                "level": "high",
+                "message": "The Veilkeeper is deteriorating rapidly. Each consultation may be their last."
+            },
+            {
+                "percentOfThreshold": 0.90,
+                "level": "critical",
+                "message": "WARNING: The Veilkeeper is on the verge of death. One more consultation could destroy them permanently."
+            },
+            {
+                "percentOfThreshold": 1.00,
+                "level": "terminal",
+                "message": "The Veilkeeper has succumbed to the Hollowing. Their knowledge is lost forever."
+            }
+        ]
+    },
+    "communionRitual": {
+        "name": "Veilkeeper Communion Ritual",
+        "description": "A rare and powerful ritual that allows the player to contact a dead Veilkeeper one final time. The ritual pierces the boundary between the living Veil and the void beyond, pulling the fading echo of the Veilkeeper's consciousness back for a single question.",
+        "usesPerVeilkeeper": 1,
+        "cost": {
+            "dsp": -50,
+            "materials": [
+                {
+                    "itemId": "void_essence",
+                    "name": "Void Essence",
+                    "quantity": 3,
+                    "description": "Crystallized fragments of Abyss energy, purified for ritual use"
+                },
+                {
+                    "itemId": "silver_sap_crystal",
+                    "name": "Silver Sap Crystal",
+                    "quantity": 1,
+                    "description": "A rare crystal formed during Silver Sap phases, containing concentrated temporal energy"
+                },
+                {
+                    "itemId": "ancient_root",
+                    "name": "Ancient Root",
+                    "quantity": 1,
+                    "description": "A root from the oldest tree in Verdance, carrying the memory of the Everwood's earliest days"
+                }
+            ]
+        },
+        "restrictions": [
+            "Can only be performed on a Veilkeeper who has died from Hollowing",
+            "Returns a single answer from the dead Veilkeeper's knowledge domain",
+            "Can only be used once per dead Veilkeeper — the echo fades permanently after answering",
+            "Requires the player to be at the Whispering Veil memorial site",
+            "Cannot be performed during Crimson Sap phases"
+        ],
+        "ritualDescription": "The player arranges the materials in a circle around the Veilkeeper's memorial, pours Silver Sap Crystal dust into the pattern, and speaks the Veilkeeper's true name. The void essence ignites with pale light, and for a brief, heartbreaking moment, the Veilkeeper's voice returns — faint, distant, but unmistakably them. They answer one question, then fade forever."
+    },
+    "memorialSystem": {
+        "location": "whispering_veil",
+        "description": "After a Veilkeeper dies, a memorial appears at the Whispering Veil. The memorial reflects the Veilkeeper's nature — Sylthara's empty armor, Morvein's floating hood, Elduin's pocket of still time, Kaelthas's silent trunk, or Virelda's frozen corruption. Players can leave offerings for small temporary buffs, honoring the fallen Veilkeeper's sacrifice.",
+        "activatesOnDeath": true,
+        "offeringCooldown": "Once per in-game day per memorial",
+        "memorialInteraction": "The player approaches the memorial and is given a brief, poignant reminder of the Veilkeeper's final words. They may then leave an appropriate offering to receive a small temporary buff related to the Veilkeeper's domain."
+    }
+}
