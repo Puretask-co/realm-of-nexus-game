@@ -327,8 +327,11 @@ export class DialogueSystem {
 
         if (this.currentCharIndex >= this.fullText.length) {
           this.isTyping = false;
-          this.typewriterTimer.remove();
-          this.typewriterTimer = null;
+          // Race: stopTypewriter() may have nulled the timer between scheduling and this tick.
+          if (this.typewriterTimer) {
+            this.typewriterTimer.remove();
+            this.typewriterTimer = null;
+          }
           this.onTypewriterComplete();
         }
       },
