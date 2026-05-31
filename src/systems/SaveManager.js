@@ -81,11 +81,13 @@ export default class SaveManager {
     }
 
     /**
-     * Mirror the save to disk via the local proxy server.
+     * Mirror the save to disk via the local proxy server (dev only).
      * Writes to Documents\Realm of Nexus Saves\verdance_save_slot{N}.json
-     * Silent no-op if the proxy isn't running.
+     * Skipped entirely in production builds — the proxy only runs locally,
+     * and the localStorage save is already authoritative.
      */
     async _writeFileSave(slot, saveData) {
+        if (!import.meta.env?.DEV) return;
         try {
             await fetch(`http://localhost:3001/api/save/${slot}`, {
                 method: 'POST',
@@ -164,10 +166,12 @@ export default class SaveManager {
     }
 
     /**
-     * Try to read a save file from disk via the proxy server.
+     * Try to read a save file from disk via the proxy server (dev only).
      * Returns parsed save data, or null if proxy isn't running or no file exists.
+     * Skipped in production where the proxy can never exist.
      */
     async _readFileSave(slot) {
+        if (!import.meta.env?.DEV) return null;
         try {
             const res = await fetch(`http://localhost:3001/api/save/${slot}`);
             if (!res.ok) return null;
