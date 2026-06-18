@@ -245,15 +245,17 @@ export default class BootScene extends Phaser.Scene {
         // Force NEAREST filtering on small pixel-art tilesets so they stay crisp
         // while the rest of the game uses LINEAR (smooth) for painterly assets.
         const pixelArtKeys = ['tileset_kenney', 'ts_town', 'ts_dungeon', 'kenney_chars'];
-        for (const key of pixelArtKeys) {
-            const tex = this.textures.get(key);
-            if (tex?.source?.[0]?.glTexture) {
-                const gl = this.renderer?.gl;
-                if (gl) {
-                    gl.bindTexture(gl.TEXTURE_2D, tex.source[0].glTexture);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                }
+        const gl = this.renderer?.gl;
+        if (gl) {
+            for (const key of pixelArtKeys) {
+                const glTex = this.textures.get(key)?.source?.[0]?.glTexture;
+                try {
+                    if (glTex) {
+                        gl.bindTexture(gl.TEXTURE_2D, glTex);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    }
+                } catch (_) { /* software WebGL may lack valid texture handles */ }
             }
         }
 

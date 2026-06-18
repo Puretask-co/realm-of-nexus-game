@@ -210,6 +210,10 @@ export default class GameScene extends Phaser.Scene {
 
         // ---- Launch UI overlay ----
         this.scene.launch('UIScene');
+        // Re-broadcast stats so UIScene (just launched) picks up spells, HP, etc.
+        this.time.delayedCall(0, () => {
+            EventBus.emit('player-stats-updated', this.player.stats);
+        });
 
         // Dev: expose debug API for automated testing (Playwright / manual testing)
         if (import.meta.env.DEV) {
@@ -1522,42 +1526,24 @@ export default class GameScene extends Phaser.Scene {
             [HD_SENTINEL]:          'corrupted-sentinel-run',
         };
 
-        // Prefer the new painterly enemy art (single static image) when we
-        // have a mapping and the texture is loaded.
+        // Use spritesheets for overworld (crisp at small sizes, animated).
+        // Painterly paintings (art_enemy_*) are reserved for combat/dialogue/UI.
         const painterlyKey = PAINTERLY_ENEMY_MAP[def.id];
-        const usePainterly = painterlyKey && this.textures.exists(painterlyKey);
+        const isBoss = BOSS_IDS.has(def.id);
 
         let enemy, spriteKey;
-        if (usePainterly) {
-            const isBoss = BOSS_IDS.has(def.id);
-            const display = isBoss ? 96 : 64;
-            spriteKey = painterlyKey;
-            enemy = this.physics.add.sprite(x, y, spriteKey);
-            enemy.setDepth(4);
-            enemy.setCollideWorldBounds(true);
-            enemy.setDisplaySize(display, display);
-            // Body in source-texture pixels (~55% of the sprite, centered).
-            const tw = enemy.width, th = enemy.height;
-            enemy.body.setSize(tw * 0.5, th * 0.5);
-            enemy.body.setOffset(tw * 0.25, th * 0.35);
-            enemy._painterly = true;
-            enemy._isBoss = isBoss;
-            // Gentle idle "breathing" so static art feels alive.
-            MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
-        } else {
-            spriteKey = ENEMY_SPRITE_MAP[def.id] ||
-                (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
-            enemy = this.physics.add.sprite(x, y, spriteKey);
-            enemy.setDepth(4);
-            enemy.setCollideWorldBounds(true);
-            // Scale 256px frame down to 56px display size
-            enemy.setDisplaySize(56, 56);
-            enemy.body.setSize(36, 36);
-            enemy.body.setOffset(110, 140);
-            // Play walk animation if available
-            const animKey = ENEMY_ANIM_MAP[spriteKey];
-            if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
-        }
+        spriteKey = ENEMY_SPRITE_MAP[def.id] ||
+            (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+        enemy = this.physics.add.sprite(x, y, spriteKey);
+        enemy.setDepth(4);
+        enemy.setCollideWorldBounds(true);
+        enemy.setDisplaySize(isBoss ? 72 : 56, isBoss ? 72 : 56);
+        enemy.body.setSize(36, 36);
+        enemy.body.setOffset(110, 140);
+        const animKey = ENEMY_ANIM_MAP[spriteKey];
+        if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        enemy._isBoss = isBoss;
+        if (painterlyKey) enemy._portraitKey = painterlyKey;
 
         enemy._state = {
             definition: def,
@@ -1883,10 +1869,11 @@ export default class GameScene extends Phaser.Scene {
         const name = (def.name || '').toLowerCase();
         const role = (def.role || 'lore').toLowerCase();
 
-        // Prefer painterly NPC art (single static image) when loaded.
+        // Store painterly portrait key for dialogue/UI use, but don't
+        // use it as the overworld sprite (512px paintings look blurry at 64px).
         const artKey = npcArtFor(def.name);
         if (this.textures.exists(artKey)) {
-            return { spriteKey: artKey, idleAnim: null, tint: null };
+            def._portraitKey = artKey;
         }
 
         // Hash name → 0..2^32 for stable choice per NPC.

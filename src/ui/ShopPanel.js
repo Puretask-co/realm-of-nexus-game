@@ -28,12 +28,13 @@ export class ShopPanel {
 
         this._bg = s.add.graphics().setDepth(16000);
         this._title = s.add.text(width / 2, py + 22, 'SHOP', {
-            fontFamily: 'Open Sans', fontSize: '25px', color: '#ffcc44',
+            fontFamily: 'Cinzel, serif', fontSize: '22px', color: '#ffcc44',
             stroke: '#000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(16001);
 
         this._goldText = s.add.text(px + 16, py + 46, 'Gold: 0', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffcc44'
+            fontFamily: 'Open Sans, sans-serif', fontSize: '15px', color: '#ffcc44',
+            stroke: '#000', strokeThickness: 1
         }).setDepth(16001);
 
         this._closeBtn = this._makeButton(px + pw - 30, py + 14, 24, 22, 'X', 0x661111, 0xaa2222, () => this.hide());
@@ -46,7 +47,7 @@ export class ShopPanel {
         for (let i = 0; i < 8; i++) {
             const ry = py + 72 + i * 48;
             const nameTxt = s.add.text(px + 16, ry + 4, '', {
-                fontFamily: 'Open Sans', fontSize: '17px', color: '#dddddd'
+                fontFamily: 'Open Sans, sans-serif', fontSize: '15px', color: '#dddddd'
             }).setDepth(16001);
             const priceTxt = s.add.text(px + pw - 110, ry + 4, '', {
                 fontFamily: 'Open Sans', fontSize: '15px', color: '#ffcc44'
