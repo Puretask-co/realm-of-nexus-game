@@ -110,9 +110,10 @@ export default class NPC {
         if (!this.sprite || !this.sprite.body) return; // destroyed / body removed
         const dt = delta / 1000;
 
-        // Idle bob
+        // Idle bob — use a fixed base position so body offset drift can't accumulate
         this._bobTimer += dt * 1.5;
-        this.sprite.y = this.sprite.body.y + Math.sin(this._bobTimer) * 2;
+        if (this._baseY == null) this._baseY = this.sprite.y;
+        this.sprite.y = this._baseY + Math.sin(this._bobTimer) * 2;
 
         // Update label position
         this._nameTag.setPosition(this.sprite.x, this.sprite.y - 28);

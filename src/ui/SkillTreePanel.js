@@ -103,18 +103,23 @@ export class SkillTreePanel {
         ];
 
     this.branchTabs = {};
+    this._tabUnderlines = {};
     for (const tab of tabConfig) {
       const color = treeColors[tab.key] ?? this.branches[tab.key]?.color ?? 0xffaa00;
-      const tabEl = this.scene.add.text(tab.x, 50, tab.label, {
-        fontSize: '17px',
+      const tabEl = this.scene.add.text(tab.x, 48, tab.label, {
+        fontSize: '15px',
         fill: `#${color.toString(16).padStart(6, '0')}`,
         fontFamily: 'Open Sans',
         fontStyle: 'bold'
-      }).setOrigin(0.5).setInteractive();
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+      const underline = this.scene.add.graphics();
+      this.panel.add(underline);
+      this._tabUnderlines[tab.key] = { gfx: underline, color, x: tab.x };
 
       tabEl.on('pointerdown', () => this.showBranch(tab.key));
-      tabEl.on('pointerover', () => tabEl.setScale(1.1));
-      tabEl.on('pointerout', () => tabEl.setScale(1));
+      tabEl.on('pointerover', () => { tabEl.setScale(1.08); tabEl.setAlpha(1); });
+      tabEl.on('pointerout', () => { tabEl.setScale(1); });
       this.panel.add(tabEl);
       this.branchTabs[tab.key] = tabEl;
     }
@@ -135,23 +140,25 @@ export class SkillTreePanel {
 
     // Skill details area
     this.detailBg = this.scene.add.graphics();
-    this.detailBg.fillStyle(0x1a1a2e, 0.9);
-    this.detailBg.fillRoundedRect(10, panelHeight - 100, panelWidth - 20, 85, 4);
+    this.detailBg.fillStyle(0x0d0d1a, 0.95);
+    this.detailBg.fillRoundedRect(10, panelHeight - 105, panelWidth - 20, 90, 8);
+    this.detailBg.lineStyle(1, 0x334466, 0.5);
+    this.detailBg.strokeRoundedRect(10, panelHeight - 105, panelWidth - 20, 90, 8);
     this.panel.add(this.detailBg);
 
-    this.detailTitle = this.scene.add.text(20, panelHeight - 92, '', {
-      fontSize: '20px', fill: '#ffffff', fontFamily: 'Open Sans', fontStyle: 'bold'
+    this.detailTitle = this.scene.add.text(20, panelHeight - 97, '', {
+      fontSize: '18px', fill: '#ffd700', fontFamily: 'Open Sans', fontStyle: 'bold'
     });
     this.panel.add(this.detailTitle);
 
-    this.detailDesc = this.scene.add.text(20, panelHeight - 72, '', {
-      fontSize: '15px', fill: '#aaaaaa', fontFamily: 'Open Sans',
+    this.detailDesc = this.scene.add.text(20, panelHeight - 75, '', {
+      fontSize: '14px', fill: '#bbbbcc', fontFamily: 'Open Sans',
       wordWrap: { width: panelWidth - 50 }
     });
     this.panel.add(this.detailDesc);
 
-    this.detailCost = this.scene.add.text(panelWidth - 25, panelHeight - 92, '', {
-      fontSize: '17px', fill: '#ffaa00', fontFamily: 'Open Sans'
+    this.detailCost = this.scene.add.text(panelWidth - 25, panelHeight - 97, '', {
+      fontSize: '15px', fill: '#ffaa00', fontFamily: 'Open Sans'
     }).setOrigin(1, 0);
     this.panel.add(this.detailCost);
   }
@@ -198,6 +205,13 @@ export class SkillTreePanel {
     for (const [key, tab] of Object.entries(this.branchTabs)) {
       tab.setAlpha(key === branchKey ? 1 : 0.5);
     }
+    for (const [key, ul] of Object.entries(this._tabUnderlines || {})) {
+      ul.gfx.clear();
+      if (key === branchKey) {
+        ul.gfx.lineStyle(3, ul.color, 0.9);
+        ul.gfx.lineBetween(ul.x - 40, 60, ul.x + 40, 60);
+      }
+    }
 
     const tree = this.talentTrees.find(t => t.id === branchKey);
     if (tree) {
@@ -215,7 +229,12 @@ export class SkillTreePanel {
         const connSkill = this.skills.get(connId);
         if (connSkill) {
           const bothUnlocked = this.unlockedSkills.has(skillId) && this.unlockedSkills.has(connId);
-          this.connectionLines.lineStyle(2, bothUnlocked ? branch.color : 0x444466, bothUnlocked ? 0.8 : 0.3);
+          const oneUnlocked = this.unlockedSkills.has(skillId) || this.unlockedSkills.has(connId);
+          this.connectionLines.lineStyle(
+            bothUnlocked ? 3 : 2,
+            bothUnlocked ? branch.color : (oneUnlocked ? branch.color : 0x444466),
+            bothUnlocked ? 0.9 : (oneUnlocked ? 0.4 : 0.2)
+          );
           this.connectionLines.lineBetween(
             skill.position.x, skill.position.y,
             connSkill.position.x, connSkill.position.y
@@ -241,75 +260,214 @@ export class SkillTreePanel {
       tactical_mind: 0x88aa44
     }[tree.id] || 0xffaa00;
 
+    const colorObj = Phaser.Display.Color.IntegerToColor(color);
+    const dimColor = Phaser.Display.Color.GetColor(
+      Math.floor(colorObj.red * 0.3),
+      Math.floor(colorObj.green * 0.3),
+      Math.floor(colorObj.blue * 0.3)
+    );
+
+    const TALENT_ICONS = {
+      weapon_mastery: '⚔', power_strike: '⚡', combat_reflexes: '↻',
+      dual_threat: '✦', devastating_blow: '☢', shield_wall: '⛨',
+      protectors_aura: '♥', iron_resolve: '♦', taunt: '⭐',
+      last_stand: '♠', sap_bolt: '✸', temporal_weave: '⧖',
+      soul_drain: '☾', phase_shift: '➤', sap_storm: '★',
+      natures_ally: '☘', verdant_pulse: '❦', root_binding: '⚘',
+      wild_shape: '☕', living_fortress: '♣', tactical_retreat: '⚐',
+      weakness_exploit: '◈', formation_bonus: '⚉', ambush: '☠',
+      master_strategist: '♛'
+    };
+
     const talents = tree.talents || [];
-    const nodeW = 320;
-    const nodeH = 52;
-    const startX = 30;
-    const startY = 85;
+    const nodeW = 540;
+    const nodeH = 58;
+    const iconSize = 42;
+    const startX = 60;
+    const startY = 10;
+    const spacing = nodeH + 14;
 
     for (let i = 0; i < talents.length; i++) {
       const talent = talents[i];
-      const y = startY + i * (nodeH + 8);
+      const y = startY + i * spacing;
       const x = startX;
-
-      if (i > 0) {
-        this.connectionLines.lineStyle(2, 0x444466, 0.5);
-        this.connectionLines.lineBetween(
-          startX + nodeW / 2, startY + (i - 1) * (nodeH + 8) + nodeH,
-          startX + nodeW / 2, y
-        );
-      }
 
       const unlocked = prog.hasTalent(talent.id);
       const prevUnlocked = i === 0 || prog.hasTalent(talents[i - 1].id);
       const levelOk = level >= (talent.unlockLevel || 1);
       const canUnlock = !unlocked && talentPoints >= 1 && prevUnlocked && levelOk;
 
+      if (i > 0) {
+        const lineX = x + iconSize / 2 + 4;
+        const prevBottom = startY + (i - 1) * spacing + nodeH;
+        if (unlocked && prog.hasTalent(talents[i - 1].id)) {
+          this.connectionLines.lineStyle(3, color, 0.9);
+        } else if (canUnlock) {
+          this.connectionLines.lineStyle(2, color, 0.5);
+        } else {
+          this.connectionLines.lineStyle(1, 0x444466, 0.3);
+        }
+        this.connectionLines.lineBetween(lineX, prevBottom, lineX, y);
+        const dotR = unlocked ? 4 : 2;
+        this.connectionLines.fillStyle(unlocked ? color : 0x444466, unlocked ? 1 : 0.5);
+        this.connectionLines.fillCircle(lineX, (prevBottom + y) / 2, dotR);
+      }
+
       const container = this.scene.add.container(x, y);
       const bg = this.scene.add.graphics();
+
       if (unlocked) {
-        bg.fillStyle(color, 0.4);
+        bg.fillStyle(dimColor, 0.6);
+        bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
         bg.lineStyle(2, color, 1);
+        bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+        bg.fillStyle(color, 0.15);
+        bg.fillRoundedRect(2, 2, nodeW - 4, nodeH - 4, 6);
       } else if (canUnlock) {
-        bg.fillStyle(0x333355, 0.8);
+        bg.fillStyle(0x1a1a35, 0.9);
+        bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
         bg.lineStyle(2, color, 0.7);
+        bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
       } else {
-        bg.fillStyle(0x222233, 0.5);
-        bg.lineStyle(1, 0x444466, 0.4);
+        bg.fillStyle(0x151520, 0.6);
+        bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+        bg.lineStyle(1, 0x333344, 0.4);
+        bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
       }
-      bg.fillRoundedRect(0, 0, nodeW, nodeH, 6);
-      bg.strokeRoundedRect(0, 0, nodeW, nodeH, 6);
       container.add(bg);
 
-      const nameText = this.scene.add.text(12, 8, talent.name, {
-        fontSize: '18px',
-        fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#666666'),
+      const iconBg = this.scene.add.graphics();
+      const ibx = 4, iby = (nodeH - iconSize) / 2;
+      if (unlocked) {
+        iconBg.fillStyle(color, 0.35);
+      } else if (canUnlock) {
+        iconBg.fillStyle(color, 0.15);
+      } else {
+        iconBg.fillStyle(0x222233, 0.5);
+      }
+      iconBg.fillRoundedRect(ibx, iby, iconSize, iconSize, 6);
+      if (unlocked) {
+        iconBg.lineStyle(1, color, 0.6);
+        iconBg.strokeRoundedRect(ibx, iby, iconSize, iconSize, 6);
+      }
+      container.add(iconBg);
+
+      const icon = TALENT_ICONS[talent.id] || talent.name.charAt(0).toUpperCase();
+      const iconText = this.scene.add.text(ibx + iconSize / 2, iby + iconSize / 2, icon, {
+        fontSize: icon.length === 1 && /[A-Z]/.test(icon) ? '22px' : '20px',
+        fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#555555'),
+        fontFamily: 'Open Sans',
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
+      container.add(iconText);
+
+      const textX = ibx + iconSize + 12;
+      const nameText = this.scene.add.text(textX, 8, talent.name, {
+        fontSize: '17px',
+        fill: unlocked ? '#ffffff' : (canUnlock ? '#dddddd' : '#666666'),
         fontFamily: 'Open Sans',
         fontStyle: 'bold'
       });
       container.add(nameText);
 
-      const levelLabel = this.scene.add.text(nodeW - 12, 8, `Lv.${talent.unlockLevel || 1}`, {
-        fontSize: '15px',
-        fill: levelOk ? '#88aacc' : '#664444',
-        fontFamily: 'Open Sans'
-      }).setOrigin(1, 0);
-      container.add(levelLabel);
+      const typeLabel = talent.type === 'active' ? 'ACTIVE' : 'PASSIVE';
+      const typeColor = talent.type === 'active' ? '#ffcc44' : '#88aa88';
+      const typeText = this.scene.add.text(textX + nameText.width + 10, 10, typeLabel, {
+        fontSize: '11px', fill: typeColor, fontFamily: 'Open Sans'
+      });
+      container.add(typeText);
 
-      const descText = this.scene.add.text(12, 28, (talent.description || '').substring(0, 48) + ((talent.description || '').length > 48 ? '…' : ''), {
-        fontSize: '14px',
-        fill: '#888899',
+      const descText = this.scene.add.text(textX, 30,
+        (talent.description || '').substring(0, 60) + ((talent.description || '').length > 60 ? '...' : ''), {
+        fontSize: '13px',
+        fill: unlocked ? '#aaaacc' : '#667788',
         fontFamily: 'Open Sans'
       });
       container.add(descText);
 
+      const lvlBg = this.scene.add.graphics();
+      const lvlX = nodeW - 70, lvlY = 6, lvlW = 60, lvlH = 20;
+      lvlBg.fillStyle(levelOk ? 0x224422 : 0x442222, 0.6);
+      lvlBg.fillRoundedRect(lvlX, lvlY, lvlW, lvlH, 4);
+      container.add(lvlBg);
+
+      const levelLabel = this.scene.add.text(lvlX + lvlW / 2, lvlY + lvlH / 2, `Lv. ${talent.unlockLevel || 1}`, {
+        fontSize: '13px',
+        fill: levelOk ? '#66cc66' : '#cc4444',
+        fontFamily: 'Open Sans',
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
+      container.add(levelLabel);
+
+      if (unlocked) {
+        const checkText = this.scene.add.text(nodeW - 20, nodeH / 2, '✓', {
+          fontSize: '20px', fill: '#44ff88', fontFamily: 'Open Sans', fontStyle: 'bold'
+        }).setOrigin(0.5);
+        container.add(checkText);
+      } else if (canUnlock) {
+        const glowBg = this.scene.add.graphics();
+        glowBg.fillStyle(color, 0.08);
+        glowBg.fillRoundedRect(-3, -3, nodeW + 6, nodeH + 6, 10);
+        container.addAt(glowBg, 0);
+
+        const unlockHint = this.scene.add.text(nodeW - 20, nodeH / 2, '+', {
+          fontSize: '22px', fill: '#ffcc44', fontFamily: 'Open Sans', fontStyle: 'bold'
+        }).setOrigin(0.5);
+        container.add(unlockHint);
+      }
+
       container.setSize(nodeW, nodeH);
-      container.setInteractive();
+      container.setInteractive({ useHandCursor: canUnlock });
+
       container.on('pointerover', () => {
         this.showTalentDetails(talent);
+        if (canUnlock) {
+          bg.clear();
+          bg.fillStyle(0x1a1a40, 0.95);
+          bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.lineStyle(2, color, 1);
+          bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+          nameText.setColor('#ffd700');
+        } else if (!unlocked) {
+          bg.clear();
+          bg.fillStyle(0x1a1a28, 0.7);
+          bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.lineStyle(1, 0x444466, 0.5);
+          bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+        }
       });
+
+      container.on('pointerout', () => {
+        bg.clear();
+        if (unlocked) {
+          bg.fillStyle(dimColor, 0.6);
+          bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.lineStyle(2, color, 1);
+          bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.fillStyle(color, 0.15);
+          bg.fillRoundedRect(2, 2, nodeW - 4, nodeH - 4, 6);
+          nameText.setColor('#ffffff');
+        } else if (canUnlock) {
+          bg.fillStyle(0x1a1a35, 0.9);
+          bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.lineStyle(2, color, 0.7);
+          bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+          nameText.setColor('#dddddd');
+        } else {
+          bg.fillStyle(0x151520, 0.6);
+          bg.fillRoundedRect(0, 0, nodeW, nodeH, 8);
+          bg.lineStyle(1, 0x333344, 0.4);
+          bg.strokeRoundedRect(0, 0, nodeW, nodeH, 8);
+        }
+      });
+
       container.on('pointerdown', () => {
-        if (canUnlock) this.unlockTalentById(talent.id);
+        if (canUnlock) {
+          this.scene.tweens.add({
+            targets: container, scaleX: 0.96, scaleY: 0.96, duration: 80, yoyo: true
+          });
+          this.unlockTalentById(talent.id);
+        }
       });
 
       this.treeContainer.add(container);
@@ -342,90 +500,98 @@ export class SkillTreePanel {
   createSkillNode(skill, branchColor) {
     const x = skill.position.x;
     const y = skill.position.y;
-    const size = 40;
+    const size = 48;
     const unlocked = this.unlockedSkills.has(skill.id);
     const canUnlock = this.canUnlockSkill(skill.id);
 
     const container = this.scene.add.container(x, y);
-
-    // Node background
     const bg = this.scene.add.graphics();
+    const radius = skill.type === 'active' ? 10 : 6;
+
+    const drawNodeBg = (fillC, fillA, strokeC, strokeA) => {
+      bg.clear();
+      if (skill.type === 'ultimate') {
+        bg.fillStyle(fillC, fillA);
+        bg.beginPath();
+        bg.moveTo(0, -size / 2 - 4);
+        bg.lineTo(size / 2 + 4, 0);
+        bg.lineTo(0, size / 2 + 4);
+        bg.lineTo(-size / 2 - 4, 0);
+        bg.closePath();
+        bg.fill();
+        bg.lineStyle(2, strokeC, strokeA);
+        bg.stroke();
+      } else {
+        bg.fillStyle(fillC, fillA);
+        bg.fillRoundedRect(-size / 2, -size / 2, size, size, radius);
+        bg.lineStyle(2, strokeC, strokeA);
+        bg.strokeRoundedRect(-size / 2, -size / 2, size, size, radius);
+      }
+    };
 
     if (unlocked) {
-      bg.fillStyle(branchColor, 0.6);
-      bg.lineStyle(2, branchColor, 1);
+      drawNodeBg(branchColor, 0.5, branchColor, 1);
     } else if (canUnlock) {
-      bg.fillStyle(0x333355, 0.8);
-      bg.lineStyle(2, branchColor, 0.5);
+      drawNodeBg(0x222244, 0.8, branchColor, 0.6);
     } else {
-      bg.fillStyle(0x222233, 0.5);
-      bg.lineStyle(1, 0x444466, 0.3);
-    }
-
-    const shape = skill.type === 'ultimate' ? 'diamond' : 'rect';
-    if (shape === 'diamond') {
-      bg.fillStyle(unlocked ? branchColor : 0x333355, unlocked ? 0.7 : 0.5);
-      bg.beginPath();
-      bg.moveTo(0, -size / 2 - 5);
-      bg.lineTo(size / 2 + 5, 0);
-      bg.lineTo(0, size / 2 + 5);
-      bg.lineTo(-size / 2 - 5, 0);
-      bg.closePath();
-      bg.fill();
-      bg.stroke();
-    } else {
-      bg.fillRoundedRect(-size / 2, -size / 2, size, size, skill.type === 'active' ? 8 : 4);
-      bg.strokeRoundedRect(-size / 2, -size / 2, size, size, skill.type === 'active' ? 8 : 4);
+      drawNodeBg(0x181822, 0.5, 0x444466, 0.3);
     }
     container.add(bg);
 
-    // Skill icon or initial
-    const iconText = this.scene.add.text(0, -2, skill.name.charAt(0), {
-      fontSize: '25px',
+    const iconText = this.scene.add.text(0, -2, skill.name.charAt(0).toUpperCase(), {
+      fontSize: '22px',
       fill: unlocked ? '#ffffff' : (canUnlock ? '#cccccc' : '#555555'),
       fontFamily: 'Open Sans',
       fontStyle: 'bold'
     }).setOrigin(0.5);
     container.add(iconText);
 
-    // Rank indicator
     if (skill.maxRank > 1) {
-      const rankText = this.scene.add.text(size / 2 - 2, size / 2 - 2,
+      const rankBg = this.scene.add.graphics();
+      rankBg.fillStyle(0x000000, 0.7);
+      rankBg.fillRoundedRect(size / 2 - 20, size / 2 - 14, 22, 14, 3);
+      container.add(rankBg);
+      const rankText = this.scene.add.text(size / 2 - 9, size / 2 - 7,
         `${skill.currentRank}/${skill.maxRank}`, {
-          fontSize: '11px', fill: '#aaaaaa', fontFamily: 'Open Sans'
-        }).setOrigin(1, 1);
+          fontSize: '10px', fill: unlocked ? '#ffcc44' : '#888888', fontFamily: 'Open Sans'
+        }).setOrigin(0.5);
       container.add(rankText);
     }
 
-    // Skill name below node
-    const nameText = this.scene.add.text(0, size / 2 + 6, skill.name, {
-      fontSize: '13px',
-      fill: unlocked ? '#ffffff' : '#888888',
+    const nameText = this.scene.add.text(0, size / 2 + 8, skill.name, {
+      fontSize: '12px',
+      fill: unlocked ? '#ffffff' : (canUnlock ? '#aaaaaa' : '#666666'),
       fontFamily: 'Open Sans'
     }).setOrigin(0.5, 0);
     container.add(nameText);
 
-    // Interactivity
     container.setSize(size, size);
-    container.setInteractive();
+    container.setInteractive({ useHandCursor: canUnlock });
 
     container.on('pointerover', () => {
       this.showSkillDetails(skill);
       if (!unlocked && canUnlock) {
-        bg.clear();
-        bg.fillStyle(branchColor, 0.3);
-        bg.fillRoundedRect(-size / 2, -size / 2, size, size, 4);
-        bg.lineStyle(2, branchColor, 0.8);
-        bg.strokeRoundedRect(-size / 2, -size / 2, size, size, 4);
+        drawNodeBg(branchColor, 0.25, branchColor, 0.9);
+        nameText.setColor('#ffd700');
       }
     });
 
     container.on('pointerout', () => {
-      // Reset visual (simplified)
+      if (unlocked) {
+        drawNodeBg(branchColor, 0.5, branchColor, 1);
+      } else if (canUnlock) {
+        drawNodeBg(0x222244, 0.8, branchColor, 0.6);
+        nameText.setColor('#aaaaaa');
+      } else {
+        drawNodeBg(0x181822, 0.5, 0x444466, 0.3);
+      }
     });
 
     container.on('pointerdown', () => {
       if (canUnlock && !unlocked) {
+        this.scene.tweens.add({
+          targets: container, scaleX: 0.9, scaleY: 0.9, duration: 80, yoyo: true
+        });
         this.unlockSkill(skill.id);
       } else if (unlocked && skill.currentRank < skill.maxRank) {
         this.upgradeSkill(skill.id);
