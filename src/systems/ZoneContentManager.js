@@ -725,7 +725,10 @@ export class ZoneContentManager {
         for (let i = 0; i < 5; i++) {
             const cx = x + (w / 5) * i + w * 0.1;
             const cy = y + h * 0.6 + i * 15;
-            gfx.strokeArc(cx, cy + 60, Phaser.Math.Between(80, 140), Math.PI, 0, false);
+            // Phaser 4 Graphics has no strokeArc(); compose with beginPath/arc/strokePath.
+            gfx.beginPath();
+            gfx.arc(cx, cy + 60, Phaser.Math.Between(80, 140), Math.PI, 0, false);
+            gfx.strokePath();
         }
         // Scattered rocks
         for (let i = 0; i < 20; i++) {

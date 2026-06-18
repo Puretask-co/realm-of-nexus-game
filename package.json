@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "vite build && cp -r data dist/data",
     "preview": "vite preview",
     "editor": "EDITOR_MODE=true vite --host",
     "validate-data": "node scripts/validate-data.js",
