@@ -105,12 +105,19 @@ Style bible in `docs/NPC_PORTRAIT_PROMPTS.md` § 0.
 
 ## Docs (read priority for deep dives)
 
-1. `docs/CLAUDE_AGENT_GUIDE.md` — architecture, EventBus wiring, pitfalls
-2. `docs/BEST_PRACTICES.md` — rules that prevent real bugs
-3. `docs/BUILD_PLAYBOOK_AND_ROADMAP.md` — vision, phased roadmap
-4. `docs/GAME_VISION.md` — game design source of truth
-5. `docs/ARCHITECTURE.md` — stack, folders, EventBus table, controls
-6. `docs/NPC_PORTRAIT_PROMPTS.md` — art style bible for image generation
+### Creative & Design
+1. `docs/ART_STYLE.md` — visual identity, palettes, asset specs, UI standards
+2. `docs/LORE.md` — world history, factions, ancestries, companions, story arcs, endings
+3. `docs/GAME_MECHANICS.md` — stats, combat, classes, spells, DSP, progression, economy
+4. `docs/VISUALS.md` — lighting, post-processing, camera, particles, VFX, motion tweens
+
+### Technical
+5. `docs/CLAUDE_AGENT_GUIDE.md` — architecture, EventBus wiring, pitfalls
+6. `docs/BEST_PRACTICES.md` — rules that prevent real bugs
+7. `docs/BUILD_PLAYBOOK_AND_ROADMAP.md` — vision, phased roadmap
+8. `docs/GAME_VISION.md` — game design source of truth
+9. `docs/ARCHITECTURE.md` — stack, folders, EventBus table, controls
+10. `docs/NPC_PORTRAIT_PROMPTS.md` — art style bible for image generation
 
 ## Verification checklist (before saying "done")
 
