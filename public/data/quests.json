@@ -1,0 +1,3127 @@
+{
+    "version": "2.1.0",
+    "lastModified": "2026-03-29T00:00:00Z",
+    "quests": [
+
+        {
+            "id": "awakening",
+            "title": "The Awakening",
+            "name": "The Awakening",
+            "description": "You awaken in the Verdant Grove with no memory. The Elder says the Sap has chosen you for a purpose tied to the spreading corruption. Prove yourself by defeating the forest creatures that have turned hostile before the Elder will tell you more.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_guardians",
+                    "type": "kill",
+                    "description": "Defeat Forest Guardians threatening the Grove",
+                    "target": "forest_guardian",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "talk_elder",
+                    "type": "dialogue",
+                    "description": "Return to the Elder and report what you found",
+                    "target": "elder_thalos",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 150,
+                "experience": 150,
+                "gold": 30,
+                "items": [
+                    { "id": "minor_health_potion", "quantity": 3 }
+                ]
+            },
+            "dialogueId": "elder_awakening_complete",
+            "dialogueOnAccept": "elder_awakening_start",
+            "dialogueOnComplete": "elder_awakening_complete",
+            "chainQuest": "shadow_threat",
+            "tags": ["main_story", "act_1", "chapter_1"]
+        },
+
+        {
+            "id": "shadow_threat",
+            "title": "The Shadow Threat",
+            "name": "The Shadow Threat",
+            "description": "The Elder warns of shadow creatures emerging from the Crystal Caverns, drawn by a pulse of corrupted Sap. Venture inside and discover what stirs in the darkness before it reaches the Canopy of Life.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_caverns",
+                    "type": "travel",
+                    "description": "Enter the Crystal Caverns",
+                    "target": "crystal_caverns",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_stalkers",
+                    "type": "kill",
+                    "description": "Defeat Shadow Stalkers lurking in the caverns",
+                    "target": "shadow_stalker",
+                    "count": 5,
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "collect_essence",
+                    "type": "collect",
+                    "description": "Collect Shadow Essence from defeated stalkers",
+                    "target": "shadow_essence",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 300,
+                "experience": 300,
+                "gold": 60,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 5 }
+                ],
+                "spells": ["shadow_strike"]
+            },
+            "dialogueId": "elder_shadow_threat",
+            "dialogueOnAccept": "elder_shadow_threat",
+            "chainQuest": "crimson_rising",
+            "tags": ["main_story", "act_1", "chapter_2"]
+        },
+
+        {
+            "id": "crimson_rising",
+            "title": "The Crimson Rising",
+            "name": "The Crimson Rising",
+            "description": "Crimson Sap energy is surging across the land, twisting the Wardens of the Crimson Plateau into monsters fuelled by raw corruption. They must be stopped before the Crimson phase overwhelms the other two Sap streams permanently.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "shadow_threat" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_plateau",
+                    "type": "travel",
+                    "description": "Reach the Crimson Plateau",
+                    "target": "crimson_plateau",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_wardens",
+                    "type": "kill",
+                    "description": "Defeat Crimson Wardens empowering the surge",
+                    "target": "crimson_warden",
+                    "count": 5,
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "collect_shards",
+                    "type": "collect",
+                    "description": "Collect Crimson Shards to analyse the corruption",
+                    "target": "crimson_shard",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 500,
+                "experience": 500,
+                "gold": 100,
+                "items": [
+                    { "id": "warden_helm", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "elder_crimson_complete",
+            "dialogueOnAccept": "elder_crimson_rising",
+            "dialogueOnComplete": "elder_crimson_complete",
+            "chainQuest": "nexus_convergence",
+            "tags": ["main_story", "act_1", "chapter_3"]
+        },
+
+        {
+            "id": "nexus_convergence",
+            "title": "The Nexus Convergence",
+            "name": "The Nexus Convergence",
+            "description": "All three Sap streams converge at the Nexus Spire, and the corruption is funnelling toward that focal point. If the Spire falls, the Sap Cycle collapses. Reach it, fight through the wardens still loyal to the corruption, and restore balance.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "crimson_rising" },
+                { "type": "level", "level": 4 }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_nexus",
+                    "type": "travel",
+                    "description": "Enter the Nexus Spire",
+                    "target": "nexus_spire",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_all",
+                    "type": "kill",
+                    "description": "Defeat the Crimson Wardens guarding the convergence",
+                    "target": "crimson_warden",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "cleanse_nexus",
+                    "type": "interact",
+                    "description": "Activate the Sap Harmoniser at the Spire's heart",
+                    "target": "sap_harmoniser",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 1000,
+                "experience": 1000,
+                "gold": 200,
+                "items": [],
+                "spells": ["radiant_burst"]
+            },
+            "dialogueId": "elder_nexus_complete",
+            "dialogueOnAccept": "elder_nexus_convergence",
+            "dialogueOnComplete": "elder_nexus_complete",
+            "chainQuest": "veil_unraveling",
+            "tags": ["main_story", "act_1", "chapter_4", "act_1_finale"]
+        },
+
+        {
+            "id": "veil_unraveling",
+            "title": "The Veil Unraveling",
+            "name": "The Veil Unraveling",
+            "description": "Cleansing the Nexus Spire reveals a deeper truth: the corruption was only a symptom. A tear in the Veil between worlds is spreading from deep within the Hollowroot Catacombs. The factions must unite, but centuries of rivalry make that nearly impossible.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 6,
+            "prerequisites": [
+                { "type": "quest", "questId": "nexus_convergence" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_althea",
+                    "type": "dialogue",
+                    "description": "Consult Seer Althea at the Whispering Veil",
+                    "target": "seer_althea",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "speak_briara",
+                    "type": "dialogue",
+                    "description": "Convince Commander Briara to commit Bloomguard forces",
+                    "target": "commander_briara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "speak_veyla",
+                    "type": "dialogue",
+                    "description": "Gain Archdruid Veyla's support for the Emerald Coven",
+                    "target": "archdruid_veyla",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "visit_veil_echo",
+                    "type": "travel",
+                    "description": "Investigate the Veil Echo Chamber firsthand",
+                    "target": "veil_echo_chamber",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 1200,
+                "experience": 1200,
+                "gold": 250,
+                "items": [
+                    { "id": "veil_shard", "quantity": 1 },
+                    { "id": "sap_crystal", "quantity": 10 }
+                ],
+                "reputation": { "bloomguard": 100, "emerald_coven": 100 }
+            },
+            "dialogueId": "althea_veil_complete",
+            "dialogueOnAccept": "althea_veil_unraveling",
+            "dialogueOnComplete": "althea_veil_complete",
+            "chainQuest": "siege_of_hollowroot",
+            "tags": ["main_story", "act_2", "chapter_5"]
+        },
+
+        {
+            "id": "siege_of_hollowroot",
+            "title": "The Siege of Hollowroot",
+            "name": "The Siege of Hollowroot",
+            "description": "With the factions rallied behind you, lead a combined assault into the deepest chambers of the Hollowroot Catacombs. The Veil Tear must be sealed before whatever entity lurks beyond breaks through into Verdance.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 7,
+            "prerequisites": [
+                { "type": "quest", "questId": "veil_unraveling" },
+                { "type": "level", "level": 6 }
+            ],
+            "objectives": [
+                {
+                    "id": "enter_deep_hollowroot",
+                    "type": "travel",
+                    "description": "Lead the coalition into the Deep Hollowroot",
+                    "target": "hollowroot_catacombs",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_veil_horrors",
+                    "type": "kill",
+                    "description": "Defeat the Veil Horrors guarding the tear",
+                    "target": "veil_horror",
+                    "count": 8,
+                    "required": 8,
+                    "order": 2
+                },
+                {
+                    "id": "collect_sealing_reagents",
+                    "type": "collect",
+                    "description": "Gather Veil Sealing Reagents from defeated Horrors",
+                    "target": "sealing_reagent",
+                    "count": 5,
+                    "required": 5,
+                    "order": 3
+                },
+                {
+                    "id": "seal_the_tear",
+                    "type": "interact",
+                    "description": "Perform the Sealing Ritual at the Veil Tear",
+                    "target": "veil_tear_alpha",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 1500,
+                "experience": 1500,
+                "gold": 300,
+                "items": [
+                    { "id": "veilguard_armor", "quantity": 1 }
+                ],
+                "spells": ["veil_mend"]
+            },
+            "dialogueId": "briara_siege_complete",
+            "dialogueOnAccept": "briara_siege_briefing",
+            "dialogueOnComplete": "briara_siege_complete",
+            "chainQuest": "fractured_alliance",
+            "tags": ["main_story", "act_2", "chapter_6"]
+        },
+
+        {
+            "id": "fractured_alliance",
+            "title": "The Fractured Alliance",
+            "name": "The Fractured Alliance",
+            "description": "The seal holds — barely. The Sporecaller Syndicate has been secretly siphoning Sap energy from the tear for their experiments. Confront Sporecaller Mycel and decide the Syndicate's fate. Your choice will shape every faction relationship going forward.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 8,
+            "prerequisites": [
+                { "type": "quest", "questId": "siege_of_hollowroot" }
+            ],
+            "objectives": [
+                {
+                    "id": "investigate_labs",
+                    "type": "travel",
+                    "description": "Search the Sporecaller Labs for evidence",
+                    "target": "sporecaller_labs",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "collect_evidence",
+                    "type": "collect",
+                    "description": "Collect Sporecaller Research Logs",
+                    "target": "sporecaller_log",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "confront_mycel",
+                    "type": "dialogue",
+                    "description": "Confront Sporecaller Mycel with the evidence",
+                    "target": "sporecaller_mycel",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "decide_fate",
+                    "type": "interact",
+                    "description": "Decide the Syndicate's fate: Exile, Reform, or Alliance",
+                    "target": "syndicate_judgment",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 1800,
+                "experience": 1800,
+                "gold": 400,
+                "items": [
+                    { "id": "sporecaller_focus", "quantity": 1 }
+                ],
+                "reputation": { "sporecaller_syndicate": 200 }
+            },
+            "dialogueId": "veyla_fractured_complete",
+            "dialogueOnAccept": "veyla_fractured_alliance",
+            "dialogueOnComplete": "veyla_fractured_complete",
+            "chainQuest": "the_unbinding",
+            "tags": ["main_story", "act_2", "chapter_7", "act_2_finale", "branching"]
+        },
+
+        {
+            "id": "the_unbinding",
+            "title": "The Unbinding",
+            "name": "The Unbinding",
+            "description": "The Ancient Unbinding Site has activated. Something vast and ancient stirs beyond the Veil, drawn by the fractured Sap streams across Verdance. Rally all factions at the Everwood Heart for a final stand — or the realm of Nexus will be consumed by what lies beyond.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 10,
+            "prerequisites": [
+                { "type": "quest", "questId": "fractured_alliance" },
+                { "type": "level", "level": 9 }
+            ],
+            "objectives": [
+                {
+                    "id": "rally_all_factions",
+                    "type": "dialogue",
+                    "description": "Rally all four faction leaders at the Everwood Heart",
+                    "target": "faction_leaders",
+                    "count": 4,
+                    "required": 4,
+                    "order": 1
+                },
+                {
+                    "id": "reach_everwood",
+                    "type": "travel",
+                    "description": "Enter the Everwood Heart",
+                    "target": "everwood_heart",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_void_herald",
+                    "type": "kill",
+                    "description": "Defeat the Void Herald before it fully manifests",
+                    "target": "void_herald",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 3
+                },
+                {
+                    "id": "seal_or_absorb",
+                    "type": "interact",
+                    "description": "Seal the Veil forever, or absorb the Void's power",
+                    "target": "final_choice",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 3000,
+                "experience": 3000,
+                "gold": 600,
+                "items": [
+                    { "id": "nexus_crown", "quantity": 1 }
+                ],
+                "spells": ["nexus_harmony"]
+            },
+            "dialogueId": "elder_unbinding_complete",
+            "dialogueOnAccept": "althea_unbinding",
+            "dialogueOnComplete": "elder_unbinding_complete",
+            "tags": ["main_story", "act_3", "chapter_8", "finale", "branching"]
+        },
+
+        {
+            "id": "herb_gathering",
+            "title": "Gathering Herbs",
+            "name": "Gathering Herbs",
+            "description": "Herbalist Tansy is running low on potion ingredients. Corrupted creatures have been raiding the supply stores along Herbalist Row. Help replenish the stock by clearing the creatures and collecting any potions they drop.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_for_drops",
+                    "type": "kill",
+                    "description": "Defeat Thorn Sprites near the herb gardens",
+                    "target": "thorn_sprite",
+                    "count": 4,
+                    "required": 4,
+                    "order": 1
+                },
+                {
+                    "id": "collect_potions",
+                    "type": "collect",
+                    "description": "Collect Minor Health Potions",
+                    "target": "minor_health_potion",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "deliver_tansy",
+                    "type": "dialogue",
+                    "description": "Return to Herbalist Tansy",
+                    "target": "herbalist_tansy",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 75,
+                "experience": 75,
+                "gold": 20,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 2 }
+                ]
+            },
+            "dialogueId": "herbalist_quest",
+            "dialogueOnAccept": "herbalist_quest",
+            "repeatable": true,
+            "tags": ["side", "repeatable", "gathering"]
+        },
+
+        {
+            "id": "explore_ruins",
+            "title": "Sunken Secrets",
+            "name": "Sunken Secrets",
+            "description": "Scholar Archivist Scroll has heard rumours of pre-Veil knowledge buried in the Sunken Ruins. Explore the ruins, clear the guardians that have taken up residence, and bring back any lore fragments you find.",
+            "type": "side",
+            "category": "exploration",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "visit_ruins",
+                    "type": "travel",
+                    "description": "Explore the Sunken Ruins",
+                    "target": "sunken_ruins",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_ruins_enemies",
+                    "type": "kill",
+                    "description": "Clear hostile Forest Guardians from the ruins",
+                    "target": "forest_guardian",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "collect_lore",
+                    "type": "collect",
+                    "description": "Recover lore fragments left by the First Keepers",
+                    "target": "lore_fragment",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 200,
+                "experience": 200,
+                "gold": 50,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 3 }
+                ]
+            },
+            "dialogueId": "scholar_quest",
+            "dialogueOnAccept": "scholar_quest",
+            "tags": ["side", "exploration"]
+        },
+
+        {
+            "id": "bloomguard_patrol",
+            "title": "Bloomguard Patrol Duty",
+            "name": "Bloomguard Patrol Duty",
+            "description": "Commander Briara needs patrols along the Canopy perimeter after corrupted vine creepers began testing the outer walls. Prove your worth to the Bloomguard by clearing the threat and reporting back.",
+            "type": "faction",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_briara",
+                    "type": "dialogue",
+                    "description": "Report to Commander Briara at the Barracks",
+                    "target": "commander_briara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "patrol_perimeter",
+                    "type": "kill",
+                    "description": "Clear corrupted vine creepers from the Canopy perimeter",
+                    "target": "corrupted_vine_creeper",
+                    "count": 6,
+                    "required": 6,
+                    "order": 2
+                },
+                {
+                    "id": "report_back",
+                    "type": "dialogue",
+                    "description": "Report back to Commander Briara",
+                    "target": "commander_briara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 250,
+                "experience": 250,
+                "gold": 60,
+                "items": [
+                    { "id": "bloomguard_insignia", "quantity": 1 }
+                ],
+                "reputation": { "bloomguard": 150 }
+            },
+            "dialogueId": "briara_patrol_complete",
+            "dialogueOnAccept": "briara_patrol_quest",
+            "dialogueOnComplete": "briara_patrol_complete",
+            "chainQuest": "bloomguard_corruption_hunt",
+            "tags": ["faction", "bloomguard", "canopy_of_life", "combat"]
+        },
+
+        {
+            "id": "bloomguard_corruption_hunt",
+            "title": "Corruption in the Ranks",
+            "name": "Corruption in the Ranks",
+            "description": "Briara suspects a Bloomguard officer has been compromised by Veil corruption. The signs are subtle — erratic patrols, unexplained equipment thefts. Investigate the barracks at night, follow the trail to the Thornbinder Safehouse, and bring the traitor to justice.",
+            "type": "faction",
+            "category": "investigation",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "bloomguard_patrol" },
+                { "type": "reputation", "faction": "bloomguard", "amount": 100 }
+            ],
+            "objectives": [
+                {
+                    "id": "search_barracks",
+                    "type": "interact",
+                    "description": "Search the Barracks at night for clues",
+                    "target": "bloomguard_barracks",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "follow_trail",
+                    "type": "travel",
+                    "description": "Follow the corruption trail to the Thornbinder Safehouse",
+                    "target": "thornbinder_safehouse",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_traitor",
+                    "type": "kill",
+                    "description": "Defeat the Corrupted Officer Varn",
+                    "target": "corrupted_officer_varn",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "return_evidence",
+                    "type": "dialogue",
+                    "description": "Bring evidence to Commander Briara",
+                    "target": "commander_briara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 500,
+                "experience": 500,
+                "gold": 120,
+                "items": [
+                    { "id": "bloomguard_captain_cloak", "quantity": 1 },
+                    { "id": "sap_crystal", "quantity": 8 }
+                ],
+                "reputation": { "bloomguard": 300 }
+            },
+            "dialogueId": "briara_corruption_complete",
+            "dialogueOnAccept": "briara_corruption_quest",
+            "dialogueOnComplete": "briara_corruption_complete",
+            "tags": ["faction", "bloomguard", "canopy_of_life", "investigation"]
+        },
+
+        {
+            "id": "coven_rite_of_renewal",
+            "title": "The Rite of Renewal",
+            "name": "The Rite of Renewal",
+            "description": "Archdruid Veyla requires rare reagents for the annual Rite of Renewal, a ceremony that rejuvenates the Canopy's root network. Corruption has tainted the usual gathering sites, so the components must be sourced from dangerous territory.",
+            "type": "faction",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "gather_moonpetal",
+                    "type": "collect",
+                    "description": "Gather Moonpetal Blossoms from the Emerald Cascades",
+                    "target": "moonpetal_blossom",
+                    "count": 5,
+                    "required": 5,
+                    "order": 1
+                },
+                {
+                    "id": "gather_rootsap",
+                    "type": "collect",
+                    "description": "Collect Pure Rootsap from the Spindlewood Forest",
+                    "target": "pure_rootsap",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "attend_rite",
+                    "type": "interact",
+                    "description": "Attend the Rite of Renewal at the Emerald Sanctum",
+                    "target": "emerald_sanctum",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 350,
+                "experience": 350,
+                "gold": 80,
+                "items": [
+                    { "id": "coven_blessing_amulet", "quantity": 1 }
+                ],
+                "spells": ["natures_embrace"],
+                "reputation": { "emerald_coven": 200 }
+            },
+            "dialogueId": "veyla_rite_complete",
+            "dialogueOnAccept": "veyla_rite_quest",
+            "dialogueOnComplete": "veyla_rite_complete",
+            "tags": ["faction", "emerald_coven", "gathering", "ceremony"]
+        },
+
+        {
+            "id": "wildkin_great_hunt",
+            "title": "The Great Hunt",
+            "name": "The Great Hunt",
+            "description": "Beastcaller Yenna invites you to the Wildkin Pact's Great Hunt. The Thornmaw Alpha — a massive corrupted predator — terrorises the Wildkin Hunting Grounds and must be brought down. Track it, weaken it with traps, and make the kill.",
+            "type": "faction",
+            "category": "hunting",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "shadow_threat" }
+            ],
+            "objectives": [
+                {
+                    "id": "find_tracks",
+                    "type": "interact",
+                    "description": "Find Thornmaw Alpha tracks in the Hunting Grounds",
+                    "target": "thornmaw_tracks",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "set_traps",
+                    "type": "interact",
+                    "description": "Set hunting traps at key locations",
+                    "target": "hunting_trap_site",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_thornmaw",
+                    "type": "kill",
+                    "description": "Defeat the Thornmaw Alpha",
+                    "target": "thornmaw_alpha",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 3
+                },
+                {
+                    "id": "return_trophy",
+                    "type": "dialogue",
+                    "description": "Present the trophy to Beastcaller Yenna",
+                    "target": "beastcaller_yenna",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 600,
+                "experience": 600,
+                "gold": 150,
+                "items": [
+                    { "id": "thornmaw_fang_necklace", "quantity": 1 },
+                    { "id": "beast_leather", "quantity": 5 }
+                ],
+                "reputation": { "wildkin_pact": 250 }
+            },
+            "dialogueId": "yenna_hunt_complete",
+            "dialogueOnAccept": "yenna_hunt_quest",
+            "dialogueOnComplete": "yenna_hunt_complete",
+            "tags": ["faction", "wildkin_pact", "hunting", "boss"]
+        },
+
+        {
+            "id": "sporecaller_experiment",
+            "title": "Volatile Research",
+            "name": "Volatile Research",
+            "description": "Sporecaller Mycel offers access to the Syndicate's research in exchange for retrieving volatile Sap samples from the three active corruption zones. The samples destabilise rapidly and must be handled quickly.",
+            "type": "faction",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "crimson_rising" }
+            ],
+            "objectives": [
+                {
+                    "id": "collect_blue_sample",
+                    "type": "collect",
+                    "description": "Collect a Volatile Blue Sap Sample from Crystal Caverns",
+                    "target": "volatile_blue_sap",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "collect_crimson_sample",
+                    "type": "collect",
+                    "description": "Collect a Volatile Crimson Sap Sample from the Plateau",
+                    "target": "volatile_crimson_sap",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "collect_silver_sample",
+                    "type": "collect",
+                    "description": "Collect a Volatile Silver Sap Sample from Glinting Groves",
+                    "target": "volatile_silver_sap",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "deliver_to_mycel",
+                    "type": "dialogue",
+                    "description": "Deliver all samples to Sporecaller Mycel",
+                    "target": "sporecaller_mycel",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 700,
+                "experience": 700,
+                "gold": 160,
+                "items": [
+                    { "id": "sporecaller_formula", "quantity": 1 },
+                    { "id": "sap_crystal", "quantity": 10 }
+                ],
+                "reputation": { "sporecaller_syndicate": 200 }
+            },
+            "dialogueId": "mycel_experiment_complete",
+            "dialogueOnAccept": "mycel_experiment_quest",
+            "dialogueOnComplete": "mycel_experiment_complete",
+            "tags": ["faction", "sporecaller_syndicate", "gathering", "timed"]
+        },
+
+        {
+            "id": "hollowroot_lost_expedition",
+            "title": "The Lost Expedition",
+            "name": "The Lost Expedition",
+            "description": "A Bloomguard scouting party went missing in the Hollowroot Catacombs three weeks ago. Guard Captain Reyla asks you to find survivors and recover their mission report before the catacombs swallow the evidence entirely.",
+            "type": "side",
+            "category": "dungeon",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "shadow_threat" }
+            ],
+            "objectives": [
+                {
+                    "id": "enter_catacombs",
+                    "type": "travel",
+                    "description": "Enter the Hollowroot Catacombs",
+                    "target": "hollowroot_catacombs",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "find_survivors",
+                    "type": "interact",
+                    "description": "Locate survivors of the lost expedition",
+                    "target": "expedition_survivor",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "recover_journal",
+                    "type": "collect",
+                    "description": "Recover the Expedition Leader's Journal",
+                    "target": "expedition_journal",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "clear_exit",
+                    "type": "kill",
+                    "description": "Clear Catacomb Crawlers blocking the exit route",
+                    "target": "catacomb_crawler",
+                    "count": 4,
+                    "required": 4,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 400,
+                "experience": 400,
+                "gold": 90,
+                "items": [
+                    { "id": "expedition_map", "quantity": 1 },
+                    { "id": "minor_health_potion", "quantity": 5 }
+                ],
+                "reputation": { "bloomguard": 100 }
+            },
+            "dialogueId": "reyla_expedition_complete",
+            "dialogueOnAccept": "reyla_lost_expedition",
+            "dialogueOnComplete": "reyla_expedition_complete",
+            "tags": ["side", "hollowroot_catacombs", "dungeon", "rescue"]
+        },
+
+        {
+            "id": "hollowroot_artifact_recovery",
+            "title": "Relics of the First Keepers",
+            "name": "Relics of the First Keepers",
+            "description": "Shadowmaster Kael has identified a First Keeper artifact deep within the Hollowroot Catacombs. The artifact predates the current Sap Cycle and may hold the key to understanding the ancient sealing rituals needed to close the Veil permanently.",
+            "type": "side",
+            "category": "dungeon",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "hollowroot_lost_expedition" }
+            ],
+            "objectives": [
+                {
+                    "id": "reach_deep_chamber",
+                    "type": "travel",
+                    "description": "Reach the Sealed Chamber in the deep catacombs",
+                    "target": "hollowroot_sealed_chamber",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "solve_keeper_puzzle",
+                    "type": "interact",
+                    "description": "Solve the First Keeper's locking mechanism",
+                    "target": "keeper_puzzle_lock",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_guardian",
+                    "type": "kill",
+                    "description": "Defeat the Keeper's Sentinel",
+                    "target": "keeper_sentinel",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 3
+                },
+                {
+                    "id": "recover_artifact",
+                    "type": "collect",
+                    "description": "Recover the Keeper's Sealing Stone",
+                    "target": "keeper_sealing_stone",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 750,
+                "experience": 750,
+                "gold": 180,
+                "items": [
+                    { "id": "keeper_sealing_stone", "quantity": 1 },
+                    { "id": "sap_crystal", "quantity": 12 }
+                ],
+                "spells": ["ancient_ward"]
+            },
+            "dialogueId": "kael_artifact_complete",
+            "dialogueOnAccept": "kael_artifact_quest",
+            "dialogueOnComplete": "kael_artifact_complete",
+            "tags": ["side", "hollowroot_catacombs", "dungeon", "puzzle", "artifact"]
+        },
+
+        {
+            "id": "spindlewood_lost_child",
+            "title": "Whispers in the Thicket",
+            "name": "Whispers in the Thicket",
+            "description": "Innkeeper Maren's young niece wandered into the Spindlewood Forest three days ago, drawn by strange whispers that only she could hear. The Sap Cycle is making the forest unpredictable; find the child before a predator does.",
+            "type": "side",
+            "category": "rescue",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "search_outer_wood",
+                    "type": "interact",
+                    "description": "Search the outer Spindlewood for tracks",
+                    "target": "child_tracks",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_predators",
+                    "type": "kill",
+                    "description": "Drive off Timber Wolves blocking the search path",
+                    "target": "timber_wolf",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "find_child",
+                    "type": "interact",
+                    "description": "Find Maren's niece deep in the thicket",
+                    "target": "lost_child_lira",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "escort_home",
+                    "type": "travel",
+                    "description": "Escort the child safely back to the Canopy of Life",
+                    "target": "canopy_of_life",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 350,
+                "experience": 350,
+                "gold": 80,
+                "items": [
+                    { "id": "marens_family_ring", "quantity": 1 },
+                    { "id": "minor_health_potion", "quantity": 3 }
+                ]
+            },
+            "dialogueId": "maren_child_found",
+            "dialogueOnAccept": "maren_lost_child",
+            "dialogueOnComplete": "maren_child_found",
+            "tags": ["side", "spindlewood_forest", "rescue", "escort"]
+        },
+
+        {
+            "id": "emerald_cascade_spirit",
+            "title": "The Drowning Light",
+            "name": "The Drowning Light",
+            "description": "A water spirit at the Emerald Cascades is trapped in a corrupted eddy, and the pools downstream are turning dark. If the corruption reaches the Canopy's water supply, the Rite of Renewal will be impossible. Solve the water-flow puzzles to free the spirit.",
+            "type": "side",
+            "category": "puzzle",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "shadow_threat" }
+            ],
+            "objectives": [
+                {
+                    "id": "reach_cascades",
+                    "type": "travel",
+                    "description": "Travel to the Emerald Cascades",
+                    "target": "emerald_cascades",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "solve_flow_puzzle_1",
+                    "type": "interact",
+                    "description": "Redirect the upper waterflow to cleanse the first pool",
+                    "target": "cascade_valve_upper",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "solve_flow_puzzle_2",
+                    "type": "interact",
+                    "description": "Redirect the lower waterflow to cleanse the second pool",
+                    "target": "cascade_valve_lower",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "defeat_corruption",
+                    "type": "kill",
+                    "description": "Defeat the Corruption Elemental at the source",
+                    "target": "corruption_elemental",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 4
+                },
+                {
+                    "id": "free_spirit",
+                    "type": "interact",
+                    "description": "Free the trapped water spirit",
+                    "target": "trapped_water_spirit",
+                    "count": 1,
+                    "required": 1,
+                    "order": 5
+                }
+            ],
+            "rewards": {
+                "xp": 550,
+                "experience": 550,
+                "gold": 130,
+                "items": [
+                    { "id": "spirit_blessed_vial", "quantity": 1 }
+                ],
+                "spells": ["cascade_heal"],
+                "reputation": { "emerald_coven": 100 }
+            },
+            "dialogueId": "veyla_cascade_complete",
+            "dialogueOnAccept": "veyla_cascade_spirit",
+            "dialogueOnComplete": "veyla_cascade_complete",
+            "tags": ["side", "emerald_cascades", "puzzle", "creature_rescue"]
+        },
+
+        {
+            "id": "glinting_crystal_corruption",
+            "title": "Shattered Brilliance",
+            "name": "Shattered Brilliance",
+            "description": "The crystals of the Glinting Groves are fracturing under unstable Sap energy, spawning Crystal Wraiths that aggressively defend the area. Smith Garon needs uncorrupted crystal cores to craft the weapons the Bloomguard ordered — and time is running out.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "crimson_rising" }
+            ],
+            "objectives": [
+                {
+                    "id": "enter_groves",
+                    "type": "travel",
+                    "description": "Enter the Glinting Groves",
+                    "target": "glinting_groves",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_wraiths",
+                    "type": "kill",
+                    "description": "Defeat Crystal Wraiths guarding the cores",
+                    "target": "crystal_wraith",
+                    "count": 5,
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "collect_cores",
+                    "type": "collect",
+                    "description": "Collect Uncorrupted Crystal Cores",
+                    "target": "crystal_core",
+                    "count": 4,
+                    "required": 4,
+                    "order": 3
+                },
+                {
+                    "id": "cleanse_node",
+                    "type": "interact",
+                    "description": "Cleanse the corrupted crystal node to stop further fracturing",
+                    "target": "corrupted_crystal_node",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 500,
+                "experience": 500,
+                "gold": 120,
+                "items": [
+                    { "id": "crystal_edge_blade", "quantity": 1 },
+                    { "id": "crystal_core", "quantity": 2 }
+                ]
+            },
+            "dialogueId": "garon_crystal_complete",
+            "dialogueOnAccept": "garon_crystal_quest",
+            "dialogueOnComplete": "garon_crystal_complete",
+            "tags": ["side", "glinting_groves", "gathering", "cleansing"]
+        },
+
+        {
+            "id": "mycelium_spore_lord",
+            "title": "The Spore Lord's Domain",
+            "name": "The Spore Lord's Domain",
+            "description": "A massive fungal entity known as the Spore Lord has begun spreading its mycelium beyond the caverns at an alarming rate. The Sporecaller Syndicate insists it is merely defending its territory. Others fear it has been corrupted by the Veil. Someone needs to go in and find out.",
+            "type": "side",
+            "category": "boss",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [
+                { "type": "quest", "questId": "nexus_convergence" },
+                { "type": "level", "level": 5 }
+            ],
+            "objectives": [
+                {
+                    "id": "enter_mycelium",
+                    "type": "travel",
+                    "description": "Enter the Mycelium Nexus",
+                    "target": "mycelium_nexus",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "investigate_spread",
+                    "type": "interact",
+                    "description": "Examine corrupted mycelium growth sites",
+                    "target": "corrupted_mycelium_site",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_minions",
+                    "type": "kill",
+                    "description": "Defeat Spore Thralls protecting the Spore Lord",
+                    "target": "spore_thrall",
+                    "count": 6,
+                    "required": 6,
+                    "order": 3
+                },
+                {
+                    "id": "defeat_spore_lord",
+                    "type": "kill",
+                    "description": "Defeat the Spore Lord",
+                    "target": "spore_lord",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 900,
+                "experience": 900,
+                "gold": 200,
+                "items": [
+                    { "id": "spore_lord_crown", "quantity": 1 },
+                    { "id": "mycelium_essence", "quantity": 3 }
+                ],
+                "spells": ["fungal_shield"]
+            },
+            "dialogueId": "mycel_spore_lord_complete",
+            "dialogueOnAccept": "mycel_spore_lord_quest",
+            "dialogueOnComplete": "mycel_spore_lord_complete",
+            "tags": ["side", "mycelium_nexus", "boss", "corruption_investigation"]
+        },
+
+        {
+            "id": "companion_kael",
+            "title": "Shadows of the Past",
+            "name": "Shadows of the Past",
+            "description": "Shadowmaster Kael has been tracking Veil anomalies that mirror events from his own buried past. He suspects something in the Whispering Veil has been using his memories against him. Help him face those echoes, and he may finally trust you enough to join your cause.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "crimson_rising" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_kael",
+                    "type": "dialogue",
+                    "description": "Speak with Shadowmaster Kael about the anomalies",
+                    "target": "shadowmaster_kael",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "visit_veil",
+                    "type": "travel",
+                    "description": "Investigate the Whispering Veil alongside Kael",
+                    "target": "whispering_veil",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_echoes",
+                    "type": "kill",
+                    "description": "Defeat the Shadow Echoes wearing Kael's face",
+                    "target": "shadow_echo",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                },
+                {
+                    "id": "make_choice",
+                    "type": "interact",
+                    "description": "Help Kael confront his past: Forgive or Condemn himself",
+                    "target": "kael_past_choice",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 600,
+                "experience": 600,
+                "gold": 0,
+                "items": [
+                    { "id": "shadow_cloak", "quantity": 1 }
+                ],
+                "spells": ["shadow_step"]
+            },
+            "dialogueId": "kael_companion_complete",
+            "dialogueOnAccept": "kael_companion_quest",
+            "dialogueOnComplete": "kael_companion_complete",
+            "tags": ["companion", "recruitment", "kael", "branching"]
+        },
+
+        {
+            "id": "companion_yenna",
+            "title": "Call of the Wild Heart",
+            "name": "Call of the Wild Heart",
+            "description": "Beastcaller Yenna's bonded hawk Skycrest has been captured by poachers operating out of the Spindlewood Forest. Helping her track the poachers and free her companion is the surest way to earn Yenna's loyalty — and gain one of the most capable rangers in Verdance as an ally.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "wildkin_great_hunt" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_yenna",
+                    "type": "dialogue",
+                    "description": "Speak with Beastcaller Yenna about Skycrest",
+                    "target": "beastcaller_yenna",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "track_poachers",
+                    "type": "interact",
+                    "description": "Locate poacher camps in the Spindlewood Forest",
+                    "target": "poacher_camp",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_poachers",
+                    "type": "kill",
+                    "description": "Defeat the Poacher Leader and their guards",
+                    "target": "poacher_leader",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "free_skycrest",
+                    "type": "interact",
+                    "description": "Free Skycrest from the iron cage",
+                    "target": "skycrest_cage",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 700,
+                "experience": 700,
+                "gold": 0,
+                "items": [
+                    { "id": "skyfeather_charm", "quantity": 1 }
+                ],
+                "reputation": { "wildkin_pact": 300 }
+            },
+            "dialogueId": "yenna_companion_complete",
+            "dialogueOnAccept": "yenna_companion_quest",
+            "dialogueOnComplete": "yenna_companion_complete",
+            "tags": ["companion", "recruitment", "yenna", "spindlewood_forest"]
+        },
+
+        {
+            "id": "companion_althea",
+            "title": "The Seer's Burden",
+            "name": "The Seer's Burden",
+            "description": "Seer Althea's visions have become overwhelming since the Veil began tearing. Each vision risks fragmenting her mind entirely. Help her stabilise her sight with a dangerous ritual at the Veil Echo Chamber — the dark truths she will see may change everything.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [
+                { "type": "quest", "questId": "veil_unraveling" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_althea",
+                    "type": "dialogue",
+                    "description": "Speak with Seer Althea about her failing visions",
+                    "target": "seer_althea",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "gather_ritual_components",
+                    "type": "collect",
+                    "description": "Gather Veil-Touched Herbs from the Corruption Quarantine Zone",
+                    "target": "veil_touched_herb",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "travel_to_echo_chamber",
+                    "type": "travel",
+                    "description": "Escort Althea to the Veil Echo Chamber",
+                    "target": "veil_echo_chamber",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "defend_ritual",
+                    "type": "kill",
+                    "description": "Defend Althea from Veil Phantoms during the ritual",
+                    "target": "veil_phantom",
+                    "count": 5,
+                    "required": 5,
+                    "order": 4
+                },
+                {
+                    "id": "complete_ritual",
+                    "type": "interact",
+                    "description": "Help Althea complete the Stabilisation Ritual",
+                    "target": "stabilization_ritual",
+                    "count": 1,
+                    "required": 1,
+                    "order": 5
+                }
+            ],
+            "rewards": {
+                "xp": 1000,
+                "experience": 1000,
+                "gold": 0,
+                "items": [
+                    { "id": "seers_circlet", "quantity": 1 }
+                ],
+                "spells": ["veil_sight"]
+            },
+            "dialogueId": "althea_companion_complete",
+            "dialogueOnAccept": "althea_companion_quest",
+            "dialogueOnComplete": "althea_companion_complete",
+            "tags": ["companion", "recruitment", "althea", "ritual", "escort"]
+        },
+
+        {
+            "id": "quest_companion_kael",
+            "title": "The Shattered Mirror",
+            "name": "The Shattered Mirror",
+            "description": "Kael's old Veilkeeper order once hid a focus artifact in the Crystal Caverns before they were scattered. The artifact amplifies shadow-based abilities and he believed it lost — until a Shadow Weaver was spotted carrying its signature resonance. Help Kael reclaim what was stolen.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [
+                { "type": "quest", "questId": "companion_kael" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_kael_mirror",
+                    "type": "dialogue",
+                    "description": "Meet Kael near the Crystal Caverns entrance",
+                    "target": "shadowmaster_kael",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "kill_weaver",
+                    "type": "kill",
+                    "description": "Defeat the Shadow Weaver that took the artifact",
+                    "target": "shadow_weaver",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 2
+                },
+                {
+                    "id": "recover_focus",
+                    "type": "collect",
+                    "description": "Recover Kael's Veilkeeper Focus",
+                    "target": "veilkeeper_focus",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 550,
+                "experience": 550,
+                "gold": 80,
+                "items": [
+                    { "id": "veilkeeper_focus", "quantity": 1 }
+                ],
+                "reputation": { "kael_bond": 50 }
+            },
+            "dialogueId": "kael_mirror_complete",
+            "dialogueOnAccept": "kael_mirror_quest",
+            "dialogueOnComplete": "kael_mirror_complete",
+            "tags": ["companion", "kael", "companion_bond", "artifact"]
+        },
+
+        {
+            "id": "quest_companion_yenna",
+            "title": "The Hollowed Herd",
+            "name": "The Hollowed Herd",
+            "description": "Yenna has found a herd of forest elk near the Spindlewood exhibiting strange, hollow behaviour — they move in silence, their eyes clouded, following a pattern that matches corrupted Veil activity. Investigate the phenomenon with her before the herd turns violent.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [
+                { "type": "quest", "questId": "companion_yenna" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_yenna_herd",
+                    "type": "dialogue",
+                    "description": "Meet Yenna at the herd's last known location",
+                    "target": "beastcaller_yenna",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "observe_elk",
+                    "type": "interact",
+                    "description": "Observe the hollowed elk from a safe distance",
+                    "target": "hollowed_elk_herd",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "kill_source",
+                    "type": "kill",
+                    "description": "Defeat the Vine Wraith controlling the herd",
+                    "target": "vine_wraith",
+                    "count": 2,
+                    "required": 2,
+                    "order": 3
+                },
+                {
+                    "id": "cleanse_herd",
+                    "type": "interact",
+                    "description": "Perform the Wildkin cleansing ritual over the herd",
+                    "target": "herd_cleanse_site",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 500,
+                "experience": 500,
+                "gold": 70,
+                "items": [
+                    { "id": "wildkin_totem", "quantity": 1 }
+                ],
+                "reputation": { "wildkin_pact": 100, "yenna_bond": 50 }
+            },
+            "dialogueId": "yenna_herd_complete",
+            "dialogueOnAccept": "yenna_herd_quest",
+            "dialogueOnComplete": "yenna_herd_complete",
+            "tags": ["companion", "yenna", "companion_bond", "investigation"]
+        },
+
+        {
+            "id": "quest_companion_althea",
+            "title": "The Sight Beyond",
+            "name": "The Sight Beyond",
+            "description": "Althea's stabilised visions have begun showing her a place that doesn't exist on any map — a mirror-realm that overlaps the Veil itself. She needs three Resonance Stones scattered across Verdance to triangulate its entry point. This may be the key to stopping the Unbinding.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 8,
+            "prerequisites": [
+                { "type": "quest", "questId": "companion_althea" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_althea_sight",
+                    "type": "dialogue",
+                    "description": "Speak with Althea about her new visions",
+                    "target": "seer_althea",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "collect_resonance_stones",
+                    "type": "collect",
+                    "description": "Recover Resonance Stones from three Veil-touched sites",
+                    "target": "resonance_stone",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "defeat_veil_guardians",
+                    "type": "kill",
+                    "description": "Defeat the Crystal Sentinels guarding each stone",
+                    "target": "crystal_sentinel",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                },
+                {
+                    "id": "triangulate",
+                    "type": "interact",
+                    "description": "Help Althea triangulate the mirror-realm entry point",
+                    "target": "mirror_realm_focus",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 900,
+                "experience": 900,
+                "gold": 0,
+                "items": [
+                    { "id": "mirror_realm_key", "quantity": 1 }
+                ],
+                "spells": ["veil_piercing_sight"],
+                "reputation": { "althea_bond": 50 }
+            },
+            "dialogueId": "althea_sight_complete",
+            "dialogueOnAccept": "althea_sight_quest",
+            "dialogueOnComplete": "althea_sight_complete",
+            "tags": ["companion", "althea", "companion_bond", "lore"]
+        },
+
+        {
+            "id": "quest_companion_briara",
+            "title": "The Commander's Honour",
+            "name": "The Commander's Honour",
+            "description": "Commander Briara carries the weight of a battle she believes she lost — the Siege of the East Gate, where her unit was overrun and only she survived. Evidence has surfaced that the defeat was caused by sabotage, not incompetence. Help her find the saboteur and clear her name.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "quest", "questId": "bloomguard_corruption_hunt" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_briara_honour",
+                    "type": "dialogue",
+                    "description": "Speak with Commander Briara about the East Gate",
+                    "target": "commander_briara",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "investigate_east_gate",
+                    "type": "travel",
+                    "description": "Return to the ruins of the East Gate battlefield",
+                    "target": "east_gate_ruins",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "collect_proof",
+                    "type": "collect",
+                    "description": "Recover physical proof of the sabotage",
+                    "target": "sabotage_evidence",
+                    "count": 3,
+                    "required": 3,
+                    "order": 3
+                },
+                {
+                    "id": "confront_saboteur",
+                    "type": "kill",
+                    "description": "Confront and defeat the Hollow Knight who carried it out",
+                    "target": "hollow_knight",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 600,
+                "experience": 600,
+                "gold": 100,
+                "items": [
+                    { "id": "bloomguard_honour_medal", "quantity": 1 }
+                ],
+                "reputation": { "bloomguard": 200, "briara_bond": 50 }
+            },
+            "dialogueId": "briara_honour_complete",
+            "dialogueOnAccept": "briara_honour_quest",
+            "dialogueOnComplete": "briara_honour_complete",
+            "tags": ["companion", "briara", "companion_bond", "investigation"]
+        },
+
+        {
+            "id": "quest_companion_veyla",
+            "title": "The Root That Remembers",
+            "name": "The Root That Remembers",
+            "description": "Archdruid Veyla has discovered that the oldest root in the Verdance — the Worldroot, buried beneath the Everwood Heart — holds memories of the world before the Veil existed. She wants to commune with it, but it has been sleeping since the first Veil tear opened. Help her wake it.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [
+                { "type": "quest", "questId": "coven_rite_of_renewal" }
+            ],
+            "objectives": [
+                {
+                    "id": "speak_veyla_root",
+                    "type": "dialogue",
+                    "description": "Speak with Archdruid Veyla about the Worldroot",
+                    "target": "archdruid_veyla",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "gather_deep_sap",
+                    "type": "collect",
+                    "description": "Collect Deep Sap from Ancient Treants in the Everwood",
+                    "target": "deep_sap",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "clear_corrupted",
+                    "type": "kill",
+                    "description": "Clear Corrupted Treants blocking the Worldroot chamber",
+                    "target": "corrupted_treant",
+                    "count": 4,
+                    "required": 4,
+                    "order": 3
+                },
+                {
+                    "id": "commune",
+                    "type": "interact",
+                    "description": "Assist Veyla as she communes with the Worldroot",
+                    "target": "worldroot_communion_site",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 800,
+                "experience": 800,
+                "gold": 0,
+                "items": [
+                    { "id": "worldroot_splinter", "quantity": 1 }
+                ],
+                "spells": ["worldroot_blessing"],
+                "reputation": { "emerald_coven": 200, "veyla_bond": 50 }
+            },
+            "dialogueId": "veyla_root_complete",
+            "dialogueOnAccept": "veyla_root_quest",
+            "dialogueOnComplete": "veyla_root_complete",
+            "tags": ["companion", "veyla", "companion_bond", "lore"]
+        },
+
+        {
+            "id": "veil_dust_gathering",
+            "title": "Dust of the Silver Veil",
+            "name": "Dust of the Silver Veil",
+            "description": "The Emerald Coven requires Veil Dust for a purification ritual during the next Silver Sap phase. The dust can only be harvested from Veil Wisps that appear in the silver-phase zones, and it disperses quickly once collected. Move fast.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "collect_veil_dust",
+                    "type": "collect",
+                    "description": "Collect Veil Dust from Veil Wisps in silver-phase zones",
+                    "target": "veil_dust",
+                    "count": 5,
+                    "required": 5,
+                    "order": 1
+                },
+                {
+                    "id": "deliver_coven",
+                    "type": "dialogue",
+                    "description": "Deliver the dust to Archdruid Veyla at the Emerald Sanctum",
+                    "target": "archdruid_veyla",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 120,
+                "experience": 120,
+                "gold": 25,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 2 }
+                ],
+                "reputation": { "emerald_coven": 25 }
+            },
+            "dialogueId": "veyla_veil_dust",
+            "tags": ["side", "gathering", "emerald_coven"]
+        },
+
+        {
+            "id": "rot_grub_infestation",
+            "title": "Rot Grub Infestation",
+            "name": "Rot Grub Infestation",
+            "description": "Rot Grubs have overrun Merchant Lirel's storage cellar beneath the market district. If they reach the food supplies of Herbalist Row the Canopy could face a shortage. Clear them out before they spread further and report back.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_rot_grubs",
+                    "type": "kill",
+                    "description": "Defeat Rot Grubs in the storage cellar",
+                    "target": "rot_grub",
+                    "count": 10,
+                    "required": 10,
+                    "order": 1
+                },
+                {
+                    "id": "report_merchant",
+                    "type": "dialogue",
+                    "description": "Report the cellar clear to Merchant Lirel",
+                    "target": "merchant_lirel",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 80,
+                "experience": 80,
+                "gold": 20,
+                "items": [
+                    { "id": "minor_health_potion", "quantity": 2 }
+                ],
+                "reputation": { "sapling_consortium": 20 }
+            },
+            "dialogueId": "lirel_rot_grub",
+            "tags": ["side", "combat", "canopy_of_life"]
+        },
+
+        {
+            "id": "canopy_stalker_menace",
+            "title": "Canopy Stalker Menace",
+            "name": "Canopy Stalker Menace",
+            "description": "Hunters returning from Spindlewood report Canopy Stalkers ambushing travellers on the forest road with increasing frequency. The Wildkin Pact will not intervene — the stalkers are not corrupted, just territorial. Someone must thin the pack before a caravan is wiped out.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [
+                { "type": "level", "level": 3 }
+            ],
+            "objectives": [
+                {
+                    "id": "kill_stalkers",
+                    "type": "kill",
+                    "description": "Defeat Canopy Stalkers in Spindlewood Forest",
+                    "target": "canopy_stalker",
+                    "count": 4,
+                    "required": 4,
+                    "order": 1
+                },
+                {
+                    "id": "clear_nest",
+                    "type": "interact",
+                    "description": "Destroy the pack's nest to discourage return",
+                    "target": "stalker_nest",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 200,
+                "experience": 200,
+                "gold": 45,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 3 }
+                ],
+                "reputation": { "wildkin_pact": 30 }
+            },
+            "dialogueId": "canopy_stalker_board",
+            "tags": ["side", "combat", "spindlewood_forest"]
+        },
+
+        {
+            "id": "moss_golem_heart",
+            "title": "A Moss Golem's Heart",
+            "name": "A Moss Golem's Heart",
+            "description": "Alchemist Ferment needs a Moss Heart — the dense sap-saturated organ at a Moss Golem's core — as the base for a powerful restorative compound. Moss Golems only appear in the deepest grove clearings and do not yield their hearts willingly.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "level", "level": 5 }
+            ],
+            "objectives": [
+                {
+                    "id": "find_golem",
+                    "type": "travel",
+                    "description": "Search the deep groves for a Moss Golem",
+                    "target": "deep_grove_clearing",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "obtain_moss_heart",
+                    "type": "collect",
+                    "description": "Obtain a Moss Heart from a Moss Golem",
+                    "target": "moss_heart",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                },
+                {
+                    "id": "deliver_alchemist",
+                    "type": "dialogue",
+                    "description": "Deliver the Moss Heart to Alchemist Ferment",
+                    "target": "alchemist_ferment",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 350,
+                "experience": 350,
+                "gold": 80,
+                "items": [
+                    { "id": "greater_health_potion", "quantity": 2 }
+                ],
+                "reputation": { "sapling_consortium": 40 }
+            },
+            "dialogueId": "ferment_moss_heart",
+            "tags": ["side", "gathering", "combat"]
+        },
+
+        {
+            "id": "blight_hound_pack",
+            "title": "Blight Hound Pack",
+            "name": "Blight Hound Pack",
+            "description": "A pack of Blight Hounds has been spotted closing in on the northern approach to the Hollowroot entrance. Left unchecked they will cut off supply lines between the Canopy and the dungeon teams. Eliminate the pack before they grow bolder.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "kill_blight_hounds",
+                    "type": "kill",
+                    "description": "Defeat Blight Hounds near Hollowroot",
+                    "target": "blight_hound",
+                    "count": 5,
+                    "required": 5,
+                    "order": 1
+                },
+                {
+                    "id": "find_den",
+                    "type": "interact",
+                    "description": "Locate and seal the pack's den to stop respawning",
+                    "target": "blight_hound_den",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 220,
+                "experience": 220,
+                "gold": 50,
+                "items": [
+                    { "id": "blight_gland", "quantity": 2 }
+                ],
+                "reputation": { "bloomguard": 35 }
+            },
+            "dialogueId": "reyla_blight_hound",
+            "tags": ["side", "combat", "hollowroot_catacombs"]
+        },
+
+        {
+            "id": "sap_ghost_banishment",
+            "title": "Sap Ghost Banishment",
+            "name": "Sap Ghost Banishment",
+            "description": "Sap Ghosts — remnants of travellers who died in corrupted Sap puddles — are draining life from people on the road to the Emerald Sanctum. The Emerald Coven considers them tortured souls that deserve release, not destruction. Either banish them through combat or find their anchors.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "defeat_sap_ghosts",
+                    "type": "kill",
+                    "description": "Defeat Sap Ghosts haunting the road",
+                    "target": "sap_ghost",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "report_veyla",
+                    "type": "dialogue",
+                    "description": "Report to Archdruid Veyla",
+                    "target": "archdruid_veyla",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 150,
+                "experience": 150,
+                "gold": 30,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 2 }
+                ],
+                "reputation": { "emerald_coven": 30 }
+            },
+            "dialogueId": "veyla_ghost_banish",
+            "tags": ["side", "combat", "emerald_sanctum"]
+        },
+
+        {
+            "id": "thorn_harrier_clearance",
+            "title": "Thorn Harrier Clearance",
+            "name": "Thorn Harrier Clearance",
+            "description": "Thorn Harriers — fast-moving plant predators with razor-tipped vines — are blocking the northern trail leading to the Wildkin Hunting Grounds. Thin their numbers along the trail so the Wildkin can move their seasonal camp without losses.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_thorn_harriers",
+                    "type": "kill",
+                    "description": "Defeat Thorn Harriers on the northern trail",
+                    "target": "thorn_harrier",
+                    "count": 6,
+                    "required": 6,
+                    "order": 1
+                },
+                {
+                    "id": "report_wildkin",
+                    "type": "dialogue",
+                    "description": "Tell Beastcaller Yenna the trail is clear",
+                    "target": "beastcaller_yenna",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 140,
+                "experience": 140,
+                "gold": 30,
+                "items": [],
+                "reputation": { "wildkin_pact": 25 }
+            },
+            "dialogueId": "yenna_trail_clear",
+            "tags": ["side", "combat", "spindlewood_forest"]
+        },
+
+        {
+            "id": "root_sentinel_trial",
+            "title": "Trial of the Root Sentinel",
+            "name": "Trial of the Root Sentinel",
+            "description": "Wildkin elders speak of a Root Sentinel that guards an ancient seed capable of regenerating a grove destroyed by the Blight. Defeating it in honourable combat is the only way to claim the seed — and to prove yourself worthy of the Wildkin's deepest respect.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [
+                { "type": "level", "level": 5 },
+                { "type": "reputation", "faction": "wildkin_pact", "amount": 20 }
+            ],
+            "objectives": [
+                {
+                    "id": "travel_to_sentinel",
+                    "type": "travel",
+                    "description": "Find the Root Sentinel's grove",
+                    "target": "root_sentinel_grove",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_root_sentinel",
+                    "type": "kill",
+                    "description": "Defeat the Root Sentinel in honourable combat",
+                    "target": "root_sentinel_mini",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 2
+                },
+                {
+                    "id": "claim_seed",
+                    "type": "collect",
+                    "description": "Claim the Ancient Seed",
+                    "target": "ancient_seed",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 400,
+                "experience": 400,
+                "gold": 90,
+                "items": [
+                    { "id": "ancient_seed", "quantity": 1 }
+                ],
+                "reputation": { "wildkin_pact": 50 }
+            },
+            "dialogueId": "wildkin_trial_complete",
+            "tags": ["side", "combat", "wildkin_pact", "trial"]
+        },
+
+        {
+            "id": "veil_watcher_ritual",
+            "title": "Veil Watcher's Ritual",
+            "name": "Veil Watcher's Ritual",
+            "description": "A lone Veil Watcher — one of the last of the old order — needs ritual herbs to perform a calming ceremony near a thin place in the Veil. If the ceremony is not completed before the next Silver Sap phase, the thin place will expand unpredictably.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "collect_veil_herbs",
+                    "type": "collect",
+                    "description": "Collect Veil-touched Herbs near the thin place",
+                    "target": "veil_herb",
+                    "count": 4,
+                    "required": 4,
+                    "order": 1
+                },
+                {
+                    "id": "clear_harriers",
+                    "type": "kill",
+                    "description": "Defeat Thorn Sprites disrupting the ritual site",
+                    "target": "thorn_sprite",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "deliver_veil_watcher",
+                    "type": "dialogue",
+                    "description": "Deliver herbs to the Veil Watcher",
+                    "target": "veil_watcher",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 180,
+                "experience": 180,
+                "gold": 35,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 2 }
+                ]
+            },
+            "dialogueId": "veil_watcher_thanks",
+            "tags": ["side", "veil", "gathering"]
+        },
+
+        {
+            "id": "ironbark_smith_order",
+            "title": "Ironbark Smith's Order",
+            "name": "Ironbark Smith's Order",
+            "description": "Smith Garon has an urgent commission from the Bloomguard but is out of the rare iron ore that only forms near corrupted mineral veins. The Blight has made the mining sites dangerous, but the pay is worth it.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "defeat_ore_guards",
+                    "type": "kill",
+                    "description": "Defeat Root Crawlers guarding the ore veins",
+                    "target": "root_crawler",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "collect_iron_ore",
+                    "type": "collect",
+                    "description": "Collect Iron Ore from corrupted mineral veins",
+                    "target": "iron_ore",
+                    "count": 5,
+                    "required": 5,
+                    "order": 2
+                },
+                {
+                    "id": "deliver_smith",
+                    "type": "dialogue",
+                    "description": "Deliver the ore to Ironbark Smith Garon",
+                    "target": "smith_garon",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 100,
+                "experience": 100,
+                "gold": 40,
+                "items": [
+                    { "id": "iron_sword", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "garon_ore_order",
+            "tags": ["side", "crafting", "smith"]
+        },
+
+        {
+            "id": "canopy_scout_recon",
+            "title": "Canopy Scout Recon",
+            "name": "Canopy Scout Recon",
+            "description": "Scout Brin needs someone to reach the eastern canopy waypoint and report on Hollow Knight movement patterns spotted from the Bloomguard tower. The route passes through active territory — fast and quiet is better than loud and armoured.",
+            "type": "side",
+            "category": "exploration",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "visit_eastern_canopy",
+                    "type": "travel",
+                    "description": "Reach the eastern canopy waypoint",
+                    "target": "eastern_canopy",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_patrol",
+                    "type": "kill",
+                    "description": "Defeat the Hollow Knight patrol blocking the waypoint",
+                    "target": "hollow_knight",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "report_brin",
+                    "type": "dialogue",
+                    "description": "Report movement patterns to Scout Brin",
+                    "target": "scout_brin",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 220,
+                "experience": 220,
+                "gold": 50,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 3 }
+                ]
+            },
+            "dialogueId": "brin_recon_complete",
+            "tags": ["side", "scout", "exploration"]
+        },
+
+        {
+            "id": "healer_mora_supplies",
+            "title": "Healer Mora's Supplies",
+            "name": "Healer Mora's Supplies",
+            "description": "Healer Mora tends to the injured coming out of the dungeon expeditions, but her supply of healing herbs has been depleted by the recent influx of wounded. Gather fresh herbs from the grove before the next patrol group returns.",
+            "type": "side",
+            "category": "gathering",
+            "isMainQuest": false,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "collect_healing_herb",
+                    "type": "collect",
+                    "description": "Collect Healing Herbs from the outer grove",
+                    "target": "healing_herb",
+                    "count": 8,
+                    "required": 8,
+                    "order": 1
+                },
+                {
+                    "id": "deliver_mora",
+                    "type": "dialogue",
+                    "description": "Deliver herbs to Healer Mora",
+                    "target": "healer_mora",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 80,
+                "experience": 80,
+                "gold": 15,
+                "items": [
+                    { "id": "minor_health_potion", "quantity": 4 }
+                ]
+            },
+            "dialogueId": "mora_herbs_thanks",
+            "tags": ["side", "healing", "gathering"]
+        },
+
+        {
+            "id": "keeper_lynn_lore",
+            "title": "Keeper Lynn's Lore",
+            "name": "Keeper Lynn's Lore",
+            "description": "Keeper Lynn, the Canopy's archivist, believes a scroll she lost in Hollowroot contains the original Sap Cycle binding formula from before the current Veil tears. Retrieving it could change everything the Coven knows about sealing corruption.",
+            "type": "side",
+            "category": "lore",
+            "isMainQuest": false,
+            "level": 5,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "enter_hollowroot",
+                    "type": "travel",
+                    "description": "Enter the Hollowroot Catacombs archive section",
+                    "target": "hollowroot_catacombs",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_crawlers",
+                    "type": "kill",
+                    "description": "Defeat Spore Crawlers nesting on the archive shelves",
+                    "target": "spore_crawler",
+                    "count": 4,
+                    "required": 4,
+                    "order": 2
+                },
+                {
+                    "id": "find_lost_scroll",
+                    "type": "collect",
+                    "description": "Find the Lost Scroll in the deep archive",
+                    "target": "lost_scroll",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "deliver_lynn",
+                    "type": "dialogue",
+                    "description": "Return the scroll to Keeper Lynn",
+                    "target": "keeper_lynn",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 350,
+                "experience": 350,
+                "gold": 70,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 5 }
+                ]
+            },
+            "dialogueId": "lynn_scroll_thanks",
+            "tags": ["side", "lore", "hollowroot"]
+        },
+
+        {
+            "id": "blight_hound_cleanup",
+            "title": "Blight Hound Cleanup",
+            "name": "Blight Hound Cleanup",
+            "description": "A second Blight Hound pack has been spotted harassing workers at the Sapling Workshop, destroying tools and driving off the apprentices. The Consortium won't pay its crafting quota until it's safe to work — clear the area.",
+            "type": "side",
+            "category": "combat",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "kill_blight_near_workshop",
+                    "type": "kill",
+                    "description": "Defeat Blight Hounds near the Sapling Workshop",
+                    "target": "blight_hound",
+                    "count": 4,
+                    "required": 4,
+                    "order": 1
+                },
+                {
+                    "id": "report_consortium",
+                    "type": "dialogue",
+                    "description": "Report to Consortium Director Orin",
+                    "target": "consortium_director_orin",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 150,
+                "experience": 150,
+                "gold": 35,
+                "items": [
+                    { "id": "blight_gland", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "orin_workshop_clear",
+            "tags": ["side", "combat", "blight"]
+        },
+
+        {
+            "id": "sap_weaver_charm",
+            "title": "Sap Weaver's Charm",
+            "name": "Sap Weaver's Charm",
+            "description": "The Sap Weaver who lives near the market will craft you a custom Sap Charm if you bring the raw materials. The charm passively amplifies whichever Sap phase is currently active — a small edge that compounds over a long expedition.",
+            "type": "side",
+            "category": "crafting",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "collect_crystals",
+                    "type": "collect",
+                    "description": "Collect Sap Crystals",
+                    "target": "sap_crystal",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "collect_moonpetals",
+                    "type": "collect",
+                    "description": "Collect Moonpetals from the Emerald Cascades",
+                    "target": "moonpetal",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "deliver_weaver",
+                    "type": "dialogue",
+                    "description": "Deliver materials to the Sap Weaver",
+                    "target": "sap_weaver",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 200,
+                "experience": 200,
+                "gold": 40,
+                "items": [
+                    { "id": "sap_charm", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "weaver_charm_complete",
+            "tags": ["side", "crafting", "charm"]
+        },
+
+        {
+            "id": "watcher_cole_warning",
+            "title": "Watcher Cole's Warning",
+            "name": "Watcher Cole's Warning",
+            "description": "Watcher Cole reports corrupted movement in the deep woods — not regular blight, but something organised. Investigate what's coordinating the Corrupted Treants and report before whatever is directing them chooses a target.",
+            "type": "side",
+            "category": "investigation",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "investigate_deep_woods",
+                    "type": "travel",
+                    "description": "Investigate the deep woods where movement was spotted",
+                    "target": "deep_woods",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_corrupted",
+                    "type": "kill",
+                    "description": "Defeat Corrupted Treants acting as sentries",
+                    "target": "corrupted_treant",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "find_source",
+                    "type": "interact",
+                    "description": "Locate the corrupted command node directing the treants",
+                    "target": "corruption_command_node",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                },
+                {
+                    "id": "report_cole",
+                    "type": "dialogue",
+                    "description": "Report findings to Watcher Cole",
+                    "target": "watcher_cole",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 400,
+                "experience": 400,
+                "gold": 90,
+                "items": [
+                    { "id": "sap_crystal", "quantity": 6 }
+                ],
+                "reputation": { "bloomguard": 25 }
+            },
+            "dialogueId": "cole_warning_complete",
+            "tags": ["side", "combat", "corruption", "investigation"]
+        },
+
+        {
+            "id": "quest_veil_awakening",
+            "title": "Whispers in the Bark",
+            "name": "Whispers in the Bark",
+            "description": "The trees near Verdant Heart are dying from the inside — bark turning hollow, sap running black. Elder Thornwick has summoned you. What he knows may be the first true answer to what is happening to the forest.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 1,
+            "prerequisites": [],
+            "objectives": [
+                {
+                    "id": "talk_thornwick",
+                    "type": "dialogue",
+                    "target": "elder_thornwick",
+                    "description": "Speak with Elder Thornwick",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "inspect_trees",
+                    "type": "interact",
+                    "target": "dying_tree",
+                    "description": "Inspect the dying trees (0/3)",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "kill_sprites",
+                    "type": "kill",
+                    "target": "thorn_sprite",
+                    "description": "Defeat Thorn Sprites feasting on the dying bark",
+                    "count": 4,
+                    "required": 4,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 50,
+                "experience": 50,
+                "gold": 20,
+                "items": [
+                    { "id": "health_potion", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "elder_thornwick_quest1",
+            "dialogueOnAccept": "elder_thornwick_quest1",
+            "chainQuest": "quest_veil_first_hollow",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_first_hollow",
+            "title": "The First Hollow",
+            "name": "The First Hollow",
+            "description": "Something has corrupted the eastern grove, turning sprites and small creatures into hollow, will-less things that attack anything living. Clear the hollowed creatures and find what they left behind before the corruption spreads further west.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 2,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_awakening" }
+            ],
+            "objectives": [
+                {
+                    "id": "defeat_hollowed",
+                    "type": "kill",
+                    "target": "hollowed_sprite",
+                    "description": "Defeat Hollowed Sprites in the eastern grove",
+                    "count": 5,
+                    "required": 5,
+                    "order": 1
+                },
+                {
+                    "id": "find_shard",
+                    "type": "collect",
+                    "target": "veil_shard",
+                    "description": "Recover the Veil Shard left at the corruption point",
+                    "count": 1,
+                    "required": 1,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 120,
+                "experience": 120,
+                "gold": 40,
+                "items": [
+                    { "id": "veil_shard", "quantity": 1 },
+                    { "id": "antidote", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "elder_thornwick_quest2",
+            "dialogueOnAccept": "elder_thornwick_quest2",
+            "chainQuest": "quest_veil_ritual",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_ritual",
+            "title": "The Binding Rite",
+            "name": "The Binding Rite",
+            "description": "Veilkeeper Sylara says a ritual can slow the corruption spreading from the first hollow. You need three components: Moonbloom for the binding, Ironbark Shards for the seal, and you must return to Sylara to complete the weaving before the next dawn.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 3,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_first_hollow" }
+            ],
+            "objectives": [
+                {
+                    "id": "get_moonbloom",
+                    "type": "collect",
+                    "target": "moonbloom_herb",
+                    "description": "Gather Moonbloom from the Emerald Cascades (0/3)",
+                    "count": 3,
+                    "required": 3,
+                    "order": 1
+                },
+                {
+                    "id": "get_bark",
+                    "type": "collect",
+                    "target": "ironbark_shard",
+                    "description": "Collect Ironbark Shards from Corrupted Treants (0/2)",
+                    "count": 2,
+                    "required": 2,
+                    "order": 2
+                },
+                {
+                    "id": "kill_treants",
+                    "type": "kill",
+                    "target": "corrupted_treant",
+                    "description": "Defeat Corrupted Treants blocking Sylara's path",
+                    "count": 2,
+                    "required": 2,
+                    "order": 3
+                },
+                {
+                    "id": "talk_sylara",
+                    "type": "dialogue",
+                    "target": "sylara",
+                    "description": "Return all components to Sylara for the ritual",
+                    "count": 1,
+                    "required": 1,
+                    "order": 4
+                }
+            ],
+            "rewards": {
+                "xp": 200,
+                "experience": 200,
+                "gold": 60,
+                "items": [
+                    { "id": "ritual_focus", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "sylara_quest3",
+            "dialogueOnAccept": "sylara_quest3",
+            "chainQuest": "quest_veil_guardian",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue"]
+        },
+
+        {
+            "id": "quest_veil_guardian",
+            "title": "Guardian of the Breach",
+            "name": "Guardian of the Breach",
+            "description": "The ritual revealed the corruption's source: a Corrupted Guardian now blocks the Veil breach, empowered by the same hollow energy that has been consuming the grove. It must be defeated before the sealing can even begin. This is what the corruption has been building toward.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_ritual" }
+            ],
+            "objectives": [
+                {
+                    "id": "reach_breach",
+                    "type": "travel",
+                    "target": "veil_breach_approach",
+                    "description": "Reach the Veil Breach approach",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_guardian",
+                    "type": "kill",
+                    "target": "corrupted_guardian",
+                    "description": "Defeat the Corrupted Guardian",
+                    "count": 1,
+                    "required": 1,
+                    "isBoss": true,
+                    "order": 2
+                }
+            ],
+            "rewards": {
+                "xp": 400,
+                "experience": 400,
+                "gold": 100,
+                "items": [
+                    { "id": "guardian_sigil", "quantity": 1 },
+                    { "id": "greater_health_potion", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "sylara_quest4",
+            "dialogueOnAccept": "sylara_quest4",
+            "chainQuest": "quest_veil_sealing",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue", "boss"]
+        },
+
+        {
+            "id": "quest_veil_sealing",
+            "title": "Seal the Fracture",
+            "name": "Seal the Fracture",
+            "description": "With the Guardian fallen, the Veil breach lies open and vulnerable. The choice of how to seal it is yours: close it permanently using the ancient Binding Rite and cut off the Sap stream that feeds this part of the Verdance, or partially seal it and keep the power flowing at great risk.",
+            "type": "main",
+            "category": "story",
+            "isMainQuest": true,
+            "completesAct": 1,
+            "level": 4,
+            "prerequisites": [
+                { "type": "quest", "questId": "quest_veil_guardian" }
+            ],
+            "objectives": [
+                {
+                    "id": "reach_breach",
+                    "type": "travel",
+                    "target": "veil_breach",
+                    "description": "Reach the Veil Breach",
+                    "count": 1,
+                    "required": 1,
+                    "order": 1
+                },
+                {
+                    "id": "defeat_veil_wisps",
+                    "type": "kill",
+                    "target": "sap_ghost",
+                    "description": "Defeat Sap Ghosts clustered at the breach",
+                    "count": 3,
+                    "required": 3,
+                    "order": 2
+                },
+                {
+                    "id": "seal_choice",
+                    "type": "interact",
+                    "target": "choice_veil_sealing",
+                    "description": "Make your choice at the breach: seal fully or partially",
+                    "count": 1,
+                    "required": 1,
+                    "order": 3
+                }
+            ],
+            "rewards": {
+                "xp": 600,
+                "experience": 600,
+                "gold": 150,
+                "items": [
+                    { "id": "veilbound_amulet", "quantity": 1 }
+                ]
+            },
+            "dialogueId": "quest_veil_sealing_complete",
+            "dialogueOnComplete": "quest_veil_sealing_complete",
+            "tags": ["main_story", "act_1", "veil_chain", "prologue", "branching", "act_1_end"]
+        },
+        {
+            "id": "companion_briara",
+            "title": "The Commander's Oath",
+            "name": "The Commander's Oath",
+            "description": "Commander Briara has been ordered to investigate hollow incursions at the Canopy's eastern gate. She'll vouch for any soldier who fights at her side and proves they fight for more than themselves.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 2,
+            "prerequisites": [{ "type": "quest", "questId": "awakening" }],
+            "objectives": [
+                { "id": "speak_briara_recruit", "type": "dialogue", "description": "Speak with Commander Briara at the Canopy of Life", "target": "Commander Briara", "count": 1, "required": 1, "order": 1 },
+                { "id": "fight_with_briara", "type": "kill", "description": "Defeat hollow attackers alongside Briara", "target": "shadow_imp", "count": 3, "required": 3, "order": 2 },
+                { "id": "report_briara", "type": "dialogue", "description": "Report back to Briara — let her judge your conduct", "target": "Commander Briara", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 220, "experience": 220, "gold": 40, "items": [], "reputation": { "bloomguard": 50 } },
+            "dialogueId": "briara_companion_quest",
+            "dialogueOnAccept": "briara_companion_quest",
+            "dialogueOnComplete": "briara_companion_complete",
+            "tags": ["companion", "recruitment", "bloomguard"]
+        },
+        {
+            "id": "companion_veyla",
+            "title": "The Coven's Whisper",
+            "name": "The Coven's Whisper",
+            "description": "Archdruid Veyla senses the Worldroot answering in patterns she does not recognise. She asks for an outside witness — someone whose ear the Coven cannot rewrite — to stand with her at a Sap-channeling rite.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "speak_veyla_recruit", "type": "dialogue", "description": "Meet Archdruid Veyla at the Canopy of Life", "target": "Archdruid Veyla", "count": 1, "required": 1, "order": 1 },
+                { "id": "channel_rite", "type": "interact", "description": "Attend Veyla's channeling rite — bear witness", "target": "veyla_rite", "count": 1, "required": 1, "order": 2 },
+                { "id": "report_veyla", "type": "dialogue", "description": "Speak with Veyla about what the Worldroot showed", "target": "Archdruid Veyla", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 300, "experience": 300, "gold": 50, "items": [], "reputation": { "emerald_coven": 75 } },
+            "dialogueId": "veyla_companion_quest",
+            "dialogueOnAccept": "veyla_companion_quest",
+            "dialogueOnComplete": "veyla_companion_complete",
+            "tags": ["companion", "recruitment", "emerald_coven"]
+        },
+        {
+            "id": "vaeril_recruitment",
+            "title": "An Oath Once Sworn",
+            "name": "An Oath Once Sworn",
+            "description": "A Bloomguard knight named Vaeril holds a road no one travels anymore. He swore he would and he meant it. He may join one whose word he can trust.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "find_vaeril", "type": "travel", "description": "Find the Bloomguard outpost holding the eastern road", "target": "east_gate_ruins", "count": 1, "required": 1, "order": 1 },
+                { "id": "defend_vaeril", "type": "kill", "description": "Hold the line beside Vaeril against hollow incursion", "target": "shadow_imp", "count": 4, "required": 4, "order": 2 }
+            ],
+            "rewards": { "xp": 280, "experience": 280, "gold": 50, "items": [], "reputation": { "bloomguard": 50 } },
+            "dialogueId": "vaeril_recruitment",
+            "dialogueOnAccept": "vaeril_recruitment",
+            "dialogueOnComplete": "vaeril_recruitment_complete",
+            "tags": ["companion", "recruitment", "bloomguard"]
+        },
+        {
+            "id": "oath_of_the_grove",
+            "title": "Oath of the Grove",
+            "name": "Oath of the Grove",
+            "description": "The road Vaeril holds was once protected by an Oath-stone he carved at his knighting. The stone has been taken. Help him retrieve it — and decide what he should do with it now.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "vaeril_recruitment" }],
+            "objectives": [
+                { "id": "track_oathstone", "type": "travel", "description": "Track the Oath-stone to the deep grove clearing", "target": "deep_grove_clearing", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_thief", "type": "kill", "description": "Defeat the corrupted treant guarding the stone", "target": "corrupted_treant", "count": 1, "required": 1, "isBoss": true, "order": 2 },
+                { "id": "return_oathstone", "type": "interact", "description": "Return the Oath-stone with Vaeril", "target": "vaeril_oathstone", "count": 1, "required": 1, "order": 3 }
+            ],
+            "rewards": { "xp": 600, "experience": 600, "gold": 100, "items": [{ "id": "bloomguard_honour_medal", "quantity": 1 }], "reputation": { "vaeril_bond": 50 } },
+            "dialogueId": "oath_of_the_grove",
+            "dialogueOnAccept": "oath_of_the_grove",
+            "dialogueOnComplete": "oath_of_the_grove_complete",
+            "tags": ["companion", "personal_quest", "bloomguard"]
+        },
+        {
+            "id": "sylor_recruitment",
+            "title": "Cut for Cause",
+            "name": "Cut for Cause",
+            "description": "A Thornbinder operating in Hollowroot has a target on his back and a target in his sights. Help him close his business and he may decide your business is worth closing too.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [{ "type": "quest", "questId": "crimson_rising" }],
+            "objectives": [
+                { "id": "meet_sylor", "type": "travel", "description": "Find Sylor in the Hollowroot Catacombs", "target": "hollowroot_catacombs", "count": 1, "required": 1, "order": 1 },
+                { "id": "sylor_contract", "type": "kill", "description": "Eliminate the target Sylor has been tracking", "target": "shadow_assassin", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 380, "experience": 380, "gold": 80, "items": [], "reputation": { "thornbinders": 75 } },
+            "dialogueId": "sylor_recruitment",
+            "dialogueOnAccept": "sylor_recruitment",
+            "dialogueOnComplete": "sylor_recruitment_complete",
+            "tags": ["companion", "recruitment", "thornbinders"]
+        },
+        {
+            "id": "shadows_of_the_past",
+            "title": "Shadows of the Past (Sylor)",
+            "name": "Shadows of the Past",
+            "description": "Sylor's old crew didn't survive their last contract. He has reason to believe the one who set them up still walks. He won't say more — but he'll lead you to where it began.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [{ "type": "quest", "questId": "sylor_recruitment" }],
+            "objectives": [
+                { "id": "find_evidence", "type": "travel", "description": "Search the sealed chamber where the contract went wrong", "target": "hollowroot_sealed_chamber", "count": 1, "required": 1, "order": 1 },
+                { "id": "confront_betrayer", "type": "kill", "description": "Confront the betrayer Sylor has been hunting", "target": "shadow_assassin", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 700, "experience": 700, "gold": 120, "items": [{ "id": "veilkeeper_focus", "quantity": 1 }], "reputation": { "sylor_bond": 50 } },
+            "dialogueId": "shadows_of_the_past",
+            "dialogueOnAccept": "shadows_of_the_past",
+            "dialogueOnComplete": "shadows_of_the_past_complete",
+            "tags": ["companion", "personal_quest", "thornbinders"]
+        },
+        {
+            "id": "aeliana_recruitment",
+            "title": "A Question of Healing",
+            "name": "A Question of Healing",
+            "description": "An Emerald Mystic in the Sanctum has been quietly healing wounds the Coven would prefer were not healed. She is looking for someone to walk with her while she does it.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "meet_aeliana", "type": "travel", "description": "Find Aeliana in the Emerald Sanctum", "target": "emerald_sanctum", "count": 1, "required": 1, "order": 1 },
+                { "id": "protect_patients", "type": "kill", "description": "Defend Aeliana's patients from corruption", "target": "corruption_wraith", "count": 3, "required": 3, "order": 2 }
+            ],
+            "rewards": { "xp": 300, "experience": 300, "gold": 60, "items": [], "reputation": { "emerald_coven": 50 } },
+            "dialogueId": "aeliana_recruitment",
+            "dialogueOnAccept": "aeliana_recruitment",
+            "dialogueOnComplete": "aeliana_recruitment_complete",
+            "tags": ["companion", "recruitment", "emerald_coven"]
+        },
+        {
+            "id": "mysteries_of_the_sap",
+            "title": "Mysteries of the Sap",
+            "name": "Mysteries of the Sap",
+            "description": "Aeliana believes the Sap itself is speaking — not as a force, but as a voice. She wants to reach the place where its voice is loudest. The journey is forbidden; the answer may be worth the trespass.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "aeliana_recruitment" }],
+            "objectives": [
+                { "id": "trespass_sanctum", "type": "travel", "description": "Reach the inner sanctum where the Sap's voice runs strongest", "target": "emerald_sanctum", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_guardian", "type": "kill", "description": "Defeat the sanctum guardian", "target": "nexus_guardian", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [], "spells": ["sap_surge"], "reputation": { "aeliana_bond": 50 } },
+            "dialogueId": "mysteries_of_the_sap",
+            "dialogueOnAccept": "mysteries_of_the_sap",
+            "dialogueOnComplete": "mysteries_of_the_sap_complete",
+            "tags": ["companion", "personal_quest", "emerald_coven"]
+        },
+        {
+            "id": "mycon_recruitment",
+            "title": "The Network Calls",
+            "name": "The Network Calls",
+            "description": "A Sporecaller calling himself Mycon claims to speak for a network of fungal minds and not just for himself. He needs help quieting a sister-mind that has gone hostile.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 4,
+            "prerequisites": [{ "type": "quest", "questId": "crimson_rising" }],
+            "objectives": [
+                { "id": "meet_mycon", "type": "travel", "description": "Find Mycon at the Mycelium Nexus", "target": "mycelium_nexus", "count": 1, "required": 1, "order": 1 },
+                { "id": "quiet_sister", "type": "kill", "description": "Subdue the hostile sister-mind", "target": "sporelord_mycel", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 420, "experience": 420, "gold": 70, "items": [], "reputation": { "sporecallers": 75 } },
+            "dialogueId": "mycon_recruitment",
+            "dialogueOnAccept": "mycon_recruitment",
+            "dialogueOnComplete": "mycon_recruitment_complete",
+            "tags": ["companion", "recruitment", "sporecallers"]
+        },
+        {
+            "id": "the_network_calls",
+            "title": "The Network Calls (Mycon)",
+            "name": "The Network Calls (Mycon)",
+            "description": "Mycon's network has been answering questions no one asked. He wants to walk its underground arteries to find the source. He warns the network may answer questions you didn't know you were asking either.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 7,
+            "prerequisites": [{ "type": "quest", "questId": "mycon_recruitment" }],
+            "objectives": [
+                { "id": "walk_arteries", "type": "travel", "description": "Walk the fungal arteries to find the source", "target": "sporecaller_labs", "count": 1, "required": 1, "order": 1 },
+                { "id": "decide_source", "type": "interact", "description": "Decide what to do with the source-mind", "target": "mycon_source_node", "count": 1, "required": 1, "order": 2 }
+            ],
+            "rewards": { "xp": 700, "experience": 700, "gold": 120, "items": [], "reputation": { "mycon_bond": 50 } },
+            "dialogueId": "the_network_calls",
+            "dialogueOnAccept": "the_network_calls",
+            "dialogueOnComplete": "the_network_calls_complete",
+            "tags": ["companion", "personal_quest", "sporecallers"]
+        },
+        {
+            "id": "kaelen_recruitment",
+            "title": "Tracks Left Behind",
+            "name": "Tracks Left Behind",
+            "description": "A Wildkin Ranger named Kaelen has been tracking corruption through Spindlewood Forest. The tracks lead somewhere no ranger should go alone.",
+            "type": "companion",
+            "category": "recruitment",
+            "isMainQuest": false,
+            "level": 3,
+            "prerequisites": [{ "type": "quest", "questId": "shadow_threat" }],
+            "objectives": [
+                { "id": "meet_kaelen", "type": "travel", "description": "Find Kaelen in Spindlewood Forest", "target": "spindlewood_forest", "count": 1, "required": 1, "order": 1 },
+                { "id": "follow_tracks", "type": "kill", "description": "Defeat what's at the end of the trail", "target": "bloodthorn_beast", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 320, "experience": 320, "gold": 60, "items": [], "reputation": { "wildkin_pact": 75 } },
+            "dialogueId": "kaelen_recruitment",
+            "dialogueOnAccept": "kaelen_recruitment",
+            "dialogueOnComplete": "kaelen_recruitment_complete",
+            "tags": ["companion", "recruitment", "wildkin_pact"]
+        },
+        {
+            "id": "call_of_the_wild",
+            "title": "Call of the Wild",
+            "name": "Call of the Wild",
+            "description": "Kaelen's bonded hawk-spirit has gone silent. The Wildkin Pact whispers that a ranger without bond is no ranger at all. Help Kaelen find what the silence is hiding.",
+            "type": "companion",
+            "category": "companion_bond",
+            "isMainQuest": false,
+            "level": 6,
+            "prerequisites": [{ "type": "quest", "questId": "kaelen_recruitment" }],
+            "objectives": [
+                { "id": "find_root_sentinel", "type": "travel", "description": "Reach the Root Sentinel grove where Kaelen's bond was forged", "target": "root_sentinel_grove", "count": 1, "required": 1, "order": 1 },
+                { "id": "defeat_corrupter", "type": "kill", "description": "Defeat what corrupted the bond", "target": "vine_wraith", "count": 1, "required": 1, "isBoss": true, "order": 2 }
+            ],
+            "rewards": { "xp": 650, "experience": 650, "gold": 100, "items": [{ "id": "wildkin_totem", "quantity": 1 }], "reputation": { "kaelen_bond": 50 } },
+            "dialogueId": "call_of_the_wild",
+            "dialogueOnAccept": "call_of_the_wild",
+            "dialogueOnComplete": "call_of_the_wild_complete",
+            "tags": ["companion", "personal_quest", "wildkin_pact"]
+        }
+    ]
+}

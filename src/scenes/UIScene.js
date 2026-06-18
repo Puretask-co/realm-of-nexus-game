@@ -438,8 +438,8 @@ export default class UIScene extends Phaser.Scene {
                 .setAlpha(0.95);
         }
 
-        this._spellNames = ['Spell 1', 'Spell 2', 'Spell 3', 'Spell 4', 'Spell 5'];
-        this._spellColorValues = [0x888888, 0x888888, 0x888888, 0x888888, 0x888888];
+        this._spellNames = ['---', '---', '---', '---', '---'];
+        this._spellColorValues = [0x444444, 0x444444, 0x444444, 0x444444, 0x444444];
 
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);

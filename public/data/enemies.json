@@ -1,0 +1,4758 @@
+{
+    "version": "2.1.0",
+    "lastModified": "2026-03-15T00:00:00Z",
+    "enemies": [
+        {
+            "id": "forest_guardian",
+            "name": "Forest Guardian",
+            "baseStats": {
+                "hp": 120,
+                "defense": 8,
+                "speed": 4,
+                "sapPool": 50,
+                "might": 3,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "forest_guardian_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.4,
+                "preferredTargetType": "wounded_allies",
+                "fleeThreshold": 0.2
+            },
+            "tier": 2,
+            "description": "Ancient protector spirit of the Verdance groves.",
+            "experienceReward": 60
+        },
+        {
+            "id": "shadow_stalker",
+            "name": "Shadow Stalker",
+            "baseStats": {
+                "hp": 80,
+                "defense": 4,
+                "speed": 8,
+                "sapPool": 60,
+                "might": 2,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 20,
+                "goldMax": 40,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.2,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "shadow_stalker_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.15
+            },
+            "tier": 2,
+            "description": "Dark predator that hunts during Silver Sap phases.",
+            "experienceReward": 55
+        },
+        {
+            "id": "crimson_warden",
+            "name": "Crimson Warden",
+            "baseStats": {
+                "hp": 150,
+                "defense": 12,
+                "speed": 3,
+                "sapPool": 40,
+                "might": 3,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 1
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 25,
+                "goldMax": 50,
+                "items": [
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "warden_helm",
+                        "dropChance": 0.05
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "crimson_warden_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1
+            },
+            "tier": 2,
+            "description": "Corrupted warrior empowered by Crimson Sap.",
+            "experienceReward": 65
+        },
+        {
+            "id": "timber_wolf",
+            "name": "Timber Wolf",
+            "baseStats": {
+                "hp": 45,
+                "defense": 3,
+                "speed": 9,
+                "sapPool": 15,
+                "might": 1,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 5,
+                "goldMax": 12,
+                "items": [
+                    {
+                        "itemId": "wolf_pelt",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "timber_wolf_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.25,
+                "packSize": 3
+            },
+            "tier": 1,
+            "description": "A common predator of the Verdance forests.",
+            "experienceReward": 25
+        },
+        {
+            "id": "thorn_sprite",
+            "name": "Thorn Sprite",
+            "baseStats": {
+                "hp": 30,
+                "defense": 2,
+                "speed": 10,
+                "sapPool": 25,
+                "might": 1,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 3,
+                "goldMax": 8,
+                "items": [
+                    {
+                        "itemId": "sprite_dust",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "thorn_needle",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "thorn_sprite_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.35
+            },
+            "tier": 1,
+            "description": "Tiny plant spirits that swarm in groups.",
+            "experienceReward": 15
+        },
+        {
+            "id": "root_crawler",
+            "name": "Root Crawler",
+            "baseStats": {
+                "hp": 55,
+                "defense": 5,
+                "speed": 3,
+                "sapPool": 10,
+                "might": 1,
+                "agility": 1,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 4,
+                "goldMax": 10,
+                "items": [
+                    {
+                        "itemId": "root_fiber",
+                        "dropChance": 0.45
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "root_crawler_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.3,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.2,
+                "burrowChance": 0.15
+            },
+            "tier": 1,
+            "description": "Insectoid burrower that ambushes from underground.",
+            "experienceReward": 20
+        },
+        {
+            "id": "sap_beetle",
+            "name": "Sap Beetle",
+            "baseStats": {
+                "hp": 35,
+                "defense": 6,
+                "speed": 5,
+                "sapPool": 20,
+                "might": 1,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 0
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 3,
+                "goldMax": 9,
+                "items": [
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "beetle_shell",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.8,
+                "crimson": 0.8,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "sap_beetle_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.3
+            },
+            "tier": 1,
+            "description": "Beetle that feeds on crystallized sap.",
+            "experienceReward": 15
+        },
+        {
+            "id": "bark_spider",
+            "name": "Bark Spider",
+            "baseStats": {
+                "hp": 40,
+                "defense": 3,
+                "speed": 11,
+                "sapPool": 18,
+                "might": 1,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 5,
+                "goldMax": 11,
+                "items": [
+                    {
+                        "itemId": "spider_silk",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "venom_sac",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1.2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "bark_spider_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.2,
+                "webTrapChance": 0.2
+            },
+            "tier": 1,
+            "description": "Web-spinning predator that drops from the canopy.",
+            "experienceReward": 20
+        },
+        {
+            "id": "fungal_slime",
+            "name": "Fungal Slime",
+            "baseStats": {
+                "hp": 60,
+                "defense": 2,
+                "speed": 2,
+                "sapPool": 30,
+                "might": 1,
+                "agility": 1,
+                "resilience": 1,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 4,
+                "goldMax": 10,
+                "items": [
+                    {
+                        "itemId": "slime_residue",
+                        "dropChance": 0.5
+                    },
+                    {
+                        "itemId": "spore_cap",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 0.5
+            },
+            "sprite": {
+                "texture": "fungal_slime_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.2,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "splitThreshold": 0.5
+            },
+            "tier": 1,
+            "description": "Gelatinous fungal mass that spreads spores.",
+            "experienceReward": 20
+        },
+        {
+            "id": "corrupted_treant",
+            "name": "Corrupted Treant",
+            "baseStats": {
+                "hp": 130,
+                "defense": 10,
+                "speed": 3,
+                "sapPool": 55,
+                "might": 3,
+                "agility": 1,
+                "resilience": 3,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom",
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 18,
+                "goldMax": 35,
+                "items": [
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "corrupted_treant_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "rootSlamCooldown": 3
+            },
+            "tier": 2,
+            "description": "Once-noble tree spirit consumed by Blight.",
+            "experienceReward": 70
+        },
+        {
+            "id": "spore_crawler",
+            "name": "Spore Crawler",
+            "baseStats": {
+                "hp": 95,
+                "defense": 6,
+                "speed": 5,
+                "sapPool": 65,
+                "might": 2,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 2
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "nature_heal",
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "spore_cap",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "fungal_extract",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "spore_crawler_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.15,
+                "sporeCloudCooldown": 2
+            },
+            "tier": 2,
+            "description": "Giant fungal crawler that debuffs with toxins.",
+            "experienceReward": 50
+        },
+        {
+            "id": "crystal_golem",
+            "name": "Crystal Golem",
+            "baseStats": {
+                "hp": 140,
+                "defense": 14,
+                "speed": 2,
+                "sapPool": 35,
+                "might": 3,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "arcane_shield",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 22,
+                "goldMax": 45,
+                "items": [
+                    {
+                        "itemId": "crystal_shard",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.8,
+                "crimson": 0.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "crystal_golem_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.3,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.05,
+                "shieldCooldown": 4
+            },
+            "tier": 2,
+            "description": "Animated crystal construct from the old Emerald mines.",
+            "experienceReward": 75
+        },
+        {
+            "id": "river_serpent",
+            "name": "River Serpent",
+            "baseStats": {
+                "hp": 100,
+                "defense": 5,
+                "speed": 9,
+                "sapPool": 50,
+                "might": 2,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 1
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "azure_bolt",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 16,
+                "goldMax": 32,
+                "items": [
+                    {
+                        "itemId": "serpent_scale",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "river_pearl",
+                        "dropChance": 0.08
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "river_serpent_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.2,
+                "submergeChance": 0.25
+            },
+            "tier": 2,
+            "description": "Aquatic predator of the Emerald Cascades.",
+            "experienceReward": 55
+        },
+        {
+            "id": "vine_wraith",
+            "name": "Vine Wraith",
+            "baseStats": {
+                "hp": 90,
+                "defense": 5,
+                "speed": 7,
+                "sapPool": 70,
+                "might": 2,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "verdant_bloom",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 18,
+                "goldMax": 35,
+                "items": [
+                    {
+                        "itemId": "wraith_vine",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.8,
+                "crimson": 1.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "vine_wraith_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.2,
+                "entangleCooldown": 3
+            },
+            "tier": 2,
+            "description": "Spectral plant spirit that entangles prey.",
+            "experienceReward": 60
+        },
+        {
+            "id": "hollow_knight",
+            "name": "Hollow Knight",
+            "baseStats": {
+                "hp": 120,
+                "defense": 11,
+                "speed": 5,
+                "sapPool": 40,
+                "might": 3,
+                "agility": 2,
+                "resilience": 3,
+                "insight": 1
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "crimson_surge",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 20,
+                "goldMax": 40,
+                "items": [
+                    {
+                        "itemId": "hollow_plate",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "knight_sigil",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1.5,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "hollow_knight_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "blockChance": 0.2
+            },
+            "tier": 3,
+            "description": "Fallen Bloomguard corrupted by the Hollowing.",
+            "experienceReward": 90
+        },
+        {
+            "id": "abyssal_imp",
+            "name": "Abyssal Imp",
+            "baseStats": {
+                "hp": 80,
+                "defense": 4,
+                "speed": 10,
+                "sapPool": 75,
+                "might": 2,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_flare",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "imp_horn",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.12
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "abyssal_imp_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.85,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.25,
+                "blinkCooldown": 2
+            },
+            "tier": 2,
+            "description": "Lesser demon from beyond the Veil.",
+            "experienceReward": 50
+        },
+        {
+            "id": "ancient_treant",
+            "name": "Ancient Treant",
+            "baseStats": {
+                "hp": 220,
+                "defense": 16,
+                "speed": 2,
+                "sapPool": 90,
+                "might": 5,
+                "agility": 1,
+                "resilience": 5,
+                "insight": 3
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom",
+                "nature_heal",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "ancient_heartwood",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "elderroot_sap",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.35
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.3,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "ancient_treant_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.5,
+                "preferredTargetType": "wounded_allies",
+                "fleeThreshold": 0,
+                "rootSlamCooldown": 2,
+                "summonSaplings": true
+            },
+            "tier": 3,
+            "description": "Massive tree guardian of the deepest groves.",
+            "experienceReward": 100
+        },
+        {
+            "id": "shadow_weaver",
+            "name": "Shadow Weaver",
+            "baseStats": {
+                "hp": 160,
+                "defense": 7,
+                "speed": 8,
+                "sapPool": 110,
+                "might": 4,
+                "agility": 4,
+                "resilience": 2,
+                "insight": 3
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 40,
+                "goldMax": 80,
+                "items": [
+                    {
+                        "itemId": "shadow_thread",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "weavers_eye",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "shadow_weaver_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.15,
+                "phaseShiftCooldown": 3
+            },
+            "tier": 3,
+            "description": "Veil-touched entity that manipulates shadows.",
+            "experienceReward": 95
+        },
+        {
+            "id": "bloodthorn_beast",
+            "name": "Bloodthorn Beast",
+            "baseStats": {
+                "hp": 200,
+                "defense": 10,
+                "speed": 7,
+                "sapPool": 60,
+                "might": 5,
+                "agility": 3,
+                "resilience": 3,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_surge",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 38,
+                "goldMax": 75,
+                "items": [
+                    {
+                        "itemId": "bloodthorn_spike",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "beast_fang",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2.5,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "bloodthorn_beast_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.9,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0,
+                "enrageThreshold": 0.3
+            },
+            "tier": 3,
+            "description": "Crimson-phase predator with thorned hide.",
+            "experienceReward": 110
+        },
+        {
+            "id": "deeproot_guardian",
+            "name": "Deeproot Guardian",
+            "baseStats": {
+                "hp": 250,
+                "defense": 18,
+                "speed": 2,
+                "sapPool": 80,
+                "might": 6,
+                "agility": 1,
+                "resilience": 6,
+                "insight": 2
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "arcane_shield",
+                "nature_heal",
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 45,
+                "goldMax": 90,
+                "items": [
+                    {
+                        "itemId": "deeproot_core",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "petrified_bark",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.4
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.8,
+                "crimson": 0.5,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "deeproot_guardian_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.6,
+                "preferredTargetType": "wounded_allies",
+                "fleeThreshold": 0,
+                "fortifyStacks": 3
+            },
+            "tier": 3,
+            "description": "Ancient root network defender.",
+            "experienceReward": 120
+        },
+        {
+            "id": "crystal_sentinel",
+            "name": "Crystal Sentinel",
+            "baseStats": {
+                "hp": 190,
+                "defense": 15,
+                "speed": 4,
+                "sapPool": 95,
+                "might": 4,
+                "agility": 2,
+                "resilience": 5,
+                "insight": 3
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "radiant_burst",
+                "arcane_shield",
+                "azure_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 42,
+                "goldMax": 85,
+                "items": [
+                    {
+                        "itemId": "sentinel_crystal",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "crystal_sentinel_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "reflectChance": 0.15
+            },
+            "tier": 3,
+            "description": "Elite crystal construct with magical abilities.",
+            "experienceReward": 130
+        },
+        {
+            "id": "sporelord_mycel",
+            "name": "Sporelord Mycel",
+            "baseStats": {
+                "hp": 450,
+                "defense": 12,
+                "speed": 4,
+                "sapPool": 200,
+                "might": 11,
+                "agility": 2,
+                "resilience": 4,
+                "insight": 6
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "nature_heal",
+                "verdant_bloom",
+                "shadow_strike",
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 100,
+                "goldMax": 200,
+                "items": [
+                    {
+                        "itemId": "mycelium_crown",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "sporelord_staff",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "fungal_heart",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.6
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "sporelord_mycel_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "summonSpores": true,
+                "sporeBurstCooldown": 4,
+                "enrageThreshold": 0.2
+            },
+            "tier": 4,
+            "description": "Boss: Sporecaller faction leader.",
+            "experienceReward": 300
+        },
+        {
+            "id": "the_hollow_king",
+            "name": "The Hollow King",
+            "baseStats": {
+                "hp": 500,
+                "defense": 16,
+                "speed": 5,
+                "sapPool": 180,
+                "might": 12,
+                "agility": 2,
+                "resilience": 5,
+                "insight": 6
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "shadow_strike",
+                "crimson_surge",
+                "arcane_shield",
+                "temporal_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 120,
+                "goldMax": 250,
+                "items": [
+                    {
+                        "itemId": "hollow_crown",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "kings_greatsword",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "royal_sigil",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.5
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2.5
+            },
+            "sprite": {
+                "texture": "hollow_king_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.66,
+                    0.33
+                ],
+                "summonKnights": true,
+                "darkPulseCooldown": 3,
+                "enrageThreshold": 0.15
+            },
+            "tier": 4,
+            "description": "Boss: Lord of the corrupted Hollowroot realm.",
+            "experienceReward": 400
+        },
+        {
+            "id": "abyssal_warden",
+            "name": "Abyssal Warden",
+            "baseStats": {
+                "hp": 400,
+                "defense": 14,
+                "speed": 6,
+                "sapPool": 160,
+                "might": 10,
+                "agility": 3,
+                "resilience": 4,
+                "insight": 5
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "crimson_flare",
+                "shadow_strike",
+                "azure_bolt",
+                "flame_dash"
+            ],
+            "lootTable": {
+                "goldMin": 110,
+                "goldMax": 220,
+                "items": [
+                    {
+                        "itemId": "abyssal_aegis",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "wardens_mantle",
+                        "dropChance": 0.12
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.45
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "abyssal_warden_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.75,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.7,
+                    0.4
+                ],
+                "voidRiftCooldown": 5,
+                "enrageThreshold": 0.2
+            },
+            "tier": 4,
+            "description": "Boss: Veil guardian twisted by the Abyss.",
+            "experienceReward": 350
+        },
+        {
+            "id": "nexus_guardian",
+            "name": "Nexus Guardian",
+            "baseStats": {
+                "hp": 550,
+                "defense": 18,
+                "speed": 5,
+                "sapPool": 250,
+                "might": 13,
+                "agility": 2,
+                "resilience": 6,
+                "insight": 8
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "radiant_burst",
+                "verdant_bloom",
+                "arcane_shield",
+                "temporal_bolt",
+                "azure_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 150,
+                "goldMax": 300,
+                "items": [
+                    {
+                        "itemId": "nexus_heart",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "guardian_plate",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.5
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "nexus_guardian_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.8,
+                    0.6,
+                    0.4,
+                    0.2
+                ],
+                "nexusPulseCooldown": 3,
+                "shieldRegenRate": 0.02,
+                "enrageThreshold": 0.15
+            },
+            "tier": 4,
+            "description": "Boss: Final guardian of the Nexus.",
+            "experienceReward": 500
+        },
+        {
+            "id": "sap_leech",
+            "name": "Sap Leech",
+            "tier": 1,
+            "description": "Parasitic creature that drains DSP from the world when it strikes.",
+            "baseStats": {
+                "hp": 35,
+                "defense": 2,
+                "speed": 6,
+                "sapPool": 20,
+                "might": 1,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "verdant_grasp"
+            ],
+            "experienceReward": 20,
+            "lootTable": {
+                "goldMin": 5,
+                "goldMax": 10,
+                "items": [
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "sap_leech_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.9,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.2,
+                "drainsDSP": true,
+                "dspDrainAmount": 2
+            }
+        },
+        {
+            "id": "thornback_bear",
+            "name": "Thornback Bear",
+            "tier": 2,
+            "description": "Massive ursine predator with thorns growing from its hide.",
+            "baseStats": {
+                "hp": 120,
+                "defense": 8,
+                "speed": 4,
+                "sapPool": 30,
+                "might": 4,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [],
+            "experienceReward": 80,
+            "lootTable": {
+                "goldMin": 20,
+                "goldMax": 40,
+                "items": [
+                    {
+                        "itemId": "thornback_pelt",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "bear_claw",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "thornback_bear_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.15,
+                "chargeRange": 3
+            }
+        },
+        {
+            "id": "blight_beetle_swarm",
+            "name": "Blight Beetle Swarm",
+            "tier": 1,
+            "description": "A chittering mass of corrupted beetles that overwhelm through numbers.",
+            "baseStats": {
+                "hp": 25,
+                "defense": 1,
+                "speed": 7,
+                "sapPool": 5,
+                "might": 1,
+                "agility": 4,
+                "resilience": 0,
+                "insight": 0
+            },
+            "aiPattern": "swarm",
+            "spells": [],
+            "experienceReward": 10,
+            "lootTable": {
+                "goldMin": 2,
+                "goldMax": 5,
+                "items": [
+                    {
+                        "itemId": "chitin_fragment",
+                        "dropChance": 0.4
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "blight_beetle_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 1,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0,
+                "spawnCount": "3-5"
+            }
+        },
+        {
+            "id": "corrupted_dryad",
+            "name": "Corrupted Dryad",
+            "tier": 2,
+            "description": "Once-beautiful tree spirit twisted by Blight into a vengeful caster.",
+            "baseStats": {
+                "hp": 65,
+                "defense": 4,
+                "speed": 5,
+                "sapPool": 80,
+                "might": 1,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 4
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "spore_cloud",
+                "verdant_grasp",
+                "decay_aura"
+            ],
+            "experienceReward": 70,
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "corrupted_heartwood",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "dryad_tear",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "corrupted_dryad_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.3,
+                "castsAtRange": true
+            }
+        },
+        {
+            "id": "blighted_oakfather",
+            "name": "The Blighted Oakfather",
+            "tier": 4,
+            "description": "Boss: Ancient tree lord consumed by corruption. Act 1 final boss.",
+            "baseStats": {
+                "hp": 300,
+                "defense": 12,
+                "speed": 2,
+                "sapPool": 150,
+                "might": 5,
+                "agility": 0,
+                "resilience": 5,
+                "insight": 3
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "verdant_grasp",
+                "spore_cloud",
+                "root_sentinel",
+                "decay_aura"
+            ],
+            "experienceReward": 500,
+            "lootTable": {
+                "goldMin": 100,
+                "goldMax": 200,
+                "items": [
+                    {
+                        "itemId": "oakfather_staff",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "blighted_bark",
+                        "dropChance": 0.5
+                    },
+                    {
+                        "itemId": "ancient_sap_crystal",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "blighted_oakfather_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "summonMinions": true,
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "crimson_maw",
+            "name": "The Crimson Maw",
+            "tier": 4,
+            "description": "Boss: A terrifying Abyss entity that manifests during Crimson Sap surges. The final boss.",
+            "baseStats": {
+                "hp": 500,
+                "defense": 15,
+                "speed": 5,
+                "sapPool": 300,
+                "might": 6,
+                "agility": 3,
+                "resilience": 6,
+                "insight": 5
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "crimson_surge",
+                "soul_extraction",
+                "abyss_pact",
+                "radiant_burst",
+                "decay_aura"
+            ],
+            "experienceReward": 1000,
+            "lootTable": {
+                "goldMin": 200,
+                "goldMax": 500,
+                "items": [
+                    {
+                        "itemId": "crimson_heart",
+                        "dropChance": 1
+                    },
+                    {
+                        "itemId": "abyssal_crown",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0,
+                "crimson": 1,
+                "silver": 0.5
+            },
+            "sprite": {
+                "texture": "crimson_maw_sheet",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.8,
+                    0.6,
+                    0.4,
+                    0.2
+                ],
+                "drainsDSP": true,
+                "dspDrainPerTurn": 3,
+                "enrageThreshold": 0.1
+            }
+        },
+        {
+            "id": "veil_wisp",
+            "name": "Veil Wisp",
+            "baseStats": {
+                "hp": 45,
+                "defense": 2,
+                "speed": 6,
+                "sapPool": 30,
+                "might": 1,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 3
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 8,
+                "goldMax": 18,
+                "items": [
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 0.8,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 1,
+            "description": "Fragments of the Whispering Veil given weak form. They hunt during Silver Sap.",
+            "experienceReward": 35
+        },
+        {
+            "id": "rot_grub",
+            "name": "Rot Grub",
+            "baseStats": {
+                "hp": 25,
+                "defense": 0,
+                "speed": 3,
+                "sapPool": 0,
+                "might": 2,
+                "agility": 1,
+                "resilience": 0,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [],
+            "lootTable": {
+                "goldMin": 2,
+                "goldMax": 8,
+                "items": []
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 2,
+                "silver": 0.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 1,
+            "description": "Blighted larvae that swarm in Crimson phase. Weak but numerous.",
+            "experienceReward": 15
+        },
+        {
+            "id": "canopy_stalker",
+            "name": "Canopy Stalker",
+            "baseStats": {
+                "hp": 95,
+                "defense": 5,
+                "speed": 7,
+                "sapPool": 45,
+                "might": 2,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "thorn_volley"
+            ],
+            "lootTable": {
+                "goldMin": 22,
+                "goldMax": 45,
+                "items": [
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.2,
+                "crimson": 0.6,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 2,
+            "description": "Predatory creature that hunts from the high canopy. Favors ambush.",
+            "experienceReward": 55
+        },
+        {
+            "id": "ember_sprite",
+            "name": "Ember Sprite",
+            "baseStats": {
+                "hp": 40,
+                "defense": 1,
+                "speed": 8,
+                "sapPool": 60,
+                "might": 1,
+                "agility": 4,
+                "resilience": 0,
+                "insight": 3
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 25,
+                "items": [
+                    {
+                        "itemId": "ember_ash",
+                        "dropChance": 0.35
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 2.5,
+                "silver": 0.3
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 1,
+            "description": "Tiny Crimson Sap elementals. They explode when cornered.",
+            "experienceReward": 30
+        },
+        {
+            "id": "moss_golem",
+            "name": "Moss Golem",
+            "baseStats": {
+                "hp": 180,
+                "defense": 14,
+                "speed": 2,
+                "sapPool": 20,
+                "might": 4,
+                "agility": 0,
+                "resilience": 5,
+                "insight": 0
+            },
+            "aiPattern": "defensive",
+            "spells": [],
+            "lootTable": {
+                "goldMin": 25,
+                "goldMax": 50,
+                "items": [
+                    {
+                        "itemId": "moss_heart",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 0.3,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 3,
+            "description": "Living mound of moss and roots. Slow but nearly unbreakable.",
+            "experienceReward": 90
+        },
+        {
+            "id": "thorn_harrier",
+            "name": "Thorn Harrier",
+            "baseStats": {
+                "hp": 65,
+                "defense": 3,
+                "speed": 9,
+                "sapPool": 35,
+                "might": 2,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 1
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "thorn_volley"
+            ],
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 32,
+                "items": [
+                    {
+                        "itemId": "thorn_cluster",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 2,
+            "description": "Flying thorn-creature that harries travelers. Common in Spindlewood.",
+            "experienceReward": 48
+        },
+        {
+            "id": "sap_ghost",
+            "name": "Sap Ghost",
+            "baseStats": {
+                "hp": 55,
+                "defense": 0,
+                "speed": 5,
+                "sapPool": 80,
+                "might": 1,
+                "agility": 3,
+                "resilience": 0,
+                "insight": 4
+            },
+            "aiPattern": "support",
+            "spells": [
+                "soul_drain",
+                "whisper_of_guidance"
+            ],
+            "lootTable": {
+                "goldMin": 18,
+                "goldMax": 38,
+                "items": [
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.8,
+                "crimson": 0.4,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 2,
+            "description": "Spirit bound to spilled Sap. Drains the living to sustain itself.",
+            "experienceReward": 52
+        },
+        {
+            "id": "blight_hound",
+            "name": "Blight Hound",
+            "baseStats": {
+                "hp": 85,
+                "defense": 4,
+                "speed": 6,
+                "sapPool": 25,
+                "might": 3,
+                "agility": 4,
+                "resilience": 2,
+                "insight": 1
+            },
+            "aiPattern": "aggressive",
+            "spells": [],
+            "lootTable": {
+                "goldMin": 20,
+                "goldMax": 42,
+                "items": [
+                    {
+                        "itemId": "blight_gland",
+                        "dropChance": 0.22
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 1.5,
+                "silver": 0.6
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 2,
+            "description": "Corrupted wolf-like beast. Hunts in packs near Blight zones.",
+            "experienceReward": 58
+        },
+        {
+            "id": "root_sentinel_mini",
+            "name": "Root Sentinel",
+            "baseStats": {
+                "hp": 140,
+                "defense": 10,
+                "speed": 3,
+                "sapPool": 40,
+                "might": 3,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 2
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_grasp",
+                "root_barrier"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "ancient_seed",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 0.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "tier": 3,
+            "description": "Smaller kin of the great Root Sentinels. Guards sacred groves.",
+            "experienceReward": 75
+        },
+        {
+            "id": "corrupted_vine_creeper",
+            "name": "Corrupted Vine Creeper",
+            "tier": 1,
+            "description": "A tangled mass of corrupted vines that slithers through the underbrush, strangling anything in its path.",
+            "baseStats": {
+                "hp": 30,
+                "defense": 3,
+                "speed": 5,
+                "sapPool": 15,
+                "might": 1,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "verdant_grasp"
+            ],
+            "lootTable": {
+                "goldMin": 4,
+                "goldMax": 10,
+                "items": [
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 18,
+            "phaseSpawnWeights": {
+                "blue": 1.2,
+                "crimson": 1.5,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.25
+            }
+        },
+        {
+            "id": "hollowed_sprite",
+            "name": "Hollowed Sprite",
+            "tier": 1,
+            "description": "A once-gentle forest sprite consumed by the Hollowing, now a bitter husk of flickering spite.",
+            "baseStats": {
+                "hp": 25,
+                "defense": 1,
+                "speed": 9,
+                "sapPool": 20,
+                "might": 1,
+                "agility": 5,
+                "resilience": 0,
+                "insight": 1
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 3,
+                "goldMax": 8,
+                "items": [
+                    {
+                        "itemId": "sprite_dust",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 15,
+            "phaseSpawnWeights": {
+                "blue": 0.8,
+                "crimson": 1.5,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.35
+            }
+        },
+        {
+            "id": "catacomb_crawler",
+            "name": "Catacomb Crawler",
+            "tier": 2,
+            "description": "Pale insectoid horror that infests the ancient catacombs beneath the Verdance, feeding on the dead.",
+            "baseStats": {
+                "hp": 65,
+                "defense": 6,
+                "speed": 4,
+                "sapPool": 15,
+                "might": 2,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 28,
+                "items": [
+                    {
+                        "itemId": "chitin_fragment",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "minor_health_potion",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 50,
+            "phaseSpawnWeights": {
+                "blue": 0.8,
+                "crimson": 1.5,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.2,
+                "burrowChance": 0.15
+            }
+        },
+        {
+            "id": "keeper_sentinel",
+            "name": "Keeper Sentinel",
+            "tier": 2,
+            "description": "Ancient stone automaton that guards forgotten vaults. Still follows its last orders after centuries of silence.",
+            "baseStats": {
+                "hp": 80,
+                "defense": 10,
+                "speed": 3,
+                "sapPool": 30,
+                "might": 3,
+                "agility": 1,
+                "resilience": 3,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "arcane_shield",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 18,
+                "goldMax": 38,
+                "items": [
+                    {
+                        "itemId": "sentinel_crystal",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 65,
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 0.8,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.3,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.05
+            }
+        },
+        {
+            "id": "crystal_wraith",
+            "name": "Crystal Wraith",
+            "tier": 2,
+            "description": "Spectral entity bound to shattered crystal formations, phasing between the material and arcane planes.",
+            "baseStats": {
+                "hp": 55,
+                "defense": 3,
+                "speed": 7,
+                "sapPool": 60,
+                "might": 1,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 3
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "radiant_burst",
+                "azure_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 15,
+                "goldMax": 35,
+                "items": [
+                    {
+                        "itemId": "crystal_shard",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.08
+                    }
+                ]
+            },
+            "experienceReward": 58,
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.2
+            }
+        },
+        {
+            "id": "spore_thrall",
+            "name": "Spore Thrall",
+            "tier": 2,
+            "description": "A once-living creature overtaken by parasitic fungal growth, now a shambling vessel for spore propagation.",
+            "baseStats": {
+                "hp": 70,
+                "defense": 5,
+                "speed": 4,
+                "sapPool": 40,
+                "might": 2,
+                "agility": 1,
+                "resilience": 2,
+                "insight": 1
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "spore_cloud",
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 28,
+                "items": [
+                    {
+                        "itemId": "spore_cap",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "fungal_extract",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 52,
+            "phaseSpawnWeights": {
+                "blue": 1.2,
+                "crimson": 1.5,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "sporeCloudCooldown": 3
+            }
+        },
+        {
+            "id": "shadow_echo",
+            "name": "Shadow Echo",
+            "tier": 2,
+            "description": "Residual imprint of a soul lost to the Veil, replaying its final moments in an endless aggressive loop.",
+            "baseStats": {
+                "hp": 50,
+                "defense": 2,
+                "speed": 8,
+                "sapPool": 50,
+                "might": 2,
+                "agility": 4,
+                "resilience": 0,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 14,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 55,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.15
+            }
+        },
+        {
+            "id": "corrupted_officer_varn",
+            "name": "Corrupted Officer Varn",
+            "tier": 3,
+            "description": "Former Bloomguard officer consumed by Crimson Sap corruption. Retains tactical intelligence and fighting skill.",
+            "baseStats": {
+                "hp": 140,
+                "defense": 12,
+                "speed": 5,
+                "sapPool": 60,
+                "might": 4,
+                "agility": 3,
+                "resilience": 3,
+                "insight": 2
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "crimson_surge",
+                "arcane_shield",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "knight_sigil",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "hollow_plate",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 100,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.65,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.1,
+                "blockChance": 0.2
+            }
+        },
+        {
+            "id": "thornmaw_alpha",
+            "name": "Thornmaw Alpha",
+            "tier": 3,
+            "description": "Pack leader of the thornmaw predators, a massive beast with a jaw lined with razor-sharp wooden spines.",
+            "baseStats": {
+                "hp": 130,
+                "defense": 9,
+                "speed": 7,
+                "sapPool": 45,
+                "might": 5,
+                "agility": 3,
+                "resilience": 3,
+                "insight": 1
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_surge",
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 65,
+                "items": [
+                    {
+                        "itemId": "beast_fang",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "bloodthorn_spike",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.85,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.05,
+                "enrageThreshold": 0.3
+            }
+        },
+        {
+            "id": "veil_horror",
+            "name": "Veil Horror",
+            "tier": 3,
+            "description": "Nightmarish entity from beyond the Whispering Veil, its form shifting and unstable, inducing terror in all who behold it.",
+            "baseStats": {
+                "hp": 110,
+                "defense": 6,
+                "speed": 6,
+                "sapPool": 90,
+                "might": 3,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 4
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 100,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.15,
+                "phaseShiftCooldown": 3
+            }
+        },
+        {
+            "id": "corruption_elemental",
+            "name": "Corruption Elemental",
+            "tier": 3,
+            "description": "Pure corruption given form, a roiling mass of dark sap and blighted energy that poisons the land around it.",
+            "baseStats": {
+                "hp": 120,
+                "defense": 8,
+                "speed": 5,
+                "sapPool": 80,
+                "might": 4,
+                "agility": 2,
+                "resilience": 3,
+                "insight": 3
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "crimson_surge",
+                "decay_aura",
+                "spore_cloud"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 65,
+                "items": [
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2.5,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1
+            }
+        },
+        {
+            "id": "poacher_leader",
+            "name": "Poacher Leader",
+            "tier": 3,
+            "description": "Ruthless commander of a band of Verdance poachers, skilled in both blade and trap.",
+            "baseStats": {
+                "hp": 100,
+                "defense": 8,
+                "speed": 6,
+                "sapPool": 50,
+                "might": 4,
+                "agility": 4,
+                "resilience": 2,
+                "insight": 2
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "shadow_strike",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "wolf_pelt",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "knight_sigil",
+                        "dropChance": 0.08
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1.2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.15
+            }
+        },
+        {
+            "id": "veil_phantom",
+            "name": "Veil Phantom",
+            "tier": 3,
+            "description": "Spectral remnant that drifts between the Veil and reality, phasing through solid matter to strike the unwary.",
+            "baseStats": {
+                "hp": 95,
+                "defense": 4,
+                "speed": 8,
+                "sapPool": 85,
+                "might": 3,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 3
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt",
+                "shadow_dance"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1,
+                "silver": 2.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.2,
+                "phaseShiftCooldown": 2
+            }
+        },
+        {
+            "id": "spore_lord",
+            "name": "Spore Lord",
+            "tier": 4,
+            "description": "Boss: Massive fungal overlord that commands legions of spore thralls, spreading blight wherever it roots.",
+            "baseStats": {
+                "hp": 400,
+                "defense": 14,
+                "speed": 3,
+                "sapPool": 180,
+                "might": 10,
+                "agility": 1,
+                "resilience": 5,
+                "insight": 5
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "spore_cloud",
+                "nature_heal",
+                "decay_aura",
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 100,
+                "goldMax": 200,
+                "items": [
+                    {
+                        "itemId": "fungal_heart",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "sporelord_staff",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.5
+                    }
+                ]
+            },
+            "experienceReward": 350,
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "summonSpores": true,
+                "sporeBurstCooldown": 4,
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "void_herald",
+            "name": "Void Herald",
+            "tier": 4,
+            "description": "An emissary of the Abyss, heralding the arrival of greater void entities with waves of annihilating energy.",
+            "baseStats": {
+                "hp": 350,
+                "defense": 12,
+                "speed": 5,
+                "sapPool": 200,
+                "might": 9,
+                "agility": 3,
+                "resilience": 4,
+                "insight": 6
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt",
+                "crimson_surge",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 90,
+                "goldMax": 180,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 300,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.75,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.7,
+                    0.4
+                ],
+                "voidRiftCooldown": 4,
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "corrupted_guardian",
+            "name": "Corrupted Guardian",
+            "tier": 4,
+            "description": "Once a noble protector of the Nexus, now a towering corrupted sentinel that serves the Blight with terrible power.",
+            "baseStats": {
+                "hp": 450,
+                "defense": 16,
+                "speed": 3,
+                "sapPool": 150,
+                "might": 12,
+                "agility": 1,
+                "resilience": 6,
+                "insight": 4
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "crimson_surge",
+                "arcane_shield",
+                "verdant_bloom",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 110,
+                "goldMax": 220,
+                "items": [
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "guardian_plate",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "experienceReward": 400,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "void_wisp",
+            "name": "Void Wisp",
+            "tier": 2,
+            "description": "A flickering mote of void energy that drifts through corrupted zones, searing anything it touches.",
+            "baseStats": {
+                "hp": 45,
+                "defense": 2,
+                "speed": 8,
+                "sapPool": 40,
+                "might": 1,
+                "agility": 5,
+                "resilience": 0,
+                "insight": 3
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 10,
+                "goldMax": 22,
+                "items": [
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 45,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.8,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.25
+            }
+        },
+        {
+            "id": "abyssal_crawler",
+            "name": "Abyssal Crawler",
+            "tier": 2,
+            "description": "Multi-limbed horror that scuttles from void rifts, dragging prey back into the darkness.",
+            "baseStats": {
+                "hp": 60,
+                "defense": 5,
+                "speed": 5,
+                "sapPool": 20,
+                "might": 2,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 26,
+                "items": [
+                    {
+                        "itemId": "chitin_fragment",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 48,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.75,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.15
+            }
+        },
+        {
+            "id": "shadow_imp",
+            "name": "Shadow Imp",
+            "tier": 2,
+            "description": "Minor demon cloaked in shadow, darting in to strike before vanishing into darkness.",
+            "baseStats": {
+                "hp": 50,
+                "defense": 3,
+                "speed": 9,
+                "sapPool": 45,
+                "might": 1,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 10,
+                "goldMax": 24,
+                "items": [
+                    {
+                        "itemId": "imp_horn",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.12
+                    }
+                ]
+            },
+            "experienceReward": 48,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.8,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.85,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.25,
+                "blinkCooldown": 2
+            }
+        },
+        {
+            "id": "void_tendril",
+            "name": "Void Tendril",
+            "tier": 2,
+            "description": "A writhing appendage of void energy reaching through a rift, lashing at anything within range.",
+            "baseStats": {
+                "hp": 55,
+                "defense": 4,
+                "speed": 3,
+                "sapPool": 30,
+                "might": 3,
+                "agility": 1,
+                "resilience": 2,
+                "insight": 1
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_grasp",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 10,
+                "goldMax": 24,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 45,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0
+            }
+        },
+        {
+            "id": "grove_sprite",
+            "name": "Grove Sprite",
+            "tier": 1,
+            "description": "Mischievous nature spirit that pelts intruders with bursts of pollen and thorns.",
+            "baseStats": {
+                "hp": 22,
+                "defense": 1,
+                "speed": 10,
+                "sapPool": 20,
+                "might": 1,
+                "agility": 5,
+                "resilience": 0,
+                "insight": 1
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 2,
+                "goldMax": 7,
+                "items": [
+                    {
+                        "itemId": "sprite_dust",
+                        "dropChance": 0.4
+                    }
+                ]
+            },
+            "experienceReward": 12,
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.35
+            }
+        },
+        {
+            "id": "ember_fox",
+            "name": "Ember Fox",
+            "tier": 1,
+            "description": "A small vulpine creature wreathed in crimson embers, quick to bite and quicker to flee.",
+            "baseStats": {
+                "hp": 28,
+                "defense": 2,
+                "speed": 11,
+                "sapPool": 15,
+                "might": 1,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 3,
+                "goldMax": 9,
+                "items": [
+                    {
+                        "itemId": "ember_ash",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "wolf_pelt",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 15,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2.5,
+                "silver": 0.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.3
+            }
+        },
+        {
+            "id": "corrupted_sapling",
+            "name": "Corrupted Sapling",
+            "tier": 1,
+            "description": "Young tree animated by Blight, its bark cracked and oozing dark sap as it lashes out with twisted branches.",
+            "baseStats": {
+                "hp": 35,
+                "defense": 4,
+                "speed": 3,
+                "sapPool": 10,
+                "might": 1,
+                "agility": 1,
+                "resilience": 2,
+                "insight": 0
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 3,
+                "goldMax": 8,
+                "items": [
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 15,
+            "phaseSpawnWeights": {
+                "blue": 0.8,
+                "crimson": 2,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.3,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.2
+            }
+        },
+        {
+            "id": "crystal_stag",
+            "name": "Crystal Stag",
+            "tier": 2,
+            "description": "Majestic deer with crystalline antlers that channels arcane energy. Territorial and dangerous when provoked.",
+            "baseStats": {
+                "hp": 70,
+                "defense": 6,
+                "speed": 7,
+                "sapPool": 45,
+                "might": 2,
+                "agility": 4,
+                "resilience": 2,
+                "insight": 2
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "radiant_burst",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 18,
+                "goldMax": 38,
+                "items": [
+                    {
+                        "itemId": "crystal_shard",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.08
+                    }
+                ]
+            },
+            "experienceReward": 60,
+            "phaseSpawnWeights": {
+                "blue": 2,
+                "crimson": 0.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.2,
+                "chargeRange": 3
+            }
+        },
+        {
+            "id": "prism_wraith",
+            "name": "Prism Wraith",
+            "tier": 2,
+            "description": "Spectral being that refracts light into blinding bursts, disorienting prey before striking.",
+            "baseStats": {
+                "hp": 50,
+                "defense": 2,
+                "speed": 7,
+                "sapPool": 55,
+                "might": 1,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 3
+            },
+            "aiPattern": "skirmisher",
+            "spells": [
+                "radiant_burst",
+                "azure_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 14,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.12
+                    },
+                    {
+                        "itemId": "crystal_shard",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 52,
+            "phaseSpawnWeights": {
+                "blue": 1.8,
+                "crimson": 0.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.2
+            }
+        },
+        {
+            "id": "ancient_rootworm",
+            "name": "Ancient Rootworm",
+            "tier": 2,
+            "description": "Enormous segmented worm that burrows through root networks, erupting beneath the unwary.",
+            "baseStats": {
+                "hp": 75,
+                "defense": 7,
+                "speed": 3,
+                "sapPool": 15,
+                "might": 3,
+                "agility": 1,
+                "resilience": 3,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "verdant_grasp"
+            ],
+            "lootTable": {
+                "goldMin": 14,
+                "goldMax": 30,
+                "items": [
+                    {
+                        "itemId": "root_fiber",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "chitin_fragment",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 55,
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "burrowChance": 0.2
+            }
+        },
+        {
+            "id": "echo_phantom",
+            "name": "Echo Phantom",
+            "tier": 2,
+            "description": "A spectral replay of a fallen warrior, repeating its battle movements in an endless ghostly loop.",
+            "baseStats": {
+                "hp": 55,
+                "defense": 3,
+                "speed": 6,
+                "sapPool": 45,
+                "might": 2,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "shadow_strike",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 28,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "knight_sigil",
+                        "dropChance": 0.05
+                    }
+                ]
+            },
+            "experienceReward": 50,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.15
+            }
+        },
+        {
+            "id": "thornmaw_dryad",
+            "name": "Thornmaw Dryad",
+            "tier": 3,
+            "description": "A dryad who bonded with thornmaw beasts, commanding packs of predators while casting nature magic.",
+            "baseStats": {
+                "hp": 100,
+                "defense": 7,
+                "speed": 6,
+                "sapPool": 80,
+                "might": 3,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 3
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "verdant_bloom",
+                "spore_cloud",
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "dryad_tear",
+                        "dropChance": 0.12
+                    },
+                    {
+                        "itemId": "beast_fang",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 85,
+            "phaseSpawnWeights": {
+                "blue": 1.2,
+                "crimson": 1.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.5,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.2,
+                "castsAtRange": true
+            }
+        },
+        {
+            "id": "memory_wraith",
+            "name": "Memory Wraith",
+            "tier": 3,
+            "description": "A powerful spirit formed from concentrated memories of the dead, wielding arcane knowledge stolen from forgotten minds.",
+            "baseStats": {
+                "hp": 95,
+                "defense": 5,
+                "speed": 7,
+                "sapPool": 100,
+                "might": 2,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 4
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "temporal_bolt",
+                "azure_bolt",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 0.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.2,
+                "castsAtRange": true
+            }
+        },
+        {
+            "id": "void_sentinel",
+            "name": "Void Sentinel",
+            "tier": 3,
+            "description": "A guardian construct corrupted by void energy, its crystalline shell now pulsing with abyssal power.",
+            "baseStats": {
+                "hp": 140,
+                "defense": 13,
+                "speed": 3,
+                "sapPool": 60,
+                "might": 4,
+                "agility": 1,
+                "resilience": 5,
+                "insight": 2
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "arcane_shield",
+                "shadow_strike",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "sentinel_crystal",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.12
+                    }
+                ]
+            },
+            "experienceReward": 100,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1.5,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0,
+                "reflectChance": 0.1
+            }
+        },
+        {
+            "id": "abyssal_mage",
+            "name": "Abyssal Mage",
+            "tier": 3,
+            "description": "Mortal sorcerer who traded their soul for abyssal power, casting devastating void-infused spells.",
+            "baseStats": {
+                "hp": 90,
+                "defense": 5,
+                "speed": 5,
+                "sapPool": 110,
+                "might": 2,
+                "agility": 2,
+                "resilience": 2,
+                "insight": 5
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "crimson_flare",
+                "temporal_bolt",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.25,
+                "castsAtRange": true
+            }
+        },
+        {
+            "id": "shadow_assassin",
+            "name": "Shadow Assassin",
+            "tier": 3,
+            "description": "Elite void-touched killer that strikes from stealth with lethal precision, vanishing before retaliation.",
+            "baseStats": {
+                "hp": 95,
+                "defense": 5,
+                "speed": 10,
+                "sapPool": 60,
+                "might": 4,
+                "agility": 5,
+                "resilience": 1,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "shadow_dance"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "shadow_thread",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.9,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.2,
+                "blinkCooldown": 2
+            }
+        },
+        {
+            "id": "blighted_treant",
+            "name": "Blighted Treant",
+            "tier": 2,
+            "description": "A young treant infected by Blight, its bark cracking and leaking corrupted sap as it stumbles through the forest.",
+            "baseStats": {
+                "hp": 75,
+                "defense": 8,
+                "speed": 3,
+                "sapPool": 35,
+                "might": 2,
+                "agility": 1,
+                "resilience": 3,
+                "insight": 0
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom",
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 12,
+                "goldMax": 28,
+                "items": [
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 55,
+            "phaseSpawnWeights": {
+                "blue": 0.8,
+                "crimson": 2,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.4,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0.1,
+                "rootSlamCooldown": 3
+            }
+        },
+        {
+            "id": "corrupted_elder",
+            "name": "Corrupted Elder",
+            "tier": 3,
+            "description": "An ancient grove elder consumed by corruption, wielding twisted nature magic and commanding blighted minions.",
+            "baseStats": {
+                "hp": 130,
+                "defense": 10,
+                "speed": 3,
+                "sapPool": 90,
+                "might": 3,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 4
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "verdant_bloom",
+                "nature_heal",
+                "decay_aura"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "ancient_heartwood",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "corrupted_heartwood",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "experienceReward": 100,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.5,
+                "preferredTargetType": "wounded_allies",
+                "fleeThreshold": 0,
+                "summonSaplings": true
+            }
+        },
+        {
+            "id": "corruption_wraith",
+            "name": "Corruption Wraith",
+            "tier": 3,
+            "description": "Spectral manifestation of concentrated Blight energy, spreading decay wherever it drifts.",
+            "baseStats": {
+                "hp": 100,
+                "defense": 4,
+                "speed": 7,
+                "sapPool": 85,
+                "might": 3,
+                "agility": 4,
+                "resilience": 1,
+                "insight": 3
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "decay_aura",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.75,
+                "preferredTargetType": "random",
+                "fleeThreshold": 0.15
+            }
+        },
+        {
+            "id": "corrupted_thornweaver",
+            "name": "Corrupted Thornweaver",
+            "tier": 3,
+            "description": "Former Thornbinder taken by corruption, weaving deadly thorn constructs infused with dark sap.",
+            "baseStats": {
+                "hp": 105,
+                "defense": 6,
+                "speed": 6,
+                "sapPool": 75,
+                "might": 3,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 3
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "verdant_grasp",
+                "spore_cloud",
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "spider_silk",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "corrupted_heartwood",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1.8,
+                "silver": 1.2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.2,
+                "castsAtRange": true
+            }
+        },
+        {
+            "id": "decay_knight",
+            "name": "Decay Knight",
+            "tier": 3,
+            "description": "Undead warrior clad in corroded armor, animated by necrotic sap and driven to destroy the living.",
+            "baseStats": {
+                "hp": 135,
+                "defense": 12,
+                "speed": 4,
+                "sapPool": 40,
+                "might": 5,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 1
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "crimson_surge",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "hollow_plate",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.65,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0,
+                "blockChance": 0.2
+            }
+        },
+        {
+            "id": "void_parasite",
+            "name": "Void Parasite",
+            "tier": 2,
+            "description": "Leech-like void organism that attaches to living hosts, draining their life force to fuel its growth.",
+            "baseStats": {
+                "hp": 45,
+                "defense": 2,
+                "speed": 6,
+                "sapPool": 25,
+                "might": 1,
+                "agility": 3,
+                "resilience": 1,
+                "insight": 1
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike"
+            ],
+            "lootTable": {
+                "goldMin": 8,
+                "goldMax": 20,
+                "items": [
+                    {
+                        "itemId": "veil_dust",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "slime_residue",
+                        "dropChance": 0.25
+                    }
+                ]
+            },
+            "experienceReward": 42,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 1.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.9,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.15,
+                "drainsDSP": true,
+                "dspDrainAmount": 1
+            }
+        },
+        {
+            "id": "memory_guardian",
+            "name": "Memory Guardian",
+            "tier": 3,
+            "description": "Spectral protector assembled from the collective memories of fallen defenders, guarding places of significance.",
+            "baseStats": {
+                "hp": 130,
+                "defense": 11,
+                "speed": 4,
+                "sapPool": 70,
+                "might": 3,
+                "agility": 2,
+                "resilience": 4,
+                "insight": 3
+            },
+            "aiPattern": "defensive",
+            "spells": [
+                "arcane_shield",
+                "radiant_burst",
+                "nature_heal"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "knight_sigil",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 0.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.4,
+                "preferredTargetType": "wounded_allies",
+                "fleeThreshold": 0,
+                "reflectChance": 0.1
+            }
+        },
+        {
+            "id": "rift_stalker",
+            "name": "Rift Stalker",
+            "tier": 3,
+            "description": "Predatory void entity that hunts by tearing small rifts in reality, striking from impossible angles.",
+            "baseStats": {
+                "hp": 105,
+                "defense": 6,
+                "speed": 8,
+                "sapPool": 65,
+                "might": 4,
+                "agility": 4,
+                "resilience": 2,
+                "insight": 2
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "shadow_strike",
+                "shadow_dance",
+                "crimson_flare"
+            ],
+            "lootTable": {
+                "goldMin": 32,
+                "goldMax": 65,
+                "items": [
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 95,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.85,
+                "preferredTargetType": "lowest_hp",
+                "fleeThreshold": 0.1,
+                "blinkCooldown": 2
+            }
+        },
+        {
+            "id": "mirror_horror",
+            "name": "Mirror Horror",
+            "tier": 3,
+            "description": "Aberration that mimics the appearance of its prey, creating disorienting reflections before attacking.",
+            "baseStats": {
+                "hp": 110,
+                "defense": 7,
+                "speed": 6,
+                "sapPool": 75,
+                "might": 3,
+                "agility": 3,
+                "resilience": 2,
+                "insight": 3
+            },
+            "aiPattern": "tactical",
+            "spells": [
+                "shadow_strike",
+                "arcane_shield",
+                "temporal_bolt"
+            ],
+            "lootTable": {
+                "goldMin": 30,
+                "goldMax": 60,
+                "items": [
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "crystal_shard",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 90,
+            "phaseSpawnWeights": {
+                "blue": 1,
+                "crimson": 1,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.15,
+                "reflectChance": 0.15
+            }
+        },
+        {
+            "id": "abyssal_knight",
+            "name": "Abyssal Knight",
+            "tier": 3,
+            "description": "Elite warrior of the Abyss clad in void-forged armor, wielding devastating dark energy in melee combat.",
+            "baseStats": {
+                "hp": 150,
+                "defense": 13,
+                "speed": 4,
+                "sapPool": 50,
+                "might": 5,
+                "agility": 2,
+                "resilience": 4,
+                "insight": 2
+            },
+            "aiPattern": "balanced",
+            "spells": [
+                "crimson_surge",
+                "shadow_strike",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 40,
+                "goldMax": 80,
+                "items": [
+                    {
+                        "itemId": "hollow_plate",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.2
+                    },
+                    {
+                        "itemId": "crimson_shard",
+                        "dropChance": 0.15
+                    }
+                ]
+            },
+            "experienceReward": 110,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0.05,
+                "blockChance": 0.2
+            }
+        },
+        {
+            "id": "abyssal_brute",
+            "name": "Abyssal Brute",
+            "tier": 3,
+            "description": "Hulking demon of raw void muscle, slow but capable of devastating physical attacks that shatter armor.",
+            "baseStats": {
+                "hp": 150,
+                "defense": 10,
+                "speed": 3,
+                "sapPool": 20,
+                "might": 6,
+                "agility": 1,
+                "resilience": 4,
+                "insight": 0
+            },
+            "aiPattern": "aggressive",
+            "spells": [
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 35,
+                "goldMax": 70,
+                "items": [
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.25
+                    },
+                    {
+                        "itemId": "beast_fang",
+                        "dropChance": 0.2
+                    }
+                ]
+            },
+            "experienceReward": 105,
+            "phaseSpawnWeights": {
+                "blue": 0.2,
+                "crimson": 2.5,
+                "silver": 1
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.9,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0,
+                "enrageThreshold": 0.3
+            }
+        },
+        {
+            "id": "corruption_colossus",
+            "name": "Corruption Colossus",
+            "tier": 4,
+            "description": "A mountain of corrupted earth and wood, animated by concentrated Blight into a walking siege engine.",
+            "baseStats": {
+                "hp": 400,
+                "defense": 18,
+                "speed": 2,
+                "sapPool": 100,
+                "might": 12,
+                "agility": 0,
+                "resilience": 7,
+                "insight": 2
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "verdant_bloom",
+                "crimson_surge",
+                "decay_aura",
+                "arcane_shield"
+            ],
+            "lootTable": {
+                "goldMin": 100,
+                "goldMax": 200,
+                "items": [
+                    {
+                        "itemId": "deeproot_core",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "corrupted_bark",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "dark_sap",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "experienceReward": 350,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 2,
+                "silver": 0.8
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.6,
+                "preferredTargetType": "nearest",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "void_harbinger",
+            "name": "Void Harbinger",
+            "tier": 4,
+            "description": "A towering void entity that serves as vanguard for abyssal invasions, tearing reality apart with each step.",
+            "baseStats": {
+                "hp": 380,
+                "defense": 14,
+                "speed": 4,
+                "sapPool": 180,
+                "might": 10,
+                "agility": 2,
+                "resilience": 5,
+                "insight": 5
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "shadow_strike",
+                "crimson_surge",
+                "temporal_bolt",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 100,
+                "goldMax": 200,
+                "items": [
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.1
+                    }
+                ]
+            },
+            "experienceReward": 350,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 2,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.75,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.7,
+                    0.4
+                ],
+                "voidRiftCooldown": 4,
+                "enrageThreshold": 0.15
+            }
+        },
+        {
+            "id": "scar_guardian",
+            "name": "Scar Guardian",
+            "tier": 4,
+            "description": "Ancient protector bound to a scarred leyline, drawing immense power from the wounded earth to crush trespassers.",
+            "baseStats": {
+                "hp": 350,
+                "defense": 16,
+                "speed": 3,
+                "sapPool": 120,
+                "might": 10,
+                "agility": 1,
+                "resilience": 6,
+                "insight": 3
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "radiant_burst",
+                "arcane_shield",
+                "nature_heal",
+                "verdant_bloom"
+            ],
+            "lootTable": {
+                "goldMin": 90,
+                "goldMax": 180,
+                "items": [
+                    {
+                        "itemId": "guardian_plate",
+                        "dropChance": 0.1
+                    },
+                    {
+                        "itemId": "deeproot_core",
+                        "dropChance": 0.12
+                    },
+                    {
+                        "itemId": "sap_crystal",
+                        "dropChance": 0.4
+                    }
+                ]
+            },
+            "experienceReward": 320,
+            "phaseSpawnWeights": {
+                "blue": 1.5,
+                "crimson": 1,
+                "silver": 1.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "healThreshold": 0.5,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.75,
+                    0.5,
+                    0.25
+                ],
+                "enrageThreshold": 0.2
+            }
+        },
+        {
+            "id": "rift_lord",
+            "name": "Rift Lord",
+            "tier": 4,
+            "description": "A void sovereign that commands rifts between planes, summoning endless minions through tears in reality.",
+            "baseStats": {
+                "hp": 380,
+                "defense": 12,
+                "speed": 5,
+                "sapPool": 220,
+                "might": 8,
+                "agility": 3,
+                "resilience": 4,
+                "insight": 7
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "shadow_strike",
+                "temporal_bolt",
+                "crimson_surge",
+                "radiant_burst"
+            ],
+            "lootTable": {
+                "goldMin": 110,
+                "goldMax": 220,
+                "items": [
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.3
+                    },
+                    {
+                        "itemId": "shadow_essence",
+                        "dropChance": 0.4
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.12
+                    }
+                ]
+            },
+            "experienceReward": 380,
+            "phaseSpawnWeights": {
+                "blue": 0.3,
+                "crimson": 1.5,
+                "silver": 2.5
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.7,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.7,
+                    0.4
+                ],
+                "voidRiftCooldown": 3,
+                "enrageThreshold": 0.15
+            }
+        },
+        {
+            "id": "void_architect",
+            "name": "Void Architect",
+            "tier": 4,
+            "description": "Boss: Supreme intelligence of the Abyss that designs the void incursions into the Verdance, reshaping reality itself.",
+            "baseStats": {
+                "hp": 500,
+                "defense": 15,
+                "speed": 4,
+                "sapPool": 250,
+                "might": 10,
+                "agility": 2,
+                "resilience": 5,
+                "insight": 8
+            },
+            "aiPattern": "boss_phased",
+            "spells": [
+                "temporal_bolt",
+                "radiant_burst",
+                "shadow_strike",
+                "arcane_shield",
+                "crimson_surge"
+            ],
+            "lootTable": {
+                "goldMin": 150,
+                "goldMax": 300,
+                "items": [
+                    {
+                        "itemId": "nexus_heart",
+                        "dropChance": 0.08
+                    },
+                    {
+                        "itemId": "abyssal_ember",
+                        "dropChance": 0.35
+                    },
+                    {
+                        "itemId": "prismatic_shard",
+                        "dropChance": 0.15
+                    },
+                    {
+                        "itemId": "resonant_gem",
+                        "dropChance": 0.3
+                    }
+                ]
+            },
+            "experienceReward": 500,
+            "phaseSpawnWeights": {
+                "blue": 0.5,
+                "crimson": 1.5,
+                "silver": 2
+            },
+            "sprite": {
+                "texture": "enemy_placeholder",
+                "idleFrame": 0,
+                "attackFrame": 4,
+                "hurtFrame": 8
+            },
+            "behaviorParams": {
+                "aggressionLevel": 0.65,
+                "preferredTargetType": "highest_threat",
+                "fleeThreshold": 0,
+                "phaseTransitions": [
+                    0.8,
+                    0.6,
+                    0.4,
+                    0.2
+                ],
+                "voidRiftCooldown": 3,
+                "shieldRegenRate": 0.02,
+                "enrageThreshold": 0.15
+            }
+        }
+    ]
+}

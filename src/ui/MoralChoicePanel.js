@@ -115,6 +115,7 @@ export class MoralChoicePanel {
 
     open(data) {
         if (this.visible) return; // don't stack panels
+        if (!this._timerBarFill) { this._build(); }
         this._currentChoice = data;
         this.visible = true;
 
