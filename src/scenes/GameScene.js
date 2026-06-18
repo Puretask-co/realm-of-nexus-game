@@ -6,10 +6,8 @@ import AdvancedLightingSystem from '../systems/AdvancedLightingSystem.js';
 import AdvancedParticleSystem from '../systems/AdvancedParticleSystem.js';
 import AdvancedCameraSystem from '../systems/AdvancedCameraSystem.js';
 import PerformanceProfiler from '../systems/PerformanceProfiler.js';
-import { CombatSystem } from '../systems/CombatSystem.js';
 import { AISystem } from '../systems/AISystem.js';
 import { ProgressionSystem } from '../systems/ProgressionSystem.js';
-import { SpellSystem } from '../systems/SpellSystem.js';
 import { QuestSystem } from '../systems/QuestSystem.js';
 import { DialogueSystem } from '../systems/DialogueSystem.js';
 import CooldownManager from '../systems/CooldownManager.js';
@@ -106,12 +104,10 @@ export default class GameScene extends Phaser.Scene {
         this.tacticalCombatCameraBridge = new TacticalCombatCameraBridge(this.cameraSystem);
 
         // ---- Gameplay Systems (singletons) ----
-        this.combatSystem = CombatSystem.getInstance();
         this.attackTypeSystem = AttackTypeSystem.getInstance();
         this.tacticalCombat = TacticalCombatSystem.getInstance();
         this.aiSystem = AISystem.getInstance();
         this.progression = ProgressionSystem.getInstance();
-        this.spellSystem = SpellSystem.getInstance();
         this.questSystem = QuestSystem.getInstance();
         this.dialogueSystem = DialogueSystem.getInstance(this);
 
@@ -2389,7 +2385,7 @@ export default class GameScene extends Phaser.Scene {
 
     /**
      * Float a status effect icon above a target for the effect's duration.
-     * Listens to `combat:effectApplied` from CombatSystem.
+     * Listens to `combat:effectApplied` from TacticalCombatSystem.
      */
     _onCombatEffectApplied(payload) {
         const effect = payload?.effect;
@@ -3538,10 +3534,8 @@ export default class GameScene extends Phaser.Scene {
         this.cameraSystem.update(delta);
         this.profiler.end('camera');
 
-        // Combat & spells
+        // Cooldowns (combat itself runs inside TacticalCombatSystem, no per-frame tick needed)
         this.profiler.begin('combat');
-        this.combatSystem.update(delta);
-        this.spellSystem.update(delta);
         this.cooldowns.update(delta);
         this.profiler.end('combat');
 

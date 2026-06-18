@@ -5,7 +5,7 @@ import { EventBus } from '../core/EventBus.js';
  *
  * Responsibilities:
  *  - Range validation before an attack lands
- *  - Damage-type routing (physical vs magical) for CombatSystem
+ *  - Damage-type routing (physical vs magical) for resistance calculation
  *  - Projectile travel events for ranged/magic so the renderer can animate them
  *
  * Usage (GameScene):
@@ -61,7 +61,7 @@ export class AttackTypeSystem {
 
   /**
    * Returns the damage category that the attack falls into.
-   * CombatSystem uses this to pick the correct resistance stat.
+   * Consumers use this to pick the correct resistance stat.
    * @param {string} attackType
    * @returns {'physical'|'magical'}
    */
