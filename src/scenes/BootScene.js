@@ -242,6 +242,21 @@ export default class BootScene extends Phaser.Scene {
     create() {
         document.getElementById('boot-message')?.setAttribute('hidden', '');
 
+        // Force NEAREST filtering on small pixel-art tilesets so they stay crisp
+        // while the rest of the game uses LINEAR (smooth) for painterly assets.
+        const pixelArtKeys = ['tileset_kenney', 'ts_town', 'ts_dungeon', 'kenney_chars'];
+        for (const key of pixelArtKeys) {
+            const tex = this.textures.get(key);
+            if (tex?.source?.[0]?.glTexture) {
+                const gl = this.renderer?.gl;
+                if (gl) {
+                    gl.bindTexture(gl.TEXTURE_2D, tex.source[0].glTexture);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                }
+            }
+        }
+
         // Register all sprite animations (done once here, available globally)
         this._createAnimations();
 
