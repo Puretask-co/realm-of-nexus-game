@@ -1105,9 +1105,8 @@ export default class GameScene extends Phaser.Scene {
             // size and centre the physics body on the texture's own pixels.
             this.player._staticArt = true;
             this.player.setDisplaySize(96, 96);
-            const tw = this.player.width, th = this.player.height;
-            this.player.body.setSize(tw * 0.4, th * 0.4);
-            this.player.body.setOffset(tw * 0.3, th * 0.45);
+            this.player.body.setSize(40, 40);
+            this.player.body.setOffset(300, 340);
             // Gentle idle "breathing" so the static sprite feels alive.
             MotionLibrary.apply(this, this.player, 'idle-breathe', { duration: 1800 });
         } else {
@@ -1540,9 +1539,8 @@ export default class GameScene extends Phaser.Scene {
             enemy.setDepth(4);
             enemy.setCollideWorldBounds(true);
             enemy.setDisplaySize(display, display);
-            const tw = enemy.width, th = enemy.height;
-            enemy.body.setSize(tw * 0.4, th * 0.4);
-            enemy.body.setOffset(tw * 0.3, tw * 0.4);
+            enemy.body.setSize(40, 40);
+            enemy.body.setOffset(300, 340);
             enemy._painterly = true;
             MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
         } else {
