@@ -195,14 +195,14 @@ export default class UIScene extends Phaser.Scene {
         overlay.fillRect(0, 0, width, height);
 
         const title = this.add.text(width / 2, 120, name, {
-            fontFamily: 'Open Sans', fontSize: '39px', color: '#ffcc88',
+            fontFamily: 'Cinzel Decorative, Cinzel, serif', fontSize: '28px', color: '#ffcc88',
             stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5).setDepth(20001);
-        const sub = this.add.text(width / 2, 165, variationText, {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#8888aa'
+        const sub = this.add.text(width / 2, 160, variationText, {
+            fontFamily: 'Cinzel, serif', fontSize: '20px', color: '#8888aa'
         }).setOrigin(0.5).setDepth(20001);
-        const body = this.add.text(width / 2, 240, desc, {
-            fontFamily: 'Open Sans', fontSize: '22px', color: '#ccccdd',
+        const body = this.add.text(width / 2, 230, desc, {
+            fontFamily: 'Open Sans, sans-serif', fontSize: '16px', color: '#ccccdd',
             wordWrap: { width: width - 120 }, align: 'center'
         }).setOrigin(0.5, 0).setDepth(20001);
 
@@ -211,7 +211,7 @@ export default class UIScene extends Phaser.Scene {
         btnBg.fillStyle(0x3366aa, 0.9);
         btnBg.fillRoundedRect(width / 2 - 100, btnY - 20, 200, 44, 8);
         const btnText = this.add.text(width / 2, btnY + 2, 'Continue', {
-            fontFamily: 'Open Sans', fontSize: '25px', color: '#ffffff',
+            fontFamily: 'Cinzel, serif', fontSize: '20px', color: '#ffffff',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(20002);
         const hitZone = this.add.zone(width / 2, btnY + 2, 200, 44).setInteractive({ useHandCursor: true }).setDepth(20002);
@@ -235,7 +235,7 @@ export default class UIScene extends Phaser.Scene {
         const PHASE_COLORS = { blue: '#4488ff', crimson: '#ff4444', silver: '#ccccdd' };
 
         this.uiElements.phaseLabel = this.add.text(640, 16, 'BLUE PHASE', {
-            fontFamily: 'Open Sans', fontSize: '22px', color: PHASE_COLORS.blue,
+            fontFamily: 'Cinzel, serif', fontSize: '20px', color: PHASE_COLORS.blue,
             stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5, 0).setDepth(10000);
 
@@ -273,7 +273,8 @@ export default class UIScene extends Phaser.Scene {
 
         // HP bar
         this.uiElements.hpLabel = this.add.text(x, y, 'HP', {
-            fontFamily: 'Open Sans', fontSize: '15px', color: '#ff6666'
+            fontFamily: 'Open Sans, sans-serif', fontSize: '15px', color: '#ff6666',
+            stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
         this.uiElements.hpBarBg = this.add.graphics().setDepth(10000);
@@ -299,17 +300,19 @@ export default class UIScene extends Phaser.Scene {
 
         // Level & XP
         this.uiElements.levelText = this.add.text(x, y + 52, 'Lv.1', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffaa44',
+            fontFamily: 'Open Sans, sans-serif', fontSize: '16px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
-        this.uiElements.xpText = this.add.text(x + 40, y + 53, 'XP: 0', {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#aaaaaa'
+        this.uiElements.xpText = this.add.text(x + 38, y + 53, 'XP: 0', {
+            fontFamily: 'Open Sans, sans-serif', fontSize: '14px', color: '#aaaaaa',
+            stroke: '#000', strokeThickness: 1
         }).setDepth(10000);
 
         // Gold
-        this.uiElements.goldText = this.add.text(x + 120, y + 53, 'Gold: 0', {
-            fontFamily: 'Open Sans', fontSize: '14px', color: '#ffcc44'
+        this.uiElements.goldText = this.add.text(x + 115, y + 53, 'Gold: 0', {
+            fontFamily: 'Open Sans, sans-serif', fontSize: '14px', color: '#ffcc44',
+            stroke: '#000', strokeThickness: 1
         }).setDepth(10000);
 
         // ── Painterly bars (if art loaded): painted frame + a dark depletion
@@ -454,7 +457,8 @@ export default class UIScene extends Phaser.Scene {
 
             // Spell name label (updated dynamically)
             const nameLabel = this.add.text(x + slotSize / 2, y + slotSize - 4, this._spellNames[i], {
-                fontFamily: 'Open Sans', fontSize: '11px', color: '#888888'
+                fontFamily: 'Open Sans, sans-serif', fontSize: '12px', color: '#888888',
+                stroke: '#000', strokeThickness: 1
             }).setOrigin(0.5, 1).setDepth(10001);
 
             const cooldownOverlay = this.add.graphics().setDepth(10001);
@@ -515,7 +519,7 @@ export default class UIScene extends Phaser.Scene {
         }).setDepth(10000);
 
         this.uiElements.questTitle = this.add.text(x, y, '', {
-            fontFamily: 'Open Sans', fontSize: '17px', color: '#ffaa44',
+            fontFamily: 'Cinzel, serif', fontSize: '16px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
@@ -617,7 +621,8 @@ export default class UIScene extends Phaser.Scene {
         const y = 80; // below HP + SAP bars
 
         this.uiElements.dspLabel = this.add.text(x, y, 'DSP', {
-            fontFamily: 'Open Sans', fontSize: '15px', color: '#88ddff'
+            fontFamily: 'Open Sans, sans-serif', fontSize: '15px', color: '#88ddff',
+            stroke: '#000', strokeThickness: 2
         }).setDepth(10000);
 
         this.uiElements.dspBarBg = this.add.graphics().setDepth(10000);
@@ -699,7 +704,7 @@ export default class UIScene extends Phaser.Scene {
         this._journalBg.strokeRoundedRect(jx, jy, jw, jh, 10);
 
         this._journalTitle = this.add.text(width / 2, jy + 22, 'QUEST JOURNAL  [J] close', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#ffaa44',
+            fontFamily: 'Cinzel, serif', fontSize: '20px', color: '#ffaa44',
             stroke: '#000', strokeThickness: 2
         }).setOrigin(0.5).setDepth(15001);
 
@@ -712,7 +717,7 @@ export default class UIScene extends Phaser.Scene {
         }).setDepth(15001);
 
         this._journalQuestName = this.add.text(jx + 16, jy + 68, '—', {
-            fontFamily: 'Open Sans', fontSize: '20px', color: '#ffcc66',
+            fontFamily: 'Cinzel, serif', fontSize: '20px', color: '#ffcc66',
             stroke: '#000', strokeThickness: 1
         }).setDepth(15001);
 
@@ -854,7 +859,8 @@ export default class UIScene extends Phaser.Scene {
 
         // 'M' affordance in the corner so players know full-map exists.
         this.add.text(x + 4, y + 4, '[M] Map', {
-            fontFamily: 'Open Sans', fontSize: '10px', color: '#88aacc'
+            fontFamily: 'Open Sans, sans-serif', fontSize: '12px', color: '#88aacc',
+            stroke: '#000', strokeThickness: 1
         }).setDepth(10002).setAlpha(0.7);
     }
 

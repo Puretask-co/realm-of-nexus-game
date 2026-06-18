@@ -126,7 +126,7 @@ export class SkillTreePanel {
 
     // Talent points (from ProgressionSystem) or legacy points
     this.pointsText = this.scene.add.text(panelWidth - 20, 50, 'Points: 0', {
-      fontSize: '20px', fill: '#ffaa00', fontFamily: 'Open Sans'
+      fontSize: '16px', fill: '#ffaa00', fontFamily: 'Open Sans, sans-serif'
     }).setOrigin(1, 0.5);
     this.panel.add(this.pointsText);
 
@@ -147,7 +147,7 @@ export class SkillTreePanel {
     this.panel.add(this.detailBg);
 
     this.detailTitle = this.scene.add.text(20, panelHeight - 97, '', {
-      fontSize: '18px', fill: '#ffd700', fontFamily: 'Open Sans', fontStyle: 'bold'
+      fontSize: '20px', fill: '#ffd700', fontFamily: 'Cinzel, serif'
     });
     this.panel.add(this.detailTitle);
 
@@ -373,7 +373,7 @@ export class SkillTreePanel {
       const typeLabel = talent.type === 'active' ? 'ACTIVE' : 'PASSIVE';
       const typeColor = talent.type === 'active' ? '#ffcc44' : '#88aa88';
       const typeText = this.scene.add.text(textX + nameText.width + 10, 10, typeLabel, {
-        fontSize: '11px', fill: typeColor, fontFamily: 'Open Sans'
+        fontSize: '12px', fill: typeColor, fontFamily: 'Open Sans, sans-serif'
       });
       container.add(typeText);
 
@@ -553,7 +553,7 @@ export class SkillTreePanel {
       container.add(rankBg);
       const rankText = this.scene.add.text(size / 2 - 9, size / 2 - 7,
         `${skill.currentRank}/${skill.maxRank}`, {
-          fontSize: '10px', fill: unlocked ? '#ffcc44' : '#888888', fontFamily: 'Open Sans'
+          fontSize: '12px', fill: unlocked ? '#ffcc44' : '#888888', fontFamily: 'Open Sans, sans-serif'
         }).setOrigin(0.5);
       container.add(rankText);
     }
