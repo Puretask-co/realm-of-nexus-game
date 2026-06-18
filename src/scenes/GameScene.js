@@ -1104,15 +1104,15 @@ export default class GameScene extends Phaser.Scene {
             // Static painterly full-body art: scale to a readable in-world
             // size and centre the physics body on the texture's own pixels.
             this.player._staticArt = true;
-            this.player.setDisplaySize(72, 72);
+            this.player.setDisplaySize(96, 96);
             const tw = this.player.width, th = this.player.height;
             this.player.body.setSize(tw * 0.4, th * 0.4);
             this.player.body.setOffset(tw * 0.3, th * 0.45);
             // Gentle idle "breathing" so the static sprite feels alive.
             MotionLibrary.apply(this, this.player, 'idle-breathe', { duration: 1800 });
         } else {
-            // Legacy animated sheet (266px frames) → 64px display size.
-            this.player.setDisplaySize(64, 64);
+            // Legacy animated sheet (266px frames) → 80px display size.
+            this.player.setDisplaySize(80, 80);
             this.player.body.setSize(40, 40);
             this.player.body.setOffset(113, 145);
             if (this.anims.exists('player-idle')) this.player.play('player-idle');
@@ -1526,24 +1526,39 @@ export default class GameScene extends Phaser.Scene {
             [HD_SENTINEL]:          'corrupted-sentinel-run',
         };
 
-        // Use spritesheets for overworld (crisp at small sizes, animated).
-        // Painterly paintings (art_enemy_*) are reserved for combat/dialogue/UI.
+        // Use painterly art when available (high-quality character tokens).
+        // Display at 96-128px so the paintings stay readable on the map.
         const painterlyKey = PAINTERLY_ENEMY_MAP[def.id];
+        const usePainterly = painterlyKey && this.textures.exists(painterlyKey);
         const isBoss = BOSS_IDS.has(def.id);
 
         let enemy, spriteKey;
-        spriteKey = ENEMY_SPRITE_MAP[def.id] ||
-            (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
-        enemy = this.physics.add.sprite(x, y, spriteKey);
-        enemy.setDepth(4);
-        enemy.setCollideWorldBounds(true);
-        enemy.setDisplaySize(isBoss ? 72 : 56, isBoss ? 72 : 56);
-        enemy.body.setSize(36, 36);
-        enemy.body.setOffset(110, 140);
-        const animKey = ENEMY_ANIM_MAP[spriteKey];
-        if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        if (usePainterly) {
+            const display = isBoss ? 128 : 96;
+            spriteKey = painterlyKey;
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            enemy.setDisplaySize(display, display);
+            const tw = enemy.width, th = enemy.height;
+            enemy.body.setSize(tw * 0.4, th * 0.4);
+            enemy.body.setOffset(tw * 0.3, tw * 0.4);
+            enemy._painterly = true;
+            MotionLibrary.apply(this, enemy, 'idle-breathe', { duration: 1400 + Math.random() * 400 });
+        } else {
+            spriteKey = ENEMY_SPRITE_MAP[def.id] ||
+                (this.textures.exists(`enemy_${def.id}`) ? `enemy_${def.id}` : 'enemy_treetitan');
+            enemy = this.physics.add.sprite(x, y, spriteKey);
+            enemy.setDepth(4);
+            enemy.setCollideWorldBounds(true);
+            enemy.setDisplaySize(isBoss ? 80 : 64, isBoss ? 80 : 64);
+            enemy.body.setSize(36, 36);
+            enemy.body.setOffset(110, 140);
+            const animKey = ENEMY_ANIM_MAP[spriteKey];
+            if (animKey && this.anims.exists(animKey)) enemy.play(animKey);
+        }
         enemy._isBoss = isBoss;
-        if (painterlyKey) enemy._portraitKey = painterlyKey;
+        enemy._portraitKey = painterlyKey || spriteKey;
 
         enemy._state = {
             definition: def,
@@ -1869,11 +1884,11 @@ export default class GameScene extends Phaser.Scene {
         const name = (def.name || '').toLowerCase();
         const role = (def.role || 'lore').toLowerCase();
 
-        // Store painterly portrait key for dialogue/UI use, but don't
-        // use it as the overworld sprite (512px paintings look blurry at 64px).
+        // Use painterly NPC portrait at larger display size (96px) so the
+        // art reads well as a character token on the overworld.
         const artKey = npcArtFor(def.name);
         if (this.textures.exists(artKey)) {
-            def._portraitKey = artKey;
+            return { spriteKey: artKey, idleAnim: null, tint: null };
         }
 
         // Hash name → 0..2^32 for stable choice per NPC.
