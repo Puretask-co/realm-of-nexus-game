@@ -43,8 +43,8 @@ export class MoralChoicePanel {
             .setDepth(199)
             .setInteractive(); // blocks clicks on the game world
 
-        // Main panel box (700 x 420)
-        const pw = 700, ph = 420;
+        // Main panel box (700 x 480)
+        const pw = 700, ph = 480;
         this._panel = s.add.rectangle(cx, cy, pw, ph, 0x1a1a2e)
             .setScrollFactor(0)
             .setDepth(200)
@@ -57,17 +57,17 @@ export class MoralChoicePanel {
 
         // Title text
         this._titleText = s.add.text(cx, cy - ph / 2 + 28, '', {
-            fontFamily: 'Open Sans',
-            fontSize: '28px',
+            fontFamily: 'Cinzel, serif',
+            fontSize: '24px',
             color: '#ffd700',
             stroke: '#000000',
             strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(202);
 
         // Description text (wraps inside panel)
-        this._descText = s.add.text(cx, cy - ph / 2 + 80, '', {
+        this._descText = s.add.text(cx, cy - ph / 2 + 76, '', {
             fontFamily: 'Open Sans',
-            fontSize: '18px',
+            fontSize: '16px',
             color: '#e0e0e0',
             wordWrap: { width: pw - 60 },
             align: 'center'
@@ -127,11 +127,10 @@ export class MoralChoicePanel {
         this._titleText.setText(data.title || 'A Choice Awaits');
         this._descText.setText(data.description || '');
 
-        // Reposition description based on actual text height
         const s = this.scene;
         const { height } = s.scale;
         const cy = height / 2;
-        const ph = 420;
+        const ph = 480;
 
         // Build choice buttons
         this._clearChoiceButtons();
@@ -193,13 +192,10 @@ export class MoralChoicePanel {
         const s = this.scene;
         const cx = s.scale.width / 2;
         const btnW = 620;
-        const btnH = 52;
+        const btnH = 72;
 
-        // Vertical layout: start below description area
-        // Panel occupies cy - 210 to cy + 210
-        // Title bar at top ~56px, description ~65px → choices start ~cy - 65
-        const choiceAreaTop = cy - 60;
-        const choiceSpacing = btnH + 12;
+        const choiceAreaTop = cy - 50;
+        const choiceSpacing = btnH + 10;
 
         choices.forEach((choice, i) => {
             const btnY = choiceAreaTop + i * choiceSpacing;
@@ -265,29 +261,29 @@ class ChoiceButton {
         };
         drawBg(normalColor);
 
-        // Label text (left-aligned)
-        this._labelText = scene.add.text(bx + 16, cy - 9, choiceData.label || '', {
-            fontFamily: 'Open Sans',
-            fontSize: '20px',
+        // Label text (top of button)
+        this._labelText = scene.add.text(bx + 16, cy - 16, choiceData.label || '', {
+            fontFamily: 'Cinzel, serif',
+            fontSize: '17px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2
         }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(204);
 
-        // Consequence text (smaller, italic-ish — right side, dimmed by default)
-        this._consequenceText = scene.add.text(bx + 16, cy + 8, choiceData.consequence || '', {
+        // Consequence text (below label, dimmed)
+        this._consequenceText = scene.add.text(bx + 16, cy + 10, choiceData.consequence || '', {
             fontFamily: 'Open Sans',
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#aaaaaa',
-            wordWrap: { width: bw - 230 }
+            wordWrap: { width: bw - 200 }
         }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(204).setAlpha(0.7);
 
         // Impact indicators (right side)
         const impact = choiceData.impact || {};
         const impactLines = this._buildImpactLines(impact);
-        this._impactText = scene.add.text(bx + bw - 16, cy, impactLines.text, {
+        this._impactText = scene.add.text(bx + bw - 16, cy - 6, impactLines.text, {
             fontFamily: 'Open Sans',
-            fontSize: '15px',
+            fontSize: '14px',
             color: impactLines.color,
             align: 'right'
         }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(204);

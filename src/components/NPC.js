@@ -34,9 +34,8 @@ export default class NPC {
         if (config.spriteKey && scene.textures.exists(config.spriteKey)) {
             if (String(config.spriteKey).startsWith('art_npc_')) {
                 this.sprite.setDisplaySize(96, 96);
-                const tw = this.sprite.width, th = this.sprite.height;
-                this.sprite.body?.setSize?.(tw * 0.4, th * 0.4);
-                this.sprite.body?.setOffset?.(tw * 0.3, th * 0.4);
+                this.sprite.body?.setSize?.(40, 40);
+                this.sprite.body?.setOffset?.(236, 280);
             } else {
                 this.sprite.setDisplaySize(72, 72);
                 this.sprite.body?.setSize?.(40, 40);

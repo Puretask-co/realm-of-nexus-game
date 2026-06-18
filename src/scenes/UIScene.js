@@ -447,9 +447,10 @@ export default class UIScene extends Phaser.Scene {
         for (let i = 0; i < 5; i++) {
             const x = startX + i * (slotSize + 8);
             const bg = this.add.graphics().setDepth(10000);
-            // Lighter fill so the painterly hotbar frame's slot wells show through.
-            bg.fillStyle(0x222244, 0.25);
-            bg.fillRect(x, y, slotSize, slotSize);
+            bg.fillStyle(0x1a1a3a, 0.8);
+            bg.fillRoundedRect(x, y, slotSize, slotSize, 4);
+            bg.lineStyle(1, 0x4466aa, 0.6);
+            bg.strokeRoundedRect(x, y, slotSize, slotSize, 4);
 
             const keyLabel = this.add.text(x + 4, y + 2, `${i + 1}`, {
                 fontFamily: 'Open Sans', fontSize: '14px', color: '#6688aa'
